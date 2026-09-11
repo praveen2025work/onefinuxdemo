@@ -1,7 +1,7 @@
 ### One Finance UX POC - sample requests
 ### Works with the IntelliJ HTTP Client and the VS Code "REST Client" extension.
-@hub = http://localhost:8080
-@sim = http://localhost:8081
+@hub = http://localhost:7070
+@sim = http://localhost:7081
 @cob = 2026-09-10
 
 ### 1. A source publishes one event (202 ACCEPTED; sending it again returns 200 DUPLICATE)
@@ -85,7 +85,7 @@ GET {{hub}}/api/notifications?limit=50
 ###
 GET {{hub}}/api/events?limit=100
 
-### 11. Live stream (Server-Sent Events) - open in a browser or: curl -N http://localhost:8080/api/stream
+### 11. Live stream (Server-Sent Events) - open in a browser or: curl -N http://localhost:7070/api/stream
 GET {{hub}}/api/stream
 Accept: text/event-stream
 

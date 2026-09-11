@@ -1,12 +1,12 @@
 server:
-  port: 8081
+  port: 7081
 
 spring:
   application:
     name: onefinux-source-simulator
 
 sim:
-  hub-url: http://localhost:8080
+  hub-url: http://localhost:7070
   zone: America/New_York
-  allowed-origin: http://localhost:8080
+  allowed-origin: http://localhost:7070
   downstream-seconds: 6

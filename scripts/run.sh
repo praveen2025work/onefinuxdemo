@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Build and start the One Finance UX hub (8080) and the source simulator (8081).
+# Build and start the One Finance UX hub (7070) and the source simulator (7081).
 # Usage: ./scripts/run.sh            build + start both
 #        ./scripts/run.sh --no-build start using existing jars
 set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p logs
-HUB_PORT="${HUB_PORT:-8080}"
-SIM_PORT="${SIM_PORT:-8081}"
+HUB_PORT="${HUB_PORT:-7070}"
+SIM_PORT="${SIM_PORT:-7081}"
 
 if [[ "${1:-}" != "--no-build" ]]; then
   echo "Building (Java 21 + Maven 3.9 required)..."

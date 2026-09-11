@@ -10,8 +10,8 @@ The requirements live in `docs/One_Finance_UX_BRD.docx`. This README covers runn
 
 | Module | Port | Role |
 |---|---|---|
-| `onefinux-hub` | 8080 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, live board |
-| `source-simulator` | 8081 | Stands in for Motif, SAP, GMIS, RAM, US Castle, Finance Store, Axiom. Also runs mock **Helix** and **Axiom** services that receive commands and publish completions back |
+| `onefinux-hub` | 7070 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, live board |
+| `source-simulator` | 7081 | Stands in for Motif, SAP, GMIS, RAM, US Castle, Finance Store, Axiom. Also runs mock **Helix** and **Axiom** services that receive commands and publish completions back |
 
 The three outcomes are configured in `onefinux-hub/src/main/resources/application.yml` as metadata, not code:
 
@@ -40,15 +40,15 @@ powershell -ExecutionPolicy Bypass -File scripts\demo.ps1
 
 Or run each module from the IDE: `OneFinUxHubApplication` then `SourceSimulatorApplication`.
 
-Open **http://localhost:8080**. The buttons across the top drive the simulator, so you can demo without a terminal.
+Open **http://localhost:7070**. The buttons across the top drive the simulator, so you can demo without a terminal.
 
-If 8080 or 8081 is already taken (common on a corporate build), override the ports. `run.sh` rewires both
+If 7070 or 7081 is already taken (common on a corporate build), override the ports. `run.sh` rewires both
 sides of the conversation for you — the hub's callback URL and simulator URL, and the simulator's hub URL
 and allowed CORS origin:
 
 ```bash
-HUB_PORT=8090 SIM_PORT=8091 ./scripts/run.sh
-HUB=http://localhost:8090 SIM=http://localhost:8091 ./scripts/demo.sh
+HUB_PORT=7090 SIM_PORT=7091 ./scripts/run.sh
+HUB=http://localhost:7090 SIM=http://localhost:7091 ./scripts/demo.sh
 ```
 
 Use `./scripts/run.sh --no-build` to start from the jars you already built, and delete `data/` beforehand
@@ -69,7 +69,7 @@ Stop the hub and start it again: the board is rebuilt exactly from the event sto
 `http/onefinux.http` has ready-to-run requests for IntelliJ or VS Code REST Client. The contract is `contracts/business-event.schema.json`. The minimum is:
 
 ```bash
-curl -X POST localhost:8080/api/events -H 'Content-Type: application/json' -d '{
+curl -X POST localhost:7070/api/events -H 'Content-Type: application/json' -d '{
   "eventType":"MASTERBOOK_READY","sourceSystem":"MOTIF","sourceKey":"MB001",
   "cobDate":"2026-09-10","region":"GLOBAL","status":"COMPLETED"}'
 ```
@@ -98,7 +98,7 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 | GET | `/api/stream` | Server-Sent Events: `outcome`, `notification`, `event` |
 | GET | `/api/config` | Loaded outcomes, mappings, targets |
 | POST | `/api/admin/reset` | Clear everything (demo only) |
-| POST | `:8081/sim/scenarios/{helix,15c3,pnl,restate,all,cancel}` | Drive the simulator |
+| POST | `:7081/sim/scenarios/{helix,15c3,pnl,restate,all,cancel}` | Drive the simulator |
 
 ## Notification channels
 
@@ -188,4 +188,4 @@ network where SSH to GitHub is blocked, switch the remote to HTTPS instead:
 
 - **`Database may be already in use`**: a previous hub is still shutting down and holding the H2 file lock. Wait a few seconds, or use `scripts/stop.sh`, which waits for exit.
 - **`release version 21 not supported`**: Maven is using an older JDK. Point `JAVA_HOME` at JDK 21.
-- **Ports busy**: `HUB_PORT=8090 SIM_PORT=8091 ./scripts/run.sh` (see *Run it*). Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator.
+- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7091 ./scripts/run.sh` (see *Run it*). Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator.

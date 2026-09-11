@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 7070
 
 spring:
   application:
@@ -33,8 +33,8 @@ logging:
 
 onefinux:
   zone: America/New_York
-  public-url: http://localhost:8080
-  simulator-url: http://localhost:8081
+  public-url: http://localhost:7070
+  simulator-url: http://localhost:7081
 
   # ---------------------------------------------------------------- Component 2: translation layer
   translation:
@@ -60,9 +60,9 @@ onefinux:
   # ---------------------------------------------------------------- Component 4: downstream actions
   action-targets:
     helix:
-      url: http://localhost:8081/helix/analysis
+      url: http://localhost:7081/helix/analysis
     axiom:
-      url: http://localhost:8081/axiom/reports/15c3
+      url: http://localhost:7081/axiom/reports/15c3
 
   # ---------------------------------------------------------------- Component 5: notifications
   notifications:

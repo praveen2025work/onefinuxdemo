@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Scripted walkthrough for a stakeholder demo. Keep http://localhost:8080 open while it runs.
+# Scripted walkthrough for a stakeholder demo. Keep http://localhost:7070 open while it runs.
 set -euo pipefail
-HUB=${HUB:-http://localhost:8080}; SIM=${SIM:-http://localhost:8081}
+HUB=${HUB:-http://localhost:7070}; SIM=${SIM:-http://localhost:7081}
 pause() { echo; read -r -p ">> $1  [Enter]" _; }
 
 curl -s -XPOST $HUB/api/admin/reset > /dev/null

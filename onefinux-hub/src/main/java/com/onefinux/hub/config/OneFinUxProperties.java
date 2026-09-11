@@ -22,7 +22,7 @@ public record OneFinUxProperties(
 
     public OneFinUxProperties {
         zone = zone == null ? "America/New_York" : zone;
-        publicUrl = publicUrl == null ? "http://localhost:8080" : publicUrl;
+        publicUrl = publicUrl == null ? "http://localhost:7070" : publicUrl;
         translation = translation == null ? new Translation(null, null) : translation;
         outcomes = outcomes == null ? List.of() : List.copyOf(outcomes);
         actionTargets = actionTargets == null ? Map.of() : Map.copyOf(actionTargets);

@@ -2,12 +2,12 @@
 REM Build and start the One Finance UX hub and source simulator on Windows.
 REM Requires Java 21 and Maven 3.9 on PATH.
 REM Usage: scripts\run.cmd [--no-build]
-REM        set HUB_PORT=8090 & set SIM_PORT=8091 & scripts\run.cmd   (if 8080/8081 are taken)
+REM        set HUB_PORT=7090 & set SIM_PORT=7091 & scripts\run.cmd   (if 7070/7081 are taken)
 setlocal
 cd /d "%~dp0.."
 if not exist logs mkdir logs
-if "%HUB_PORT%"=="" set HUB_PORT=8080
-if "%SIM_PORT%"=="" set SIM_PORT=8081
+if "%HUB_PORT%"=="" set HUB_PORT=7070
+if "%SIM_PORT%"=="" set SIM_PORT=7081
 
 if /i not "%~1"=="--no-build" (
   echo Building ^(Java 21 + Maven 3.9 required^)...
