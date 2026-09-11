@@ -42,6 +42,18 @@ Or run each module from the IDE: `OneFinUxHubApplication` then `SourceSimulatorA
 
 Open **http://localhost:8080**. The buttons across the top drive the simulator, so you can demo without a terminal.
 
+If 8080 or 8081 is already taken (common on a corporate build), override the ports. `run.sh` rewires both
+sides of the conversation for you — the hub's callback URL and simulator URL, and the simulator's hub URL
+and allowed CORS origin:
+
+```bash
+HUB_PORT=8090 SIM_PORT=8091 ./scripts/run.sh
+HUB=http://localhost:8090 SIM=http://localhost:8091 ./scripts/demo.sh
+```
+
+Use `./scripts/run.sh --no-build` to start from the jars you already built, and delete `data/` beforehand
+if you want a clean board for a stakeholder demo.
+
 ## Demo script (about 5 minutes)
 
 1. **Helix / FOBO.** Click *Run Helix scenario*. The 300-square grid fills as master books arrive. The progress, ETA and notifications fire at 50% and 90%. At 300/300 the hub calls Helix itself, and the card flips to **Done** with the break count Helix reported back.
@@ -143,8 +155,37 @@ mvn test
 | Log email, webhook | Corporate SMTP relay, Teams, ServiceNow for breaches |
 | Single instance | Active/active with partitioning by `(cobDate, region)` |
 
+## Working with git
+
+The repository lives at `git@github.com:praveen2025work/onefinuxdemo.git`. Build output (`target/`), the H2
+database (`data/`) and run logs (`logs/`) are ignored — committing the database would put one machine's demo
+state into everyone's checkout.
+
+Clone it somewhere new:
+
+```bash
+git clone git@github.com:praveen2025work/onefinuxdemo.git
+cd onefinuxdemo && chmod +x scripts/*.sh
+```
+
+Commit and push your own changes:
+
+```bash
+git checkout -b my-change        # keep main clean
+git status                       # confirm no data/ or logs/ crept in
+git add -A
+git commit -m "feat: short description of what changed"
+git push -u origin my-change     # then open a pull request on GitHub
+```
+
+Commit messages follow conventional commits — `feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`.
+
+SSH access needs your key registered with GitHub; check it with `ssh -T git@github.com`. On a locked-down
+network where SSH to GitHub is blocked, switch the remote to HTTPS instead:
+`git remote set-url origin https://github.com/praveen2025work/onefinuxdemo.git`.
+
 ## Troubleshooting
 
 - **`Database may be already in use`**: a previous hub is still shutting down and holding the H2 file lock. Wait a few seconds, or use `scripts/stop.sh`, which waits for exit.
 - **`release version 21 not supported`**: Maven is using an older JDK. Point `JAVA_HOME` at JDK 21.
-- **Ports busy**: set `server.port` with `--server.port=9090`. Also change `onefinux.simulator-url` and `onefinux.action-targets` in the hub, and `sim.hub-url` in the simulator, to match.
+- **Ports busy**: `HUB_PORT=8090 SIM_PORT=8091 ./scripts/run.sh` (see *Run it*). Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator.
