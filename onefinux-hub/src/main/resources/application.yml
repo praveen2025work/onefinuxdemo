@@ -1,0 +1,148 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: onefinux-hub
+  datasource:
+    # File-based so a restart demonstrates state rebuild by event replay. Production: Oracle 19c.
+    url: jdbc:h2:file:./data/onefinux-hub
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+  mvc:
+    problemdetails:
+      enabled: true     # RFC 7807 errors that tell a producer exactly what is wrong
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    notification.email: INFO
+    com.onefinux: INFO
+
+onefinux:
+  zone: America/New_York
+  public-url: http://localhost:8080
+  simulator-url: http://localhost:8081
+
+  # ---------------------------------------------------------------- Component 2: translation layer
+  translation:
+    source-identifiers:
+      MOTIF: MASTER_BOOK
+      SAP: COST_CENTRE
+      GMIS: BOOK_ID
+      RAM: CHORUS_GROUP
+      USCASTLE: PROCESSING_BATCH
+      FINSTORE: FEED
+      AXIOM: REPORT_SCHEDULE
+      HELIX: ANALYSIS_RUN
+      ONEFINUX: WORKFLOW
+    # Sample reference data. Production: effective-dated hierarchy tables owned by reference data.
+    cross-references:
+      - { from-type: MASTER_BOOK, from-id: MB001, to-type: COST_CENTRE, to-id: CC-4410 }
+      - { from-type: MASTER_BOOK, from-id: MB002, to-type: COST_CENTRE, to-id: CC-4410 }
+      - { from-type: MASTER_BOOK, from-id: MB003, to-type: COST_CENTRE, to-id: CC-4420 }
+      - { from-type: BOOK_ID, from-id: BK-EQ, to-type: CHORUS_GROUP, to-id: CG-EQUITIES }
+      - { from-type: BOOK_ID, from-id: BK-FI, to-type: CHORUS_GROUP, to-id: CG-RATES }
+      - { from-type: COST_CENTRE, from-id: CC-4410, to-type: ACCOUNT, to-id: GL-100200 }
+
+  # ---------------------------------------------------------------- Component 4: downstream actions
+  action-targets:
+    helix:
+      url: http://localhost:8081/helix/analysis
+    axiom:
+      url: http://localhost:8081/axiom/reports/15c3
+
+  # ---------------------------------------------------------------- Component 5: notifications
+  notifications:
+    milestones: [50, 90]
+    log-channel-enabled: true
+    webhook-url: ""        # e.g. a Teams Workflows webhook; empty = disabled
+
+  # ---------------------------------------------------------------- Component 3: business outcomes
+  # SLA: use "cutoff" + "day-offset" for real cut-offs (e.g. 07:30 on COB+1),
+  # or "within-minutes" (from the first event) so the demo can show at-risk and breach alerts.
+  outcomes:
+    - id: FOBO_HELIX
+      name: FOBO investigation
+      question: Can I execute FOBO analysis?
+      regions: [GLOBAL]
+      owner-group: FOBO Controllers
+      sla:
+        within-minutes: 5
+      dependencies:
+        - event-type: MASTERBOOK_READY
+          source-system: MOTIF
+          expected-count: 300
+          label: Master books
+      on-ready:
+        action: HTTP_COMMAND
+        target: helix
+        completion-event: HELIX_ANALYSIS_COMPLETE
+        action-label: Helix analysis
+
+    - id: REPORT_15C3
+      name: 15C3 report
+      question: Can I produce the 15C3 report?
+      regions: [AMRS]
+      owner-group: US Regulatory Reporting
+      sla:
+        within-minutes: 5
+        # cutoff: "07:30"
+        # day-offset: 1
+      dependencies:
+        - event-type: SAP_TB_COMPLETE
+          source-system: SAP
+          expected-count: 5
+          label: SAP trial balance
+        - event-type: USCASTLE_COMPLETE
+          source-system: USCASTLE
+          expected-count: 5
+          label: US Castle batches
+        - event-type: FINSTORE_LOADED
+          source-system: FINSTORE
+          expected-count: 5
+          label: Finance Store feeds
+        - event-type: AXIOM_READY
+          source-system: AXIOM
+          expected-count: 5
+          label: Axiom schedules
+      on-ready:
+        action: HTTP_COMMAND
+        target: axiom
+        completion-event: REG_REPORT_GENERATED
+        action-label: 15C3 report generation
+
+    - id: PNL_REPORTING
+      name: PnL reporting
+      question: Can I run PnL reporting?
+      regions: [AMRS]
+      owner-group: Product Control
+      sla:
+        within-minutes: 1
+      dependencies:
+        - event-type: GMIS_LOADED
+          source-system: GMIS
+          expected-count: 3
+          label: GMIS books
+        - event-type: RAM_CHORUS_READY
+          source-system: RAM
+          expected-count: 2
+          label: RAM chorus groups
+        - event-type: SAP_TB_COMPLETE   # shared with 15C3: publish once, consumed by many outcomes
+          source-system: SAP
+          expected-count: 5
+          label: SAP trial balance
+      on-ready:
+        action: NOTIFY_ONLY

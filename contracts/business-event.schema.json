@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onefinux.internal/contracts/business-event/v1",
+  "title": "One Finance UX business event (v1)",
+  "description": "The single contract every source system (Motif, GMIS, RAM, SAP, Axiom, US Castle, Finance Store, Helix) publishes to the Event Hub. Producers state facts about their own identifiers; the hub translates them into business identifiers and decides what the fact means for business outcomes.",
+  "type": "object",
+  "required": ["eventType", "sourceSystem", "sourceKey", "cobDate", "region", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "eventId": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Producer-assigned unique id. Re-sending the same id is a no-op (idempotent). If omitted, the hub derives a deterministic id from eventType + sourceSystem + sourceKey + cobDate + region + status."
+    },
+    "eventType": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+      "description": "Governed name from the event catalogue (BRD section 9).",
+      "examples": ["MASTERBOOK_READY", "SAP_TB_COMPLETE", "USCASTLE_COMPLETE", "FINSTORE_LOADED", "AXIOM_READY", "GMIS_LOADED", "RAM_CHORUS_READY", "HELIX_ANALYSIS_COMPLETE", "REG_REPORT_GENERATED"]
+    },
+    "sourceSystem": {
+      "type": "string",
+      "enum": ["MOTIF", "GMIS", "RAM", "SAP", "AXIOM", "USCASTLE", "FINSTORE", "HELIX"],
+      "description": "Publishing system of record."
+    },
+    "sourceKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "The source's own identifier for the unit of work: master book, cost centre, batch, feed, schedule or report id."
+    },
+    "cobDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Close-of-business date the event belongs to (not the wall-clock date it was sent)."
+    },
+    "region": {
+      "type": "string",
+      "enum": ["AMRS", "EMEA", "APAC", "GLOBAL"],
+      "description": "Processing scope. Outcomes are tracked per (outcome, cobDate, region)."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["STARTED", "COMPLETED", "FAILED", "REVOKED"],
+      "description": "COMPLETED counts toward readiness. FAILED blocks the outcome until a later COMPLETED for the same key. REVOKED withdraws a previous completion (restatement or re-run) and pulls readiness back from every dependent outcome."
+    },
+    "occurredAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the fact happened at source (UTC). Defaults to receipt time."
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Optional context. Downstream completions must echo correlationId and runId from the command they received so stale runs can be ignored.",
+      "properties": {
+        "correlationId": { "type": "string" },
+        "runId": { "type": "string" },
+        "reason": { "type": "string" },
+        "summary": { "type": "string" },
+        "rowCount": { "type": "integer" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "examples": [
+    {
+      "eventId": "MOTIF-MB001-20260910",
+      "eventType": "MASTERBOOK_READY",
+      "sourceSystem": "MOTIF",
+      "sourceKey": "MB001",
+      "cobDate": "2026-09-10",
+      "region": "GLOBAL",
+      "status": "COMPLETED",
+      "occurredAt": "2026-09-10T21:14:03Z"
+    },
+    {
+      "eventType": "USCASTLE_COMPLETE",
+      "sourceSystem": "USCASTLE",
+      "sourceKey": "BATCH-03",
+      "cobDate": "2026-09-10",
+      "region": "AMRS",
+      "status": "FAILED",
+      "attributes": { "reason": "Upstream position file truncated" }
+    }
+  ]
+}

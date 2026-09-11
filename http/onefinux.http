@@ -1,0 +1,122 @@
+### One Finance UX POC - sample requests
+### Works with the IntelliJ HTTP Client and the VS Code "REST Client" extension.
+@hub = http://localhost:8080
+@sim = http://localhost:8081
+@cob = 2026-09-10
+
+### 1. A source publishes one event (202 ACCEPTED; sending it again returns 200 DUPLICATE)
+POST {{hub}}/api/events
+Content-Type: application/json
+
+{
+  "eventId": "MOTIF-MB001-{{cob}}",
+  "eventType": "MASTERBOOK_READY",
+  "sourceSystem": "MOTIF",
+  "sourceKey": "MB001",
+  "cobDate": "{{cob}}",
+  "region": "GLOBAL",
+  "status": "COMPLETED"
+}
+
+### 2. A batch failure: 15C3 goes BLOCKED and US Regulatory Reporting is alerted
+POST {{hub}}/api/events
+Content-Type: application/json
+
+{
+  "eventType": "USCASTLE_COMPLETE",
+  "sourceSystem": "USCASTLE",
+  "sourceKey": "BATCH-03",
+  "cobDate": "{{cob}}",
+  "region": "AMRS",
+  "status": "FAILED",
+  "attributes": { "reason": "Upstream position file truncated" }
+}
+
+### 3. A restatement: SAP withdraws a completed trial balance (every dependent outcome loses readiness)
+POST {{hub}}/api/events
+Content-Type: application/json
+
+{
+  "eventType": "SAP_TB_COMPLETE",
+  "sourceSystem": "SAP",
+  "sourceKey": "CC-4430",
+  "cobDate": "{{cob}}",
+  "region": "AMRS",
+  "status": "REVOKED",
+  "attributes": { "reason": "Late journal posted" }
+}
+
+### 4. Several events in one call
+POST {{hub}}/api/events/batch
+Content-Type: application/json
+
+[
+  { "eventType": "GMIS_LOADED", "sourceSystem": "GMIS", "sourceKey": "BK-RATES", "cobDate": "{{cob}}", "region": "AMRS", "status": "COMPLETED" },
+  { "eventType": "RAM_CHORUS_READY", "sourceSystem": "RAM", "sourceKey": "CG-RATES", "cobDate": "{{cob}}", "region": "AMRS", "status": "COMPLETED" }
+]
+
+### 5. Invalid event (400 ProblemDetail naming the missing fields)
+POST {{hub}}/api/events
+Content-Type: application/json
+
+{ "eventType": "SAP_TB_COMPLETE", "sourceSystem": "SAP", "cobDate": "{{cob}}", "status": "COMPLETED" }
+
+### 6. Business outcome answers (the "Can I...?" questions)
+GET {{hub}}/api/outcomes
+
+### 7. One outcome in detail
+GET {{hub}}/api/outcomes/REPORT_15C3/{{cob}}/AMRS
+
+### 8. Manual override of a blocked or late input (human in the loop, reason is mandatory and audited)
+POST {{hub}}/api/outcomes/REPORT_15C3/{{cob}}/AMRS/override
+Content-Type: application/json
+
+{ "dependency": "USCASTLE_COMPLETE", "reason": "Batch verified manually with US Castle support, INC0042", "requestedBy": "controller.jsmith" }
+
+### 9. Re-run the downstream action of a READY or COMPLETED outcome
+POST {{hub}}/api/outcomes/FOBO_HELIX/{{cob}}/GLOBAL/run
+Content-Type: application/json
+
+{ "requestedBy": "controller.jsmith" }
+
+### 10. Notifications and the event tape
+GET {{hub}}/api/notifications?limit=50
+
+###
+GET {{hub}}/api/events?limit=100
+
+### 11. Live stream (Server-Sent Events) - open in a browser or: curl -N http://localhost:8080/api/stream
+GET {{hub}}/api/stream
+Accept: text/event-stream
+
+### 12. Loaded configuration (outcomes, translation mappings, action targets)
+GET {{hub}}/api/config
+
+### ---------------- Source simulator ----------------
+
+### List scenarios
+GET {{sim}}/sim/scenarios
+
+### Helix / FOBO: 300 master books over 45 seconds
+POST {{sim}}/sim/scenarios/helix?masterBooks=300&seconds=45
+
+### 15C3 happy path
+POST {{sim}}/sim/scenarios/15c3
+
+### 15C3 with a US Castle batch failure and recovery
+POST {{sim}}/sim/scenarios/15c3?failure=true
+
+### PnL slow drip (goes at risk, then breaches its SLA)
+POST {{sim}}/sim/scenarios/pnl
+
+### SAP trial balance restatement (run after 15C3 completes)
+POST {{sim}}/sim/scenarios/restate
+
+### Everything at once
+POST {{sim}}/sim/scenarios/all
+
+### Stop running scenarios
+POST {{sim}}/sim/scenarios/cancel
+
+### Reset the hub (clears events, outcomes, notifications)
+POST {{hub}}/api/admin/reset
