@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>User — One Finance UX</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bar">
+    <div class="bar-row">
+      <div><b>One Finance UX</b><div class="sub">My outcomes · Revenue Accounting</div></div>
+      <div class="who">Alex R. · USER · product:FOBO · COB 12 Sep 2026 · APAC</div>
+    </div>
+    <nav class="nav">
+      <a href="index.html">Index</a>
+      <a href="stitch.html">Stitch</a>
+      <a href="head.html">Head</a>
+      <a class="on" href="user.html">User</a>
+      <a href="ready.html">Ready / iframe</a>
+      <a href="blocked.html">Blocked</a>
+      <a href="rtb.html">RTB</a>
+      <a href="config.html">Config</a>
+    </nav>
+  </div>
+  <div class="keys">
+    <span>view <b>v_user_card</b></span>
+    <span>group_unit <b>REV-ACC</b></span>
+    <span>kit <b>FOBO</b></span>
+    <span>actions <b>SIGN_OFF,POST</b></span>
+    <span>origins <b>CATS · MOTIF · MBR</b></span>
+  </div>
+  <div class="page">
+    <p class="kicker">CEES product:FOBO · kit_source CATS + MOTIF + MBR</p>
+    <h1>Agents have run. Open the ready output.</h1>
+    <p class="lead">Cards are <span class="mono">outcome_instance</span> rows. Pipeline steps come from <span class="mono">kit_destination</span>, not a FOBO Java type.</p>
+    <div class="grid g2">
+      <a class="card rail ok index-card" href="ready.html">
+        <div class="kicker">FOBO · R-1042 · APAC</div>
+        <h2>Can I execute this rec?</h2>
+        <p style="font-size:22px;font-weight:600;color:var(--ofx-ok);margin:0 0 8px">Ready</p>
+        <p class="note">Helix RUN-A37C complete. echo_ok = Y. Sign off or post.</p>
+        <p class="note" style="margin:6px 0">Embed helix.example/fobo · chrome HOST</p>
+        <p class="mono">instance FOBO|2026-09-12|APAC|R-1042</p>
+        <p class="note" style="margin-top:8px"><span class="chip ok">CATS</span> <span class="chip ok">MOTIF</span> <span class="chip ok">MBR</span></p>
+      </a>
+      <a class="card rail fail index-card" href="blocked.html">
+        <div class="kicker">FOBO · R-2031 · EMEA</div>
+        <h2>Can I execute this rec?</h2>
+        <p style="font-size:22px;font-weight:600;color:var(--ofx-fail);margin:0 0 8px">Blocked</p>
+        <p class="note">Named key: MOTIF MB014 FAILED — readiness_key.key_status</p>
+        <p class="mono" style="margin:6px 0">instance FOBO|2026-09-12|EMEA|R-2031</p>
+        <p class="note"><span class="chip ok">CATS</span> <span class="chip fail">MOTIF MB014</span> <span class="chip wait">MBR</span></p>
+        <div class="actions"><button class="btn" disabled>Open</button></div>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

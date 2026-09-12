@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Blocked — One Finance UX</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="bar">
+    <div class="bar-row">
+      <div><b>One Finance UX</b><div class="sub">FOBO · named blocker</div></div>
+      <div class="who">R-2031 · EMEA · no run_id</div>
+    </div>
+    <nav class="nav">
+      <a href="index.html">Index</a>
+      <a href="stitch.html">Stitch</a>
+      <a href="head.html">Head</a>
+      <a href="user.html">User</a>
+      <a href="ready.html">Ready / iframe</a>
+      <a class="on" href="blocked.html">Blocked</a>
+      <a href="rtb.html">RTB</a>
+      <a href="config.html">Config</a>
+    </nav>
+  </div>
+  <div class="keys">
+    <span>instance <b>FOBO|2026-09-12|EMEA|R-2031</b></span>
+    <span>status <b class="fail">BLOCKED</b></span>
+    <span>blocker <b class="fail">MOTIF MB014 FAILED</b></span>
+    <span>escalation <b>ESC-19</b></span>
+    <span>dead_letter <b>DL-4402</b></span>
+  </div>
+  <div class="page">
+    <p class="kicker">Never “in progress” · named key only</p>
+    <h1>Cannot open the rec</h1>
+    <p class="lead">Fold is distinct keys. One <span class="mono">FAILED</span> required key blocks the instance. The iframe is not shown. Same <span class="mono">instance_id</span> the head counted and RTB escalated.</p>
+    <div class="card rail fail" style="margin-bottom:12px">
+      <h2>Named blocker</h2>
+      <p style="font-size:18px;font-weight:600;color:var(--ofx-fail);margin:4px 0 8px">MOTIF MB014 FAILED</p>
+      <p class="note">readiness_key (FOBO|2026-09-12|EMEA|R-2031, MOTIF, MB014) · last_event EVT-MOTIF-MB014 · event_store.status FAILED</p>
+    </div>
+    <div class="card">
+      <table>
+        <tr><th>Origin</th><th>source_key</th><th>key_status</th><th>last_event_id</th></tr>
+        <tr><td class="mono">CATS</td><td class="mono">TR-9901</td><td><span class="chip ok">COMPLETED</span></td><td class="mono">EVT-CATS-9901</td></tr>
+        <tr><td class="mono">MOTIF</td><td class="mono">MB014</td><td><span class="chip fail">FAILED</span></td><td class="mono">EVT-MOTIF-MB014</td></tr>
+        <tr><td class="mono">MBR</td><td class="mono">BK-4420</td><td><span class="chip wait">WAITING</span></td><td class="mono">—</td></tr>
+      </table>
+    </div>
+    <div class="actions">
+      <button class="btn" disabled>Sign off</button>
+      <button class="btn" disabled>Post to MOTIF</button>
+      <button class="btn" disabled>Open Helix</button>
+    </div>
+    <p class="note" style="margin-top:8px">User does not replay the feed. RTB owns <span class="mono">DL-4402</span> and dual-control. LLM commentary is not a substitute for this fold.</p>
+  </div>
+</body>
+</html>

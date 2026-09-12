@@ -19,6 +19,7 @@
 - Theme file `experience/theme/onefinux-tokens.css` is what other teams copy.
 - Feed-first ingest. LLM never in the fold.
 - Do not add manifesto/gallery screens.
+- **Schema + mockups first.** Task 1 Java starts only after `docs/design/mockups/` is accepted.
 
 ---
 
@@ -37,6 +38,18 @@
 
 ---
 
+## Task 0: Schema + mockups (gate)
+
+**Do not start Tasks 1–8 until the stitch mockups are accepted.**
+
+- [x] DDL `docs/schema/onefinux-stitch.sql` — unit, kit, origin, instance, fold keys, extend `event_store` / `notification`
+- [x] Job queries `docs/schema/onefinux-stitch-queries.sql`
+- [x] Spec `docs/superpowers/specs/2026-09-12-stitching-schema.md`
+- [x] Mockups `docs/design/mockups/` — stitch, head, user, ready, blocked, RTB, config
+- [ ] Human accept same keys: `REV-ACC → FOBO → R-1042 / R-2031 → CATS/MOTIF/MBR → RUN-A37C`
+
+---
+
 ## File map
 
 | Path | Responsibility |
@@ -47,6 +60,8 @@
 | `experience/web/` | Four route trees: head, user, support, config + iframe host |
 | `experience/theme/onefinux-tokens.css` | Theme other teams copy |
 | `adapters/<source>-feed/` | Their existing feed |
+| `docs/schema/onefinux-stitch.sql` | Stitch DDL + seed (agree before Java) |
+| `docs/design/mockups/` | Institutional screens for the four jobs + stitch |
 | `onefinux-hub` | Fold — no product types |
 
 ---

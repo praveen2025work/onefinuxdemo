@@ -19,7 +19,9 @@ Visual truth: `FoboControlTower_V2.html` (navy `#002D5F`, cyan `#00AEEF`).
 | Partner iframe + shared theme | `.cursor/skills/embed-partner-screen` |
 
 Plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`  
-Model: `docs/superpowers/specs/2026-09-12-three-views-and-outcome-kinds.md`
+Model: `docs/superpowers/specs/2026-09-12-three-views-and-outcome-kinds.md`  
+Stitch schema: `docs/schema/onefinux-stitch.sql` + `docs/superpowers/specs/2026-09-12-stitching-schema.md`  
+Mockups (agree before Java): `docs/design/mockups/index.html`
 
 ## Never
 
