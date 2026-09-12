@@ -71,7 +71,7 @@
         var facts = {
           signoff: {
             cls: 'ok', icon: 'i-check', title: 'Signed off — workflow fact recorded',
-            body: 'ONEFINUX.OUTCOME_SIGNED_OFF on instance FOBO|2026-09-12|APAC|R-1042 by alex.r · ' + stamp
+            body: 'ONEFINUX.OUTCOME_SIGNED_OFF on instance FOBO|2026-09-12|APAC|R-1042 by praveen.kumar · ' + stamp
           },
           post: {
             cls: 'ok', icon: 'i-check', title: 'Posted to MOTIF via FAS',
