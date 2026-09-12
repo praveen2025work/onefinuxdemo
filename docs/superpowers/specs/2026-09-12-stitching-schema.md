@@ -3,7 +3,8 @@
 **Status:** proposed — implement Java / React only after these screens and IDs are agreed  
 **DDL:** `docs/schema/onefinux-stitch.sql`  
 **Job queries:** `docs/schema/onefinux-stitch-queries.sql`  
-**Mockups:** `docs/design/mockups/index.html`
+**Mockups:** `docs/design/mockups/index.html` — full application shell  
+**Design system:** `docs/design/mockups/app.css` + `docs/design/mockups/components.html`
 
 The stitch is the product. A row in `outcome_instance` is how a **group unit**, **kit**, **sources of origin**, **run**, and **partner embed** meet on one COB. Every job screen reads the same keys. There is no FOBO table and no `if (product == FOBO)`.
 

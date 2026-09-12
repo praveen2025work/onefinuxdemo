@@ -1,75 +1,299 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RTB — One Finance UX</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations · One Finance UX</title>
+<link rel="stylesheet" href="app.css">
 </head>
 <body>
-  <div class="bar">
-    <div class="bar-row">
-      <div><b>One Finance UX</b><div class="sub">Run the bank — delays and escalations</div></div>
-      <div class="who">Ops · platform.support · not a user rec</div>
+<div class="app">
+
+  <aside class="rail">
+    <div class="rail-brand">
+      <div class="mark">1F</div>
+      <div><b>One Finance UX</b><span>Outcome platform</span></div>
     </div>
-    <nav class="nav">
-      <a href="index.html">Index</a>
-      <a href="stitch.html">Stitch</a>
-      <a href="head.html">Head</a>
-      <a href="user.html">User</a>
-      <a href="ready.html">Ready / iframe</a>
-      <a href="blocked.html">Blocked</a>
-      <a class="on" href="rtb.html">RTB</a>
-      <a href="config.html">Config</a>
+    <div class="rail-scope">
+      <button class="scope-pick">
+        <div>
+          <span class="lbl">Scope</span>
+          <span class="val">All group units</span>
+        </div>
+        <svg class="i i-14"><use href="#i-down"></use></svg>
+      </button>
+    </div>
+    <nav class="rail-nav">
+      <div class="nav-grp">Console</div>
+      <a class="nav-a" href="index.html"><svg class="i"><use href="#i-home"></use></svg>Home</a>
+      <a class="nav-a" href="head.html"><svg class="i"><use href="#i-board"></use></svg>Outcome board</a>
+      <span class="nav-a muted"><svg class="i"><use href="#i-cards"></use></svg>My outcomes<span class="later">Not a rec</span></span>
+      <div class="nav-grp">Operate</div>
+      <a class="nav-a on" href="rtb.html"><svg class="i"><use href="#i-ops"></use></svg>Operations<span class="tag fail">1</span></a>
+      <a class="nav-a" href="rtb.html#deadletters"><svg class="i"><use href="#i-letter"></use></svg>Dead letters<span class="tag warn">1</span></a>
+      <div class="nav-grp">Build</div>
+      <a class="nav-a" href="config.html"><svg class="i"><use href="#i-config"></use></svg>Onboarding</a>
+      <div class="nav-grp">Reference</div>
+      <a class="nav-a" href="stitch.html"><svg class="i"><use href="#i-lineage"></use></svg>Stitch explorer</a>
+      <a class="nav-a" href="components.html"><svg class="i"><use href="#i-palette"></use></svg>Design system</a>
+      <div class="nav-grp">Phase 2</div>
+      <span class="nav-a muted"><svg class="i"><use href="#i-grid"></use></svg>Analyst explorer<span class="later">Later</span></span>
     </nav>
-  </div>
-  <div class="keys">
-    <span>join <b>instance_id + source_id</b></span>
-    <span>blocked <b>FOBO|2026-09-12|EMEA|R-2031</b></span>
-    <span>escalation <b>ESC-19</b></span>
-    <span>dead_letter <b>DL-4402</b></span>
-  </div>
-  <div class="page">
-    <p class="kicker">Join on instance_id + source_id</p>
-    <h1>Delays and escalations</h1>
-    <p class="lead">Same <span class="mono">FOBO|2026-09-12|EMEA|R-2031</span> the head counted as 1 escalation. This is not a sign-off screen.</p>
-    <div class="grid g2">
-      <div class="card rail fail">
-        <h3>Escalation</h3>
-        <table>
-          <tr><th>Id</th><th>Kind</th><th>Instance</th><th>Status</th></tr>
-          <tr>
-            <td class="mono">ESC-19</td>
-            <td>DELAY</td>
-            <td class="mono">FOBO|2026-09-12|EMEA|R-2031</td>
-            <td><span class="chip fail">OPEN</span></td>
-          </tr>
-        </table>
-        <p class="note" style="margin-top:8px">Named blocker: MOTIF MB014 FAILED — copied from outcome_instance</p>
-      </div>
-      <div class="card rail wait">
-        <h3>Dead letter</h3>
-        <table>
-          <tr><th>Id</th><th>Origin</th><th>Offset</th><th>Why</th></tr>
-          <tr>
-            <td class="mono">DL-4402</td>
-            <td class="mono">MOTIF</td>
-            <td class="mono">p3/18442099</td>
-            <td>state=PENDING_SIGN not in mapper</td>
-          </tr>
-        </table>
-        <div class="actions"><button class="btn ghost">Need second approver</button></div>
-        <p class="note">Dual-control replay. RFC 7807 title on the row. Not a user action.</p>
+    <div class="rail-user">
+      <div class="avatar">OP</div>
+      <div class="who"><b>Ops L2</b><span>platform.support</span></div>
+      <svg class="i i-14 push" style="color:#7fa5c4"><use href="#i-dots"></use></svg>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <nav class="crumb">
+        <a href="index.html">Home</a>
+        <svg class="i i-14"><use href="#i-right"></use></svg>
+        <b>Operations console</b>
+      </nav>
+      <label class="omni">
+        <svg class="i i-14"><use href="#i-search"></use></svg>
+        <input placeholder="Search instance, offset, escalation…">
+        <kbd>/</kbd>
+      </label>
+      <div class="tb-sep"></div>
+      <button class="tb-btn"><svg class="i i-14"><use href="#i-clock"></use></svg>COB 12 Sep 2026</button>
+      <button class="tb-btn"><svg class="i i-14"><use href="#i-refresh"></use></svg>Live</button>
+      <button class="tb-btn"><svg class="i i-14"><use href="#i-bell"></use></svg><span class="dot-n">3</span></button>
+      <span class="env">UAT</span>
+    </header>
+
+    <div class="ctxbar">
+      <span class="ctx"><span class="k">join</span><span class="v">instance_id + source_id</span></span>
+      <span class="ctx"><span class="k">escalations</span><span class="v fail">1 open</span></span>
+      <span class="ctx"><span class="k">dead letters</span><span class="v warn">1 held</span></span>
+      <span class="ctx"><span class="k">max lag</span><span class="v">12s MOTIF p3</span></span>
+      <span class="ctx"><span class="k">watched instance</span><span class="v">FOBO|2026-09-12|EMEA|R-2031</span></span>
+    </div>
+
+    <div class="body">
+      <div class="wrap">
+
+        <div class="ph">
+          <div>
+            <div class="ph-eyebrow">Run-the-bank support · platform.support</div>
+            <h1>Delays, escalations and dead letters</h1>
+            <p class="sub">The same blocked instance the head counted as one escalation. This console never signs off a break and never publishes a kit.</p>
+          </div>
+          <div class="ph-actions">
+            <button class="btn btn-2"><svg class="i i-14"><use href="#i-down_tray"></use></svg>Export shift log</button>
+            <button class="btn btn-2"><svg class="i i-14"><use href="#i-pin"></use></svg>Pin instance</button>
+          </div>
+        </div>
+
+        <div class="g g-4 g-sm" style="margin-bottom:14px">
+          <div class="stat fail">
+            <div class="lbl">Escalations open</div>
+            <div class="row"><div class="num">1</div><div class="unit">oldest 6m</div></div>
+            <div class="foot"><span class="mono">ESC-19</span> · DELAY</div>
+          </div>
+          <div class="stat warn">
+            <div class="lbl">Dead letters held</div>
+            <div class="row"><div class="num">1</div><div class="unit">needs 2nd approver</div></div>
+            <div class="foot"><span class="mono">DL-4402</span> · MOTIF</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Aged runs</div>
+            <div class="row"><div class="num">0</div></div>
+            <div class="foot">No command awaiting echo</div>
+          </div>
+          <div class="stat info">
+            <div class="lbl">Worst feed lag</div>
+            <div class="row"><div class="num">12</div><div class="unit">seconds</div>
+              <svg class="spark" width="66" height="24" viewBox="0 0 66 24"><polyline points="0,18 11,15 22,17 33,11 44,13 55,8 66,6" fill="none" style="stroke:var(--cyan)" stroke-width="1.6"/></svg>
+            </div>
+            <div class="foot"><span class="mono">MOTIF p3</span> · tolerance 60s</div>
+          </div>
+        </div>
+
+        <div class="split">
+          <div>
+            <div class="panel">
+              <div class="tabs" role="tablist">
+                <button class="tab" role="tab" aria-selected="true" aria-controls="t-esc">
+                  <svg class="i i-14"><use href="#i-alert"></use></svg>Escalations<span class="n fail">1</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="t-delay">
+                  <svg class="i i-14"><use href="#i-clock"></use></svg>Delays<span class="n">0</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="t-dl">
+                  <svg class="i i-14"><use href="#i-letter"></use></svg>Dead letters<span class="n">1</span>
+                </button>
+                <button class="tab" role="tab" aria-selected="false" aria-controls="t-wm">
+                  <svg class="i i-14"><use href="#i-source"></use></svg>Watermarks<span class="n">3</span>
+                </button>
+              </div>
+
+              <div class="toolbar">
+                <div class="seg">
+                  <button aria-pressed="true">Open</button>
+                  <button aria-pressed="false">Mine</button>
+                  <button aria-pressed="false">All today</button>
+                </div>
+                <label class="finder">
+                  <svg class="i i-14"><use href="#i-search"></use></svg>
+                  <input placeholder="Filter by instance or key">
+                </label>
+                <button class="btn btn-2 btn-sm push"><svg class="i i-14"><use href="#i-filter"></use></svg>Columns</button>
+              </div>
+
+              <div class="tabpane" id="t-esc">
+                <div class="tbl-wrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr><th>Id</th><th>Kind</th><th>Instance</th><th>Named blocker</th><th>Opened</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr class="sel">
+                        <td class="mono lead">ESC-19</td>
+                        <td><span class="pill warn">DELAY</span></td>
+                        <td class="mono">FOBO|2026-09-12|EMEA|R-2031</td>
+                        <td class="mono fail-t">MOTIF MB014</td>
+                        <td class="mono sec">19:36:11</td>
+                        <td><span class="pill fail">OPEN</span></td>
+                        <td><div class="rowact">
+                          <button class="btn btn-2 btn-sm">Assign</button>
+                          <button class="btn btn-sm">Investigate</button>
+                        </div></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel-ft">
+                  <svg class="i i-14"><use href="#i-shield"></use></svg>
+                  Escalations are raised by users or automatically from aged runs and failed required keys.
+                </div>
+              </div>
+
+              <div class="tabpane" id="t-delay" hidden>
+                <div class="empty">
+                  <svg class="i" width="30" height="30"><use href="#i-clock"></use></svg>
+                  <p class="strong">No delayed outcomes right now</p>
+                  <p class="tiny">A delay is feed lag, an aged break, an SLA miss, or an engine that never echoed its run_id.</p>
+                </div>
+              </div>
+
+              <div class="tabpane" id="t-dl" hidden>
+                <div class="tbl-wrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr><th>Id</th><th>Origin</th><th>Offset</th><th>Reason (RFC 7807)</th><th>Instance</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                      <tr class="rowfail">
+                        <td class="mono lead">DL-4402</td>
+                        <td><span class="chip fail"><b>MOTIF</b></span></td>
+                        <td class="mono">p3/18442099</td>
+                        <td>state=PENDING_SIGN not in mapper <span class="mono-sm">motif-v3</span></td>
+                        <td class="mono">…EMEA|R-2031</td>
+                        <td><span class="pill warn">HOLD</span></td>
+                        <td><div class="rowact">
+                          <button class="btn btn-2 btn-sm">Payload</button>
+                          <button class="btn btn-sm" aria-disabled="true">Replay</button>
+                        </div></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel-ft">
+                  <svg class="i i-14"><use href="#i-lock"></use></svg>
+                  Replay stays disabled until a second approver joins. Mapper changes go through config, not here.
+                </div>
+              </div>
+
+              <div class="tabpane" id="t-wm" hidden>
+                <div class="tbl-wrap">
+                  <table class="tbl">
+                    <thead>
+                      <tr><th>Source</th><th>Topic</th><th>Partition</th><th>Last offset</th><th class="num">Lag</th><th>Health</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><span class="chip"><b>MOTIF</b></span></td><td class="mono sec">motif.book.lifecycle.v3</td>
+                        <td class="mono">p3</td><td class="mono">18442091</td>
+                        <td class="num warn-t">12s</td>
+                        <td><div class="meter" style="width:110px"><span class="meter-t"><i class="warn" style="width:20%"></i><i class="wait" style="width:80%"></i></span></div></td>
+                      </tr>
+                      <tr>
+                        <td><span class="chip"><b>CATS</b></span></td><td class="mono sec">cats.movements.v1</td>
+                        <td class="mono">p0</td><td class="mono">99211</td>
+                        <td class="num ok-t">4s</td>
+                        <td><div class="meter" style="width:110px"><span class="meter-t"><i class="ok" style="width:7%"></i><i class="wait" style="width:93%"></i></span></div></td>
+                      </tr>
+                      <tr>
+                        <td><span class="chip"><b>MBR</b></span></td><td class="mono sec">mbr.breaks.v2</td>
+                        <td class="mono">p1</td><td class="mono">4402</td>
+                        <td class="num ok-t">0s</td>
+                        <td><div class="meter" style="width:110px"><span class="meter-t"><i class="ok" style="width:2%"></i><i class="wait" style="width:98%"></i></span></div></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="panel-ft">
+                  <svg class="i i-14"><use href="#i-source"></use></svg>
+                  Teams that cannot notify us are read from their own feed. We watermark offsets — we never poll the system of record.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rail-r">
+            <div class="panel accent-t fail">
+              <div class="panel-hd"><h2>ESC-19</h2><span class="hint push">selected</span></div>
+              <div class="panel-bd">
+                <dl class="kv">
+                  <dt>Instance</dt><dd class="mono">FOBO|2026-09-12|EMEA|R-2031</dd>
+                  <dt>Group unit</dt><dd class="mono">REV-ACC</dd>
+                  <dt>Kind</dt><dd><span class="pill warn">DELAY</span></dd>
+                  <dt>Named key</dt><dd class="mono fail-t">MOTIF MB014</dd>
+                  <dt>Dead letter</dt><dd class="mono">DL-4402</dd>
+                  <dt>Head sees</dt><dd>1 escalation, no payload</dd>
+                </dl>
+                <div class="hr"></div>
+                <div class="row">
+                  <button class="btn btn-2 btn-sm"><svg class="i i-14"><use href="#i-user"></use></svg>Request approver</button>
+                  <button class="btn btn-sm push">Add note</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel accent-t bo">
+              <div class="panel-hd"><h2>Dual control</h2></div>
+              <div class="panel-bd stack-sm">
+                <div class="banner bo">
+                  <svg class="i i-18"><use href="#i-shield"></use></svg>
+                  <div>
+                    <b>Maker recorded</b>
+                    <span class="mono-sm">ops.l2 · 19:38 · replay DL-4402</span>
+                  </div>
+                </div>
+                <p class="rule-note">Checker must be a different person in <span class="mono-sm">platform.support</span>. Both identities land on the audit record.</p>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-hd"><h2>Out of scope here</h2></div>
+              <div class="panel-bd stack-sm">
+                <p class="rule-note">No signing off a break.</p>
+                <p class="rule-note">No publishing or editing a kit.</p>
+                <p class="rule-note">No inventing a match rule.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
-    <div class="card" style="margin-top:10px">
-      <h3>Watermark — feed lag, not SoR poll</h3>
-      <table>
-        <tr><th>Source</th><th>Partition</th><th>Offset</th><th>Lag</th></tr>
-        <tr><td class="mono">MOTIF</td><td>p3</td><td class="mono">18442091</td><td>12s</td></tr>
-        <tr><td class="mono">CATS</td><td>p0</td><td class="mono">99211</td><td>4s</td></tr>
-        <tr><td class="mono">MBR</td><td>p1</td><td class="mono">4402</td><td>0s</td></tr>
-      </table>
-    </div>
   </div>
+</div>
+<script src="sprite.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
