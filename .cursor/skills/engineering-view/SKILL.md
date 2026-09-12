@@ -1,30 +1,31 @@
 ---
 name: engineering-view
-description: Use when adding product kits, contracts, feed adapters, command bindings, schema versions, or the engineering catalogue UI. Also use when a change would add if (FOBO) or a fobo-service module.
+description: Use when onboarding a group unit, adding outcome config screens, binding sources, or enabling a BA to publish a Wijmo view after a dataset exists. Also use when a change would add if (FOBO), a per-report React app, or a fobo-service module.
 ---
 
-# Engineering view
+# Config and onboarding
 
-Platform and integration work on **data and adapters**. The fold has no product names.
+Development + outcome-config enable **group units**. They do not perform COB sign-off.
 
-## What this view is for
+## Screens (maker-checker)
 
-- Product catalogue (kits as YAML)
-- Source bindings (PUSH / FEED / BOTH) and mapper version
-- Destination command targets (Helix, Axiom, FAS)
-- Maker-checker of kit diffs
-- Contract / envelope changes
+1. Onboard **group unit**
+2. Bind **source / destination**
+3. Register **outcome kit** (renderer + user actions: sign-off, post, open pack)
+4. Register **dataset** locator
+5. BA publishes **grid / pivot / chart** on that dataset — no new UI squad
 
 ## Hard rules
 
-- New business kind = `products/<id>/v1/product.yaml`. No new Java type.
-- New system = `adapters/<source>-feed/` + kit ingest row, or a command binding. Not a product module.
-- ArchUnit / review fails `if (productId == "FOBO")` and `import ...fobo`.
-- Colleague amounts and breaks do not appear on engineering screens.
+- New unit or outcome = data (`groupUnits/`, `products/<id>/`). No new Java type per unit.
+- New system = adapter + kit row. **REQUIRED:** `bind-source-destination`, `register-outcome-kit`.
+- Analysts compose Wijmo defs. Developers do not ship one React report per ask.
+- Fold still has no product names. ArchUnit fails `if (FOBO)`.
+- Config users do not see colleague amounts unless also entitled as users.
 
-## First FOBO kit systems (examples, not types)
+## SAP / Tableau analogue
 
-CATS, MOTIF, MBR/Rec Factory (sources). Helix/Rec Factory, FAS→MOTIF, P&L Agent (destinations).
-
-**REQUIRED SUB-SKILL:** `register-outcome-kit` when adding a product. `bind-source-destination` when adding a system.
+SAP-like: one shell, many units, master data = kits and bindings.  
+Tableau-like: BA authors views on a provided source.  
+Difference: views live **inside** One Finance UX and CEES, not a second estate.
 ---

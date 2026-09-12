@@ -1,29 +1,30 @@
 ---
 name: colleague-view
-description: Use when building screens for reconcilers, Revenue Accounting, Product Control, or reg reporting — Control Tower, rec cockpit, breaks, My Reports, inbox, Barclays Now. Not for kit YAML, dead letters, or adapter code.
+description: Use when building the outcome-user job — Helix FOBO sign-off or post, open a ready pack, inbox, Barclays Now. Not for BU-head boards, kit onboarding, dead letters, or BA pivot authoring.
 ---
 
-# Colleague view
+# Outcome user (colleague)
 
-The user answers **one entitled question** for this COB: Can I run this outcome? Not yet / Blocked / Ready / Cleared / Unlocked.
+Agents / engines **already ran**. The user opens the ready output and **signs off** or **posts**.
 
 ## Surfaces
 
-1. **Tower** — one card per entitled outcome (sample: CATS vs MOTIF Rates/FX/Credit, Rec Factory Cash).
-2. **Cockpit** — kit pipeline (FOBO sample: Ingest → Agent Analysis → Post to MOTIF → Notify P&L). Steps come from the kit.
-3. **Grid** — Wijmo of producer rows (Book, Amount, Pattern, Rec, Status).
-4. **Inbox / Now** — we notify; sources do not.
+1. **My outcomes** — entitled cards for this group unit (sample: CATS vs MOTIF recs).
+2. **Ready view** — Wijmo output + Sign off / Post (kit actions).
+3. **Blocked view** — named missing key only.
+4. **Inbox / Now** — we notified them that output is ready.
 
 ## Rules
 
-- Name the missing thing (BATCH-03, 20 Motif books, aged break). Never “in progress”.
-- Entitled emptiness: no card, not a greyed 15C3.
-- Agent Analysis text is advisory. It does not change readiness.
-- Post / Open stay disabled until Ready/Cleared **and** CEES + federated ACL allow.
-- Same chrome for every renderer. **REQUIRED:** `barclays-ib-console`.
+- User does not re-run Helix to discover status. Status is the fold.
+- Sign off / Post disabled until Ready/Cleared **and** CEES + federated ACL.
+- Pipeline steps come from the kit (FOBO sample: ingest → analysis → post MOTIF → notify P&L).
+- Agent text is advisory. Sign-off is the fact.
+- **REQUIRED:** `barclays-ib-console`. Grids: `wijmo-outcome-grid`.
 
 ## Do not
 
-- Show watermarks, dead letters, or kit diffs here
-- Fork a FOBO-only page tree
+- Head-level roll-ups on this page
+- Dataset / pivot designer (that is config + BA)
+- Dead letters or watermarks
 ---

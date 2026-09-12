@@ -9,16 +9,17 @@ A product is **YAML**. The tower, fold, SSE, and Wijmo host do not change.
 
 ## Kit fields
 
-`productId`, `domain`, `question`, `ingest[]`, `universe`, `sla`, `onReady`, `reports[]`, `cees`, `renderer`
+`groupUnitId`, `productId`, `domain`, `question`, `ingest[]`, `universe`, `sla`, `onReady`, `reports[]`, `cees`, `renderer`, `userActions` (sign-off / post / open / ack)
 
-`renderer`: `HELIX_RECON` | `ENGINE_REPORT` | `GRID_PACK` | `NOTIFY_MILESTONE`
+`renderer`: `HELIX_RECON` | `ENGINE_REPORT` | `GRID_PACK` | `NOTIFY_MILESTONE` | `ANALYST_VIEW`
 
 ## Add a product
 
-1. `products/<id>/v1/product.yaml` — no new Java type.
-2. Bind sources/destinations (skill `bind-source-destination`).
-3. Maker-checker publish.
-4. Colleague card appears only for CEES `product:<id>`.
+1. Group unit exists (`groupUnits/<id>.yaml`).
+2. `products/<id>/v1/product.yaml` — no new Java type.
+3. Bind sources/destinations (`bind-source-destination`).
+4. Optional dataset + Wijmo view (`wijmo-outcome-grid`).
+5. Maker-checker publish. User card appears for CEES `groupUnit` + `product`.
 
 ## FOBO first kit (copy shape, not code)
 

@@ -1,32 +1,41 @@
 ---
 name: wijmo-outcome-grid
-description: Use when showing FOBO/Helix breaks, Rec Factory rows, 15C3/IFRS packs, PnL grids, Excel-like templates, WisMO, or any colleague tabular report. Also use when tempted to build a custom HTML table or Recharts as the official viewer.
+description: Use when showing or authoring FlexGrid, Pivot, or FlexChart on an entitled dataset — Helix breaks, packs, group-unit analyst views. Also use when tempted to add Recharts, a custom table, or a per-report React page. Company has a Wijmo licence.
 ---
 
-# Wijmo outcome grid
+# Wijmo studio (grid, pivot, chart)
 
-Official packs and recon breaks render in **Wijmo (WisMO)**. One Finance fetches a locator; the producer owns the math.
+One Finance is the report surface. **Wijmo only.** BAs author when a dataset locator exists. Developers do not draw 1000 reports.
 
-## Bind
+## Widgets
 
-1. Outcome `READY`/`CLEARED`/`DONE` and `runId` current.
-2. CEES `report.view` on the catalog id.
-3. Federated producer ACL (Helix/Axiom URL). Deny → 404, not a locked grid.
-4. JSON/CSV from locator → FlexGrid (or bank WisMO wrapper).
+| Widget | Use |
+|---|---|
+| FlexGrid | Breaks, official packs, lists |
+| Pivot (OLAP) | Slice dimensions the dataset already has |
+| FlexChart | Same dataset, entitled |
 
-## FOBO sample columns
+A **view definition** stores: `datasetId`, widget, field map, filters, `report:{id}`, `groupUnitId`.
 
-`Book`, `Amount`, `Pattern`, `Rec`, `Status`. Do not invent columns the producer did not send.
+## Bind (user open)
 
-## Rules
+1. Dataset landed for current `runId` (or snapshot policy on the kit).
+2. CEES `report.view`.
+3. Federated producer ACL if the locator is Helix/Axiom. Deny → 404.
+4. Host renders the saved def. No extra route.
 
-- One host component for every renderer (`HELIX_RECON`, `ENGINE_REPORT`, `GRID_PACK`).
-- Export CSV is a command on the host, not a new app.
-- Mobile/Now never carries report bytes — deep link to desktop.
-- Advisory commentary sits **beside** the grid, not inside cells as facts.
+## Author (BA, after source provided)
+
+Config registers the dataset. BA picks widget + fields. Checker publishes. That is the Tableau-like step **inside** One Finance UX.
+
+## FOBO user grid
+
+Columns from producer: Book, Amount, Pattern, Rec, Status. Sign-off sits **beside** the grid, not inside cells.
 
 ## Do not
 
-- Recharts / home-grown table as the system of record view
-- Filter rows in the UI after the producer already entitled them
+- New chart library
+- Pivot on fields the dataset does not have
+- Authoring on the user’s sign-off page
+- Mobile report bytes — Now deep-links desktop
 ---

@@ -1,96 +1,147 @@
-# Three views, outcome kinds, and source/destination entities
+# Four jobs under One Finance UX
 
 **Status:** proposed  
-**Source of visual truth:** `FoboControlTower_V2.html` (FOBO Control Tower — Agent One)  
-**Not in scope:** extra gallery pages, magazine chrome, new Java modules named after FOBO
+**Source of visual truth:** `FoboControlTower_V2.html` (Barclays navy `#002D5F`, cyan `#00AEEF`)  
+**Umbrella:** One Finance UX. Group units onboard their own outcomes. We do not staff 1000 UI developers to draw reports.
 
-One Finance remains a **multi-product outcome platform**. The uploaded FOBO Helix screen is the **colleague application style** and the **first outcome kind** (Helix-style recon). It is not the whole product.
-
----
-
-## 1. Visual language (Barclays IB — copy the sample, do not invent)
-
-Light workstation by default (COB daytime). Navy chrome always.
-
-| Token | Value | Use |
-|---|---|---|
-| `--barcl-navy` | `#002D5F` | Header, primary buttons |
-| `--bg-header-deep` | `#001E45` | Header left / brand block |
-| `--clr-blue` | `#00AEEF` | Active, live, APAC, analysing |
-| `--bg-page` | `#EEF2F7` | Canvas |
-| `--bg-card-solid` | `#FFFFFF` | Cards / grids |
-| `--text-primary` | `#0D1B2E` | Body |
-| `--text-muted` | `#4E6880` | Meta, COB, region |
-| `--clr-green` | `#1A7A45` | Cleared / ready / posted |
-| `--clr-amber` | `#A05C08` | Awaiting desk / aged |
-| `--clr-red` | `#B02020` | Blocked / failed |
-| `--clr-purple` | `#4E3C9A` | MOTIF / BO / auto-post |
-| Font | Manrope or IBM Plex Sans | UI; IBM Plex Mono for ids, times, amounts |
-
-Pipeline in the sample (FOBO recon kind only): **Ingest (MBR / Rec Factory)** → **FOBO Agent Analysis** → **Post to MOTIF (FAS)** → **Notify P&L Agent (Book Unlocked)**.
-
-Other outcome kinds reuse the same chrome and swap the pipeline steps. Do not hard-code CATS/MOTIF into the shell.
+One Finance is the **SAP/Tableau-shaped uniqueness** for the bank: one entitled shell, one event fold, one Wijmo studio — many group units, many business outcomes.
 
 ---
 
-## 2. Three views — same platform, different jobs
+## 1. Four jobs (not three)
 
-| View | Who | Sees | Must never see |
+| Job | Who | What they do | What they do **not** do |
 |---|---|---|---|
-| **Colleague** | Reconcilers, Rev Acc, Product Control, reg reporting | Entitled outcomes, named blockers, Wijmo/report, approve/post when entitled | Dead-letter payloads, kit YAML, other products' cards |
-| **Engineering** | Platform + integration + outcome owners | Kits, contracts, feed watermarks, command bindings, schema versions | Colleague P&L numbers they are not entitled to |
-| **Run-the-bank support** | L2/L3, ops | Dead letters, lag, dual-control replay, correlation ids | Ability to change kit without checker; silent drop |
+| **Business-unit head** | MD / BU lead | Track **outcomes** for their group unit: Ready / Blocked / Delayed / Escalated. Counts and SLA. | Open a rec, post to MOTIF, edit kits, read dead-letter payloads |
+| **Outcome user** | Reconciler, PC, Rev Acc, reg reporter | Agents already ran (Helix FOBO, Axiom, …). User opens the **ready output**, **signs off** or **posts**. | Configure sources, author new pivots for the group, chase Kafka offsets |
+| **Run-the-bank support** | L2/L3 ops | **Delays** (lag, aged, SLA breach) and **escalations**. Replay with dual control. | Sign off a break, publish a kit, invent match rules |
+| **Config / onboarding** | Outcome-config + platform + BA | Onboard a **group unit**, bind sources, register outcomes, publish **Wijmo grid / pivot / chart** defs when a dataset exists | Perform the user’s COB sign-off; write a one-off React report |
 
-CEES still filters cards. Support tools are a **separate entitlement** (`platform.support`), not a hidden tab on the colleague tower.
-
----
-
-## 3. Outcome kinds (one kit, four renderers)
-
-An outcome is still the eight-field kit. The **renderer** is a kit field, not a Java `if`.
-
-| Kind | Sample / analogue | Colleague surface | On-ready |
-|---|---|---|---|
-| `HELIX_RECON` | CATS vs MOTIF Rates/FX/Credit/Equities, Rec Factory Cash/Collateral | Control Tower rec cards + book bars + break grid + post | COMMAND Helix / Rec Factory, then COMMAND FAS/MOTIF |
-| `ENGINE_REPORT` | 15C3, IFRS pack | Status + Open pack (Wijmo or Excel template) | COMMAND Axiom / engine |
-| `GRID_PACK` | PnL pack, close pack | My Reports gallery + Wijmo | NOTIFY_ONLY or COMMAND merge |
-| `NOTIFY_MILESTONE` | Book Unlocked → P&L Agent | Inbox / Now only | NOTIFY_ONLY |
-
-Advisory LLM (Agent Analysis in the sample) is **optional** on `HELIX_RECON`. It is never a readiness input.
+CEES scopes every job: `groupUnit:{id}`, `product:{id}`, `outcome:*`, `report:*`, `platform.support`, `platform.config`. Fail closed. Support and config are **not** tabs on the user’s rec.
 
 ---
 
-## 4. Entities that must exist (UI + adapters)
+## 2. Group unit (the SAP/Tableau tenant)
 
-Create these objects. Do not create a FOBO service.
+A **group unit** is the onboarding boundary (Revenue Accounting, Product Control, Markets Ops, …).
 
-| Entity | Lives | Purpose |
+| It owns | How |
+|---|---|
+| Set of business outcomes | Kits published into that unit |
+| Entitled people | CEES groups bound at `groupUnit` + product |
+| Dataset catalog | Locators the fold or a source already produced |
+| Wijmo workspace | FlexGrid, Pivot, FlexChart **definitions** (not new apps) |
+
+Onboard a new unit = register the unit + sources + kits + datasets. The shell does not fork. FOBO Helix is one outcome inside one unit, not the platform.
+
+Dimensions already in the platform (still generic): **group unit**, product, outcome instance, COB, region, slice, source, destination, renderer, entitlement.
+
+---
+
+## 3. Outcome user — sign-off / post (Helix FOBO shape)
+
+Pipeline is kit-defined. Sample FOBO: Ingest → Agent Analysis → **output ready** → user **signs off or posts to MOTIF (FAS)** → Notify P&L.
+
+Rules:
+
+- Agents / engines **run the job**. The user does not re-run Helix to “see if it worked”.
+- Sign-off and Post stay disabled until the instance is Ready/Cleared **and** CEES + federated ACL allow.
+- Named blocker if not ready. Never “in progress”.
+- Agent commentary is advisory. It is not a fact and not a substitute for sign-off.
+
+---
+
+## 4. Business-unit head — outcomes only
+
+One page per entitled group unit (or roll-up if they own several):
+
+- Outcome name + renderer + status word + SLA / delay flag + escalation count
+- No book grid, no Motif post button, no YAML
+
+Drill **stops** at “open the outcome” only if they also hold the user entitlement. Head role alone is traffic lights.
+
+---
+
+## 5. Run-the-bank — delays and escalations
+
+| Signal | Meaning |
+|---|---|
+| Delay | Feed lag, aged break, SLA miss, Helix/Axiom not complete for `runId` |
+| Escalation | Support or user raised; or auto from agedRuns / failed key |
+| Dead letter | Unmapped feed row — RFC 7807, dual-control replay |
+
+Not a colleague rec. Not a config studio.
+
+---
+
+## 6. Config / onboarding — enable the analyst, not a UI factory
+
+When a **data source is provided** (feed mapped or locator registered), a business analyst in that group unit composes:
+
+- **FlexGrid** — breaks, packs, lists (Helix FOBO columns, 15C3 lines)
+- **Pivot** — dimensions the dataset already has (book, region, product, COB, pattern)
+- **Chart** — Wijmo FlexChart on the same dataset
+
+These are **saved view definitions** (name, dataset id, widget type, field map, CEES `report:*`). They are not new React routes and not a second Tableau estate.
+
+Company **already has a Wijmo licence**. Use it. Do not add Recharts/Highcharts for official views. Do not hire a squad per report.
+
+Config screens (maker-checker):
+
+1. Onboard group unit  
+2. Bind source / destination  
+3. Register outcome kit (`renderer` + pipeline steps)  
+4. Register dataset locator  
+5. BA publishes grid / pivot / chart bound to that locator  
+
+Platform engineers still own adapters and the fold. BAs do not write Java.
+
+---
+
+## 7. Outcome kinds (unchanged renderers)
+
+| Kind | User action when ready | Head sees |
 |---|---|---|
-| Product kit | `products/<id>/v1/product.yaml` | Question, ingest, universe, SLA, on-ready, report, CEES |
-| Source binding | kit + `adapters/<source>-feed/` | How we **read** their existing feed (CATS, MOTIF, MBR, Rec Factory, SAP, Castle) |
-| Destination binding | kit + workflow | How we **command** Helix, Axiom, FAS/MOTIF post |
-| Outcome instance | hub snapshot | COB + region + slice (rec id / book set) |
-| Break / report row | producer JSON → Wijmo | Helix/MBR rows; we do not invent match rules |
-| Notification | after the fold | In-app, email, Now — we send, sources do not |
-| Dead letter | support store | Unmapped feed row; dual-control replay |
+| `HELIX_RECON` | Sign off / post (FOBO sample) | Recs cleared vs blocked vs delayed |
+| `ENGINE_REPORT` | Open pack, sign official | Pack ready / blocked |
+| `GRID_PACK` | Open Wijmo / export | Pack ready |
+| `NOTIFY_MILESTONE` | Ack inbox / Now | Milestone sent |
+| `ANALYST_VIEW` | Open saved grid/pivot/chart | Optional — only if published as an outcome |
 
-**FOBO sample systems (first HELIX_RECON kit):**
-
-- Sources: CATS (FO), MOTIF ledger (BO), MBR / Rec Factory (breaks).
-- Destinations: Helix / Rec Factory (analyse), FAS → MOTIF (post adjustment), P&L Agent (notify unlock).
+`ANALYST_VIEW` is a kit whose on-ready is NOTIFY (dataset landed). Same host as other Wijmo views.
 
 ---
 
-## 5. Skills (only these)
+## 8. Entities
+
+| Entity | Purpose |
+|---|---|
+| Group unit | Tenant for outcomes + Wijmo workspace |
+| Product kit | Question, ingest, universe, SLA, on-ready, reports, CEES, renderer, `groupUnitId` |
+| Source / destination binding | Read their feed; command Helix/Axiom/FAS |
+| Outcome instance | COB + region + slice |
+| Dataset | Entitled locator (Helix JSON, Axiom pack, mapped feed) |
+| Wijmo view def | Grid / pivot / chart on a dataset |
+| Escalation | Delay or human raise, visible to RTB and (count only) to the head |
+| Dead letter | Unmapped row |
+
+---
+
+## 9. Skills
 
 | Skill | Load when |
 |---|---|
 | `barclays-ib-console` | Any UI |
-| `colleague-view` | Colleague screens or copy |
-| `engineering-view` | Kits, contracts, adapters, fold |
-| `rtb-support-view` | Dead letters, replay, lag |
-| `bind-source-destination` | New or changed source/destination |
-| `wijmo-outcome-grid` | Breaks, packs, any grid/report |
-| `register-outcome-kit` | New product / outcome kind |
+| `bu-head-view` | Head / group-unit outcome board |
+| `colleague-view` | Sign-off / post user |
+| `rtb-support-view` | Delays, escalations, replay |
+| `engineering-view` | Config, onboarding, adapters |
+| `bind-source-destination` | New source or destination |
+| `wijmo-outcome-grid` | FlexGrid, Pivot, Chart, BA authoring |
+| `register-outcome-kit` | New outcome or group-unit kit |
 
 Master plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`.
+
+## 10. Visual tokens
+
+Unchanged: navy `#002D5F`, cyan `#00AEEF`, page `#EEF2F7`, card white, Manrope or IBM Plex. Copy Control Tower V2, not magazine chrome.

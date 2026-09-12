@@ -1,173 +1,141 @@
 # Outcome platform master plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Load the view/entity skill named on the task before writing code.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Load the skill named on the task before writing code.
 
-**Goal:** Ship One Finance as a multi-product outcome control plane whose colleague UI matches `FoboControlTower_V2.html` (Barclays navy + cyan), with separate engineering and run-the-bank support surfaces.
+**Goal:** One Finance UX is the umbrella: group units onboard outcomes; agents run the job; users sign off or post; heads see status only; support sees delays/escalations; BAs publish Wijmo grid/pivot/chart when a source exists.
 
-**Architecture:** One product kit, four renderers (`HELIX_RECON`, `ENGINE_REPORT`, `GRID_PACK`, `NOTIFY_MILESTONE`). Systems stay SoRs. We read existing feeds, fold readiness, command destinations, then notify. No `if (product == FOBO)` in Java or React.
+**Architecture:** Group unit + product kit + four user jobs. Renderers: `HELIX_RECON`, `ENGINE_REPORT`, `GRID_PACK`, `NOTIFY_MILESTONE`, `ANALYST_VIEW`. SoRs stay SoRs. No `if (FOBO)`. No per-report React apps.
 
-**Tech Stack:** Java 21 / Spring Boot (existing hub), generic CloudEvents envelope, Spring SSE to browsers, Wijmo (WisMO) for grids, CEES entitlements, YAML kits under `products/`.
+**Tech Stack:** Java 21 hub, CloudEvents envelope, SSE to browsers, **licensed Wijmo** (FlexGrid, Pivot, FlexChart), CEES, YAML under `groupUnits/` and `products/`.
 
 ## Global Constraints
 
-- Visual tokens from `FoboControlTower_V2.html`: navy `#002D5F`, cyan `#00AEEF`, page `#EEF2F7`, Manrope or IBM Plex. **REQUIRED:** `barclays-ib-console`.
-- FOBO is the first `HELIX_RECON` kit, not the application name.
-- Events are facts. Readiness is distinct keys. FAILED blocks. REVOKED withdraws. Downstream completions echo `runId`.
-- LLM / Agent Analysis is advisory only — never in the fold.
-- Feed-first: teams that cannot notify us — we subscribe to their topic.
-- Wijmo is the only colleague grid. Do not add Recharts as the break viewer.
-- Do not add gallery/magazine pages. Do not add a fourth view.
+- Visual: Control Tower V2 — navy `#002D5F`, cyan `#00AEEF`. **REQUIRED:** `barclays-ib-console`.
+- Four jobs only: head, outcome user, RTB, config/onboarding.
+- Agents run; users sign off / post. Heads do not post.
+- Wijmo is the only grid/pivot/chart. Company licence. No Recharts for official views.
+- BA authors a **view definition** after a dataset is registered — not a new UI project.
+- Feed-first ingest. LLM never in the fold.
+- Do not add manifesto/gallery screens.
 
 ---
 
-## Skill map by expected business outcome
+## Skill map
 
-Load **only** the skills for the outcome you are building.
-
-| You are asked to… | Outcome kind | Skills |
-|---|---|---|
-| CATS↔MOTIF / Helix FOBO rec, books, aged breaks, post to MOTIF, unlock P&L | `HELIX_RECON` | `barclays-ib-console`, `colleague-view`, `register-outcome-kit`, `bind-source-destination`, `wijmo-outcome-grid` |
-| 15C3 / IFRS official pack | `ENGINE_REPORT` | `barclays-ib-console`, `colleague-view`, `register-outcome-kit`, `bind-source-destination`, `wijmo-outcome-grid` |
-| PnL / close pack as entitled grid | `GRID_PACK` | `barclays-ib-console`, `colleague-view`, `register-outcome-kit`, `wijmo-outcome-grid` |
-| Book Unlocked / milestone only | `NOTIFY_MILESTONE` | `colleague-view`, `register-outcome-kit` |
-| Add Motif/SAP/CATS/Castle feed or Helix/Axiom/FAS command | (any) | `engineering-view`, `bind-source-destination` |
-| Unmapped row, lag, replay | (any) | `rtb-support-view`, `engineering-view` |
-| New product with no new Java type | (any) | `register-outcome-kit`, `engineering-view` |
+| Ask | Skills |
+|---|---|
+| Head board for a group unit | `barclays-ib-console`, `bu-head-view` |
+| Helix FOBO sign-off / post | `colleague-view`, `wijmo-outcome-grid`, `register-outcome-kit`, `bind-source-destination` |
+| 15C3 / IFRS open pack | `colleague-view`, `wijmo-outcome-grid`, `register-outcome-kit` |
+| Delays / escalations | `rtb-support-view` |
+| Onboard a group unit + outcomes | `engineering-view`, `register-outcome-kit` |
+| New CATS/MOTIF/SAP/Helix/FAS binding | `bind-source-destination`, `engineering-view` |
+| BA grid / pivot / chart on a dataset | `wijmo-outcome-grid`, `engineering-view` |
 
 ---
 
-## File map (do not invent extra trees)
+## File map
 
 | Path | Responsibility |
 |---|---|
-| `products/_kit.schema.json` | Eight kit fields + `renderer` |
-| `products/fobo/v1/product.yaml` | First HELIX_RECON (CATS/MOTIF/Helix/FAS) |
-| `products/reg-15c3/v1/product.yaml` | ENGINE_REPORT |
-| `products/pnl/v1/product.yaml` | GRID_PACK or NOTIFY_MILESTONE |
-| `contracts/json-schema/generic-business-event.schema.json` | Envelope (exists) |
-| `adapters/<source>-feed/` | Consume their topic |
-| `platform/modules/hub` (today `onefinux-hub`) | Fold — product-agnostic |
-| `experience/web/` | Three apps/routes: colleague, engineering, support |
-| `.cursor/skills/*/SKILL.md` | Agent playbooks (this change) |
+| `groupUnits/<id>.yaml` | Tenant: name, CEES, default region |
+| `products/_kit.schema.json` | Kit + `groupUnitId` + `userActions` + `renderer` |
+| `products/fobo/v1/product.yaml` | First HELIX_RECON |
+| `experience/web/` | Four route trees: head, user, support, config |
+| `adapters/<source>-feed/` | Their existing feed |
+| `onefinux-hub` | Fold — no product types |
 
 ---
 
-### Task 1: Kit schema + FOBO recon YAML
+### Task 1: Group unit + kit schema + FOBO YAML
 
 **Skills:** `register-outcome-kit`, `engineering-view`
 
-**Files:**
-- Create: `products/_kit.schema.json`
-- Create: `products/fobo/v1/product.yaml`
-
-**Produces:** A kit the hub can load as data. `renderer: HELIX_RECON`. Sources `CATS` (FEED), `MOTIF` (FEED), `MBR` (FEED). Destinations `HELIX` or `REC_FACTORY` (COMMAND), `FAS_MOTIF` (COMMAND), `PNL_AGENT` (NOTIFY).
-
-- [ ] **Step 1:** Add `_kit.schema.json` with fields: `productId`, `domain`, `question`, `ingest[]`, `universe`, `sla`, `onReady`, `reports[]`, `cees`, `renderer`.
-- [ ] **Step 2:** Add `products/fobo/v1/product.yaml` mapped from the sample recs (`R-1042` Rates, `R-1061` FX, `R-2031` Credit, Rec Factory Cash/Collateral) as **examples**, not as Java enums.
-- [ ] **Step 3:** Hub loads kits from `products/**/product.yaml` with no FOBO type.
-- [ ] **Step 4:** Commit `feat: register FOBO as HELIX_RECON kit data`
+- [ ] **Step 1:** `groupUnits/rev-acc.yaml` (example).
+- [ ] **Step 2:** Kit schema includes `groupUnitId`, `userActions`, `renderer`.
+- [ ] **Step 3:** `products/fobo/v1/product.yaml` — userActions sign-off + post; sources CATS/MOTIF/MBR; dest Helix + FAS.
+- [ ] **Step 4:** Hub loads YAML with no FOBO Java type.
+- [ ] **Step 5:** Commit `feat: group unit and FOBO kit as data`
 
 ---
 
-### Task 2: Colleague Control Tower (style of FoboControlTower_V2)
+### Task 2: Outcome-user sign-off / post (V2 style)
 
 **Skills:** `barclays-ib-console`, `colleague-view`
 
-**Files:**
-- Create: `experience/web/` colleague routes (or restyle existing hub static only if experience/ is not started — prefer `experience/web`)
-- Do not expand `docs/design/dreamliner/`
-
-**Produces:** One entitled tower: rec cards, region chips (APAC/EMEA/AMER), book bars (auto / cleared / awaiting / blocked / not-open), pipeline stepper that **reads from the kit**, not hardcoded “Post to MOTIF” unless the kit says so.
-
-- [ ] **Step 1:** Apply Barclays tokens; header shows product name + COB + region + env.
-- [ ] **Step 2:** Card question comes from kit (`Can I execute this rec?`). Status words: Not yet / Blocked / Ready / Cleared / Unlocked.
-- [ ] **Step 3:** IFRS/LCR absent if not entitled — no grey ghost cards.
-- [ ] **Step 4:** Commit `feat: colleague tower using Barclays IB chrome`
+- [ ] **Step 1:** User tower: entitled outcomes for their unit.
+- [ ] **Step 2:** Ready view: output + Sign off / Post from kit. Disabled until fold Ready.
+- [ ] **Step 3:** Blocked: named key only.
+- [ ] **Step 4:** Commit `feat: outcome user sign-off and post`
 
 ---
 
-### Task 3: Wijmo break / pack grid
+### Task 3: Wijmo host — grid, pivot, chart
 
-**Skills:** `wijmo-outcome-grid`, `colleague-view`
+**Skills:** `wijmo-outcome-grid`
 
-**Files:**
-- Create: `experience/web` Wijmo host component
-- Modify: report locator fetch in hub/reports
-
-**Produces:** Breaks table columns from producer JSON (sample: Book, Amount, Pattern, Rec, Status). Open disabled until outcome Done **and** federated ACL allow. No home-grown spreadsheet.
-
-- [ ] **Step 1:** Bind Wijmo FlexGrid to Helix/MBR JSON after CEES + producer ACL.
-- [ ] **Step 2:** Export CSV is a button, not a second product.
-- [ ] **Step 3:** Commit `feat: Wijmo host for recon breaks and packs`
+- [ ] **Step 1:** One host: FlexGrid | Pivot | FlexChart from a view definition.
+- [ ] **Step 2:** FOBO breaks bind as FlexGrid (Book, Amount, Pattern, Rec, Status).
+- [ ] **Step 3:** Config: BA saves a def against a registered dataset; checker publishes.
+- [ ] **Step 4:** Commit `feat: licensed Wijmo host and BA view defs`
 
 ---
 
-### Task 4: Source and destination adapters for FOBO path
+### Task 4: Source / destination adapters (FOBO path)
 
-**Skills:** `bind-source-destination`, `engineering-view`
+**Skills:** `bind-source-destination`
 
-**Files:**
-- Create: `adapters/cats-feed/`, `adapters/motif-feed/`, `adapters/mbr-feed/` (or one `adapters/recon-feeds/` with three mappers)
-- Modify: workflow command publisher for Helix + FAS
-
-**Produces:** FEED readers watermark their topics. Mapper emits `onefinux.fact.v1`. Commands use `onefinux.command.v1` with `runId`. Completions echo `runId`.
-
-- [ ] **Step 1:** Mapper table: CATS trade/cash → fact; MOTIF ledger → fact; MBR/RecFactory break file → fact.
-- [ ] **Step 2:** Destinations: Helix analyse; FAS post; P&L notify. No SoR polling.
-- [ ] **Step 3:** Commit `feat: CATS/MOTIF/MBR feeds and Helix/FAS commands`
+- [ ] **Step 1:** FEED mappers for CATS, MOTIF, MBR → `onefinux.fact.v1`.
+- [ ] **Step 2:** Commands Helix + FAS; completion echoes `runId`.
+- [ ] **Step 3:** Commit `feat: FOBO path feeds and commands`
 
 ---
 
-### Task 5: Engineering view
+### Task 5: Config / onboarding screens
 
-**Skills:** `engineering-view`, `register-outcome-kit`
+**Skills:** `engineering-view`
 
-**Files:**
-- Create: `experience/web` engineering routes (catalogue, kit editor, binding list)
-
-**Produces:** List kits, ingest mode per source (PUSH/FEED/BOTH), schema version, command target. Submit for checker. No colleague break amounts on this view.
-
-- [ ] **Step 1:** Read-only catalogue first.
-- [ ] **Step 2:** Draft kit + checker (already specified).
-- [ ] **Step 3:** Commit `feat: engineering catalogue for kits and bindings`
+- [ ] **Step 1:** Onboard group unit, bind source, register kit, register dataset.
+- [ ] **Step 2:** BA view publisher (grid/pivot/chart). Maker-checker.
+- [ ] **Step 3:** Commit `feat: group-unit onboarding and BA views`
 
 ---
 
-### Task 6: Run-the-bank support view
+### Task 6: BU head board
+
+**Skills:** `bu-head-view`
+
+- [ ] **Step 1:** Outcome list + status + SLA + escalation counts for the unit.
+- [ ] **Step 2:** No post, no grid. Drill only if also a user.
+- [ ] **Step 3:** Commit `feat: group-unit head outcome board`
+
+---
+
+### Task 7: RTB delays and escalations
 
 **Skills:** `rtb-support-view`
 
-**Files:**
-- Create: `experience/web` support routes
-- Modify: hub dead-letter store
-
-**Produces:** Unmapped rows (id, feed, offset, RFC 7807 why). Dual-control replay from watermark. Lag per feed. Entitlement `platform.support`.
-
-- [ ] **Step 1:** Dead-letter table + hold/reject.
-- [ ] **Step 2:** Replay requires second approver.
-- [ ] **Step 3:** Commit `feat: RTB support dead letters and replay`
+- [ ] **Step 1:** Delay queue + escalation queue + dead letters.
+- [ ] **Step 2:** Dual-control replay.
+- [ ] **Step 3:** Commit `feat: RTB delays and escalations`
 
 ---
 
-### Task 7: Second product without new Java
+### Task 8: Second unit or product without new Java
 
 **Skills:** `register-outcome-kit`
 
-**Files:**
-- Create: `products/mec/v1/product.yaml` or `products/reg-15c3/v1/product.yaml`
-
-**Produces:** Tower shows a second card from YAML only. If a developer adds `if (MEC)` the task has failed.
-
-- [ ] **Step 1:** Add kit. Restart hub. Colleague sees new card when entitled.
-- [ ] **Step 2:** Commit `feat: second product kit with no fold change`
+- [ ] **Step 1:** Add `products/reg-15c3` or a second `groupUnits/` + kit.
+- [ ] **Step 2:** Head and user see it only if entitled. No `if (15C3)` in code.
+- [ ] **Step 3:** Commit `feat: second kit with no fold change`
 
 ---
 
 ## What we will not build
 
-- Extra Dreamliner manifesto/gallery screens
-- A FOBO Java module or FOBO-only React app name as the platform
+- A FOBO application or FOBO Maven module
+- One React report per analyst request
+- A second Tableau/SAP BI estate
 - Kafka in the browser
-- LLM inside readiness
-- New chart library beside Wijmo for official packs
-- Per-product skill files (`fobo-skill`, `15c3-skill`) — use the kind map above
+- LLM on the readiness path
+- Per-product skills
