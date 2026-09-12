@@ -1,6 +1,7 @@
 /**
  * One Finance UX theme — copy this file.
- * Glass console: deep navy canvas, frosted panels, cyan glow.
+ * Glass console: frosted panels, cyan glow. Dark navy is default; light is a peer.
+ * Host sets html[data-theme="dark"|"light"] and passes theme= on the iframe query.
  *
  *   <link rel="stylesheet" href="https://<one-fin-ux-host>/theme/onefinux-tokens.css">
  *   <body class="ofx-app" data-ofx-embedded="1">
@@ -64,6 +65,55 @@
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
+
+html[data-theme="light"] {
+  --ofx-navy: #002d5f;
+  --ofx-navy-700: #002247;
+  --ofx-navy-800: #e8eef6;
+  --ofx-navy-900: #dce6f2;
+  --ofx-cyan: #0090c6;
+  --ofx-cyan-600: #00aeef;
+
+  --ofx-ink: #0b1a2e;
+  --ofx-ink-2: #24384d;
+  --ofx-ink-3: #5b7288;
+  --ofx-ink-4: #7d93a8;
+  --ofx-card: rgba(255, 255, 255, .68);
+  --ofx-surface-2: rgba(255, 255, 255, .88);
+  --ofx-surface-3: rgba(255, 255, 255, .55);
+  --ofx-page: #e8eef6;
+  --ofx-line: rgba(0, 45, 95, .1);
+  --ofx-line-2: rgba(0, 45, 95, .16);
+
+  --ofx-ok: #0e7c4a;
+  --ofx-ok-bg: rgba(14, 124, 74, .1);
+  --ofx-ok-line: rgba(14, 124, 74, .28);
+  --ofx-warn: #9a5b06;
+  --ofx-warn-bg: rgba(154, 91, 6, .1);
+  --ofx-warn-line: rgba(154, 91, 6, .28);
+  --ofx-fail: #b3221f;
+  --ofx-fail-bg: rgba(179, 34, 31, .1);
+  --ofx-fail-line: rgba(179, 34, 31, .28);
+  --ofx-info: #0a6a92;
+  --ofx-info-bg: rgba(0, 174, 239, .1);
+  --ofx-info-line: rgba(0, 144, 198, .28);
+  --ofx-bo: #4e3c9a;
+  --ofx-bo-bg: rgba(78, 60, 154, .1);
+  --ofx-bo-line: rgba(78, 60, 154, .28);
+
+  --ofx-sh-1: 0 8px 28px rgba(15, 40, 70, .08);
+  --ofx-sh-2: 0 16px 48px rgba(15, 40, 70, .12);
+}
+
+html[data-theme="light"] .ofx-app {
+  background:
+    radial-gradient(900px 520px at 8% -8%, rgba(0, 174, 239, .16), transparent 58%),
+    radial-gradient(720px 480px at 96% 0%, rgba(124, 92, 255, .1), transparent 55%),
+    #e8eef6;
+}
+html[data-theme="light"] .ofx-card-hd,
+html[data-theme="light"] .ofx-btn-2 { color: var(--ofx-ink); }
+html[data-theme="light"] .ofx-tbl thead th { background: rgba(255, 255, 255, .9); }
 
 .ofx-app[data-ofx-embedded="1"] { background: transparent; }
 .ofx-app[data-ofx-embedded="1"] .ofx-masthead { display: none !important; }

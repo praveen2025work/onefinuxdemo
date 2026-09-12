@@ -32,7 +32,9 @@
     dots: '<circle cx="5" cy="10" r="1.2"/><circle cx="10" cy="10" r="1.2"/><circle cx="15" cy="10" r="1.2"/>',
     grid: '<rect x="3" y="4.5" width="14" height="11" rx="1.2"/><path d="M3 8.2h14M3 11.9h14M8 4.5v11M12.5 4.5v11"/>',
     signoff: '<path d="M4 14.5c2-3.6 3.4 1.2 5-1.6s2.6-6 3.4-6.4"/><path d="M13 16.5h3.5"/><path d="M13.6 6.6 15 5.2l1.6 1.6-1.4 1.4"/>',
-    inbox: '<path d="M3 11.5 5.3 4.5h9.4L17 11.5v3A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-3Z"/><path d="M3 11.5h4l.8 1.8h4.4l.8-1.8h4"/>'
+    inbox: '<path d="M3 11.5 5.3 4.5h9.4L17 11.5v3A1.5 1.5 0 0 1 15.5 16h-11A1.5 1.5 0 0 1 3 14.5v-3Z"/><path d="M3 11.5h4l.8 1.8h4.4l.8-1.8h4"/>',
+    sun: '<circle cx="10" cy="10" r="3.2"/><path d="M10 3v1.6M10 15.4V17M3 10h1.6M15.4 10H17M5.2 5.2l1.1 1.1M13.7 13.7l1.1 1.1M14.8 5.2l-1.1 1.1M6.3 13.7l-1.1 1.1"/>',
+    moon: '<path d="M13.6 12.8A5.4 5.4 0 0 1 8 5.2 5.6 5.6 0 1 0 13.6 12.8Z"/>'
   };
   var out = '<svg class="sprite" aria-hidden="true">';
   for (var k in icons) {

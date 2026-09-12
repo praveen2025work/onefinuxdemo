@@ -6,6 +6,36 @@
   }
 
   ready(function () {
+    // Theme toggle — shared across every mockup topbar
+    var bar = document.querySelector('.topbar');
+    if (bar && !bar.querySelector('[data-theme-toggle]')) {
+      var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      var btn = document.createElement('button');
+      btn.className = 'tb-btn';
+      btn.setAttribute('data-theme-toggle', '');
+      btn.setAttribute('type', 'button');
+      btn.title = 'Switch theme';
+      function paint(t) {
+        btn.innerHTML = t === 'light'
+          ? '<svg class="i i-14"><use href="#i-moon"></use></svg>Dark'
+          : '<svg class="i i-14"><use href="#i-sun"></use></svg>Light';
+        btn.setAttribute('aria-label', t === 'light' ? 'Switch to dark theme' : 'Switch to light theme');
+      }
+      paint(cur);
+      btn.addEventListener('click', function () {
+        var next = (document.documentElement.getAttribute('data-theme') === 'light') ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', next);
+        document.documentElement.style.colorScheme = next;
+        try { localStorage.setItem('ofx-theme', next); } catch (e) {}
+        var url = new URL(location.href);
+        url.searchParams.set('theme', next);
+        history.replaceState({}, '', url);
+        paint(next);
+      });
+      var env = bar.querySelector('.env');
+      if (env) { bar.insertBefore(btn, env); } else { bar.appendChild(btn); }
+    }
+
     // Tabs: [role=tablist] > .tab[aria-controls] toggles .tabpane
     document.querySelectorAll('[role="tablist"]').forEach(function (list) {
       list.addEventListener('click', function (e) {

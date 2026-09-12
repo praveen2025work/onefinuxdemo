@@ -5,7 +5,7 @@ description: Use when building One Finance chrome or when another team must copy
 
 # Barclays IB console
 
-One Finance UX is a **full-viewport glass console**: deep navy canvas, frosted panels, cyan glow, pill actions. Never a magazine, never a flat 2016 admin theme.
+One Finance UX is a **full-viewport glass console**: frosted panels, cyan glow, pill actions. Dark navy is the default canvas; light glass (`data-theme="light"`) is a first-class peer. Never a magazine, never a flat 2016 admin theme.
 
 ## Reference implementation — read before writing CSS
 
@@ -22,16 +22,14 @@ Build new screens by composing existing classes. If a screen needs a primitive t
 
 | Token | Value | Use |
 |---|---|---|
-| navy | `#002D5F` | Rail, primary action, table lead |
-| navy deep | `#001B3A` / `#00132B` | Context ribbon, code blocks |
-| cyan | `#00AEEF` | Accent, active tab, focus, live |
-| page | `#E9EEF5` | Canvas behind panels |
-| card | `#FFFFFF` | Panels |
-| ink | `#0B1A2E` · muted `#5B7288` | Text |
-| ok | `#0E7C4A` | READY, COMPLETED, CLEARED |
-| warn | `#9A5B06` | WAITING, at risk, HOLD |
-| fail | `#B3221F` | BLOCKED, FAILED |
-| back office | `#4E3C9A` | Maker-checker, automation |
+| navy canvas | `#06101C` dark · `#E8EEF6` light | Ambient page |
+| glass | dark `rgba(14,32,58,.55)` · light white frost + blur 22px | Panels, cards |
+| cyan | `#3DD6FF` dark · `#0090C6` light | Glow, active, primary |
+| ink | `#F3F7FC` dark · `#0B1A2E` light | Text on glass |
+| ok | `#3EE0A0` | READY, COMPLETED, CLEARED |
+| warn | `#FFC46B` | WAITING, at risk, HOLD |
+| fail | `#FF7B74` | BLOCKED, FAILED |
+| back office | `#C4B4FF` | Maker-checker |
 
 Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Self-hosted in `docs/design/dreamliner/fonts/` — do not add a Google Fonts link. Numerics are `tabular-nums`.
 
@@ -46,7 +44,9 @@ Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Self-hosted i
 
 ## Other teams
 
-Serve `experience/theme/onefinux-tokens.css` as `/theme/onefinux-tokens.css`. Partners import it, use `--ofx-*` only, set `data-ofx-embedded="1"`, and **omit** their own masthead. **REQUIRED:** `embed-partner-screen` for the host contract.
+Serve `experience/theme/onefinux-tokens.css` as `/theme/onefinux-tokens.css`. Partners import it, use `--ofx-*` only, set `data-ofx-embedded="1"`, and **omit** their own masthead. Host chrome sets `html[data-theme=dark|light]` and passes `theme=` on the iframe query. **REQUIRED:** `embed-partner-screen` for the host contract.
+
+Theme is persisted in `localStorage['ofx-theme']`. A review link can force it: `index.html?theme=light`. Default is dark.
 
 ## Common mistakes
 
