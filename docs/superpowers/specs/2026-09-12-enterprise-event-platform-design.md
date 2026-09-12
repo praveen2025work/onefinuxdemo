@@ -3,7 +3,8 @@
 **Status:** proposed  
 **Date:** 2026-09-12  
 **Audience:** Revenue Accounting, Product Control, Regulatory Reporting, enterprise architecture, and platform engineering  
-**Based on:** the current POC in this repository (`onefinux-hub`, `source-simulator`, `contracts/business-event.schema.json`) and the production sketch already in `README.md`
+**Based on:** the current POC in this repository (`onefinux-hub`, `source-simulator`, `contracts/business-event.schema.json`) and the production sketch already in `README.md`  
+**Flagship visuals & transport:** `docs/superpowers/specs/2026-09-12-flagship-architecture-and-experience.md` and `docs/design/dreamliner/`
 
 ---
 

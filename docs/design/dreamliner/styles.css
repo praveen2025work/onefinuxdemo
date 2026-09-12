@@ -1,0 +1,122 @@
+:root {
+  --ink: #0B1220;
+  --ink-2: #1A2436;
+  --paper: #F4F1EA;
+  --paper-2: #E8E4DA;
+  --line: #D4CFC4;
+  --muted: #5C6573;
+  --gold: #B8892D;
+  --gold-soft: #E8D5A3;
+  --ready: #1F7A58;
+  --ready-soft: #D7EDE4;
+  --progress: #1E4F8A;
+  --progress-soft: #D6E4F5;
+  --blocked: #B42318;
+  --blocked-soft: #F8D7D4;
+  --risk: #8A5A10;
+  --idle: #8B93A1;
+  --serif: "Newsreader", "Iowan Old Style", Georgia, serif;
+  --sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --shadow: 0 18px 50px rgba(11, 18, 32, 0.08);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.5 var(--sans); }
+a { color: inherit; }
+button, input { font: inherit; }
+:focus-visible { outline: 3px solid #6FA8DC; outline-offset: 2px; }
+
+.app-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 36px; border-bottom: 1px solid var(--line);
+  background: rgba(244, 241, 234, 0.92); backdrop-filter: blur(10px);
+  position: sticky; top: 0; z-index: 10;
+}
+.brand { display: flex; align-items: baseline; gap: 14px; text-decoration: none; }
+.brand b { font-family: var(--serif); font-size: 22px; font-weight: 560; letter-spacing: -0.02em; }
+.brand span { color: var(--muted); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; }
+.nav { display: flex; gap: 22px; font-size: 14px; }
+.nav a { text-decoration: none; color: var(--muted); }
+.nav a.on, .nav a:hover { color: var(--ink); }
+.who { font-size: 13px; color: var(--muted); }
+
+.page { max-width: 1280px; margin: 0 auto; padding: 36px 36px 80px; }
+.kicker { font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin: 0 0 8px; }
+h1 { font-family: var(--serif); font-weight: 500; font-size: 52px; line-height: 1.05; letter-spacing: -0.03em; margin: 0 0 12px; }
+.lead { max-width: 68ch; color: var(--muted); font-size: 18px; }
+
+.grid { display: grid; gap: 20px; }
+.g3 { grid-template-columns: repeat(3, 1fr); }
+.g2 { grid-template-columns: 1.4fr 1fr; }
+@media (max-width: 980px) { .g3, .g2 { grid-template-columns: 1fr; } .page, .app-bar { padding-left: 18px; padding-right: 18px; } h1 { font-size: 36px; } }
+
+.instrument {
+  background: #fff; border-radius: 4px; box-shadow: var(--shadow);
+  padding: 28px 28px 24px; border-top: 4px solid var(--idle); min-height: 280px;
+  display: flex; flex-direction: column; text-decoration: none; color: inherit;
+}
+.instrument.progress { border-top-color: var(--progress); }
+.instrument.ready { border-top-color: var(--ready); }
+.instrument.blocked { border-top-color: var(--blocked); }
+.instrument.done { border-top-color: var(--gold); }
+.q { margin: 0; color: var(--muted); font-size: 15px; }
+.a { font-family: var(--serif); font-size: 42px; line-height: 1; margin: 8px 0 10px; letter-spacing: -0.03em; }
+.progress .a { color: var(--progress); }
+.ready .a, .done .a { color: var(--ready); }
+.blocked .a { color: var(--blocked); }
+.meta { display: flex; gap: 18px; flex-wrap: wrap; margin: 10px 0 0; padding: 0; }
+.meta div { display: flex; flex-direction: column; }
+.meta dt { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.meta dd { margin: 0; font-weight: 550; }
+.meter { height: 8px; background: var(--paper-2); border-radius: 99px; overflow: hidden; margin-top: auto; }
+.meter > i { display: block; height: 100%; background: currentColor; }
+.progress .meter { color: var(--progress); }
+.ready .meter, .done .meter { color: var(--ready); }
+.blocked .meter { color: var(--blocked); }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--gold); }
+
+.panel { background: #fff; border-radius: 4px; box-shadow: var(--shadow); padding: 24px; }
+.panel h2 { font-family: var(--serif); font-weight: 500; font-size: 26px; margin: 0 0 12px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 8px 0; border-bottom: 1px solid var(--line); }
+td { padding: 10px 0; border-bottom: 1px solid var(--paper-2); vertical-align: top; }
+code, .mono { font-family: var(--mono); font-size: 12.5px; }
+
+.btn { appearance: none; border: 1px solid var(--ink); background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 3px; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); }
+.btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.books { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; }
+.books b { aspect-ratio: 1; background: var(--progress-soft); border-radius: 2px; }
+.books b.off { background: var(--paper-2); }
+.books b.bad { background: var(--blocked-soft); box-shadow: inset 0 0 0 1px var(--blocked); }
+
+.hero-dark { background: var(--ink); color: #F4F1EA; padding: 72px 36px 80px; }
+.hero-dark .kicker { color: var(--gold-soft); }
+.hero-dark .lead { color: #C5CBD4; }
+.hero-dark a { color: var(--gold-soft); }
+
+pre.json {
+  background: #0B1220; color: #E8E4DA; padding: 20px; border-radius: 4px;
+  overflow: auto; font-family: var(--mono); font-size: 12px; line-height: 1.55;
+}
+.key { color: #E8D5A3; }
+.str { color: #9CD1B5; }
+.note { color: #8B93A1; }
+
+.principles { columns: 2; gap: 28px; }
+.principles p { break-inside: avoid; margin: 0 0 18px; }
+.principles strong { display: block; font-family: var(--serif); font-size: 20px; font-weight: 500; margin-bottom: 4px; }
+@media (max-width: 800px) { .principles { columns: 1; } }
+
+.now {
+  width: 320px; background: #111827; color: #F8FAFC; border-radius: 28px; padding: 18px;
+  box-shadow: var(--shadow); margin: 20px 0;
+}
+.now header { display: flex; justify-content: space-between; font-size: 11px; color: #94A3B8; }
+.now h3 { font-family: var(--serif); font-weight: 500; margin: 16px 0 6px; }
+.now p { margin: 0 0 16px; color: #CBD5E1; font-size: 14px; }

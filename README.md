@@ -146,7 +146,7 @@ mvn test
 
 ## From POC to production (summary; details in the BRD)
 
-The target enterprise architecture — event bus, outcome registry / Admin, FOBO and regulatory-report readiness rules, entitlements, the unified WisMO / template report viewer, advisory LLM, and Barclays Now tasks — is specified in [`docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md`](docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md). The generic cross-system envelope is `contracts/generic-business-event.schema.json`.
+The target enterprise architecture — event bus, outcome registry / Admin, FOBO and regulatory-report readiness rules, entitlements, the unified WisMO / template report viewer, advisory LLM, and Barclays Now tasks — is specified in [`docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md`](docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md). Flagship architecture, transport choice (SSE vs Kafka vs AWS), screen inventory, and engineering principles: [`docs/superpowers/specs/2026-09-12-flagship-architecture-and-experience.md`](docs/superpowers/specs/2026-09-12-flagship-architecture-and-experience.md). Visuals: [`docs/design/dreamliner/index.html`](docs/design/dreamliner/index.html). Envelope: `contracts/generic-business-event.schema.json`.
 
 | POC | Production |
 |---|---|

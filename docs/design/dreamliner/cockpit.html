@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FOBO cockpit — One Finance UX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,560&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-bar">
+    <a class="brand" href="index.html"><b>One Finance UX</b><span>Dreamliner</span></a>
+    <nav class="nav">
+      <a href="index.html">Manifesto</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="tower.html">Control Tower</a>
+      <a class="on" href="cockpit.html">FOBO cockpit</a>
+      <a href="reports.html">Reports</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+    <div class="who">REC-EQ-EMEA · GLOBAL</div>
+  </div>
+
+  <div class="page">
+    <p class="kicker">Outcome cockpit</p>
+    <h1>Can I execute FOBO analysis?</h1>
+    <p class="a progress" style="color:var(--progress);font-family:var(--serif);font-size:48px;margin:0 0 8px">Not yet — 80 / 100</p>
+    <p class="lead">Universe declared by Motif this COB. Helix will be commanded automatically at 100/100 with a new run id. Stale completions are ignored.</p>
+
+    <div class="row" style="margin:20px 0 28px">
+      <button class="btn" disabled>Open FOBO breaks</button>
+      <button class="btn ghost">Explain</button>
+      <button class="btn ghost">Override a book</button>
+      <button class="btn ghost" disabled>Re-run Helix</button>
+    </div>
+
+    <div class="grid g2">
+      <div class="panel">
+        <h2>Master books</h2>
+        <p style="color:var(--muted);margin-top:0">Gold-adjacent fill is complete. Hollow is waiting. The grid is the universe, not a chart.</p>
+        <div class="books" id="books"></div>
+      </div>
+      <div class="panel">
+        <h2>Explain</h2>
+        <p>Advisory LLM, not a fact. “Twenty Motif books still unsigned on REC-EQ-EMEA. Slowest input: Motif. Helix will not start. No 15C3 content in this prompt — you are not entitled.”</p>
+        <h2 style="margin-top:28px">Lineage</h2>
+        <table>
+          <tr><th>When</th><th>Fact</th></tr>
+          <tr><td class="mono">21:14:03</td><td>MOTIF MB014 COMPLETED</td></tr>
+          <tr><td class="mono">21:14:01</td><td>MOTIF MB013 COMPLETED</td></tr>
+          <tr><td class="mono">21:08:40</td><td>UNIVERSE_DECLARED 100 keys</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <script>
+    const el = document.getElementById("books");
+    for (let i = 0; i < 100; i++) {
+      const b = document.createElement("b");
+      if (i >= 80) b.className = "off";
+      el.appendChild(b);
+    }
+  </script>
+</body>
+</html>
