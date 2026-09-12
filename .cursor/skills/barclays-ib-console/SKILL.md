@@ -5,7 +5,7 @@ description: Use when building One Finance chrome or when another team must copy
 
 # Barclays IB console
 
-One Finance UX is a **full-viewport application shell**, not a document. Navy rail, cyan accent, cool grey canvas, dense data. Never a magazine.
+One Finance UX is a **full-viewport glass console**: deep navy canvas, frosted panels, cyan glow, pill actions. Never a magazine, never a flat 2016 admin theme.
 
 ## Reference implementation — read before writing CSS
 

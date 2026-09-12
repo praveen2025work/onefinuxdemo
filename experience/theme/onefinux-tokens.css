@@ -1,141 +1,145 @@
 /**
  * One Finance UX theme — copy this file.
- * Other teams import it so iframed screens match the shell.
- * Do not invent a second palette. Do not use cream/serif magazine chrome.
+ * Glass console: deep navy canvas, frosted panels, cyan glow.
  *
  *   <link rel="stylesheet" href="https://<one-fin-ux-host>/theme/onefinux-tokens.css">
- *   <body class="ofx-app" data-ofx-embedded="1"> … use var(--ofx-*) only.
+ *   <body class="ofx-app" data-ofx-embedded="1">
  *
- * Reference implementation of every component built on these tokens:
- *   docs/design/mockups/ (app.css) — start there before writing new CSS.
+ * Full component reference: docs/design/mockups/app.css
  */
 :root {
-  /* brand */
-  --ofx-navy: #002d5f;
-  --ofx-navy-700: #002247;
-  --ofx-navy-800: #001b3a;
-  --ofx-navy-900: #00132b;
-  --ofx-cyan: #00aeef;
-  --ofx-cyan-600: #0090c6;
+  --ofx-navy: #0a1f3d;
+  --ofx-navy-700: #07162c;
+  --ofx-navy-800: #06101f;
+  --ofx-navy-900: #040b16;
+  --ofx-cyan: #3dd6ff;
+  --ofx-cyan-600: #00aeef;
 
-  /* neutrals */
-  --ofx-ink: #0b1a2e;
-  --ofx-ink-2: #2b4257;
-  --ofx-ink-3: #5b7288;
-  --ofx-ink-4: #8397a9;
-  --ofx-card: #ffffff;
-  --ofx-surface-2: #f7f9fc;
-  --ofx-surface-3: #eff3f8;
-  --ofx-page: #e9eef5;
-  --ofx-line: #dde5ee;
-  --ofx-line-2: #c8d5e3;
+  --ofx-ink: #f3f7fc;
+  --ofx-ink-2: #d5e2ef;
+  --ofx-ink-3: #93a8bf;
+  --ofx-ink-4: #6d849c;
+  --ofx-card: rgba(14, 32, 58, .55);
+  --ofx-surface-2: rgba(255, 255, 255, .1);
+  --ofx-surface-3: rgba(255, 255, 255, .04);
+  --ofx-page: #06101c;
+  --ofx-line: rgba(255, 255, 255, .1);
+  --ofx-line-2: rgba(255, 255, 255, .16);
 
-  /* semantic — status words, not decoration */
-  --ofx-ok: #0e7c4a;
-  --ofx-ok-bg: #e8f6ee;
-  --ofx-ok-line: #b4dfc7;
-  --ofx-warn: #9a5b06;
-  --ofx-warn-bg: #fdf3e3;
-  --ofx-warn-line: #ecd5a9;
-  --ofx-fail: #b3221f;
-  --ofx-fail-bg: #fcecea;
-  --ofx-fail-line: #eebfbc;
-  --ofx-info: #0a6a92;
-  --ofx-info-bg: #e6f6fd;
-  --ofx-info-line: #b3e2f6;
-  --ofx-bo: #4e3c9a;
-  --ofx-bo-bg: #eeebfa;
-  --ofx-bo-line: #cdc4ee;
+  --ofx-ok: #3ee0a0;
+  --ofx-ok-bg: rgba(62, 224, 160, .12);
+  --ofx-ok-line: rgba(62, 224, 160, .38);
+  --ofx-warn: #ffc46b;
+  --ofx-warn-bg: rgba(255, 196, 107, .12);
+  --ofx-warn-line: rgba(255, 196, 107, .38);
+  --ofx-fail: #ff7b74;
+  --ofx-fail-bg: rgba(255, 123, 116, .14);
+  --ofx-fail-line: rgba(255, 123, 116, .4);
+  --ofx-info: #5ed4ff;
+  --ofx-info-bg: rgba(61, 214, 255, .12);
+  --ofx-info-line: rgba(61, 214, 255, .38);
+  --ofx-bo: #c4b4ff;
+  --ofx-bo-bg: rgba(196, 180, 255, .14);
+  --ofx-bo-line: rgba(196, 180, 255, .4);
 
-  /* type */
   --ofx-font: "IBM Plex Sans", Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
   --ofx-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
 
-  /* metrics */
-  --ofx-r: 4px;
-  --ofx-r-lg: 6px;
-  --ofx-sh-1: 0 1px 2px rgba(11, 26, 46, .06);
-  --ofx-sh-2: 0 2px 6px rgba(11, 26, 46, .08), 0 1px 2px rgba(11, 26, 46, .06);
+  --ofx-r: 12px;
+  --ofx-r-lg: 18px;
+  --ofx-sh-1: 0 8px 28px rgba(0, 8, 20, .28);
+  --ofx-sh-2: 0 16px 48px rgba(0, 8, 20, .38);
 }
 
 .ofx-app {
   margin: 0;
-  background: var(--ofx-page);
+  background:
+    radial-gradient(900px 520px at 12% -10%, rgba(0, 174, 239, .28), transparent 58%),
+    radial-gradient(720px 480px at 92% 8%, rgba(124, 92, 255, .22), transparent 55%),
+    #06101c;
   color: var(--ofx-ink);
   font-family: var(--ofx-font);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 13.5px;
+  line-height: 1.5;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Host already drew the masthead. Partner paints the body only. */
-.ofx-app[data-ofx-embedded="1"] { background: var(--ofx-surface-2); }
+.ofx-app[data-ofx-embedded="1"] { background: transparent; }
 .ofx-app[data-ofx-embedded="1"] .ofx-masthead { display: none !important; }
 
-/* ---- surfaces */
 .ofx-card {
   background: var(--ofx-card);
+  backdrop-filter: blur(22px) saturate(140%);
+  -webkit-backdrop-filter: blur(22px) saturate(140%);
   border: 1px solid var(--ofx-line);
   border-radius: var(--ofx-r-lg);
-  box-shadow: var(--ofx-sh-1);
+  box-shadow: var(--ofx-sh-1), inset 0 1px 0 rgba(255,255,255,.16);
   overflow: hidden;
 }
 .ofx-card-hd {
   display: flex; align-items: center; gap: 10px;
-  padding: 10px 14px;
+  padding: 13px 16px;
   border-bottom: 1px solid var(--ofx-line);
-  background: linear-gradient(180deg, #fff 0%, var(--ofx-surface-2) 100%);
   font-weight: 600;
+  color: #fff;
 }
-.ofx-card-bd { padding: 14px; }
+.ofx-card-bd { padding: 16px; }
 
-/* ---- actions */
 .ofx-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
-  height: 30px; padding: 0 12px;
-  background: var(--ofx-navy); color: #fff;
-  border: 1px solid var(--ofx-navy);
-  border-radius: var(--ofx-r);
-  font: 500 12px/1 var(--ofx-font);
+  height: 36px; padding: 0 14px;
+  background: linear-gradient(180deg, #4ce3ff 0%, #0096d6 100%);
+  color: #041018;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font: 600 12.5px/1 var(--ofx-font);
   cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 174, 239, .28), inset 0 1px 0 rgba(255,255,255,.45);
 }
-.ofx-btn:hover { background: var(--ofx-navy-700); border-color: var(--ofx-navy-700); }
-.ofx-btn-2 { background: #fff; color: var(--ofx-navy); border-color: var(--ofx-line-2); }
-.ofx-btn-2:hover { background: var(--ofx-surface-2); }
+.ofx-btn:hover { filter: brightness(1.06); }
+.ofx-btn-2 {
+  background: rgba(255,255,255,.06);
+  color: #fff;
+  border-color: var(--ofx-line-2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+}
 .ofx-btn:disabled {
-  background: var(--ofx-surface-3); color: var(--ofx-ink-4);
-  border-color: var(--ofx-line); cursor: not-allowed;
+  background: rgba(255,255,255,.05);
+  color: var(--ofx-ink-4);
+  border-color: var(--ofx-line);
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
-/* ---- status */
 .ofx-pill {
-  display: inline-flex; align-items: center; gap: 5px;
-  height: 20px; padding: 0 8px;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 22px; padding: 0 9px;
   border: 1px solid var(--ofx-line-2);
-  border-radius: 10px;
-  background: var(--ofx-surface-2); color: var(--ofx-ink-2);
-  font: 500 10.5px/1 var(--ofx-mono); letter-spacing: .04em;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  color: var(--ofx-ink-2);
+  font: 500 10.5px/1 var(--ofx-mono);
+  letter-spacing: .05em;
 }
-.ofx-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ofx-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
 .ofx-pill-ok { color: var(--ofx-ok); background: var(--ofx-ok-bg); border-color: var(--ofx-ok-line); }
 .ofx-pill-warn { color: var(--ofx-warn); background: var(--ofx-warn-bg); border-color: var(--ofx-warn-line); }
 .ofx-pill-fail { color: var(--ofx-fail); background: var(--ofx-fail-bg); border-color: var(--ofx-fail-line); }
 .ofx-pill-info { color: var(--ofx-info); background: var(--ofx-info-bg); border-color: var(--ofx-info-line); }
 
-/* ---- data table (Wijmo FlexGrid should match this chrome) */
 .ofx-tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; }
 .ofx-tbl thead th {
   position: sticky; top: 0; z-index: 2;
-  background: var(--ofx-surface-2);
+  background: rgba(8, 20, 38, .78);
   font: 500 9.5px/1 var(--ofx-mono);
-  letter-spacing: .1em; text-transform: uppercase;
+  letter-spacing: .11em; text-transform: uppercase;
   color: var(--ofx-ink-3); text-align: left;
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--ofx-line-2);
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--ofx-line);
 }
-.ofx-tbl tbody td { padding: 9px 12px; border-bottom: 1px solid var(--ofx-line); }
-.ofx-tbl tbody tr:hover td { background: #f6fafd; }
+.ofx-tbl tbody td { padding: 11px 14px; border-bottom: 1px solid var(--ofx-line); color: var(--ofx-ink-2); }
+.ofx-tbl tbody tr:hover td { background: rgba(61,214,255,.06); }
 .ofx-tbl .ofx-num { text-align: right; font-family: var(--ofx-mono); font-size: 12px; }
 
 .ofx-mono { font-family: var(--ofx-mono); font-size: 12px; }
