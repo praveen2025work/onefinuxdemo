@@ -48,7 +48,7 @@ flowchart LR
     RAM
     Helix
     Axiom
-    Legacy[CDC / MQ / file adapters]
+    Legacy[Feed readers: their Kafka/Solace/MQ/file]
   end
 
   GW[Event Gateway\nschema + mTLS + idempotency]

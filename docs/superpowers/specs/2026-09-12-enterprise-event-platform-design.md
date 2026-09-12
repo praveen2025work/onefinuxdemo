@@ -80,7 +80,7 @@ plus `REVOKED` (readiness withdrawn) and SLA `AT_RISK` / `BREACHED` signals.
 6. **Idempotent everywhere.** Producers may retry. Consumers may restart. Commands are keyed by `runId`.
 7. **Partition for scale.** Active/active by `(cobDate, region)` first; then by `domain` (Revenue Accounting, Product Control, Treasury, …).
 8. **Human in the loop is an event.** Overrides, re-runs, and exemptions are audited like any other fact.
-9. **No polling of sources for readiness.** Adapters exist only for systems that cannot publish; they emit events, they do not become the UX.
+9. **No polling of systems of record for readiness.** We do not scrape Motif/SAP screens or call “are you done?” APIs. We **do** subscribe to event feeds those teams already write (their Kafka/Solace/MQ/file topic). Many desks cannot send notifications or publish into One Finance; **their feed is the starting point**. A feed reader maps their payload into the generic envelope. That is not polling.
 
 ---
 
@@ -247,6 +247,7 @@ One Finance does **not** ship a FOBO module, a 15C3 module, and an IFRS module. 
 | `domain` | Revenue Accounting | Reg Reporting | Reg Reporting | Product Control | Treasury |
 | Business question | Can I execute this rec? | Can I produce 15C3? | Can I produce the IFRS pack? | Can I close the books? | Can I certify LCR? |
 | Dependencies + universe | Motif books, declared list | SAP + Castle + FinStore + Axiom | Ledger + credit + Axiom | TB + recs + journals | Liquidity feeds |
+| Ingest | FEED (Motif topic) and/or PUSH | FEED and/or PUSH | FEED and/or PUSH | FEED and/or PUSH | FEED and/or PUSH |
 | On-ready | COMMAND Helix | COMMAND Axiom | COMMAND IFRS engine | NOTIFY_ONLY or COMMAND close | COMMAND liquidity engine |
 | Report catalog | FOBO_BREAKS (WisMO) | 15C3_PACK (template) | IFRS9_ECL (template) | MEC_PACK | LCR_PACK |
 | CEES resource | `product:FOBO` | `product:REG_15C3` | `product:IFRS` | `product:MEC` | `product:LCR` |
@@ -298,7 +299,8 @@ An outcome is `READY` only when **every** dependency is satisfied. One `FAILED` 
 |---|---|
 | POC | HTTP `POST /api/events` and in-process Spring events |
 | Enterprise | Kafka (or the bank’s existing bus: Solace / IBM MQ) as the **system of transit** |
-| Legacy sources | Adapter processes: CDC, MQ, file watchers. Adapters publish catalogue events; they do not expose a second UI |
+| Teams that **can** publish to us | They POST / produce `onefinux.fact.v1` to the gateway or our facts topic |
+| Teams that **cannot** notify us | **Feed reader:** we consume *their* existing event feed (Kafka topic, Solace queue, IBM MQ, file drop). We do not ask them to build a One Finance publisher or send us notifications. |
 
 The Event Hub service in the POC (`EventHubService`) remains the **only** application component that changes when transport changes. Outcome engine and workflow stay event-in, event-out.
 
@@ -323,6 +325,49 @@ Every inbound event passes a **gateway** before it is a fact:
 6. Publish to the bus. The HTTP API remains for low-volume producers and for the UX.
 
 The gateway is the “first instance layer” on the **runtime** path. The Admin UI is the first instance layer on the **configuration** path (section 10). They are different surfaces of the same registry.
+
+### 8.5 Feed readers — teams that cannot send us events or notifications
+
+This is a **first-class ingest mode**, not an afterthought. A large share of IB source teams already emit facts onto a bus they own. They will not (or cannot) add a One Finance webhook, a new notification channel, or a new producer. One Finance **reads their feed** and starts from there.
+
+```
+Their system  →  their event feed (already exists)
+                      ↓
+              Feed reader (adapter)
+                 map + dedupe + watermark
+                      ↓
+              Event Gateway (same schema, same eventId rules)
+                      ↓
+              Hub fold + our notifications (we generate them)
+```
+
+| Their world | What we do |
+|---|---|
+| They publish Motif/SAP/Helix payloads to **their** Kafka/Solace topic | Consumer group `onefinux.<source>.<feed>` reads from the committed offset |
+| They drop completion files | File watcher / object-store notify — still a feed, not an SoR poll |
+| They can only write IBM MQ | MQ listener |
+| They cannot send Teams/email/Now | **We** emit `onefinux.notification.v1` after the fold. They never send us a notification. |
+| Their payload is not our envelope | Catalogue **mapper**: JSONPath / JSONata / declared field map → generic `data` |
+
+Rules:
+
+1. **Same envelope after the mapper.** The fold never sees a Motif-native XML. Gateway rejects unmapped or invalid facts (DLQ + Support screen).
+2. **Idempotency from their id.** Prefer their `eventId` / offset+partition / natural key. Re-reading a feed after restart must not double-count books.
+3. **Watermark, not poll.** Store `topic / partition / offset` or `last file name`. Restart continues. That is consume-once, not “call SAP every 30s.”
+4. **They do not owe us notifications.** Outcome READY / BLOCKED / COMPLETED alerts are **ours**, derived from facts we ingested — push *or* feed-read.
+5. **Admin registers the feed** (maker-checker): source system, feed URL/topic, credentials (secret store, not YAML), mapper id, start offset (`LATEST` for pilot, `TIMESTAMP` for catch-up), owner team.
+6. **Strangler.** When that team can publish `onefinux.fact.v1` natively, turn the reader off. The outcome kit does not change.
+7. **Entitlements unchanged.** Feed-read facts still fold into entitled products. We do not open a back door because the event came from “their” topic.
+
+Product kit field (with the other eight):
+
+| Field | Values |
+|---|---|
+| `ingest` | `PUSH` (they send to us) · `FEED` (we read their feed) · `BOTH` |
+
+A single outcome can mix: Motif books via `FEED`, Helix completion via `PUSH`. The card does not care.
+
+Feed readers live in `adapters/<source>-feed/` (project structure spec). They are integration-owned; the hub stays generic.
 
 ### 8.3 Contract evolution
 
@@ -372,7 +417,7 @@ It is **not** the live board. Controllers live on the experience plane. Platform
 | Area | What an admin configures | Maker-checker |
 |---|---|---|
 | Domains | Bank-wide tenants and default owners | Yes |
-| Source systems | Name, identity, identifier type, allowed event types, ingress credentials | Yes |
+| Source systems | Name, identity, identifier type, allowed event types, **ingest mode** (`PUSH` / `FEED` / `BOTH`), feed topic + mapper if FEED | Yes |
 | Event catalogue | Type, schema version, allowed statuses, required attributes | Yes |
 | Crosswalks | Identifier maps with effective dating | Yes |
 | Outcome definitions | Question, dependencies, universe policy, SLA, on-ready action, audiences | Yes |
@@ -575,7 +620,7 @@ The platform is a **product**, not a Revenue Accounting applet.
 | Shared Admin with delegated admin roles | Each domain’s outcome owners publish their own definitions under maker-checker |
 | No domain-specific code paths | New domains ship as registry data |
 
-The first production domain is Revenue Accounting (FOBO, 15C3, IFRS, PnL). The engine does not know those names.
+The first production **domain** is Revenue Accounting; the first production **products** are FOBO, 15C3, and PnL (unlike on purpose). IFRS, month-end, and Treasury products follow as kit rows. The engine does not know those names.
 
 ---
 
@@ -716,7 +761,7 @@ This document is the umbrella architecture. It is too large for a single impleme
 
 | # | Sub-project | Depends on | Delivers a testable increment |
 |---|---|---|---|
-| 1 | Event gateway + catalogue + bus consumer | — | A Motif-shaped event is validated, stored, and visible on the tape |
+| 1 | Event gateway + catalogue + **feed readers** | — | A Motif-shaped event is validated from *either* a push *or* their existing topic, then visible on the tape |
 | 2 | Outcome registry + Admin v1 (maker-checker) | 1 | FOBO / 15C3 definitions load from tables, not YAML |
 | 3 | Partitioned outcome engine + snapshot store | 1, 2 | 80-of-100 readiness, failure, revoke, replay on two nodes |
 | 4 | Command dispatcher on the bus | 3 | Helix / Axiom receive `runId` commands; stale completions ignored |
@@ -745,17 +790,19 @@ Every outcome definition publishes a CEES resource when it is maker-checked:
 ```
 onefinux
  └─ domain:REVENUE_ACCOUNTING
-     ├─ outcome:FOBO_HELIX
-     │    ├─ region:GLOBAL
-     │    │    └─ slice:REC-EQ-EMEA
-     │    └─ report:FOBO_BREAKS          (catalog entry)
-     ├─ outcome:REPORT_15C3
-     │    ├─ region:AMRS
+     ├─ product:FOBO
+     │    ├─ outcome:FOBO_HELIX / region / slice
+     │    └─ report:FOBO_BREAKS
+     └─ …
+ └─ domain:REG_REPORTING
+     ├─ product:REG_15C3
+     │    ├─ outcome:REPORT_15C3
      │    └─ report:15C3_PACK
-     └─ outcome:IFRS_PACK
-          ├─ region:EMEA
+     └─ product:IFRS
           └─ report:IFRS9_ECL
 ```
+
+Entitlements are granted on **product** (or a single outcome/slice under it). A FOBO controller is not entitled to 15C3 by sitting in One Finance. A new product adds a CEES node — it does not add an app.
 
 Verbs on `outcome:*`:
 

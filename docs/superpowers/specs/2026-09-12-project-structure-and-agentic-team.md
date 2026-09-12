@@ -60,10 +60,10 @@ onefinux/                          # this repository, grown in place
 │   ├── web/                       # Control Tower, cockpit, My Reports, Admin UI
 │   └── now/                       # Barclays Now task payload mapper (thin)
 │
-├── adapters/                      # STRANGLER — die when the source speaks the envelope
-│   ├── motif/
-│   ├── sap/
-│   ├── helix-sim/                 # today’s source-simulator
+├── adapters/                      # FEED READERS + stranglers — we consume *their* bus
+│   ├── motif-feed/                # subscribe to Motif’s existing topic
+│   ├── sap-feed/
+│   ├── helix-sim/                 # today’s source-simulator (PUSH for demo)
 │   └── file-drop/
 │
 ├── advisory/                      # LLM explainer — isolated, never on the fold classpath
@@ -184,7 +184,7 @@ Put these in `.cursor/skills/` and own them like code.
 | `entitlement-check` | “Who can see this card/report” | CEES resource path + federated URL; fail closed; no ACL tables. |
 | `report-binding` | “WisMO / template / file” | Catalog row + locator; do not embed Helix HTML. |
 | `no-product-branch` | Review | Reject `if ("FOBO".equals` / packages named `fobo`. |
-| `adapter-strangler` | “Motif cannot publish” | New folder under `adapters/`; emit the generic envelope. |
+| `adapter-strangler` | “Team cannot notify us / we must read their feed” | New `adapters/<source>-feed/`; mapper + watermark; emit the generic envelope. Never poll the SoR. |
 | `advisory-llm` | “Explain why blocked” | `advisory/` only; entitled snapshot; never write a fact. |
 
 ### 4.3 Repo rules (short, always on)

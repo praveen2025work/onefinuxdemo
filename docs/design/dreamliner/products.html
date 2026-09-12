@@ -34,6 +34,7 @@
           <th>Product</th>
           <th>Domain</th>
           <th>Question</th>
+          <th>Ingest</th>
           <th>On ready</th>
           <th>Report</th>
           <th>Status</th>
@@ -42,6 +43,7 @@
           <td><b>FOBO</b></td>
           <td>Revenue Accounting</td>
           <td>Can I execute this rec?</td>
+          <td>FEED Motif topic</td>
           <td>COMMAND Helix</td>
           <td>WisMO breaks</td>
           <td>Pilot</td>
@@ -50,6 +52,7 @@
           <td><b>15C3</b></td>
           <td>Reg Reporting</td>
           <td>Can I produce 15C3?</td>
+          <td>FEED + PUSH</td>
           <td>COMMAND Axiom</td>
           <td>Excel template</td>
           <td>Pilot</td>
@@ -58,6 +61,7 @@
           <td><b>PnL</b></td>
           <td>Product Control</td>
           <td>Can I run PnL reporting?</td>
+          <td>FEED GMIS/RAM</td>
           <td>NOTIFY_ONLY</td>
           <td>Template pack</td>
           <td>Pilot</td>
@@ -66,6 +70,7 @@
           <td><b>IFRS</b></td>
           <td>Reg Reporting</td>
           <td>Can I produce the IFRS pack?</td>
+          <td>FEED</td>
           <td>COMMAND IFRS engine</td>
           <td>Template + grid</td>
           <td>Next</td>
@@ -74,6 +79,7 @@
           <td><b>Month-end close</b></td>
           <td>Product Control</td>
           <td>Can I close the books?</td>
+          <td>FEED SAP</td>
           <td>NOTIFY or COMMAND</td>
           <td>Close pack</td>
           <td>Next</td>
@@ -82,6 +88,7 @@
           <td><b>LCR</b></td>
           <td>Treasury</td>
           <td>Can I certify liquidity coverage?</td>
+          <td>FEED</td>
           <td>COMMAND liquidity engine</td>
           <td>LCR pack</td>
           <td>Later</td>
@@ -90,6 +97,7 @@
           <td><b>Your product</b></td>
           <td>Any domain</td>
           <td>Can I … ?</td>
+          <td>PUSH, FEED, or both</td>
           <td>Command or notify</td>
           <td>WisMO / template / file</td>
           <td>Admin → publish</td>
@@ -101,7 +109,7 @@
     <div class="grid g2">
       <div class="panel">
         <h2>What Admin fills</h2>
-        <p>1. productId and domain<br>2. Business question<br>3. Event dependencies + universe policy<br>4. SLA<br>5. On-ready action and target<br>6. Report catalog and templates<br>7. CEES groups<br>8. Optional producer entitlement URL</p>
+        <p>1. productId and domain<br>2. Business question<br>3. Ingest: PUSH, FEED (their topic), or both<br>4. Event dependencies + universe policy<br>5. SLA<br>6. On-ready action and target<br>7. Report catalog, CEES, optional producer URL</p>
       </div>
       <div class="panel">
         <h2>What never forks</h2>
