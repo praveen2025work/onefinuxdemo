@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onefinux.internal/contracts/generic-business-event/v1",
+  "title": "One Finance UX generic business event envelope (v1)",
+  "description": "The single wire format every Barclays system uses on the One Finance bus. Envelope fields are identical across Motif, SAP, Helix, Axiom and future producers. The catalogue eventType lives in data.eventType. Extra producer fields belong only in data.attributes and are validated by the per-type schema in the catalogue.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specversion", "id", "source", "type", "time", "datacontenttype", "data"],
+  "properties": {
+    "specversion": {
+      "const": "1.0",
+      "description": "CloudEvents 1.0. Lets the enterprise bus route and observe without reading the finance payload."
+    },
+    "id": {
+      "type": "string",
+      "maxLength": 128,
+      "description": "Globally unique. Re-send of the same id is a no-op."
+    },
+    "source": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$",
+      "description": "Registered producer, lowercase (motif, sap, helix, axiom, onefinux)."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "onefinux.fact.v1",
+        "onefinux.command.v1",
+        "onefinux.workflow.v1",
+        "onefinux.notification.v1",
+        "onefinux.advisory.v1"
+      ],
+      "description": "Kind of message. Facts update readiness. Commands tell Helix/Axiom to run. Advisory is LLM output and is never folded as a fact."
+    },
+    "time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "datacontenttype": {
+      "const": "application/json"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Optional routing hint: outcomeId or sliceKey. Never required for ingest."
+    },
+    "data": {
+      "$ref": "#/$defs/payload"
+    }
+  },
+  "$defs": {
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventType", "sourceSystem", "sourceKey", "cobDate", "region", "status"],
+      "properties": {
+        "eventType": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
+          "description": "Catalogue name. Same string on every system that publishes this fact (MASTERBOOK_READY, SAP_TB_COMPLETE, HELIX_ANALYSIS_COMPLETE)."
+        },
+        "sourceSystem": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{1,31}$",
+          "description": "Must match a registered source system. Not a closed enum — Admin registers new systems."
+        },
+        "sourceKey": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "description": "Producer's own id (book, cost centre, batch, run, report id). The hub does not interpret it."
+        },
+        "cobDate": { "type": "string", "format": "date" },
+        "region": {
+          "type": "string",
+          "enum": ["AMRS", "EMEA", "APAC", "GLOBAL"]
+        },
+        "sliceKey": {
+          "type": "string",
+          "description": "Optional rec / legal-entity / pack id. Empty means the regional instance."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["STARTED", "COMPLETED", "FAILED", "REVOKED"]
+        },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "attributes": {
+          "type": "object",
+          "description": "Per-eventType extension bag. Gateway validates it against the catalogue schema for that eventType. Completions that produce an artifact must include correlationId, runId and result.",
+          "properties": {
+            "correlationId": { "type": "string" },
+            "runId": { "type": "string" },
+            "reason": { "type": "string" },
+            "summary": { "type": "string" },
+            "rowCount": { "type": "integer" },
+            "result": { "$ref": "#/$defs/resultLocator" }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "resultLocator": {
+      "type": "object",
+      "required": ["kind", "uri"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["WISMO_GRID", "WISMO_CHART", "EXCEL_TEMPLATE", "FILE", "EXTERNAL_LINK"]
+        },
+        "contentType": { "type": "string" },
+        "uri": { "type": "string" },
+        "templateId": { "type": ["string", "null"] },
+        "catalogId": {
+          "type": "string",
+          "description": "Id of the predefined report in the outcome's report catalog."
+        }
+      }
+    }
+  }
+}

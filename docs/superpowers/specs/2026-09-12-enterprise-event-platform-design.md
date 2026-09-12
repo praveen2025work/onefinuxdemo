@@ -639,7 +639,8 @@ Phases are capability slices, not calendar estimates.
 - Domains as first-class tenants; delegated Admin.
 - IFRS and other packs as registry data (no engine change).
 - Route table for extra subscribers.
-- Historical P50/P90 ETA; later, advisory AI for root cause (never in the readiness fold).
+- Historical P50/P90 ETA; advisory LLM for “why blocked” (never in the readiness fold).
+- Barclays Now tool tile + entitled tasks (section 28).
 - Cross-region active/active and object-store backed artifacts.
 
 **Exit:** A second division launches an outcome without a platform release.
@@ -667,6 +668,9 @@ Phases are capability slices, not calendar estimates.
 6. Oracle 19c and CEES remain the bank standards named in the current README.
 7. Excel templates are an **optional** binding, not a requirement for every report.
 8. Expected book lists for a rec come from reference data or a `UNIVERSE_DECLARED` event, not from a developer editing YAML each COB.
+9. “CEES” is Barclays’ Central Enterprise Entitlement System (or the current equivalent). Resource paths in section 24 are logical; the live CEES schema is mapped at integration time.
+10. Barclays Now is the colleague app (`now.barclays.com`). Onboarding is a Digital Workplace tool/task registration plus our notification channel — not a new native app.
+11. The LLM is a bank-approved internal endpoint. Advisories are never facts.
 
 ---
 
@@ -701,7 +705,285 @@ This document is the umbrella architecture. It is too large for a single impleme
 | 7 | Report locators + unified viewer (WisMO / template) | 4 | Completed 15C3 / FOBO breaks open in-platform |
 | 8 | Federated entitlement links | 5, 7 | Producer ACL decides `report.view`; fail closed |
 | 9 | Domain tenancy + delegated Admin | 2, 5 | A second division ships an outcome without a platform release |
+| 10 | Advisory LLM (why blocked / missing keys) | 5 | Entitled explanation on the card; never written as a fact |
+| 11 | Barclays Now task + deep-link onboarding | 5, 10 | Colleague gets a Now task when an entitled outcome is READY / BLOCKED / COMPLETED |
 
-Do not start 7–9 until 1–5 are running against at least one real producer. Do not expand the POC codebase toward 7 until the registry (2) exists — otherwise report bindings become more YAML.
+Do not start 7–9 until 1–5 are running against at least one real producer. Do not expand the POC codebase toward 7 until the registry (2) exists — otherwise report bindings become more YAML. Do not start 10–11 until entitlements (5) exist — otherwise the model or the mobile task would leak unentitled outcomes.
 
 **Bus default:** use the bank’s existing enterprise event bus if one is already mandated. This spec uses Kafka-style topic names (`onefinux.facts.v1.{source}`) as the portable reference. The gateway and hub hide the vendor. If no bus is mandated, Kafka is the reference implementation.
+
+---
+
+## 24. Entitlements per business outcome
+
+Entitlement is attached to the **outcome**, not to a screen or a system. A user is never “a One Finance user.” They are entitled to specific outcomes, in specific regions / slices, with specific verbs.
+
+### 24.1 Resource tree in CEES
+
+Every outcome definition publishes a CEES resource when it is maker-checked:
+
+```
+onefinux
+ └─ domain:REVENUE_ACCOUNTING
+     ├─ outcome:FOBO_HELIX
+     │    ├─ region:GLOBAL
+     │    │    └─ slice:REC-EQ-EMEA
+     │    └─ report:FOBO_BREAKS          (catalog entry)
+     ├─ outcome:REPORT_15C3
+     │    ├─ region:AMRS
+     │    └─ report:15C3_PACK
+     └─ outcome:IFRS_PACK
+          ├─ region:EMEA
+          └─ report:IFRS9_ECL
+```
+
+Verbs on `outcome:*`:
+
+| Verb | What the user may do |
+|---|---|
+| `read` | See the card, %, missing keys, blocked reason |
+| `override` | Mark a dependency complete with a reason |
+| `rerun` | Send a new command to Helix / Axiom |
+| `advise` | See the LLM explanation (same as `read` unless a tighter policy is set) |
+
+Verbs on `report:*`:
+
+| Verb | What the user may do |
+|---|---|
+| `view` | Open the predefined report in the viewer |
+| `export` | Download CSV / xlsx |
+
+A FOBO controller typically has `outcome:FOBO_HELIX/read+override+rerun` and `report:FOBO_BREAKS/view`. They do **not** automatically receive `report:15C3_PACK`. A US regulatory reporter has the inverse.
+
+Admins assign CEES groups (e.g. `GRP-FOBO-CONTROLLERS-EMEA`) to those resources. One Finance never stores a parallel user–role table.
+
+### 24.2 Decision order (every API call)
+
+```
+1. SSO authenticates the colleague (same identity Barclays Now uses).
+2. CEES: does this user have outcome.{verb} on this resource
+         (domain + outcome + optional region + optional slice)?
+        No  → 404 for reads (do not admit the card exists), 403 for writes.
+3. If the call opens or exports a report:
+   a. CEES report.view / report.export on the catalog entry.
+   b. If the catalog entry has a federated entitlementUrl, call the producer
+      with the SSO id. Producer { allowed: false } → 403 with that reason.
+   c. Producer down → fail closed on the artifact; card still visible if step 2 passed.
+4. Audit: user, verb, resource, runId, decision, producer reason.
+```
+
+The board query is `GET /api/outcomes` **filtered in the API**, not in the browser. The engine may hold 200 slices; the user sees three.
+
+Row-level (book / legal entity) is **not** copied into CEES. If Helix entitles breaks per book, that is the federated call in 3b. One Finance shows only the rows the producer returns after that check.
+
+### 24.3 Why this simplifies reporting
+
+Today each report has its own ACL, URL, and UI. The user must know which system to open.
+
+With outcome-scoped entitlements:
+
+- The **catalog** (section 26) lists reports the user may see. There is no “all reports” page.
+- Opening a report is one button on the outcome that just completed, already entitled.
+- Notifications are sent only to the CEES audience for that outcome. A 15C3 READY event never lands on a FOBO-only colleague.
+- Barclays Now tasks use the same audience. Mobile does not get a second ACL.
+
+Admin binds CEES groups once per outcome. Axiom / Helix keep their official ACLs via the entitlement URL. We do not clone those ACLs.
+
+---
+
+## 25. Generic cross-system event message
+
+Every Barclays system publishes the **same envelope**. Motif does not invent a Motif message. SAP does not invent an SAP message. The only things that change are `source`, `data.eventType`, `data.sourceKey`, and the catalogue-validated `data.attributes`.
+
+Canonical schema: `contracts/generic-business-event.schema.json` (CloudEvents 1.0 envelope + the POC payload).
+
+### 25.1 Envelope (identical for every producer)
+
+```json
+{
+  "specversion": "1.0",
+  "id": "motif-mb014-20260912-completed",
+  "source": "motif",
+  "type": "onefinux.fact.v1",
+  "time": "2026-09-12T21:14:03Z",
+  "datacontenttype": "application/json",
+  "data": { }
+}
+```
+
+`type` is one of five values only:
+
+| `type` | Meaning | Folded as a fact? |
+|---|---|---|
+| `onefinux.fact.v1` | A source fact (book ready, TB posted, rec done) | Yes |
+| `onefinux.command.v1` | “Helix, run this rec” | No — outbound |
+| `onefinux.workflow.v1` | Override, SLA breach, action triggered | Yes |
+| `onefinux.notification.v1` | Fan-out to inbox / email / Now | No |
+| `onefinux.advisory.v1` | LLM explanation | **No** |
+
+### 25.2 Payload (the generic fact)
+
+```json
+{
+  "eventType": "MASTERBOOK_READY",
+  "sourceSystem": "MOTIF",
+  "sourceKey": "MB014",
+  "cobDate": "2026-09-12",
+  "region": "GLOBAL",
+  "sliceKey": "REC-EQ-EMEA",
+  "status": "COMPLETED",
+  "occurredAt": "2026-09-12T21:14:03Z",
+  "attributes": {
+    "correlationId": null,
+    "runId": null,
+    "summary": "Master book MB014 signed off in Motif"
+  }
+}
+```
+
+Required everywhere: `eventType`, `sourceSystem`, `sourceKey`, `cobDate`, `region`, `status`.
+
+That is the whole cross-system contract. A new system (e.g. an IFRS engine) registers in Admin, then publishes this shape. No new Java types.
+
+### 25.3 How one message is reused across systems
+
+1. **Catalogue** owns `eventType`. Motif and a future FO book system can both publish `MASTERBOOK_READY` if they are registered for it.
+2. **Translation** turns `sourceSystem + sourceKey` into business ids. The engine matches dependencies on `eventType` (+ optional source), not on Motif-specific fields.
+3. **One publish, many outcomes.** `SAP_TB_COMPLETE` for `CC-4410` updates 15C3, PnL, and any later IFRS outcome that lists that dependency.
+4. **Commands use the same envelope** with `type: onefinux.command.v1` and `attributes.runId` / `expectedKeys`. Helix answers with a **fact** (`HELIX_ANALYSIS_COMPLETE`) in the same shape, echoing `runId`.
+5. **Per-type extras stay in `attributes`.** The gateway loads the catalogue schema for that `eventType` (e.g. Helix must send `result.uri`). Unknown attributes on a strict type are rejected; unknown producers are rejected.
+
+Motif example and Axiom example differ only in `source`, `eventType`, `sourceKey`, and `attributes.result` — not in topics, headers, or class hierarchies.
+
+### 25.4 Mapping from today’s POC HTTP body
+
+`POST /api/events` keeps accepting the current body (`contracts/business-event.schema.json`). The gateway wraps it into the envelope (`source` = lowercased `sourceSystem`, `type` = `onefinux.fact.v1`, `id` = `eventId`). Existing simulators keep working. New bus producers speak the envelope natively.
+
+---
+
+## 26. Predefined reports on the UI (entitled)
+
+Reports are **catalog entries on an outcome**, not ad-hoc uploads and not a second application.
+
+### 26.1 Catalog entry (Admin)
+
+| Field | Example |
+|---|---|
+| `catalogId` | `15C3_PACK` |
+| `outcomeId` | `REPORT_15C3` |
+| `title` | 15C3 official pack |
+| `binding` | `EXCEL_TEMPLATE` / `WISMO_GRID` / `WISMO_CHART` / `FILE` |
+| `templateId` | `TPL-15C3-US-v4` (optional) |
+| `ceesResource` | `report:15C3_PACK` |
+| `entitlementUrl` | Axiom distribution-list check (optional) |
+| `refresh` | `ON_COMPLETION` (default) — never polled |
+
+A FOBO outcome typically has `FOBO_BREAKS` (WisMO grid) and optionally `FOBO_MATERIAL_CHART` (WisMO chart). IFRS has `IFRS9_ECL` (template) and `IFRS9_MOVEMENTS` (grid).
+
+### 26.2 What the user sees
+
+**Outcome board (desktop)**
+
+- Card shows the business question and 80/100.
+- A **Reports** strip lists catalog entries for that outcome.
+- Each button is visible only if CEES `report.view` is true.
+- Buttons are disabled until the instance is `COMPLETED` (or `READY` for `NOTIFY_ONLY` packs that are themselves the artifact).
+- Click → entitlement decision (24.2) → WisMO / template viewer in-shell.
+
+**My Reports (predefined gallery)**
+
+- `GET /api/reports/catalog` returns only catalog rows the user can `view`, plus instance status for the current COB.
+- Tiles: title, outcome question, status chip, “Open” or “Waiting on 20 books.”
+- No tile for 15C3 if the user is not on that CEES group. The gallery is the entitled list, not a menu of everything the bank produces.
+
+**Viewer**
+
+- WisMO grid/chart for JSON/CSV locators (section 13).
+- Excel template merge for `EXCEL_TEMPLATE`.
+- Same viewer for FOBO breaks and regulatory packs — only the binding changes.
+
+Predefined means: Admin registered the template and the CEES resource **before** COB. The producer only sends a locator when the run finishes. Users never pick a random file.
+
+### 26.3 How entitlements make reporting simpler
+
+| Today | With this design |
+|---|---|
+| Five systems, five logins, five ACLs | One gallery, filtered by CEES + producer check |
+| “Is the pack ready?” asked in chat | Tile shows status; Open enables itself |
+| Distribution list maintained in Axiom only | Axiom still owns the official list via `entitlementUrl`; the tile simply honours it |
+| FOBO breaks live only in Helix | Same gallery, different catalog row |
+
+Notifications and Barclays Now tasks deep-link to the specific catalog entry (`/outcomes/.../reports/15C3_PACK`), not to a home page.
+
+---
+
+## 27. Advisory LLM (not in the readiness path)
+
+The outcome engine stays a deterministic fold. The model **reads** an entitled snapshot and writes an `onefinux.advisory.v1` message. Advisories never change `COMPLETED` counts, never trigger Helix, and are discarded on replay of facts.
+
+### 27.1 What the model is allowed to see
+
+Only what the requesting user is already entitled to `outcome.read`:
+
+- Outcome question, status, %, pending keys, failed keys, SLA / ETA
+- Last N **summaries** on the event tape (not raw trial-balance rows, not unentitled report bytes)
+- Catalog titles, not file contents, unless the user also has `report.view` and the federated check passed
+
+If the user cannot see 15C3, the prompt cannot include 15C3.
+
+### 27.2 What it produces
+
+Stored as advisory, with model name, prompt hash, and time:
+
+- “Blocked because US Castle BATCH-03 failed (position file truncated).”
+- “20 master books still missing on REC-EQ-EMEA; slowest input is Motif.”
+- Suggested owner group (already on the definition — the model restates, it does not invent entitlements).
+
+Shown on the card as **Explain**, on Barclays Now as the task body, never as a substitute for the official report.
+
+### 27.3 Guardrails
+
+- Bank-approved internal LLM endpoint only (no public ChatGPT).
+- No AI in `OutcomeEngine.apply`.
+- User can dismiss; override/re-run remain human events.
+- Advisories are not evidence in an audit of readiness. The event tape is.
+
+---
+
+## 28. Barclays Now mobile onboarding
+
+[Barclays Now](https://play.google.com/store/apps/details?id=com.barclays.barclaysnow) is the colleague app for tasks, news, and tools. We do **not** ship a second native app. We onboard One Finance as a **Now tool + task type**, using the same SSO the colleague already used at `now.barclays.com/register`.
+
+### 28.1 What we ship into Now
+
+| Surface | Content | Entitlement |
+|---|---|---|
+| Tool tile | “One Finance UX” opens the mobile web board | CEES: any `outcome.read` |
+| Task | Created when an entitled outcome becomes `BLOCKED`, `AT_RISK`, `READY`, or `COMPLETED` | Same CEES audience as the inbox |
+| Task body | Question, %, missing keys, advisory one-liner | Same |
+| Deep link | `https://onefinux.barclays.internal/o/{outcomeKey}/r/{catalogId}` | Re-checked on open |
+| News (optional) | COB digest for a domain | Domain `read` |
+
+The Digital Workplace team owns the Now connector. One Finance publishes `onefinux.notification.v1` with `channel: BARCLAYS_NOW` and the colleague’s SSO id. Now renders the task. We do not push report bytes into the phone.
+
+### 28.2 Mobile UX (responsive web, opened from Now)
+
+- Cards and status only: question, 80/100, blocked reason, Explain (LLM).
+- **Open report** on phone: allowed for small WisMO charts and summaries; large 15C3 templates offer “Open on desktop” plus entitled download if `report.export` is granted.
+- Override / re-run stay desktop (or a Now action that still posts a workflow event after CEES `override` / `rerun`).
+
+### 28.3 Onboarding sequence (now)
+
+1. Register the Now tool and task type with Digital Workplace (external action — their catalog, not this repo).
+2. Map Now’s colleague id to the same SSO CEES already uses (no new identity).
+3. Enable `BARCLAYS_NOW` on the notification channel for FOBO and 15C3 audiences.
+4. Ship the mobile-responsive board (read-only) behind the corporate SSO gateway.
+5. Pilot: FOBO Controllers receive a Now task when the rec is 90% or blocked; tap opens the card.
+
+No FOBO numbers, no 15C3 lines, and no LLM text leave the bank network. Now is a task shell. One Finance remains the entitled system of interaction.
+
+### 28.4 What “now” does **not** mean
+
+- Not a public App Store product.
+- Not a replacement for Helix / Axiom UIs on day one.
+- Not a second entitlement system inside Now — Now only delivers tasks to ids we already resolved via CEES.
