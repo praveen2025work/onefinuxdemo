@@ -1,0 +1,10 @@
+{
+  "name": "One Finance UX POC",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "install": "mvn -q -B -DskipTests=false package",
+  "start": "[ -f onefinux-hub/target/onefinux-hub-0.1.0-SNAPSHOT.jar ] && ./scripts/run.sh --no-build || ./scripts/run.sh",
+  "ports": [7070, 7081]
+}
