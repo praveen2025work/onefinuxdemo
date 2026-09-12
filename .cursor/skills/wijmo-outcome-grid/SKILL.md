@@ -1,41 +1,37 @@
 ---
 name: wijmo-outcome-grid
-description: Use when showing or authoring FlexGrid, Pivot, or FlexChart on an entitled dataset — Helix breaks, packs, group-unit analyst views. Also use when tempted to add Recharts, a custom table, or a per-report React page. Company has a Wijmo licence.
+description: Use when adding later group-unit analyst exploration (FlexGrid, Pivot, FlexChart) on sources already onboarded, or when someone asks to build the analyst studio in the first slice. Company has a Wijmo licence.
 ---
 
-# Wijmo studio (grid, pivot, chart)
+# Wijmo — later, same unit, known origin
 
-One Finance is the report surface. **Wijmo only.** BAs author when a dataset locator exists. Developers do not draw 1000 reports.
+**Not day one.** First we bind the source of origin. Analysts enter the same One Fin UX app **after** that, and only see data for their `groupUnitId`.
 
-## Widgets
+## When this skill applies
+
+- A unit’s sources are already in the catalog
+- Someone asks to explore / pivot / chart that data in-app
+- Someone tries to start a Tableau replica or a React report squad
+
+## When it does not
+
+- Tasks that only onboard kits, iframe Helix, or sign-off/post
+- A dataset that has no registered origin — send them to config first
+
+## Later studio
 
 | Widget | Use |
 |---|---|
-| FlexGrid | Breaks, official packs, lists |
-| Pivot (OLAP) | Slice dimensions the dataset already has |
-| FlexChart | Same dataset, entitled |
+| FlexGrid | Lists / breaks / packs |
+| Pivot | Dimensions the **registered** dataset already has |
+| FlexChart | Same locator |
 
-A **view definition** stores: `datasetId`, widget, field map, filters, `report:{id}`, `groupUnitId`.
-
-## Bind (user open)
-
-1. Dataset landed for current `runId` (or snapshot policy on the kit).
-2. CEES `report.view`.
-3. Federated producer ACL if the locator is Helix/Axiom. Deny → 404.
-4. Host renders the saved def. No extra route.
-
-## Author (BA, after source provided)
-
-Config registers the dataset. BA picks widget + fields. Checker publishes. That is the Tableau-like step **inside** One Finance UX.
-
-## FOBO user grid
-
-Columns from producer: Book, Amount, Pattern, Rec, Status. Sign-off sits **beside** the grid, not inside cells.
+View def: `datasetId` (must exist on the unit) + widget + fields + `report:{id}`.
 
 ## Do not
 
-- New chart library
-- Pivot on fields the dataset does not have
-- Authoring on the user’s sign-off page
-- Mobile report bytes — Now deep-links desktop
+- Build this in the first shell
+- Let the explorer invent a new source
+- Leave the group unit
+- Add Recharts
 ---

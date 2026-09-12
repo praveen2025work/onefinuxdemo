@@ -1,31 +1,28 @@
 ---
 name: engineering-view
-description: Use when onboarding a group unit, adding outcome config screens, binding sources, or enabling a BA to publish a Wijmo view after a dataset exists. Also use when a change would add if (FOBO), a per-report React app, or a fobo-service module.
+description: Use when onboarding a group unit or binding a known source of origin. Also use when a change would add if (FOBO), a day-one analyst studio, a per-report React app, or a fobo-service module.
 ---
 
 # Config and onboarding
 
-Development + outcome-config enable **group units**. They do not perform COB sign-off.
+Enable **group units** and **known sources**. Analyst exploration is later.
 
-## Screens (maker-checker)
+## Now (maker-checker)
 
 1. Onboard **group unit**
-2. Bind **source / destination**
-3. Register **outcome kit** (renderer + user actions: sign-off, post, open pack)
-4. Register **dataset** locator
-5. BA publishes **grid / pivot / chart** on that dataset — no new UI squad
+2. Bind **source of origin** / destination
+3. Register **outcome kit** + optional `embed.url`
+4. Record dataset **id** (origin only — no explorer)
+
+## Later
+
+Analyst in that unit explores those origins (`wijmo-outcome-grid`). Not this slice.
 
 ## Hard rules
 
-- New unit or outcome = data (`groupUnits/`, `products/<id>/`). No new Java type per unit.
-- New system = adapter + kit row. **REQUIRED:** `bind-source-destination`, `register-outcome-kit`.
-- Analysts compose Wijmo defs. Partner teams ship heavy screens and iframe in (`embed-partner-screen`). One Fin developers do not clone Helix.
-- Fold still has no product names. ArchUnit fails `if (FOBO)`.
-- Config users do not see colleague amounts unless also entitled as users.
-
-## SAP / Tableau analogue
-
-SAP-like: one shell, many units, master data = kits and bindings.  
-Tableau-like: BA authors views on a provided source.  
-Difference: views live **inside** One Finance UX and CEES, not a second estate.
+- New unit or outcome = YAML. No Java type per unit.
+- New system = adapter first. **REQUIRED:** `bind-source-destination`.
+- Partner heavy UI = iframe (`embed-partner-screen`). Do not clone Helix.
+- Do not start the BA studio because “Wijmo is licensed.”
+- Fold has no product names.
 ---

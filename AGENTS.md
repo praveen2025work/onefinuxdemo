@@ -12,9 +12,9 @@ Visual truth: `FoboControlTower_V2.html` (navy `#002D5F`, cyan `#00AEEF`).
 | BU head (outcomes only) | `.cursor/skills/bu-head-view` |
 | User sign-off / post | `.cursor/skills/colleague-view` |
 | RTB delays / escalations | `.cursor/skills/rtb-support-view` |
-| Config / onboard unit + BA views | `.cursor/skills/engineering-view` |
+| Config / onboard unit + known sources | `.cursor/skills/engineering-view` |
 | Sources / destinations | `.cursor/skills/bind-source-destination` |
-| Wijmo grid / pivot / chart | `.cursor/skills/wijmo-outcome-grid` |
+| Analyst explorer (later, same unit) | `.cursor/skills/wijmo-outcome-grid` |
 | New kit | `.cursor/skills/register-outcome-kit` |
 | Partner iframe + shared theme | `.cursor/skills/embed-partner-screen` |
 

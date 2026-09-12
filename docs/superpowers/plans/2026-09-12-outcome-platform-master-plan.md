@@ -14,7 +14,8 @@
 - Four jobs only: head, outcome user, RTB, config/onboarding.
 - Agents run; users sign off / post. Heads do not post.
 - Wijmo is the only grid/pivot/chart. Company licence. No Recharts for official views.
-- BA authors a Wijmo **view definition** after a dataset exists. Heavy UIs are **partner iframes**, not cloned in this repo.
+- **Sources of origin first.** Analyst exploration of those sources, inside the group unit, is a **later** slice — do not build the studio in Tasks 1–8.
+- Heavy UIs are **partner iframes**, not cloned in this repo.
 - Theme file `experience/theme/onefinux-tokens.css` is what other teams copy.
 - Feed-first ingest. LLM never in the fold.
 - Do not add manifesto/gallery screens.
@@ -67,21 +68,19 @@
 **Skills:** `barclays-ib-console`, `colleague-view`, `embed-partner-screen`
 
 - [ ] **Step 1:** User tower: entitled outcomes for their unit.
-- [ ] **Step 2:** Ready view: if kit has `embed.url`, iframe (allowlisted origin + context query). Else in-shell Wijmo. Sign off / Post from kit or from child `postMessage`.
+- [ ] **Step 2:** Ready view: kit `embed.url` iframe (allowlisted origin + context). Sign off / Post from kit or child `postMessage`. No analyst studio.
 - [ ] **Step 3:** Serve `/theme/onefinux-tokens.css` for partners.
 - [ ] **Step 4:** Blocked: named key above the frame.
 - [ ] **Step 5:** Commit `feat: outcome shell and partner iframe host`
 
 ---
 
-### Task 3: Wijmo host — grid, pivot, chart
+### Task 3: Record source of origin (catalog stub only)
 
-**Skills:** `wijmo-outcome-grid`
+**Skills:** `bind-source-destination`, `engineering-view`
 
-- [ ] **Step 1:** One host: FlexGrid | Pivot | FlexChart from a view definition.
-- [ ] **Step 2:** FOBO breaks bind as FlexGrid (Book, Amount, Pattern, Rec, Status).
-- [ ] **Step 3:** Config: BA saves a def against a registered dataset; checker publishes.
-- [ ] **Step 4:** Commit `feat: licensed Wijmo host and BA view defs`
+- [ ] **Step 1:** Register each known source (id, system, topic/mode, groupUnit). No explorer UI.
+- [ ] **Step 2:** Commit `feat: source-of-origin catalog without analyst studio`
 
 ---
 
@@ -99,9 +98,9 @@
 
 **Skills:** `engineering-view`
 
-- [ ] **Step 1:** Onboard group unit, bind source, register kit, register dataset.
-- [ ] **Step 2:** BA view publisher (grid/pivot/chart). Maker-checker.
-- [ ] **Step 3:** Commit `feat: group-unit onboarding and BA views`
+- [ ] **Step 1:** Onboard group unit, bind known sources, register kit + embed.url.
+- [ ] **Step 2:** Maker-checker. No BA explorer.
+- [ ] **Step 3:** Commit `feat: group-unit onboarding for known sources`
 
 ---
 
@@ -135,7 +134,20 @@
 
 ---
 
-## What we will not build
+### Task 9 (later): Analyst explores data in the group unit
+
+**Skills:** `wijmo-outcome-grid`
+
+Do not start until sources of origin are live and a unit asks to explore.
+
+- [ ] **Step 1:** Analyst job, CEES `groupUnit` + `dataset.read` on **already bound** origins only.
+- [ ] **Step 2:** Wijmo FlexGrid / Pivot / Chart on those locators. Save view def.
+- [ ] **Step 3:** New source still goes through config first — explorer cannot invent origin.
+- [ ] **Step 4:** Commit `feat: group-unit analyst explorer on known sources`
+
+---
+
+## What we will not build now
 
 - A FOBO application or FOBO Maven module
 - One React report per analyst request

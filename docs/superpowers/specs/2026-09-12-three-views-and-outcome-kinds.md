@@ -15,7 +15,8 @@ One Finance is the **shell and design system**. Heavy screens are built by **oth
 | **Business-unit head** | MD / BU lead | Track **outcomes** for their group unit: Ready / Blocked / Delayed / Escalated. Counts and SLA. | Open a rec, post to MOTIF, edit kits, read dead-letter payloads |
 | **Outcome user** | Reconciler, PC, Rev Acc, reg reporter | Agents already ran (Helix FOBO, Axiom, …). User opens the **ready output**, **signs off** or **posts**. | Configure sources, author new pivots for the group, chase Kafka offsets |
 | **Run-the-bank support** | L2/L3 ops | **Delays** (lag, aged, SLA breach) and **escalations**. Replay with dual control. | Sign off a break, publish a kit, invent match rules |
-| **Config / onboarding** | Outcome-config + platform + BA | Onboard a **group unit**, bind sources, register outcomes, publish **Wijmo grid / pivot / chart** defs when a dataset exists | Perform the user’s COB sign-off; write a one-off React report |
+| **Config / onboarding** | Outcome-config + platform | Onboard a **group unit**, bind **known sources of origin**, register outcomes, set `embed.url` | Perform COB sign-off; build analyst studio on day one |
+| **Analyst** *(later)* | BA in that group unit | Explore entitled data from sources already onboarded — Wijmo grid / pivot / chart **inside** One Fin UX | Invent a new source; leave the unit; a new React app |
 
 CEES scopes every job: `groupUnit:{id}`, `product:{id}`, `outcome:*`, `report:*`, `platform.support`, `platform.config`. Fail closed. Support and config are **not** tabs on the user’s rec.
 
@@ -29,10 +30,10 @@ A **group unit** is the onboarding boundary (Revenue Accounting, Product Control
 |---|---|
 | Set of business outcomes | Kits published into that unit |
 | Entitled people | CEES groups bound at `groupUnit` + product |
-| Dataset catalog | Locators the fold or a source already produced |
-| Wijmo workspace | FlexGrid, Pivot, FlexChart **definitions** (not new apps) |
+| Dataset catalog | Locators from sources of origin — **registered now**, explored **later** |
+| Wijmo workspace | Later: FlexGrid, Pivot, FlexChart defs for that unit only |
 
-Onboard a new unit = register the unit + sources + kits + datasets. The shell does not fork. FOBO Helix is one outcome inside one unit, not the platform.
+Onboard a unit now = people + **known sources** + outcome kits + partner embeds. Analyst exploration is a second slice on the same sources, same `groupUnitId`. The shell does not fork.
 
 Dimensions already in the platform (still generic): **group unit**, product, outcome instance, COB, region, slice, source, destination, renderer, entitlement.
 
@@ -74,29 +75,24 @@ Not a colleague rec. Not a config studio.
 
 ---
 
-## 6. Config / onboarding — enable the analyst, not a UI factory
+## 6. Config now — analyst later (same sources, same unit)
 
-When a **data source is provided** (feed mapped or locator registered), a business analyst in that group unit composes:
+**We know the source of origin.** Day one is bind those sources and run outcomes. Do not build the analyst studio yet.
 
-- **FlexGrid** — breaks, packs, lists (Helix FOBO columns, 15C3 lines)
-- **Pivot** — dimensions the dataset already has (book, region, product, COB, pattern)
-- **Chart** — Wijmo FlexChart on the same dataset
+| Now | Later (same app, same group unit) |
+|---|---|
+| Onboard unit, CEES, kits | Analyst job appears for that unit |
+| Bind CATS, MOTIF, MBR, SAP, Castle, Helix, FAS… | Explore those datasets in-app |
+| Partner iframe for Helix FOBO / Axiom | Wijmo FlexGrid / Pivot / Chart on entitled locators |
+| Register dataset **ids** (so we do not lose origin) | BA saves view defs — no new React report |
 
-These are **saved view definitions** (name, dataset id, widget type, field map, CEES `report:*`). They are not new React routes and not a second Tableau estate.
+Later rules:
 
-Company **already has a Wijmo licence**. Use it. Do not add Recharts/Highcharts for official views. Do not hire a squad per report.
+- Analyst sees **only** sources and locators already bound to their `groupUnitId`.
+- No new origin invented in the explorer. If they need a new feed, that is config + `bind-source-destination` first.
+- Licensed Wijmo. Not a second Tableau estate. Not 1000 UI developers.
 
-Config screens (maker-checker):
-
-1. Onboard group unit  
-2. Bind source / destination  
-3. Register outcome kit (`renderer` + pipeline steps)  
-4. Register dataset locator  
-5. BA publishes grid / pivot / chart bound to that locator  
-
-Platform engineers still own adapters and the fold. BAs do not write Java.
-
-Heavy product UIs (Helix FOBO Control Tower, Axiom pack) are **not** rebuilt here. Partner teams ship those apps, import `experience/theme/onefinux-tokens.css`, and we iframe them (section 7).
+Config screens now (maker-checker): group unit → source/destination → kit + optional `embed.url`. Dataset catalog is a stub (origin recorded). Explorer UI is phase 2.
 
 ---
 
@@ -126,10 +122,10 @@ If there is **no** partner screen, use the in-shell Wijmo host (BA views, simple
 | `ENGINE_REPORT` | Open pack, sign official | Pack ready / blocked |
 | `GRID_PACK` | Open Wijmo / export | Pack ready |
 | `NOTIFY_MILESTONE` | Ack inbox / Now | Milestone sent |
-| `ANALYST_VIEW` | Open saved grid/pivot/chart | Optional — only if published as an outcome |
+| `ANALYST_VIEW` | *(later)* Open saved grid/pivot/chart | Optional |
 
-`ANALYST_VIEW` is a kit whose on-ready is NOTIFY (dataset landed). Same host as other Wijmo views.  
-Any kind may set `embed.url` instead of (or beside) an in-shell Wijmo view.
+`ANALYST_VIEW` is phase 2. Same host, same sources of origin, scoped to the group unit.  
+Any day-one kind may set `embed.url` for a partner screen.
 
 ---
 

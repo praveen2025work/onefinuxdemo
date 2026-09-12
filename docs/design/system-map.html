@@ -166,15 +166,15 @@
       </div>
       <div class="card rail bo">
         <div class="tag">Config · platform.config</div>
-        <h3>Onboard / BA</h3>
-        <p>Group unit, bindings, kits, datasets. BA publishes FlexGrid / Pivot / Chart.</p>
-        <p>Does not perform COB sign-off. No React report per ask.</p>
+        <h3>Onboard sources</h3>
+        <p>Group unit, <strong>known source of origin</strong>, kits, embed.url. Record dataset ids.</p>
+        <p>Does not perform COB sign-off. Analyst studio is later.</p>
       </div>
     </div>
 
     <h2>2 · Group unit (SAP / Tableau tenant)</h2>
     <div class="card">
-      <p>Onboard a unit (Revenue Accounting, Product Control, Markets Ops…) = people + outcomes + datasets + Wijmo workspace. Shell does not fork. Dimensions: group unit · product · outcome instance · COB · region · slice · source · destination · renderer · entitlement.</p>
+      <p>Now: people + <strong>known sources of origin</strong> + outcome kits + partner embeds. Later: an analyst in <em>that</em> unit explores those same sources in-app (Wijmo). They cannot invent a new origin. Shell does not fork.</p>
     </div>
 
     <h2>3 · Runtime path (facts in, command out, humans last)</h2>
@@ -207,8 +207,8 @@
           <p>Child posts height · signedOff · posted · escalate. frame-src allowlist only.</p>
         </div>
         <div class="card">
-          <h3>In-shell Wijmo</h3>
-          <p>If no partner app: FlexGrid, Pivot, FlexChart from a saved view def. Licensed Wijmo. Not Recharts.</p>
+          <h3>Analyst · later</h3>
+          <p>Same app, same group unit, same registered origins. FlexGrid / Pivot / Chart then — not in the first slice.</p>
         </div>
       </div>
       <h2 style="margin-top:16px">Partner teams copy the theme — they keep the workload</h2>
@@ -228,7 +228,7 @@
       <tr><td><kbd>ENGINE_REPORT</kbd></td><td>15C3 · IFRS</td><td>Open pack, sign official</td><td>Pack ready / blocked</td></tr>
       <tr><td><kbd>GRID_PACK</kbd></td><td>PnL · month-end close</td><td>Open Wijmo / export</td><td>Pack ready</td></tr>
       <tr><td><kbd>NOTIFY_MILESTONE</kbd></td><td>Book Unlocked → P&amp;L Agent</td><td>Ack inbox / Barclays Now</td><td>Milestone sent</td></tr>
-      <tr><td><kbd>ANALYST_VIEW</kbd></td><td>BA grid / pivot / chart</td><td>Open saved view</td><td>Optional if published</td></tr>
+      <tr><td><kbd>ANALYST_VIEW</kbd></td><td>Later · explore unit sources</td><td>Open saved Wijmo view</td><td>Optional</td></tr>
     </table>
 
     <h2>6 · What we will not build</h2>
@@ -249,7 +249,7 @@
         <ul>
           <li>One theme, many group units</li>
           <li>Partner iframe + copied tokens</li>
-          <li>Wijmo view defs when a dataset exists</li>
+          <li>Source catalog now; analyst explorer later on those origins</li>
           <li>Feed-first ingest, command destinations</li>
           <li>Head / user / RTB / config only</li>
           <li>FOBO as the first HELIX_RECON kit</li>
