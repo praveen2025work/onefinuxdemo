@@ -146,6 +146,8 @@ mvn test
 
 ## From POC to production (summary; details in the BRD)
 
+The target enterprise architecture — event bus, outcome registry / Admin, FOBO and regulatory-report readiness rules, entitlements, and the unified WisMO / template report viewer — is specified in [`docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md`](docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md).
+
 | POC | Production |
 |---|---|
 | H2 file DB | Oracle 19c (event store, outcome registry, notifications) |
