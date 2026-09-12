@@ -163,7 +163,8 @@ Any kind may set `embed.url` instead of (or beside) an in-shell Wijmo view.
 | `register-outcome-kit` | New outcome or group-unit kit |
 | `embed-partner-screen` | Iframe host + theme for other teams |
 
-Master plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`.
+Master plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`.  
+**System map (all thoughts on one poster):** `docs/design/system-map.html`.
 
 ## 11. Visual tokens
 

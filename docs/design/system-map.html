@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One Finance UX — system map</title>
+  <style>
+    :root {
+      --ofx-navy: #002d5f;
+      --ofx-navy-deep: #001e45;
+      --ofx-cyan: #00aeef;
+      --ofx-page: #eef2f7;
+      --ofx-card: #ffffff;
+      --ofx-ink: #0d1b2e;
+      --ofx-muted: #4e6880;
+      --ofx-line: rgba(0, 45, 95, 0.12);
+      --ofx-ok: #1a7a45;
+      --ofx-wait: #a05c08;
+      --ofx-fail: #b02020;
+      --ofx-bo: #4e3c9a;
+      --ofx-font: "Segoe UI", Helvetica, Arial, sans-serif;
+      --ofx-mono: ui-monospace, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--ofx-page);
+      color: var(--ofx-ink);
+      font: 13px/1.4 var(--ofx-font);
+    }
+    .mast {
+      background: var(--ofx-navy);
+      color: #fff;
+      padding: 14px 22px 12px;
+      border-bottom: 3px solid var(--ofx-cyan);
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .mast h1 { margin: 0; font-size: 20px; font-weight: 600; }
+    .mast p { margin: 4px 0 0; color: #c5d4e0; font-size: 12px; }
+    .mast .meta { font-family: var(--ofx-mono); font-size: 11px; color: #d5e0e8; text-align: right; }
+    .wrap { max-width: 1280px; margin: 0 auto; padding: 16px 20px 40px; }
+    h2 {
+      margin: 20px 0 8px;
+      font-size: 11px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--ofx-muted);
+      font-family: var(--ofx-mono);
+    }
+    .lede { color: var(--ofx-muted); margin: 0 0 12px; max-width: 90ch; }
+    .row { display: grid; gap: 10px; }
+    .jobs { grid-template-columns: repeat(4, 1fr); }
+    .lanes { grid-template-columns: 1fr 1.3fr 1fr; }
+    .kinds { grid-template-columns: repeat(5, 1fr); }
+    .two { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 980px) {
+      .jobs, .lanes, .kinds, .two { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--ofx-card);
+      border: 1px solid var(--ofx-line);
+      padding: 10px 12px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 14px; color: var(--ofx-navy); }
+    .card p, .card li { margin: 0 0 4px; color: var(--ofx-ink); font-size: 12px; }
+    .card ul { margin: 0; padding-left: 16px; }
+    .tag {
+      display: inline-block;
+      font-family: var(--ofx-mono);
+      font-size: 10px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--ofx-muted);
+      margin-bottom: 4px;
+    }
+    .rail { border-left: 4px solid var(--ofx-navy); }
+    .rail.ok { border-left-color: var(--ofx-ok); }
+    .rail.wait { border-left-color: var(--ofx-wait); }
+    .rail.fail { border-left-color: var(--ofx-fail); }
+    .rail.cyan { border-left-color: var(--ofx-cyan); }
+    .rail.bo { border-left-color: var(--ofx-bo); }
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0;
+    }
+    .flow .box {
+      flex: 1 1 140px;
+      background: var(--ofx-card);
+      border: 1px solid var(--ofx-line);
+      padding: 10px;
+      min-width: 120px;
+    }
+    .flow .arr {
+      display: flex;
+      align-items: center;
+      padding: 0 4px;
+      color: var(--ofx-cyan);
+      font-weight: 700;
+    }
+    .box strong { display: block; color: var(--ofx-navy); font-size: 12px; margin-bottom: 4px; }
+    .box span { color: var(--ofx-muted); font-size: 11px; }
+    .shell {
+      background: var(--ofx-navy-deep);
+      color: #e8eef3;
+      padding: 14px;
+    }
+    .shell h2 { color: var(--ofx-cyan); margin-top: 0; }
+    .shell .row { margin-top: 8px; }
+    .shell .card {
+      background: rgba(255,255,255,.04);
+      border-color: rgba(255,255,255,.12);
+      color: #e8eef3;
+    }
+    .shell .card h3 { color: #fff; }
+    .shell .card p, .shell .card li { color: #c5d4e0; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--ofx-line); vertical-align: top; }
+    th {
+      font-family: var(--ofx-mono);
+      font-size: 10px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ofx-muted);
+      background: #f4f6f8;
+    }
+    .note { font-size: 11px; color: var(--ofx-muted); margin-top: 8px; }
+    kbd { font-family: var(--ofx-mono); font-size: 11px; }
+  </style>
+</head>
+<body>
+  <header class="mast">
+    <div>
+      <h1>One Finance UX — system map</h1>
+      <p>Umbrella for group units and business outcomes. FOBO Helix is one kit, not the application.</p>
+    </div>
+    <div class="meta">Barclays navy #002D5F · cyan #00AEEF<br>Theme: /theme/onefinux-tokens.css</div>
+  </header>
+
+  <div class="wrap">
+    <p class="lede">One entitled shell, one event fold, one theme. Other teams build heavy screens and we iframe them. Business analysts publish Wijmo grid, pivot, and chart when a source exists. Agents run the job; users sign off or post.</p>
+
+    <h2>1 · Four jobs under the umbrella</h2>
+    <div class="row jobs">
+      <div class="card rail cyan">
+        <div class="tag">Head · CEES groupUnit</div>
+        <h3>Business-unit head</h3>
+        <p>Track outcomes only: Ready / Blocked / Delayed / Escalated. Counts and SLA.</p>
+        <p>Does not post, open books, or edit kits.</p>
+      </div>
+      <div class="card rail ok">
+        <div class="tag">User · product + outcome</div>
+        <h3>Outcome user</h3>
+        <p>Agents already ran (Helix FOBO, Axiom…). Open ready output. <strong>Sign off or post.</strong></p>
+        <p>Does not configure sources or design pivots.</p>
+      </div>
+      <div class="card rail wait">
+        <div class="tag">RTB · platform.support</div>
+        <h3>Run the bank</h3>
+        <p>Delays, aged, SLA miss, escalations. Dual-control replay. Dead letters.</p>
+        <p>Does not sign off a rec or publish a kit.</p>
+      </div>
+      <div class="card rail bo">
+        <div class="tag">Config · platform.config</div>
+        <h3>Onboard / BA</h3>
+        <p>Group unit, bindings, kits, datasets. BA publishes FlexGrid / Pivot / Chart.</p>
+        <p>Does not perform COB sign-off. No React report per ask.</p>
+      </div>
+    </div>
+
+    <h2>2 · Group unit (SAP / Tableau tenant)</h2>
+    <div class="card">
+      <p>Onboard a unit (Revenue Accounting, Product Control, Markets Ops…) = people + outcomes + datasets + Wijmo workspace. Shell does not fork. Dimensions: group unit · product · outcome instance · COB · region · slice · source · destination · renderer · entitlement.</p>
+    </div>
+
+    <h2>3 · Runtime path (facts in, command out, humans last)</h2>
+    <div class="flow">
+      <div class="box"><strong>Their feeds</strong><span>CATS · MOTIF · MBR · SAP · Castle. We subscribe. No SoR poll. Teams that cannot notify us — we read their topic.</span></div>
+      <div class="arr">→</div>
+      <div class="box"><strong>Gateway</strong><span>Map to onefinux.fact.v1. Idempotent id + offset. Watermark.</span></div>
+      <div class="arr">→</div>
+      <div class="box"><strong>Bus</strong><span>Solace or Kafka. Never in the browser. facts · commands · workflow · notify · advisory</span></div>
+      <div class="arr">→</div>
+      <div class="box"><strong>Hub fold</strong><span>Events are facts. Distinct keys. FAILED blocks. REVOKED withdraws. Completions echo runId. No if (FOBO).</span></div>
+      <div class="arr">→</div>
+      <div class="box"><strong>Destinations</strong><span>Command Helix / Axiom / FAS. Notify P&amp;L. We send alerts. Sources do not.</span></div>
+      <div class="arr">→</div>
+      <div class="box"><strong>Human edge</strong><span>CEES filter. REST snapshot + Spring SSE. Head · user · RTB · config.</span></div>
+    </div>
+    <p class="note">Advisory LLM (Agent Analysis) sits beside the fold. Never a readiness input.</p>
+
+    <h2>4 · One Finance UX shell vs partner screens</h2>
+    <div class="shell">
+      <h2>Shell we own</h2>
+      <div class="row lanes">
+        <div class="card">
+          <h3>Chrome + cards</h3>
+          <p>Four jobs. Named blockers. Theme tokens. CEES before anything renders.</p>
+        </div>
+        <div class="card">
+          <h3>Iframe host</h3>
+          <p>Kit <kbd>embed.url</kbd> + <kbd>allowedOrigin</kbd>. Pass groupUnit, outcome, COB, region, runId, theme=ofx.</p>
+          <p>Child posts height · signedOff · posted · escalate. frame-src allowlist only.</p>
+        </div>
+        <div class="card">
+          <h3>In-shell Wijmo</h3>
+          <p>If no partner app: FlexGrid, Pivot, FlexChart from a saved view def. Licensed Wijmo. Not Recharts.</p>
+        </div>
+      </div>
+      <h2 style="margin-top:16px">Partner teams copy the theme — they keep the workload</h2>
+      <div class="row kinds">
+        <div class="card"><h3>Helix FOBO</h3><p>Control Tower V2 body. Sign-off / post to MOTIF (FAS).</p></div>
+        <div class="card"><h3>Axiom / 15C3</h3><p>Official pack viewer.</p></div>
+        <div class="card"><h3>Rec Factory</h3><p>CATS ↔ MOTIF breaks they already own.</p></div>
+        <div class="card"><h3>Theme</h3><p>Import /theme/onefinux-tokens.css. data-ofx-embedded=1. No second masthead.</p></div>
+        <div class="card"><h3>ACL</h3><p>Their ACL still applies. We still check CEES before the frame.</p></div>
+      </div>
+    </div>
+
+    <h2>5 · Outcome kinds (renderer on the kit, not a Java type)</h2>
+    <table>
+      <tr><th>Kind</th><th>Example</th><th>When ready the user…</th><th>Head sees</th></tr>
+      <tr><td><kbd>HELIX_RECON</kbd></td><td>CATS vs MOTIF Rates / FX / Credit · Rec Factory Cash</td><td>Sign off or post (iframe or grid)</td><td>Cleared / blocked / delayed</td></tr>
+      <tr><td><kbd>ENGINE_REPORT</kbd></td><td>15C3 · IFRS</td><td>Open pack, sign official</td><td>Pack ready / blocked</td></tr>
+      <tr><td><kbd>GRID_PACK</kbd></td><td>PnL · month-end close</td><td>Open Wijmo / export</td><td>Pack ready</td></tr>
+      <tr><td><kbd>NOTIFY_MILESTONE</kbd></td><td>Book Unlocked → P&amp;L Agent</td><td>Ack inbox / Barclays Now</td><td>Milestone sent</td></tr>
+      <tr><td><kbd>ANALYST_VIEW</kbd></td><td>BA grid / pivot / chart</td><td>Open saved view</td><td>Optional if published</td></tr>
+    </table>
+
+    <h2>6 · What we will not build</h2>
+    <div class="row two">
+      <div class="card rail fail">
+        <h3>Out</h3>
+        <ul>
+          <li>FOBO app or FOBO Java module</li>
+          <li>if (product == FOBO)</li>
+          <li>1000 developers drawing reports</li>
+          <li>Second Tableau / SAP BI estate</li>
+          <li>Kafka in the browser · LLM on the fold</li>
+          <li>Magazine / cream / serif chrome</li>
+        </ul>
+      </div>
+      <div class="card rail ok">
+        <h3>In</h3>
+        <ul>
+          <li>One theme, many group units</li>
+          <li>Partner iframe + copied tokens</li>
+          <li>Wijmo view defs when a dataset exists</li>
+          <li>Feed-first ingest, command destinations</li>
+          <li>Head / user / RTB / config only</li>
+          <li>FOBO as the first HELIX_RECON kit</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
