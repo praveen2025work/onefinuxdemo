@@ -1,0 +1,56 @@
+/**
+ * One Finance UX theme — copy this file.
+ * Other teams import it so iframed screens match the shell.
+ * Do not invent a second palette. Do not use cream/serif magazine chrome.
+ *
+ *   <link rel="stylesheet" href="https://<one-fin-ux-host>/theme/onefinux-tokens.css">
+ *   <body class="ofx-app"> … use var(--ofx-*) only.
+ */
+:root {
+  --ofx-navy: #002d5f;
+  --ofx-navy-deep: #001e45;
+  --ofx-cyan: #00aeef;
+  --ofx-page: #eef2f7;
+  --ofx-card: #ffffff;
+  --ofx-ink: #0d1b2e;
+  --ofx-muted: #4e6880;
+  --ofx-line: rgba(0, 45, 95, 0.12);
+  --ofx-ok: #1a7a45;
+  --ofx-wait: #a05c08;
+  --ofx-fail: #b02020;
+  --ofx-bo: #4e3c9a;
+  --ofx-font: "IBM Plex Sans", Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
+  --ofx-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+
+.ofx-app {
+  margin: 0;
+  background: var(--ofx-page);
+  color: var(--ofx-ink);
+  font-family: var(--ofx-font);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ofx-app[data-ofx-embedded="1"] {
+  /* Host already drew the masthead. Partner paints body only. */
+  background: var(--ofx-page);
+}
+
+.ofx-card {
+  background: var(--ofx-card);
+  border: 1px solid var(--ofx-line);
+  padding: 12px 14px;
+}
+
+.ofx-btn {
+  background: var(--ofx-navy);
+  color: #fff;
+  border: 1px solid var(--ofx-navy);
+  padding: 6px 12px;
+  font: 500 12px/1.2 var(--ofx-font);
+}
+
+.ofx-btn:disabled {
+  opacity: 0.45;
+}

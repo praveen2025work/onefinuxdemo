@@ -1,6 +1,6 @@
 ---
 name: barclays-ib-console
-description: Use when building or restyling any One Finance web screen, Control Tower, cockpit, report host, or support/engineering chrome. Also use when a mock looks editorial, cream, serif, or unlike FoboControlTower_V2.
+description: Use when building One Finance chrome or when another team must copy the One Fin UX theme for an iframed screen. Also use when a mock looks editorial, cream, serif, or unlike FoboControlTower_V2.
 ---
 
 # Barclays IB console
@@ -29,6 +29,10 @@ Font: Manrope or IBM Plex Sans. Mono for rec ids, times, money.
 Header: product name · COB date · region · env · entitled role. Gold/cyan 2–3px rule under navy is acceptable; no serif H1s, no cream paper, no Newsreader.
 
 Cards: 1px `#002D5F` at 12% opacity, left rail for status. Book bars use `--bar-auto`, `--bar-cleared`, `--bar-awaiting`, `--bar-blocked`, `--bar-notopen`.
+
+## Other teams
+
+Ship `experience/theme/onefinux-tokens.css` as `/theme/onefinux-tokens.css`. Partners import it and use `--ofx-*` only. Iframed body sets `data-ofx-embedded="1"` and **omits** a second header. **REQUIRED:** `embed-partner-screen` for the host contract.
 
 ## Common mistakes
 

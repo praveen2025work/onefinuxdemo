@@ -1,27 +1,30 @@
 # One Finance UX — agent notes
 
-Multi-product **outcome platform**. FOBO is the first `HELIX_RECON` kit, not the app.
+Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app.
 
-Visual truth: uploaded `FoboControlTower_V2.html` (Barclays navy `#002D5F`, cyan `#00AEEF`).
+Visual truth: `FoboControlTower_V2.html` (navy `#002D5F`, cyan `#00AEEF`).
 
-## Skills (load by job)
+## Four jobs → skills
 
 | Job | Skill |
 |---|---|
-| Any UI chrome | `.cursor/skills/barclays-ib-console` |
-| Colleague tower / cockpit / reports | `.cursor/skills/colleague-view` |
-| Kits, contracts, adapters | `.cursor/skills/engineering-view` |
-| Dead letters, replay, lag | `.cursor/skills/rtb-support-view` |
-| CATS/MOTIF/Helix/FAS/SAP… | `.cursor/skills/bind-source-destination` |
-| Breaks / packs / WisMO | `.cursor/skills/wijmo-outcome-grid` |
-| New product | `.cursor/skills/register-outcome-kit` |
+| Any chrome | `.cursor/skills/barclays-ib-console` |
+| BU head (outcomes only) | `.cursor/skills/bu-head-view` |
+| User sign-off / post | `.cursor/skills/colleague-view` |
+| RTB delays / escalations | `.cursor/skills/rtb-support-view` |
+| Config / onboard unit + BA views | `.cursor/skills/engineering-view` |
+| Sources / destinations | `.cursor/skills/bind-source-destination` |
+| Wijmo grid / pivot / chart | `.cursor/skills/wijmo-outcome-grid` |
+| New kit | `.cursor/skills/register-outcome-kit` |
+| Partner iframe + shared theme | `.cursor/skills/embed-partner-screen` |
 
-Master plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`  
-Outcome kinds: `docs/superpowers/specs/2026-09-12-three-views-and-outcome-kinds.md`
+Plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`  
+Model: `docs/superpowers/specs/2026-09-12-three-views-and-outcome-kinds.md`
 
 ## Never
 
-- `if (product == FOBO)` in Java or React
+- `if (product == FOBO)`
+- Rebuild a partner screen that can be iframed
+- A React report per analyst ask (Wijmo def or partner iframe)
 - LLM on the readiness path
 - Kafka in the browser
-- Extra manifesto/gallery screens

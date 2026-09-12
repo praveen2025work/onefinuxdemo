@@ -4,7 +4,7 @@
 **Source of visual truth:** `FoboControlTower_V2.html` (Barclays navy `#002D5F`, cyan `#00AEEF`)  
 **Umbrella:** One Finance UX. Group units onboard their own outcomes. We do not staff 1000 UI developers to draw reports.
 
-One Finance is the **SAP/Tableau-shaped uniqueness** for the bank: one entitled shell, one event fold, one Wijmo studio — many group units, many business outcomes.
+One Finance is the **shell and design system**. Heavy screens are built by **other teams** and **iframed** in. Everyone copies one theme so the bank looks like one product.
 
 ---
 
@@ -96,9 +96,29 @@ Config screens (maker-checker):
 
 Platform engineers still own adapters and the fold. BAs do not write Java.
 
+Heavy product UIs (Helix FOBO Control Tower, Axiom pack) are **not** rebuilt here. Partner teams ship those apps, import `experience/theme/onefinux-tokens.css`, and we iframe them (section 7).
+
 ---
 
-## 7. Outcome kinds (unchanged renderers)
+## 7. Federated screens (iframe + shared theme)
+
+Workload is distributed. Design is not.
+
+| One Finance UX owns | Partner team owns |
+|---|---|
+| Four jobs’ chrome, cards, config, RTB | Helix FOBO body, Axiom viewer, Rec Factory, … |
+| Theme tokens (`/theme/onefinux-tokens.css`) | Import tokens; no second masthead |
+| Kit `embed.url` + `allowedOrigin` | Their deployable URL |
+| CEES gate before the frame is shown | Their own ACL on the framed app |
+
+Context into the iframe: `groupUnitId`, `productId`, `outcomeId`, `cobDate`, `region`, `runId`, `theme=ofx`.  
+Events out (postMessage, allowlisted origin): height, signedOff, posted, escalate.
+
+If there is **no** partner screen, use the in-shell Wijmo host (BA views, simple packs). Do not staff One Fin developers to clone Helix.
+
+---
+
+## 8. Outcome kinds
 
 | Kind | User action when ready | Head sees |
 |---|---|---|
@@ -108,16 +128,18 @@ Platform engineers still own adapters and the fold. BAs do not write Java.
 | `NOTIFY_MILESTONE` | Ack inbox / Now | Milestone sent |
 | `ANALYST_VIEW` | Open saved grid/pivot/chart | Optional — only if published as an outcome |
 
-`ANALYST_VIEW` is a kit whose on-ready is NOTIFY (dataset landed). Same host as other Wijmo views.
+`ANALYST_VIEW` is a kit whose on-ready is NOTIFY (dataset landed). Same host as other Wijmo views.  
+Any kind may set `embed.url` instead of (or beside) an in-shell Wijmo view.
 
 ---
 
-## 8. Entities
+## 9. Entities
 
 | Entity | Purpose |
 |---|---|
 | Group unit | Tenant for outcomes + Wijmo workspace |
-| Product kit | Question, ingest, universe, SLA, on-ready, reports, CEES, renderer, `groupUnitId` |
+| Product kit | Question, ingest, universe, SLA, on-ready, reports, CEES, renderer, `groupUnitId`, optional `embed` |
+| Partner embed | Allowlisted URL + origin; framed when entitled |
 | Source / destination binding | Read their feed; command Helix/Axiom/FAS |
 | Outcome instance | COB + region + slice |
 | Dataset | Entitled locator (Helix JSON, Axiom pack, mapped feed) |
@@ -127,7 +149,7 @@ Platform engineers still own adapters and the fold. BAs do not write Java.
 
 ---
 
-## 9. Skills
+## 10. Skills
 
 | Skill | Load when |
 |---|---|
@@ -139,9 +161,10 @@ Platform engineers still own adapters and the fold. BAs do not write Java.
 | `bind-source-destination` | New source or destination |
 | `wijmo-outcome-grid` | FlexGrid, Pivot, Chart, BA authoring |
 | `register-outcome-kit` | New outcome or group-unit kit |
+| `embed-partner-screen` | Iframe host + theme for other teams |
 
 Master plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`.
 
-## 10. Visual tokens
+## 11. Visual tokens
 
 Unchanged: navy `#002D5F`, cyan `#00AEEF`, page `#EEF2F7`, card white, Manrope or IBM Plex. Copy Control Tower V2, not magazine chrome.

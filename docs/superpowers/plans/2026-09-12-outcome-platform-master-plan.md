@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking. Load the skill named on the task before writing code.
 
-**Goal:** One Finance UX is the umbrella: group units onboard outcomes; agents run the job; users sign off or post; heads see status only; support sees delays/escalations; BAs publish Wijmo grid/pivot/chart when a source exists.
+**Goal:** One Finance UX is the umbrella and theme source. Other teams build heavy screens, copy `onefinux-tokens.css`, and we iframe them. Heads, users, RTB, and config stay in the shell.
 
 **Architecture:** Group unit + product kit + four user jobs. Renderers: `HELIX_RECON`, `ENGINE_REPORT`, `GRID_PACK`, `NOTIFY_MILESTONE`, `ANALYST_VIEW`. SoRs stay SoRs. No `if (FOBO)`. No per-report React apps.
 
@@ -14,7 +14,8 @@
 - Four jobs only: head, outcome user, RTB, config/onboarding.
 - Agents run; users sign off / post. Heads do not post.
 - Wijmo is the only grid/pivot/chart. Company licence. No Recharts for official views.
-- BA authors a **view definition** after a dataset is registered — not a new UI project.
+- BA authors a Wijmo **view definition** after a dataset exists. Heavy UIs are **partner iframes**, not cloned in this repo.
+- Theme file `experience/theme/onefinux-tokens.css` is what other teams copy.
 - Feed-first ingest. LLM never in the fold.
 - Do not add manifesto/gallery screens.
 
@@ -31,6 +32,7 @@
 | Onboard a group unit + outcomes | `engineering-view`, `register-outcome-kit` |
 | New CATS/MOTIF/SAP/Helix/FAS binding | `bind-source-destination`, `engineering-view` |
 | BA grid / pivot / chart on a dataset | `wijmo-outcome-grid`, `engineering-view` |
+| Iframe Helix/Axiom (or any partner) screen | `embed-partner-screen`, `barclays-ib-console` |
 
 ---
 
@@ -41,7 +43,8 @@
 | `groupUnits/<id>.yaml` | Tenant: name, CEES, default region |
 | `products/_kit.schema.json` | Kit + `groupUnitId` + `userActions` + `renderer` |
 | `products/fobo/v1/product.yaml` | First HELIX_RECON |
-| `experience/web/` | Four route trees: head, user, support, config |
+| `experience/web/` | Four route trees: head, user, support, config + iframe host |
+| `experience/theme/onefinux-tokens.css` | Theme other teams copy |
 | `adapters/<source>-feed/` | Their existing feed |
 | `onefinux-hub` | Fold — no product types |
 
@@ -59,14 +62,15 @@
 
 ---
 
-### Task 2: Outcome-user sign-off / post (V2 style)
+### Task 2: Outcome-user shell + partner iframe host
 
-**Skills:** `barclays-ib-console`, `colleague-view`
+**Skills:** `barclays-ib-console`, `colleague-view`, `embed-partner-screen`
 
 - [ ] **Step 1:** User tower: entitled outcomes for their unit.
-- [ ] **Step 2:** Ready view: output + Sign off / Post from kit. Disabled until fold Ready.
-- [ ] **Step 3:** Blocked: named key only.
-- [ ] **Step 4:** Commit `feat: outcome user sign-off and post`
+- [ ] **Step 2:** Ready view: if kit has `embed.url`, iframe (allowlisted origin + context query). Else in-shell Wijmo. Sign off / Post from kit or from child `postMessage`.
+- [ ] **Step 3:** Serve `/theme/onefinux-tokens.css` for partners.
+- [ ] **Step 4:** Blocked: named key above the frame.
+- [ ] **Step 5:** Commit `feat: outcome shell and partner iframe host`
 
 ---
 

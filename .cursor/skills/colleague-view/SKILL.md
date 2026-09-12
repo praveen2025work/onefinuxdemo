@@ -10,7 +10,7 @@ Agents / engines **already ran**. The user opens the ready output and **signs of
 ## Surfaces
 
 1. **My outcomes** — entitled cards for this group unit (sample: CATS vs MOTIF recs).
-2. **Ready view** — Wijmo output + Sign off / Post (kit actions).
+2. **Ready view** — kit `embed.url` iframe (partner Helix/Axiom screen) **or** in-shell Wijmo + Sign off / Post.
 3. **Blocked view** — named missing key only.
 4. **Inbox / Now** — we notified them that output is ready.
 
@@ -20,7 +20,7 @@ Agents / engines **already ran**. The user opens the ready output and **signs of
 - Sign off / Post disabled until Ready/Cleared **and** CEES + federated ACL.
 - Pipeline steps come from the kit (FOBO sample: ingest → analysis → post MOTIF → notify P&L).
 - Agent text is advisory. Sign-off is the fact.
-- **REQUIRED:** `barclays-ib-console`. Grids: `wijmo-outcome-grid`.
+- **REQUIRED:** `barclays-ib-console`. Partner body: `embed-partner-screen`. In-shell grids: `wijmo-outcome-grid`.
 
 ## Do not
 

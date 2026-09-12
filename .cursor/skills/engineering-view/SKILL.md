@@ -19,7 +19,7 @@ Development + outcome-config enable **group units**. They do not perform COB sig
 
 - New unit or outcome = data (`groupUnits/`, `products/<id>/`). No new Java type per unit.
 - New system = adapter + kit row. **REQUIRED:** `bind-source-destination`, `register-outcome-kit`.
-- Analysts compose Wijmo defs. Developers do not ship one React report per ask.
+- Analysts compose Wijmo defs. Partner teams ship heavy screens and iframe in (`embed-partner-screen`). One Fin developers do not clone Helix.
 - Fold still has no product names. ArchUnit fails `if (FOBO)`.
 - Config users do not see colleague amounts unless also entitled as users.
 

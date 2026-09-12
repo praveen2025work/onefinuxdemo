@@ -9,7 +9,7 @@ A product is **YAML**. The tower, fold, SSE, and Wijmo host do not change.
 
 ## Kit fields
 
-`groupUnitId`, `productId`, `domain`, `question`, `ingest[]`, `universe`, `sla`, `onReady`, `reports[]`, `cees`, `renderer`, `userActions` (sign-off / post / open / ack)
+`groupUnitId`, `productId`, `domain`, `question`, `ingest[]`, `universe`, `sla`, `onReady`, `reports[]`, `cees`, `renderer`, `userActions`, optional `embed.url` + `embed.allowedOrigin`
 
 `renderer`: `HELIX_RECON` | `ENGINE_REPORT` | `GRID_PACK` | `NOTIFY_MILESTONE` | `ANALYST_VIEW`
 
@@ -18,7 +18,7 @@ A product is **YAML**. The tower, fold, SSE, and Wijmo host do not change.
 1. Group unit exists (`groupUnits/<id>.yaml`).
 2. `products/<id>/v1/product.yaml` — no new Java type.
 3. Bind sources/destinations (`bind-source-destination`).
-4. Optional dataset + Wijmo view (`wijmo-outcome-grid`).
+4. Optional `embed` (partner screen) and/or dataset + Wijmo view.
 5. Maker-checker publish. User card appears for CEES `groupUnit` + `product`.
 
 ## FOBO first kit (copy shape, not code)
@@ -26,7 +26,7 @@ A product is **YAML**. The tower, fold, SSE, and Wijmo host do not change.
 - Question: Can I execute this rec?
 - Ingest: CATS, MOTIF, MBR/Rec Factory as FEED
 - On ready: COMMAND Helix; then optional FAS post; NOTIFY P&L
-- Report: Wijmo breaks
+- Report: partner FOBO tower via `embed.url`, or Wijmo breaks
 - Renderer: `HELIX_RECON`
 
 ## Forbidden
