@@ -3,9 +3,9 @@
 **Status:** proposed  
 **Date:** 2026-09-12  
 **Companion to:** `2026-09-12-enterprise-event-platform-design.md`  
-**Visuals:** `docs/design/dreamliner/` (Control Tower, FOBO cockpit, Reports, Admin, architecture poster)
+**Visuals:** `docs/design/dreamliner/` (Products catalogue, Control Tower, generic Outcome cockpit, Reports, Admin, architecture poster)
 
-This is the **Dreamliner** document: how a strategic pilot looks, talks, and is engineered so every later “business kind” (FOBO, 15C3, IFRS, month-end) is a configuration of the same aircraft, not a new airframe.
+This is the **Dreamliner** document: how a strategic pilot looks, talks, and is engineered so One Finance is a **multi-product outcome platform**. FOBO is one route on the first flight. 15C3, IFRS, PnL, month-end, liquidity, and products we have not named yet are the same aircraft — registry records, not new applications.
 
 ---
 
@@ -27,9 +27,9 @@ We compared public products and bank event-mesh practice. None of them is this p
 
 **Positioning line for the steering committee**
 
-> BlackLine tells you the *close task* is done. AxiomSL produces the *report*. Helix matches the *rec*. One Finance is the only place that answers *whether those machines are allowed to run*, tells them to run, and lets the entitled colleague open the result — from Motif book facts, not from a checklist.
+> One Finance is not the FOBO app. It is the bank’s **business-outcome platform**. Each product — FOBO recs, 15C3, IFRS, PnL, month-end, and the next mandate — is the same kit: question, inputs, universe, command, entitled report. Helix, Axiom, and close engines stay the processors. We answer whether they may run, tell them to run, and open the result for the people who are allowed to see it.
 
-That is the Dreamliner: one airframe, many routes.
+That is the Dreamliner: one airframe, many products. FOBO is only the first destination on the timetable.
 
 Industry sources used: BlackLine vs Cadency close platforms; Workiva–Trintech R2R connector; Nasdaq AxiomSL ControllerView / LineageView; Solace + Kong guidance that **Kafka does not speak WebSocket/SSE** and banks put a gateway in front of browsers.
 
@@ -241,7 +241,7 @@ Twelve screens. That is the whole product. New “business kinds” add **cards 
 | # | Screen | User | Job | Entitlement |
 |---|---|---|---|---|
 | 1 | **Control Tower** | Controller / HoD | See every entitled outcome as a flight instrument: question, answer, risk | `outcome.read` filter |
-| 2 | **Outcome cockpit** | Controller | 80/100 keys, named failures, override, re-run, Explain | `read` + verbs for actions |
+| 2 | **Outcome cockpit** (same chrome for every product) | Controller | 80/100 keys, named failures, override, re-run, Explain | `read` + verbs for actions |
 | 3 | **Lineage / event tape** | Controller / audit | Why this state; replay-safe | `read` |
 | 4 | **My Reports** | Reporter / controller | Predefined entitled gallery | `report.view` |
 | 5 | **Report viewer** | Same | WisMO / template / file | `view` + federated check |
@@ -255,7 +255,22 @@ Twelve screens. That is the whole product. New “business kinds” add **cards 
 
 Wallboard mode of (1) is the **steering-committee demo**: a dark room, three instruments, live 80→100, Helix commanded, pack opens. That is the Dreamliner takeoff.
 
-Interactive mockups live in `docs/design/dreamliner/`.
+Interactive mockups live in `docs/design/dreamliner/`. The **Products** page is the catalogue of business kinds — FOBO is one row among many.
+
+### Anti-pattern: “the FOBO app”
+
+Do not:
+
+- Name services, packages, or screens `fobo-*` except as sample data
+- Put Motif book grids in the platform chrome (the cockpit *projects* a universe; the universe type is metadata)
+- Staff a “FOBO squad” that owns the engine
+- Pitch One Finance as a Helix front-end
+
+Do:
+
+- Staff a **platform** squad (hub, registry, entitlements, viewer) and **product owners** per domain who only edit kit fields
+- Pilot with two unlike products on day one (e.g. FOBO **and** 15C3) so nobody can mistake the platform for a rec tool
+- Add the third product (IFRS or month-end) from Admin in the same release train, with no deploy of fold code
 
 ---
 

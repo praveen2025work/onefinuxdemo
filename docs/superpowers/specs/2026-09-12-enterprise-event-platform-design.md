@@ -208,7 +208,8 @@ flowchart TB
 
 | Entity | Meaning | Stability |
 |---|---|---|
-| **Domain** | Bank-wide partition of ownership: `REVENUE_ACCOUNTING`, `PRODUCT_CONTROL`, `REG_REPORTING`, `TREASURY`, … | Slow |
+| **Domain** | Bank-wide partition of ownership: `REVENUE_ACCOUNTING`, `PRODUCT_CONTROL`, `REG_REPORTING`, `TREASURY`, `TAX`, `LIQUIDITY`, … | Slow |
+| **Product (business kind)** | A reusable outcome *family* the bank sells internally: FOBO, 15C3, IFRS, month-end close, PnL, LCR, Volcker, … **One Finance is the platform; a product is a registry record, not an application.** FOBO is the first pilot product, not the product. | Slow |
 | **Source system** | Motif, SAP, Helix, Axiom, … Registered producer with auth and identifier type | Slow |
 | **Event type** | Governed name in the catalogue (`MASTERBOOK_READY`, `SAP_TB_COMPLETE`, `HELIX_ANALYSIS_COMPLETE`) | Slow |
 | **Identifier type** | `MASTER_BOOK`, `COST_CENTRE`, `BOOK_ID`, `CHORUS_GROUP`, `PROCESSING_BATCH`, `FEED`, `REPORT_SCHEDULE`, `ANALYSIS_RUN` | Slow |
@@ -235,6 +236,24 @@ Examples:
 - IFRS pack `IFRS9-ECL`
 
 `sliceKey` is empty for outcomes that stay regional. The board groups slices under the outcome.
+
+### 7.0 Product kit — every business kind is the same object
+
+One Finance does **not** ship a FOBO module, a 15C3 module, and an IFRS module. It ships one **product kit**. Admin fills the kit; the engine, tower, cockpit, reports, entitlements, and Now tasks stay unchanged.
+
+| Kit field | FOBO (pilot example) | 15C3 | IFRS pack | Month-end close | A later product (e.g. LCR) |
+|---|---|---|---|---|---|
+| `productId` | `FOBO` | `REG_15C3` | `IFRS` | `MEC` | `LCR` |
+| `domain` | Revenue Accounting | Reg Reporting | Reg Reporting | Product Control | Treasury |
+| Business question | Can I execute this rec? | Can I produce 15C3? | Can I produce the IFRS pack? | Can I close the books? | Can I certify LCR? |
+| Dependencies + universe | Motif books, declared list | SAP + Castle + FinStore + Axiom | Ledger + credit + Axiom | TB + recs + journals | Liquidity feeds |
+| On-ready | COMMAND Helix | COMMAND Axiom | COMMAND IFRS engine | NOTIFY_ONLY or COMMAND close | COMMAND liquidity engine |
+| Report catalog | FOBO_BREAKS (WisMO) | 15C3_PACK (template) | IFRS9_ECL (template) | MEC_PACK | LCR_PACK |
+| CEES resource | `product:FOBO` | `product:REG_15C3` | `product:IFRS` | `product:MEC` | `product:LCR` |
+
+Engineers do not add `if (product == FOBO)` in the fold, the SSE payload, or the tower card. If a new product needs a new *verb* (beyond read / override / rerun / view / export) or a new *binding* (beyond WisMO / template / file / link), that is a platform increment. Everything else is data.
+
+The POC already proved this: `FOBO_HELIX`, `REPORT_15C3`, and `PNL_REPORTING` are three YAML rows in one engine. Enterprise scale is **more rows, more domains**, not a FOBO application with plugins.
 
 ### 7.3 Dependency satisfaction (the FOBO “80 of 100” rule)
 

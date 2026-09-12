@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Products — One Finance UX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,560&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-bar">
+    <a class="brand" href="index.html"><b>One Finance UX</b><span>Platform</span></a>
+    <nav class="nav">
+      <a href="index.html">Manifesto</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="products.html" class="on">Products</a>
+      <a href="tower.html">Control Tower</a>
+      <a href="cockpit.html">Outcome</a>
+      <a href="reports.html">Reports</a>
+      <a href="admin.html">Admin</a>
+    </nav>
+    <div class="who">Many products · one kit</div>
+  </div>
+
+  <div class="page">
+    <p class="kicker">Business kinds</p>
+    <h1>One Finance is the platform.<br>FOBO is one product.</h1>
+    <p class="lead">Every row is the same object: a question, a universe of inputs, an optional command, an entitled report, a CEES resource. Engineers do not ship a FOBO module. Outcome owners fill the kit. The tower, cockpit, and viewer never change.</p>
+
+    <div class="panel" style="margin-top:28px">
+      <table>
+        <tr>
+          <th>Product</th>
+          <th>Domain</th>
+          <th>Question</th>
+          <th>On ready</th>
+          <th>Report</th>
+          <th>Status</th>
+        </tr>
+        <tr>
+          <td><b>FOBO</b></td>
+          <td>Revenue Accounting</td>
+          <td>Can I execute this rec?</td>
+          <td>COMMAND Helix</td>
+          <td>WisMO breaks</td>
+          <td>Pilot</td>
+        </tr>
+        <tr>
+          <td><b>15C3</b></td>
+          <td>Reg Reporting</td>
+          <td>Can I produce 15C3?</td>
+          <td>COMMAND Axiom</td>
+          <td>Excel template</td>
+          <td>Pilot</td>
+        </tr>
+        <tr>
+          <td><b>PnL</b></td>
+          <td>Product Control</td>
+          <td>Can I run PnL reporting?</td>
+          <td>NOTIFY_ONLY</td>
+          <td>Template pack</td>
+          <td>Pilot</td>
+        </tr>
+        <tr>
+          <td><b>IFRS</b></td>
+          <td>Reg Reporting</td>
+          <td>Can I produce the IFRS pack?</td>
+          <td>COMMAND IFRS engine</td>
+          <td>Template + grid</td>
+          <td>Next</td>
+        </tr>
+        <tr>
+          <td><b>Month-end close</b></td>
+          <td>Product Control</td>
+          <td>Can I close the books?</td>
+          <td>NOTIFY or COMMAND</td>
+          <td>Close pack</td>
+          <td>Next</td>
+        </tr>
+        <tr>
+          <td><b>LCR</b></td>
+          <td>Treasury</td>
+          <td>Can I certify liquidity coverage?</td>
+          <td>COMMAND liquidity engine</td>
+          <td>LCR pack</td>
+          <td>Later</td>
+        </tr>
+        <tr>
+          <td><b>Your product</b></td>
+          <td>Any domain</td>
+          <td>Can I … ?</td>
+          <td>Command or notify</td>
+          <td>WisMO / template / file</td>
+          <td>Admin → publish</td>
+        </tr>
+      </table>
+    </div>
+
+    <p class="kicker" style="margin-top:40px">The kit — eight fields, no code</p>
+    <div class="grid g2">
+      <div class="panel">
+        <h2>What Admin fills</h2>
+        <p>1. productId and domain<br>2. Business question<br>3. Event dependencies + universe policy<br>4. SLA<br>5. On-ready action and target<br>6. Report catalog and templates<br>7. CEES groups<br>8. Optional producer entitlement URL</p>
+      </div>
+      <div class="panel">
+        <h2>What never forks</h2>
+        <p>Event envelope, fold, snapshot, SSE, Control Tower card, Outcome cockpit, My Reports, Now task, maker-checker. If you need <code>if (FOBO)</code> in Java, the kit is wrong — add a field, not a branch.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
