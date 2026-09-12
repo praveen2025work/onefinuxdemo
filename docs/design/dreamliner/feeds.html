@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Feed readers — One Finance UX</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,560&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-bar">
+    <a class="brand" href="gallery.html"><b>One Finance UX</b><span>Ingest</span></a>
+    <nav class="nav"><a href="gallery.html">Gallery</a><a class="on" href="feeds.html">Feeds</a><a href="tower.html">Tower</a></nav>
+    <div class="who">We read their bus · they do not notify us</div>
+  </div>
+  <div class="page">
+    <p class="kicker">Ingest · FEED</p>
+    <h1>Their event feed is the starting point.</h1>
+    <p class="lead">Motif and SAP will not send us a webhook. We subscribe to topics they already write, map into the generic envelope, and watermark the offset. We generate the colleague notifications.</p>
+    <div class="panel">
+      <h2>Registered feeds</h2>
+      <table>
+        <tr><th>Source</th><th>Their topic</th><th>Mapper</th><th>Watermark</th><th>Lag</th><th>Mode</th></tr>
+        <tr><td>MOTIF</td><td class="mono">motif.book.lifecycle.v3</td><td>motif-book-v3</td><td class="mono">p3 / 18442091</td><td>12s</td><td>FEED</td></tr>
+        <tr><td>SAP</td><td class="mono">sap.tb.posted</td><td>sap-tb-v1</td><td class="mono">p0 / 99211</td><td>4s</td><td>FEED</td></tr>
+        <tr><td>USCASTLE</td><td class="mono">castle.batch.complete</td><td>castle-v2</td><td class="mono">p1 / 4402</td><td>0s</td><td>FEED</td></tr>
+        <tr><td>HELIX</td><td class="mono">onefinux.facts.v1.helix</td><td>native envelope</td><td>—</td><td>—</td><td>PUSH</td></tr>
+      </table>
+    </div>
+    <div class="grid g2" style="margin-top:20px">
+      <pre class="json"><span class="note">// Their Motif payload — we do not ask them to change it</span>
+{ <span class="key">"bookId"</span>: <span class="str">"MB014"</span>, <span class="key">"state"</span>: <span class="str">"SIGNED_OFF"</span>,
+  <span class="key">"cob"</span>: <span class="str">"2026-09-12"</span> }
+
+<span class="note">// After mapper → our envelope</span>
+{ <span class="key">"type"</span>: <span class="str">"onefinux.fact.v1"</span>,
+  <span class="key">"data"</span>: { <span class="key">"eventType"</span>: <span class="str">"MASTERBOOK_READY"</span>,
+    <span class="key">"sourceKey"</span>: <span class="str">"MB014"</span>, <span class="key">"status"</span>: <span class="str">"COMPLETED"</span> } }</pre>
+      <div class="panel">
+        <h2>Rules</h2>
+        <p>Idempotent on their id + offset. No SoR polling. When Motif can publish natively, this reader turns off. The FOBO kit does not change.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
