@@ -13,6 +13,13 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
+    # Let Hibernate create the POC entity tables (event_store, notification) first, then run the
+    # stitch DDL below so its ALTER ADD COLUMN / MERGE seed extend the live schema.
+    defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:db/onefinux-stitch.sql
   h2:
     console:
       enabled: true

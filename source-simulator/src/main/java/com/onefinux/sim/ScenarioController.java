@@ -22,12 +22,18 @@ public class ScenarioController {
     @GetMapping
     public Map<String, String> list() {
         return Map.of(
+                "POST /sim/scenarios/fobo", "FOBO stitch example — R-1042 READY, R-2031 BLOCKED",
                 "POST /sim/scenarios/helix?masterBooks=300&seconds=45", "FOBO / Helix example",
                 "POST /sim/scenarios/15c3?failure=false", "15C3 report example",
                 "POST /sim/scenarios/pnl", "PnL reporting with a tight SLA",
                 "POST /sim/scenarios/restate", "SAP trial balance restatement",
                 "POST /sim/scenarios/all", "Helix + 15C3 + PnL together",
                 "POST /sim/scenarios/cancel", "Cancel anything still scheduled");
+    }
+
+    @PostMapping("/fobo")
+    public ScenarioService.ScenarioRun fobo() {
+        return scenarios.fobo();
     }
 
     @PostMapping("/helix")

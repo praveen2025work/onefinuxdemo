@@ -40,6 +40,33 @@ public class ScenarioService {
         this.zone = ZoneId.of(properties.zone());
     }
 
+    public static final String INST_READY = "FOBO|2026-09-12|APAC|R-1042";
+    public static final String INST_BLOCKED = "FOBO|2026-09-12|EMEA|R-2031";
+
+    /**
+     * The worked example. Systems of record publish stitch facts that carry the outcome instance id:
+     * R-1042 gets all three origins (then Helix echoes the run) and folds to READY; R-2031 gets a
+     * MOTIF rejection (MB014) and folds to BLOCKED. Reset the hub first: POST /api/stitch/reset.
+     */
+    public ScenarioRun fobo() {
+        LocalDate cob = LocalDate.parse("2026-09-12");
+        at(800,  () -> stitch("TRADE_BOOKED",            "CATS",  "TR-9901", cob, "EMEA", "COMPLETED", INST_BLOCKED));
+        at(1200, () -> stitch("TRADE_BOOKED",            "CATS",  "TR-8812", cob, "APAC", "COMPLETED", INST_READY));
+        at(2600, () -> stitch("BREAK_CLEARED",           "MBR",   "BK-4420", cob, "EMEA", "COMPLETED", INST_BLOCKED));
+        at(3000, () -> stitch("BREAK_CLEARED",           "MBR",   "BK-4410", cob, "APAC", "COMPLETED", INST_READY));
+        at(4200, () -> stitch("LEDGER_POSTED",           "MOTIF", "MB012",   cob, "APAC", "COMPLETED", INST_READY));
+        at(5200, () -> stitch("LEDGER_REJECTED",         "MOTIF", "MB014",   cob, "EMEA", "FAILED",    INST_BLOCKED));
+        at(6800, () -> stitch("HELIX_ANALYSIS_COMPLETE", "HELIX", "RUN-A37C", cob, "APAC", "COMPLETED", INST_READY));
+        return new ScenarioRun("fobo", cob, 7, 7,
+                "CATS/MOTIF/MBR drive R-1042 to READY (Helix echoes RUN-A37C) and R-2031 to BLOCKED (MOTIF MB014 FAILED).");
+    }
+
+    private OutboundEvent stitch(String type, String source, String key, LocalDate cob, String region,
+                                 String status, String instanceId) {
+        return new OutboundEvent(UUID.randomUUID().toString(), type, source, key, cob, region, status,
+                Instant.now(), Map.of("instanceId", instanceId));
+    }
+
     /** Section 7 of the vision: 300 master books arrive from Motif, then Helix is triggered automatically. */
     public ScenarioRun helix(int masterBooks, int seconds) {
         LocalDate cob = today();
