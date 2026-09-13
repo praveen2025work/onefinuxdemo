@@ -1,8 +1,9 @@
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../store.jsx';
 import Icon, { BrandMark } from './Icon.jsx';
 import Select from './Select.jsx';
+import DatePicker from './DatePicker.jsx';
 
 const NAV = [
   { grp: 'Console', items: [
@@ -24,6 +25,9 @@ const NAV = [
     { to: '/onboarding', label: 'Onboarding', icon: 'build' },
     { to: '/configuration', label: 'Configuration', icon: 'config' },
   ] },
+  { grp: 'Testing', items: [
+    { to: '/drive', label: 'Drive scenarios', icon: 'bolt' },
+  ] },
 ];
 
 function toggleTheme() {
@@ -38,6 +42,27 @@ export default function Layout({ children }) {
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
   const navigate = useNavigate();
+  const location = useLocation();
+  const bellRef = useRef(null);
+
+  // Close the notifications panel on outside click, Escape, or window blur so it never stays stuck open.
+  useEffect(() => {
+    if (!bellOpen) return undefined;
+    function onDoc(e) { if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false); }
+    function onKey(e) { if (e.key === 'Escape') setBellOpen(false); }
+    const close = () => setBellOpen(false);
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('blur', close);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('blur', close);
+    };
+  }, [bellOpen]);
+
+  // Any navigation closes the panel.
+  useEffect(() => { setBellOpen(false); }, [location.pathname]);
 
   function toggleRail() {
     setCollapsed((c) => { localStorage.setItem('ofx-rail', c ? '0' : '1'); return !c; });
@@ -91,13 +116,11 @@ export default function Layout({ children }) {
             options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
               : [{ value: filters.groupUnit, label: filters.groupUnit }]} />
           <div className="spacer" />
-          <label className="tb-btn cal" title="Business date (COB)">
-            <Icon name="calendar" size={15} />
-            <input type="date" value={filters.cobDate || ''} onChange={(e) => setFilters({ cobDate: e.target.value })} />
-          </label>
+          <DatePicker value={filters.cobDate} cobDates={context?.cobDates}
+            onChange={(v) => setFilters({ cobDate: v })} />
           <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
             options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
-          <div className="bell-wrap">
+          <div className="bell-wrap" ref={bellRef}>
             <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications">
               <Icon name="bell" size={18} />
               {unread > 0 && <span className="dot-n">{unread}</span>}
