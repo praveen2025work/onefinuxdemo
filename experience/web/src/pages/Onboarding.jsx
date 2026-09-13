@@ -2,6 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { api } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill, Loading } from '../components/bits.jsx';
+import Select from '../components/Select.jsx';
+import InfoHint from '../components/InfoHint.jsx';
 
 const RENDERERS = ['NOTIFY_MILESTONE', 'GRID_PACK', 'ENGINE_REPORT', 'HELIX_RECON'];
 
@@ -52,8 +54,9 @@ export default function Onboarding() {
       <div className="ph">
         <div>
           <div className="eyebrow">Config / onboarding · maker-checker</div>
-          <h1>Onboard a product kit</h1>
-          <p className="sub">A kit is the outcome recipe as data — sources, destinations, renderer, actions. Registering one adds no Java type. There is no <span className="mono">if (product == FOBO)</span>.</p>
+          <h1 className="ph-title">Onboard a product kit
+            <InfoHint title="Kits are data, not code" width={340}>A kit is the outcome recipe as data — sources, destinations, renderer, actions. Registering one adds no Java type. There is no <span className="mono">if (product == FOBO)</span>.</InfoHint>
+          </h1>
         </div>
       </div>
 
@@ -82,7 +85,7 @@ export default function Onboarding() {
           </div>
 
           <div className="panel">
-            <div className="panel-hd"><h2>Sources of origin</h2><span className="hint">source_system — pick from catalog</span></div>
+            <div className="panel-hd"><h2>Sources of origin <InfoHint title="Sources are picked, not invented" width={280}>Config cannot invent an origin — every source is picked from this catalog.</InfoHint></h2><span className="hint">source_system</span></div>
             <div className="panel-bd tight">
               <table className="tbl">
                 <thead><tr><th>Source</th><th>Identifier</th><th>Ingest</th><th>Topic / feed</th></tr></thead>
@@ -98,7 +101,6 @@ export default function Onboarding() {
                 </tbody>
               </table>
             </div>
-            <div className="panel-ft">Config cannot invent an origin — every source is picked from this catalog.</div>
           </div>
         </div>
 
@@ -108,21 +110,17 @@ export default function Onboarding() {
             <form className="panel-bd" onSubmit={register}>
               <div className="field"><label>Kit id</label><input className="inp mono" value={form.kitId} onChange={(e) => set({ kitId: e.target.value.toUpperCase() })} required /></div>
               <div className="field"><label>Question the outcome answers</label><input className="inp" value={form.question} onChange={(e) => set({ question: e.target.value })} required /></div>
-              <div className="field"><label>Renderer</label>
-                <select className="sel" value={form.renderer} onChange={(e) => set({ renderer: e.target.value })}>
-                  {RENDERERS.map((r) => <option key={r}>{r}</option>)}
-                </select>
-                <span className="help">Renderer is data on the kit. Adding one never means a new React app.</span>
+              <div className="field"><label>Renderer <InfoHint title="Renderer" width={260}>Renderer is data on the kit. Adding one never means a new React app.</InfoHint></label>
+                <Select variant="block" value={form.renderer} onChange={(v) => set({ renderer: v })}
+                  options={RENDERERS.map((r) => ({ value: r, label: r }))} />
               </div>
               <div className="field"><label>Source of origin</label>
-                <select className="sel" value={form.sourceId} onChange={(e) => set({ sourceId: e.target.value })}>
-                  {sources.map((s) => <option key={s.sourceId}>{s.sourceId}</option>)}
-                </select>
+                <Select variant="block" icon="grid" value={form.sourceId} onChange={(v) => set({ sourceId: v })}
+                  options={sources.map((s) => ({ value: s.sourceId, label: s.sourceId }))} />
               </div>
               <div className="field"><label>Destination</label>
-                <select className="sel" value={form.destId} onChange={(e) => set({ destId: e.target.value })}>
-                  {dests.map((d) => <option key={d.destId}>{d.destId}</option>)}
-                </select>
+                <Select variant="block" value={form.destId} onChange={(v) => set({ destId: v })}
+                  options={dests.map((d) => ({ value: d.destId, label: d.destId }))} />
               </div>
               <div className="field"><label>User actions</label><input className="inp" value={form.userActions} onChange={(e) => set({ userActions: e.target.value.toUpperCase() })} /></div>
               <button className="btn" type="submit" disabled={busy}>{busy ? 'Registering…' : '🛡 Publish kit'}</button>

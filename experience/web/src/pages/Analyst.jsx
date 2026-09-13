@@ -2,6 +2,9 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { api } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill } from '../components/bits.jsx';
+import Select from '../components/Select.jsx';
+import { PromptModal, ConfirmModal } from '../components/Modal.jsx';
+import InfoHint from '../components/InfoHint.jsx';
 
 const COLUMNS = [
   { key: 'occurredAt', label: 'Time', fmt: (v) => (v || '').slice(0, 19) },
@@ -25,6 +28,8 @@ export default function Analyst() {
   const [cols, setCols] = useState(DEFAULT_COLS);
   const [sort, setSort] = useState({ key: 'occurredAt', dir: -1 });
   const [f, setF] = useState({ source: '', cobDate: '', region: '', status: '' });
+  const [saving, setSaving] = useState(false);
+  const [removing, setRemoving] = useState(null);
   const groupUnit = appFilters.groupUnit;
 
   const loadMeta = useCallback(async () => {
@@ -51,10 +56,9 @@ export default function Analyst() {
     setCols((cs) => (cs.includes(key) ? cs.filter((k) => k !== key) : [...cs, key]));
   }
 
-  async function saveView() {
-    const name = prompt('Name this view');
-    if (!name) return;
+  async function confirmSave(name) {
     await api.saveView({ groupUnitId: groupUnit, widget: 'GRID', fieldMap: { name, columns: cols, filters: f } });
+    setSaving(false);
     await loadMeta();
   }
 
@@ -65,8 +69,9 @@ export default function Analyst() {
     if (fm.filters) setF({ source: '', cobDate: '', region: '', status: '', ...fm.filters });
   }
 
-  async function removeView(id) {
-    await api.deleteView(id);
+  async function confirmRemove() {
+    await api.deleteView(removing.viewId);
+    setRemoving(null);
     await loadMeta();
   }
 
@@ -77,22 +82,27 @@ export default function Analyst() {
       <div className="ph">
         <div>
           <div className="eyebrow">Analyst explorer · {groupUnit}</div>
-          <h1>Explore bound data sources</h1>
-          <p className="sub">A configurable grid over the origins already bound to this unit (CATS, MOTIF, MBR). Filter, choose columns, and save the view. The explorer cannot register a new source — that stays config.</p>
+          <h1 className="ph-title">Explore bound data sources
+            <InfoHint title="Analyst explorer" width={340}>A configurable grid over the origins already bound to this unit (CATS, MOTIF, MBR). Filter, choose columns, and save the view. The explorer cannot register a new source — that stays config.</InfoHint>
+          </h1>
         </div>
         <div className="ph-actions">
           <button className="btn ghost" onClick={run}>↻ Run</button>
-          <button className="btn" onClick={saveView}>💾 Save view</button>
+          <button className="btn" onClick={() => setSaving(true)}>💾 Save view</button>
         </div>
       </div>
 
       <div className="panel">
         <div className="panel-bd">
           <div className="wrapflex">
-            <label className="tb-btn"><select value={f.source} onChange={(e) => setF({ ...f, source: e.target.value })}><option value="">All sources</option>{sources.map((s) => <option key={s}>{s}</option>)}</select></label>
-            <label className="tb-btn"><select value={f.cobDate} onChange={(e) => setF({ ...f, cobDate: e.target.value })}><option value="">All COB</option>{(context?.cobDates || []).map((d) => <option key={d}>{d}</option>)}</select></label>
-            <label className="tb-btn"><select value={f.region} onChange={(e) => setF({ ...f, region: e.target.value })}><option value="">All regions</option>{(context?.regions || []).map((r) => <option key={r}>{r}</option>)}</select></label>
-            <label className="tb-btn"><select value={f.status} onChange={(e) => setF({ ...f, status: e.target.value })}><option value="">Any status</option>{['COMPLETED', 'FAILED', 'REVOKED', 'STARTED'].map((s) => <option key={s}>{s}</option>)}</select></label>
+            <Select variant="plain" icon="grid" value={f.source} onChange={(v) => setF({ ...f, source: v })} minWidth={150}
+              options={[{ value: '', label: 'All sources' }, ...sources.map((s) => ({ value: s, label: s }))]} />
+            <Select variant="plain" icon="calendar" value={f.cobDate} onChange={(v) => setF({ ...f, cobDate: v })} minWidth={150}
+              options={[{ value: '', label: 'All COB' }, ...(context?.cobDates || []).map((d) => ({ value: d, label: d }))]} />
+            <Select variant="plain" value={f.region} onChange={(v) => setF({ ...f, region: v })} minWidth={140}
+              options={[{ value: '', label: 'All regions' }, ...(context?.regions || []).map((r) => ({ value: r, label: r }))]} />
+            <Select variant="plain" value={f.status} onChange={(v) => setF({ ...f, status: v })} minWidth={140}
+              options={[{ value: '', label: 'Any status' }, ...['COMPLETED', 'FAILED', 'REVOKED', 'STARTED'].map((s) => ({ value: s, label: s }))]} />
             <span className="muted">{loading ? 'running…' : `${rows.length} rows`}</span>
           </div>
           <div className="wrapflex" style={{ marginTop: 12 }}>
@@ -135,7 +145,7 @@ export default function Analyst() {
         </div>
 
         <div className="panel">
-          <div className="panel-hd"><h2>Saved views</h2><span className="hint">analyst_view_def</span></div>
+          <div className="panel-hd"><h2>Saved views <InfoHint title="Saved views" width={300} align="right">Views are stored server-side and scoped to a CEES report. Swap the grid for licensed Wijmo — same view JSON.</InfoHint></h2><span className="hint">analyst_view_def</span></div>
           <div className="panel-bd stack">
             {views.length === 0 && <div className="muted">No saved views. Configure the grid and hit “Save view”.</div>}
             {views.map((v) => {
@@ -145,14 +155,24 @@ export default function Analyst() {
                 <div key={v.viewId} className="row">
                   <span className="chip">{v.widget}</span>
                   <button className="btn ghost sm" onClick={() => loadView(v)}>{name}</button>
-                  <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => removeView(v.viewId)}>✕</button>
+                  <button className="btn ghost sm" style={{ marginLeft: 'auto' }} onClick={() => setRemoving({ viewId: v.viewId, name })}>✕</button>
                 </div>
               );
             })}
           </div>
-          <div className="panel-ft">Views are stored server-side and scoped to a CEES report. Swap the grid for licensed Wijmo — same view JSON.</div>
         </div>
       </div>
+
+      {saving && (
+        <PromptModal title="Save this view" subtitle={`${cols.length} columns · scoped to ${groupUnit}`}
+          label="View name" placeholder="e.g. FOBO blockers — EMEA" confirmText="Save view"
+          onCancel={() => setSaving(false)} onConfirm={confirmSave} />
+      )}
+      {removing && (
+        <ConfirmModal title="Delete saved view" danger confirmText="Delete"
+          body={`Remove “${removing.name}”? This only deletes the saved view definition, not any facts.`}
+          onCancel={() => setRemoving(null)} onConfirm={confirmRemove} />
+      )}
     </>
   );
 }

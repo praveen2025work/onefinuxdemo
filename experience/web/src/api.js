@@ -42,6 +42,7 @@ export const api = {
   sources: () => get('/sources'),
   destinations: () => get('/destinations'),
   kits: () => get('/kits'),
+  kit: (id) => get('/kit', { id }),
   registerKit: (body) => send('POST', '/kits', null, body),
   datasets: (groupUnit) => get('/datasets', { groupUnit }),
   explore: (f) => get('/explore', f),
