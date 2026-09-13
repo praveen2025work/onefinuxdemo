@@ -97,6 +97,7 @@ public class StitchController {
     @PostMapping("/deadletters/{id}/replay")
     public Map<String, Object> replay(@PathVariable String id) {
         int updated = repo.replayDeadLetter(id);
+        repo.insertAudit("rtb.support", "REPLAY_DEADLETTER", id, updated > 0 ? "OK" : "DENY", null);
         return Map.of("deadLetterId", id, "replayed", updated > 0);
     }
 
