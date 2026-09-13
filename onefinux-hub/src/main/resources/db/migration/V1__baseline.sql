@@ -1,17 +1,20 @@
--- One Finance UX — stitching schema
--- Dialect: H2 2.x (POC). Production: Oracle 19c (VARCHAR2, TIMESTAMP, DATE).
+-- One Finance UX — baseline schema (Flyway V1)
+-- Dialect: H2 2.x (POC). Production: Oracle 19c — see db/migration/oracle for the vendor set.
+--
+-- Flyway owns the schema now (spring.jpa.hibernate.ddl-auto=none). This migration is the single
+-- source of truth for every table, index and view; JPA entities (event_store, notification) map onto
+-- the tables created here. CREATE ... IF NOT EXISTS / MERGE are kept idempotent so this migration is
+-- also safe to baseline onto a pre-existing POC database.
 --
 -- The stitch is the product. An outcome_instance row is how a group unit, kit,
 -- sources of origin, run, and partner embed meet on one COB.
 --
--- POC tables event_store + notification already exist (JPA ddl-auto=update).
--- This file CREATE IF NOT EXISTS them with the target shape, then ALTER ADD
--- COLUMN IF NOT EXISTS so a live hub file DB can be extended without replace.
---
--- Existing event_store.source_system  ==  source_system.source_id  (do not add a second source_id).
--- Existing notification.outcome_key   ==  product_kit.kit_id (legacy YAML id until kits load).
+-- event_store.source_system  ==  source_system.source_id  (do not add a second source_id).
+-- notification.outcome_key   ==  product_kit.kit_id (legacy YAML id until kits load).
 --
 -- Analyst table is created empty. Do not wire UI in the first slice.
+-- NOTE: demo seed data (the MERGE/INSERT blocks below) is intentionally kept in this baseline for the
+-- POC; in production the seed would move to a separate, environment-gated migration.
 
 -- ========== TENANT ==========
 CREATE TABLE IF NOT EXISTS group_unit (
