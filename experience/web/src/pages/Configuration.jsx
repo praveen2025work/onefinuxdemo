@@ -1,14 +1,28 @@
 import { useEffect, useState, useCallback } from 'react';
-import { api } from '../api';
+import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill, Loading } from '../components/bits.jsx';
 import Select from '../components/Select.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 
+function slaText(sla) {
+  if (!sla) return '—';
+  if (sla.withinMinutes) return `within ${sla.withinMinutes} min of first event`;
+  if (sla.cutoff) return `${sla.cutoff}${sla.dayOffset ? ` (COB+${sla.dayOffset})` : ''}`;
+  return '—';
+}
+
+function onReadyText(onReady) {
+  if (!onReady || !onReady.action) return 'Notify only — no downstream command';
+  const label = onReady.actionLabel || onReady.action;
+  return onReady.target ? `${label} → ${onReady.target}` : label;
+}
+
 export default function Configuration() {
   const { filters, context } = useApp();
   const [kits, setKits] = useState(null);
   const [groupUnits, setGroupUnits] = useState([]);
+  const [defs, setDefs] = useState([]);
   const [sel, setSel] = useState('');
   const [detail, setDetail] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -20,6 +34,7 @@ export default function Configuration() {
     if (k.length && !sel) setSel(k[0].kitId);
   }, [sel]);
   useEffect(() => { loadCatalog(); }, [loadCatalog]);
+  useEffect(() => { outcomesApi.definitions().then(setDefs).catch(() => setDefs([])); }, []);
 
   const loadDetail = useCallback(async (id) => {
     if (!id) return;
@@ -142,6 +157,57 @@ export default function Configuration() {
               </>
             )}
             {!kit && !loading && <div className="empty">Select a kit to inspect its configuration.</div>}
+          </div>
+        </section>
+
+        <section className="panel span2">
+          <div className="panel-hd">
+            <h2>Business outcome definitions <InfoHint title="The dependency mechanism" width={340}>Each outcome is a kit of data: a business question, the input feeds it depends on (with how many keys are expected), an SLA, and what to do when every feed is complete. This is what the engine folds — no code per product.</InfoHint></h2>
+            <span className="hint">onefinux.outcomes</span>
+          </div>
+          <div className="panel-bd stack">
+            {defs.map((o) => {
+              const total = (o.dependencies || []).reduce((n, d) => n + (d.expectedCount || 0), 0);
+              return (
+                <div key={o.id} className="odef">
+                  <div className="odef-hd">
+                    <div>
+                      <span className="mono lead">{o.id}</span>
+                      <h3>{o.name}</h3>
+                      <p className="q">{o.question}</p>
+                    </div>
+                    <div className="odef-tags">
+                      <span className="chip">{o.ownerGroup}</span>
+                      {(o.regions || []).map((r) => <span key={r} className="chip">{r}</span>)}
+                    </div>
+                  </div>
+                  <div className="odef-meta">
+                    <div className="kv"><span className="k">SLA</span><span className="v">{slaText(o.sla)}</span></div>
+                    <div className="kv"><span className="k">On ready</span><span className="v">{onReadyText(o.onReady)}</span></div>
+                    {o.onReady?.completionEvent && (
+                      <div className="kv"><span className="k">Completion event</span><span className="v mono">{o.onReady.completionEvent}</span></div>
+                    )}
+                    <div className="kv"><span className="k">Inputs</span><span className="v">{(o.dependencies || []).length} feeds · {total} keys expected</span></div>
+                  </div>
+                  <div className="cfg-sub">Input feeds <span className="muted">(the dependencies that must complete)</span></div>
+                  <table className="tbl">
+                    <thead><tr><th>Feed</th><th>Event type</th><th>Source system</th><th className="num">Expected keys</th></tr></thead>
+                    <tbody>
+                      {(o.dependencies || []).map((d) => (
+                        <tr key={d.eventType}>
+                          <td className="lead">{d.label}</td>
+                          <td className="mono">{d.eventType}</td>
+                          <td><span className="chip">{d.sourceSystem || 'any'}</span></td>
+                          <td className="num mono">{d.expectedCount}</td>
+                        </tr>
+                      ))}
+                      {(o.dependencies || []).length === 0 && <tr><td colSpan={4} className="empty">No feeds declared.</td></tr>}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+            {defs.length === 0 && <div className="empty">No outcome definitions loaded from /api/outcomes/definitions.</div>}
           </div>
         </section>
       </div>
