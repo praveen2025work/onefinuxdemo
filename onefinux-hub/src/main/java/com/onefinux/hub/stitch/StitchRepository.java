@@ -61,6 +61,39 @@ public class StitchRepository {
                 FROM product_kit ORDER BY kit_id""", p());
     }
 
+    public Map<String, Object> kitById(String kitId) {
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT kit_id AS "kitId", group_unit_id AS "groupUnitId", domain AS "domain", question AS "question",
+                       renderer AS "renderer", user_actions AS "userActions", cees_product AS "ceesProduct",
+                       sla_cutoff AS "slaCutoff", version AS "version", status AS "status"
+                FROM product_kit WHERE kit_id = :id""", p().addValue("id", kitId));
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    public List<Map<String, Object>> kitSources(String kitId) {
+        return jdbc.queryForList("""
+                SELECT ks.source_id AS "sourceId", s.display_name AS "displayName", s.identifier_type AS "identifierType",
+                       s.ingest_mode AS "ingestMode", s.topic_or_url AS "topicOrUrl", s.mapper_id AS "mapperId",
+                       ks.required AS "required"
+                FROM kit_source ks JOIN source_system s ON s.source_id = ks.source_id
+                WHERE ks.kit_id = :id ORDER BY ks.source_id""", p().addValue("id", kitId));
+    }
+
+    public List<Map<String, Object>> kitDestinations(String kitId) {
+        return jdbc.queryForList("""
+                SELECT kd.dest_id AS "destId", d.display_name AS "displayName", d.action_type AS "actionType",
+                       d.command_url AS "commandUrl", kd.step_order AS "stepOrder"
+                FROM kit_destination kd JOIN destination_system d ON d.dest_id = kd.dest_id
+                WHERE kd.kit_id = :id ORDER BY kd.step_order""", p().addValue("id", kitId));
+    }
+
+    public Map<String, Object> kitEmbed(String kitId) {
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT embed_url AS "embedUrl", allowed_origin AS "allowedOrigin", chrome AS "chrome"
+                FROM kit_embed WHERE kit_id = :id""", p().addValue("id", kitId));
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
     public List<Map<String, Object>> distinctCobDates() {
         return jdbc.queryForList(
                 "SELECT DISTINCT CAST(cob_date AS VARCHAR) AS \"cobDate\" FROM outcome_instance ORDER BY 1 DESC", p());

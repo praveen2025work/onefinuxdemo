@@ -120,6 +120,19 @@ public class StitchController {
         return service.registerKit(body);
     }
 
+    @GetMapping("/kit")
+    public ResponseEntity<Map<String, Object>> kit(@RequestParam String id) {
+        Map<String, Object> kit = repo.kitById(id);
+        if (kit == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(Map.of(
+                "kit", kit,
+                "sources", repo.kitSources(id),
+                "destinations", repo.kitDestinations(id),
+                "embed", repo.kitEmbed(id) == null ? Map.of() : repo.kitEmbed(id)));
+    }
+
     @GetMapping("/datasets")
     public List<Map<String, Object>> datasets(@RequestParam(required = false) String groupUnit) {
         return repo.datasets(groupUnit);
