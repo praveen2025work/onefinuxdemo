@@ -11,8 +11,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -130,6 +132,64 @@ public class StitchService {
         return Map.of("escalationId", escalationId, "instanceId", instanceId, "status", "OPEN");
     }
 
+    /**
+     * Generic human action, gated by the kit's declared {@code userActions}. Known verbs keep their rich
+     * behaviour; any other declared verb is handled generically — audited and published as a
+     * {@code WORKFLOW_<VERB>} fact — so a new console capability is launched by adding it to the kit's
+     * {@code userActions}, with no new endpoint or service method.
+     */
+    public Map<String, Object> action(String instanceId, String actionName, Map<String, Object> body) {
+        String action = actionName == null ? "" : actionName.trim().toUpperCase();
+        Map<String, Object> inst = requireEntitledInstance(instanceId);
+        Set<String> allowed = allowedActions(repo.kitById(str(inst, "kitId")));
+        if (!allowed.contains(action)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Action '" + action + "' is not offered by kit "
+                    + str(inst, "kitId") + " (allowed: " + String.join(", ", allowed) + ")");
+        }
+        String reason = body == null ? null : str(body.get("reason"));
+        return switch (action) {
+            case "SIGN_OFF" -> signoff(instanceId);
+            case "POST" -> post(instanceId);
+            case "ESCALATE" -> escalate(instanceId, reason);
+            default -> genericAction(action, instanceId, inst, body);
+        };
+    }
+
+    private Map<String, Object> genericAction(String action, String instanceId, Map<String, Object> inst,
+                                              Map<String, Object> body) {
+        String actor = currentUser.actor();
+        String note = body == null ? null : str(body.get("note"));
+        repo.insertAudit(actor, action, instanceId, "OK", json(Map.of("note", note == null ? "" : note)));
+        publishWorkflow("WORKFLOW_" + action, instanceId, inst, Map.of("by", actor, "note", note == null ? "" : note));
+        String headline = inst.get("kitId") + " " + inst.get("sliceKey") + " " + action.toLowerCase();
+        repo.insertNotification("INFO", action, str(inst, "kitId"), str(inst, "question"),
+                str(inst, "groupUnitId"), headline,
+                actor + " performed " + action + (note == null || note.isBlank() ? "" : ": " + note),
+                "SSE", instanceId, str(inst, "groupUnitId"));
+        stream.broadcast("notification", Map.of("severity", "INFO", "transition", action,
+                "title", headline, "instanceId", instanceId));
+        fold.broadcastOutcome(instanceId);
+        return Map.of("instanceId", instanceId, "action", action, "status", "OK", "by", actor);
+    }
+
+    /** The verbs a kit offers, parsed from its {@code userActions} column (comma/space separated, upper-cased). */
+    private Set<String> allowedActions(Map<String, Object> kit) {
+        if (kit == null) {
+            return Set.of();
+        }
+        String userActions = str(kit.get("userActions"));
+        if (userActions == null || userActions.isBlank()) {
+            return Set.of();
+        }
+        Set<String> verbs = new LinkedHashSet<>();
+        for (String part : userActions.split("[,\\s]+")) {
+            if (!part.isBlank()) {
+                verbs.add(part.trim().toUpperCase());
+            }
+        }
+        return verbs;
+    }
+
     @SuppressWarnings("unchecked")
     public Map<String, Object> registerKit(Map<String, Object> body) {
         String kitId = str(body, "kitId");
@@ -201,7 +261,10 @@ public class StitchService {
     }
 
     private static String str(Map<String, Object> map, String key) {
-        Object v = map.get(key);
+        return str(map.get(key));
+    }
+
+    private static String str(Object v) {
         return v == null ? null : String.valueOf(v);
     }
 }

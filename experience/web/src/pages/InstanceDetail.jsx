@@ -4,6 +4,8 @@ import { api } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill, Loading } from '../components/bits.jsx';
 
+const labelOf = (verb) => verb.split(/[_\s]+/).map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+
 export default function InstanceDetail() {
   const { id } = useParams();
   const instanceId = decodeURIComponent(id);
@@ -27,6 +29,7 @@ export default function InstanceDetail() {
       if (kind === 'signoff') { await api.signoff(instanceId, 'praveen.kumar'); setBanner({ cls: 'ok', text: 'Signed off — instance CLEARED. Workflow fact recorded.' }); }
       if (kind === 'post') { const r = await api.post(instanceId); setBanner({ cls: 'ok', text: `Posted to MOTIF via FAS — command_run ${r.runId}, echo required before CLEARED.` }); }
       if (kind === 'escalate') { const r = await api.escalate(instanceId, 'Manual escalation from console'); setBanner({ cls: 'warn', text: `Escalation ${r.escalationId} raised to RTB.` }); }
+      if (kind.startsWith('generic:')) { const verb = kind.slice(8); await api.action(instanceId, verb); setBanner({ cls: 'ok', text: `${labelOf(verb)} recorded — workflow fact WORKFLOW_${verb} published.` }); }
       await load();
       await refreshInstances();
     } catch (e) {
@@ -53,6 +56,9 @@ export default function InstanceDetail() {
         <div className="ph-actions">
           {actions.includes('SIGN_OFF') && <button className="btn" disabled={busy || !isReady} onClick={() => act('signoff')}>✓ Sign off</button>}
           {actions.includes('POST') && <button className="btn ghost" disabled={busy || !isReady} onClick={() => act('post')}>Post to MOTIF</button>}
+          {actions.filter((a) => a && !['SIGN_OFF', 'POST', 'ESCALATE'].includes(a)).map((a) => (
+            <button key={a} className="btn ghost" disabled={busy} onClick={() => act('generic:' + a)}>{labelOf(a)}</button>
+          ))}
           <button className="btn ghost" disabled={busy} onClick={() => act('escalate')}>Escalate</button>
         </div>
       </div>
