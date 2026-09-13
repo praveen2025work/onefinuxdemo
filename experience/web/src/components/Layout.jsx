@@ -9,6 +9,7 @@ const NAV = [
     { to: '/', label: 'Home', icon: 'home', end: true },
     { to: '/board', label: 'Outcome board', icon: 'board' },
     { to: '/outcomes', label: 'My outcomes', icon: 'cards', badge: 'assigned' },
+    { to: '/reports', label: 'Reports', icon: 'report' },
   ] },
   { grp: 'Operate', items: [
     { to: '/operations', label: 'Operations', icon: 'ops', badge: 'esc' },

@@ -9,6 +9,7 @@ import Onboarding from './pages/Onboarding.jsx';
 import Analyst from './pages/Analyst.jsx';
 import Configuration from './pages/Configuration.jsx';
 import Monitoring from './pages/Monitoring.jsx';
+import Reports from './pages/Reports.jsx';
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/board" element={<Board />} />
         <Route path="/outcomes" element={<Outcomes />} />
+        <Route path="/reports" element={<Reports />} />
         <Route path="/instance/:id" element={<InstanceDetail />} />
         <Route path="/operations" element={<Operations />} />
         <Route path="/onboarding" element={<Onboarding />} />

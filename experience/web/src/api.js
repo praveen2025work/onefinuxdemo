@@ -64,3 +64,30 @@ export async function fetchSink() {
   if (!res.ok) throw new Error(`${res.status} on /sim/sink`);
   return res.json();
 }
+
+// The business-outcome engine ("Can I produce the 15C3 report?") lives under /api/outcomes, separate
+// from the stitch fold. Reports read the outcome flow and open the generated artifact from here.
+export const outcomesApi = {
+  all: async () => {
+    const res = await fetch('/api/outcomes');
+    if (!res.ok) throw new Error(`${res.status} on /api/outcomes`);
+    return res.json();
+  },
+  report: async (outcomeId, cobDate, region) => {
+    const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}/report`);
+    if (!res.ok) {
+      let detail = `${res.status} ${res.statusText}`;
+      try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
+      throw new Error(detail);
+    }
+    return res.json();
+  },
+};
+
+// Kick a simulator scenario (e.g. the 15C3 feeds) through the /sim proxy.
+export async function runScenario(name, params) {
+  const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+  const res = await fetch(`/sim/scenarios/${name}${qs}`, { method: 'POST' });
+  if (!res.ok) throw new Error(`${res.status} on /sim/scenarios/${name}`);
+  return res.json();
+}
