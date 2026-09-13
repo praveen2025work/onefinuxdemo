@@ -1,0 +1,21 @@
+{
+  "name": "onefinux-web",
+  "private": true,
+  "version": "0.2.0",
+  "type": "module",
+  "description": "One Finance UX — React console for the outcome platform (talks to onefinux-hub).",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.8"
+  }
+}
