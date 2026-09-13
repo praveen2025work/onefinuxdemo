@@ -3,7 +3,13 @@ import { api, fetchSink } from '../api';
 import { useStream } from '../useStream';
 import { Loading } from '../components/bits.jsx';
 import InfoHint from '../components/InfoHint.jsx';
-import Select from '../components/Select.jsx';
+
+const OUTBOX_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'PENDING', label: 'Pending' },
+  { value: 'DISPATCHED', label: 'Dispatched' },
+  { value: 'FAILED', label: 'Failed' },
+];
 
 const OUTBOX_TONE = { DISPATCHED: 'ok', PENDING: 'warn', FAILED: 'fail' };
 
@@ -109,9 +115,10 @@ export default function Monitoring() {
               <h2>Propagation outbox
                 <InfoHint title="Transactional outbox">One row per fact × matching route. The relay POSTs each PENDING row to the subscriber over HTTP, marks it DISPATCHED, and broadcasts a live update. FAILED rows can be requeued.</InfoHint>
               </h2>
-              <div style={{ minWidth: 150 }}>
-                <Select variant="plain" value={outFilter} onChange={setOutFilter}
-                  options={[{ value: '', label: 'All statuses' }, { value: 'PENDING', label: 'Pending' }, { value: 'DISPATCHED', label: 'Dispatched' }, { value: 'FAILED', label: 'Failed' }]} />
+              <div className="seg">
+                {OUTBOX_FILTERS.map((f) => (
+                  <button key={f.value} className={outFilter === f.value ? 'on' : ''} onClick={() => setOutFilter(f.value)}>{f.label}</button>
+                ))}
               </div>
             </div>
             <div className="panel-bd tight">
