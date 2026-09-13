@@ -1,6 +1,7 @@
 package com.onefinux.hub.api;
 
 import com.onefinux.hub.outcome.OutcomeEngine;
+import com.onefinux.hub.outcome.OutcomeProjectionRepository;
 import com.onefinux.hub.outcome.OutcomeView;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 /** "Can I produce the 15C3 report?" answered as an API. */
 @RestController
@@ -19,14 +21,22 @@ import java.util.List;
 public class OutcomeController {
 
     private final OutcomeEngine engine;
+    private final OutcomeProjectionRepository projection;
 
-    public OutcomeController(OutcomeEngine engine) {
+    public OutcomeController(OutcomeEngine engine, OutcomeProjectionRepository projection) {
         this.engine = engine;
+        this.projection = projection;
     }
 
     @GetMapping
     public List<OutcomeView> all() {
         return engine.views();
+    }
+
+    /** Durable read model: the last persisted board, served straight from the DB (no engine state). */
+    @GetMapping("/projection")
+    public List<Map<String, Object>> projection() {
+        return projection.all();
     }
 
     @GetMapping("/{outcomeId}/{cobDate}/{region}")

@@ -1,0 +1,47 @@
+flowchart LR
+  classDef app fill:#eaf3fb,stroke:#2b6ea3,color:#0b2f4a;
+  classDef web fill:#eef0fb,stroke:#5b5fb0,color:#23255e;
+  classDef sim fill:#fff7e8,stroke:#d0a24a,color:#5a4412;
+  classDef store fill:#eef7f0,stroke:#3f9d63,color:#12492a;
+
+  subgraph WEB["experience/web · React 18 + Vite · :5173"]
+    UI["Console SPA<br/>board · ops · monitoring"]
+    SSE["SSE client /api/stream"]
+  end
+
+  subgraph HUB["onefinux-hub · Spring Boot 3.5 / Java 21 · :7070"]
+    direction TB
+    EAPI["EventController<br/>POST /api/events"]
+    OAPI["OutcomeController<br/>GET /api/outcomes"]
+    SAPI["StitchController<br/>/api/stitch/*"]
+    MAPI["MonitorController<br/>/api/stitch/monitor/*"]
+    CORE["Outcome engine · translation · workflow<br/>propagation relay · notifications"]
+    STR["StreamHub (SSE broadcast)"]
+  end
+
+  subgraph SIM["source-simulator · Spring Boot · :7081"]
+    SCEN["Scenario drivers<br/>FOBO · 15C3 · PnL"]
+    SINK["/sim/sink<br/>downstream receiver"]
+  end
+
+  DB[("Persistence<br/>H2 file (POC) → Oracle 19c (prod)")]
+
+  UI -->|REST /api, /sim| EAPI
+  UI -->|REST| OAPI
+  UI -->|REST| SAPI
+  UI -->|REST| MAPI
+  SSE -->|events| STR
+  SCEN -->|POST facts| EAPI
+  CORE -->|HTTP command| SCEN
+  CORE -->|CloudEvents POST| SINK
+  EAPI --> CORE
+  OAPI --> CORE
+  SAPI --> CORE
+  MAPI --> CORE
+  CORE --> DB
+  CORE --> STR
+
+  class UI,SSE web
+  class EAPI,OAPI,SAPI,MAPI,CORE,STR app
+  class SCEN,SINK sim
+  class DB store

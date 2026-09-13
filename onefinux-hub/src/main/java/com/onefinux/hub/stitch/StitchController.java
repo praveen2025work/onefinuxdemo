@@ -1,5 +1,6 @@
 package com.onefinux.hub.stitch;
 
+import com.onefinux.hub.security.CurrentUser;
 import com.onefinux.hub.stream.StreamHub;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,11 +26,13 @@ public class StitchController {
     private final StitchRepository repo;
     private final StitchService service;
     private final StreamHub stream;
+    private final CurrentUser currentUser;
 
-    public StitchController(StitchRepository repo, StitchService service, StreamHub stream) {
+    public StitchController(StitchRepository repo, StitchService service, StreamHub stream, CurrentUser currentUser) {
         this.repo = repo;
         this.service = service;
         this.stream = stream;
+        this.currentUser = currentUser;
     }
 
     @GetMapping("/context")
@@ -47,7 +50,8 @@ public class StitchController {
                                                @RequestParam(required = false) String cobDate,
                                                @RequestParam(required = false) String region,
                                                @RequestParam(required = false) String status) {
-        return repo.instances(groupUnit, cobDate, region, status);
+        // Tenant-scoped: the service filters to the caller's entitled group units.
+        return service.instances(groupUnit, cobDate, region, status);
     }
 
     @GetMapping("/instance")
@@ -63,10 +67,9 @@ public class StitchController {
     }
 
     @PostMapping("/instance/signoff")
-    public Map<String, Object> signoff(@RequestParam String id,
-                                       @RequestBody(required = false) Map<String, Object> body) {
-        String user = body == null ? null : (String) body.get("user");
-        return service.signoff(id, user);
+    public Map<String, Object> signoff(@RequestParam String id) {
+        // Actor is the authenticated principal, never a client-supplied name.
+        return service.signoff(id);
     }
 
     @PostMapping("/instance/post")
@@ -97,7 +100,7 @@ public class StitchController {
     @PostMapping("/deadletters/{id}/replay")
     public Map<String, Object> replay(@PathVariable String id) {
         int updated = repo.replayDeadLetter(id);
-        repo.insertAudit("rtb.support", "REPLAY_DEADLETTER", id, updated > 0 ? "OK" : "DENY", null);
+        repo.insertAudit(currentUser.actor(), "REPLAY_DEADLETTER", id, updated > 0 ? "OK" : "DENY", null);
         return Map.of("deadLetterId", id, "replayed", updated > 0);
     }
 

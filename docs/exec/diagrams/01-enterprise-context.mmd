@@ -1,0 +1,110 @@
+flowchart TB
+  classDef sor fill:#f4f7fa,stroke:#9fb3c6,color:#243b4d;
+  classDef edge fill:#fff7e8,stroke:#d0a24a,color:#5a4412;
+  classDef run fill:#eaf3fb,stroke:#2b6ea3,color:#0b2f4a;
+  classDef store fill:#eef7f0,stroke:#3f9d63,color:#12492a;
+  classDef down fill:#effaf3,stroke:#2f9d67,color:#0e5a37;
+  classDef ux fill:#eef0fb,stroke:#5b5fb0,color:#23255e;
+  classDef ctrl fill:#faf0f6,stroke:#a8508a,color:#5c2049;
+
+  subgraph SOR["Systems of record — unchanged (publish facts)"]
+    direction LR
+    Motif["Motif / FO books"]
+    CATS["CATS"]
+    MBR["MBR"]
+    Helix["Helix FOBO"]
+    RAMP["RAMP Chorus"]
+    SAP["SAP TB"]
+    GMIS["GMIS"]
+    Castle["US Castle"]
+    FinStore["Finance Store"]
+    Axiom["Axiom"]
+  end
+
+  subgraph EDGE["Edge"]
+    GW["Event gateway<br/>schema registry"]
+    ADP["Legacy adapters<br/>CDC / MQ / file"]
+  end
+
+  BUS[("Enterprise event bus")]
+
+  subgraph CTRL["Control plane — Admin governed"]
+    ADMIN["Admin / first-instance UI"]
+    REG[("Outcome + event + route registry")]
+    MK["Maker–checker"]
+  end
+
+  subgraph RUN["Runtime plane"]
+    HUB["Event Hub<br/>idempotent · append-only · replay"]
+    XL["Translation<br/>identity graph"]
+    ENG["Outcome engine<br/>deterministic fold"]
+    WF["Workflow<br/>command dispatcher"]
+    OBX["Outbox relay"]
+    NTF["Notification service"]
+    ENT["Entitlement gateway (CEES)"]
+  end
+
+  subgraph DATA["Durable state — append-only"]
+    ES[("event_store")]
+    OB[("event_outbox")]
+    AUD[("audit_log")]
+  end
+
+  subgraph DOWN["Downstream subscribers"]
+    ARC["Archive store"]
+    FS["Finance Store"]
+    PNL["P&L feed"]
+  end
+
+  subgraph UX["Experience plane — entitled console"]
+    BOARD["Outcome board"]
+    OPS["Operations / RTB"]
+    MON["Monitoring"]
+  end
+
+  Motif --> GW
+  CATS --> GW
+  MBR --> GW
+  Helix --> GW
+  RAMP --> GW
+  SAP --> GW
+  GMIS --> GW
+  Castle --> ADP
+  FinStore --> ADP
+  Axiom --> ADP
+  ADP --> GW
+  GW --> BUS
+  BUS --> HUB
+  HUB --> XL
+  XL --> ENG
+  ENG --> WF
+  WF -->|command| Helix
+  WF -->|command| Axiom
+  HUB --> ES
+  HUB --> OBX
+  OBX --> OB
+  OBX -->|CloudEvents 1.0| ARC
+  OBX -->|CloudEvents 1.0| FS
+  OBX -->|CloudEvents 1.0| PNL
+  ENG --> NTF
+  ENG -. audit .-> AUD
+  WF -. audit .-> AUD
+  ADMIN --> REG
+  REG --> ENG
+  REG --> WF
+  REG --> ENT
+  ENG --> BOARD
+  ENT --> BOARD
+  ENT --> MON
+  HUB --> MON
+  OBX --> MON
+  AUD --> MON
+  OPS --> HUB
+
+  class Motif,CATS,MBR,Helix,RAMP,SAP,GMIS,Castle,FinStore,Axiom sor
+  class GW,ADP edge
+  class HUB,XL,ENG,WF,OBX,NTF,ENT run
+  class ES,OB,AUD store
+  class ARC,FS,PNL down
+  class BOARD,OPS,MON ux
+  class ADMIN,REG,MK ctrl

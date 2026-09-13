@@ -1,0 +1,56 @@
+erDiagram
+  GROUP_UNIT ||--o{ PRODUCT_KIT : "contains"
+  GROUP_UNIT ||--o{ SOURCE_SYSTEM : "binds"
+  PRODUCT_KIT ||--o{ KIT_SOURCE : "requires"
+  PRODUCT_KIT ||--o{ OUTCOME_INSTANCE : "produces"
+  SOURCE_SYSTEM ||--o{ EVENT_STORE : "publishes"
+  OUTCOME_INSTANCE ||--o{ EVENT_STORE : "correlates"
+  OUTCOME_INSTANCE ||--o{ ESCALATION : "raises"
+  SOURCE_SYSTEM ||--o{ DEAD_LETTER : "quarantines"
+  EVENT_ROUTE ||--o{ EVENT_OUTBOX : "governs"
+  EVENT_STORE ||--o{ EVENT_OUTBOX : "fans out"
+
+  EVENT_STORE {
+    string event_id PK
+    string event_type
+    string source_system
+    string source_key
+    date   cob_date
+    string region
+    string status
+    string instance_id FK
+    timestamp received_at
+  }
+  OUTCOME_INSTANCE {
+    string instance_id PK
+    string kit_id FK
+    string slice_key
+    string region
+    string status
+    timestamp updated_at
+  }
+  EVENT_ROUTE {
+    string route_id PK
+    string subscriber
+    string event_type
+    string source_id
+    string target_url
+    char   enabled
+  }
+  EVENT_OUTBOX {
+    string outbox_id PK
+    string event_id FK
+    string route_id FK
+    string subscriber
+    string status
+    int    attempts
+    timestamp created_at
+  }
+  AUDIT_LOG {
+    bigint id PK
+    timestamp at
+    string actor
+    string action
+    string resource
+    string decision
+  }

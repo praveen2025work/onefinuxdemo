@@ -45,6 +45,12 @@ public class MonitorController {
         return Map.of("outboxId", id, "requeued", monitor.retry(id) > 0);
     }
 
+    /** Dead-letter queue: outbox rows that exhausted their retries and await an operator redrive. */
+    @GetMapping("/deadletters")
+    public List<Map<String, Object>> deadLetters(@RequestParam(defaultValue = "100") int limit) {
+        return monitor.deadLetters(limit);
+    }
+
     @GetMapping("/events")
     public List<Map<String, Object>> tape(@RequestParam(defaultValue = "40") int limit) {
         return monitor.tape(limit);

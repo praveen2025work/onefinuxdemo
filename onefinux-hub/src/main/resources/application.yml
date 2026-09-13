@@ -11,15 +11,15 @@ spring:
     password: ""
   jpa:
     hibernate:
-      ddl-auto: update
+      # Flyway owns the schema. Hibernate must not create or alter tables; it only maps onto them.
+      ddl-auto: none
     open-in-view: false
-    # Let Hibernate create the POC entity tables (event_store, notification) first, then run the
-    # stitch DDL below so its ALTER ADD COLUMN / MERGE seed extend the live schema.
-    defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
-      schema-locations: classpath:db/onefinux-stitch.sql
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    # Adopt a pre-existing POC database cleanly; on a fresh database the baseline is a no-op and V1 runs.
+    baseline-on-migrate: true
+    baseline-version: 0
   h2:
     console:
       enabled: true
@@ -31,7 +31,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus,loggers,scheduledtasks
+  endpoint:
+    health:
+      probes:
+        enabled: true       # /actuator/health/liveness + /readiness for k8s
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: onefinux-hub    # every meter carries the app tag for multi-service dashboards
+  observations:
+    key-values:
+      application: onefinux-hub
 
 logging:
   level:
@@ -42,6 +53,22 @@ onefinux:
   zone: America/New_York
   public-url: http://localhost:7070
   simulator-url: http://localhost:7081
+
+  # ---------------------------------------------------------------- Identity + entitlement (CEES)
+  # POC: symmetric JWT so the hub can mint dev tokens and validate them without an IdP. Production:
+  # set spring.security.oauth2.resourceserver.jwt.issuer-uri to the bank IdP, source entitlements from
+  # CEES, and set dev-default-user=false so unauthenticated access is denied (fail-closed).
+  security:
+    jwt-secret: onefinux-dev-signing-secret-please-override-in-prod-0123456789
+    dev-default-user: true          # no token => act as default-user (keeps console/simulator working)
+    default-user: praveen.kumar
+    token-ttl-minutes: 480
+    users:
+      # Bracket-quoted keys so dotted usernames bind as literal map keys (not nested paths).
+      "[praveen.kumar]": { superuser: true, roles: [ADMIN] }
+      "[alice.revacc]":  { roles: [CONTROLLER], groupUnits: [REV-ACC], ceesProducts: ["product:FOBO"] }
+      "[bob.markets]":   { roles: [CONTROLLER], groupUnits: [MARKETS] }   # entitled to a unit with no instances
+      "[auditor]":       { roles: [AUDIT], groupUnits: [REV-ACC] }
 
   # ---------------------------------------------------------------- Component 2: translation layer
   translation:

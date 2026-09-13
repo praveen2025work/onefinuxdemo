@@ -3,6 +3,7 @@ package com.onefinux.hub.propagation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onefinux.hub.event.BusinessEvent;
 import com.onefinux.hub.event.EventIngested;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -28,10 +29,12 @@ public class PropagationService {
 
     private final PropagationRepository repo;
     private final ObjectMapper mapper;
+    private final MeterRegistry metrics;
 
-    public PropagationService(PropagationRepository repo, ObjectMapper mapper) {
+    public PropagationService(PropagationRepository repo, ObjectMapper mapper, MeterRegistry metrics) {
         this.repo = repo;
         this.mapper = mapper;
+        this.metrics = metrics;
     }
 
     @EventListener
@@ -49,6 +52,7 @@ public class PropagationService {
             repo.enqueue(UUID.randomUUID().toString().substring(0, 8), ev.eventId(),
                     str(route, "routeId"), str(route, "subscriber"), ev.eventType(), ev.sourceSystem(),
                     str(route, "targetUrl"), payload);
+            metrics.counter("onefinux.propagation.enqueued", "subscriber", str(route, "subscriber")).increment();
         }
         log.info("propagation: {} {} queued to {} subscriber(s)", ev.sourceSystem(), ev.eventType(), routes.size());
     }

@@ -3,8 +3,11 @@ package com.onefinux.hub.stitch;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onefinux.hub.event.EventHubService;
 import com.onefinux.hub.event.EventStatus;
+import com.onefinux.hub.security.CurrentUser;
 import com.onefinux.hub.stream.StreamHub;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -25,15 +28,37 @@ public class StitchService {
     private final StreamHub stream;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private final CurrentUser currentUser;
 
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
-                         StreamHub stream, ObjectMapper mapper, Clock clock) {
+                         StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser) {
         this.repo = repo;
         this.fold = fold;
         this.hub = hub;
         this.stream = stream;
         this.mapper = mapper;
         this.clock = clock;
+        this.currentUser = currentUser;
+    }
+
+    /**
+     * Fetch an instance the caller is entitled to see, or fail closed. Unknown and unentitled are the
+     * same 404 so the API never reveals the existence of another tenant's instance.
+     */
+    private Map<String, Object> requireEntitledInstance(String instanceId) {
+        Map<String, Object> inst = repo.instance(instanceId);
+        if (inst == null || !currentUser.entitlements().canSeeGroupUnit(str(inst, "groupUnitId"))) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No such instance");
+        }
+        return inst;
+    }
+
+    /** Tenant-scoped instance list: rows are filtered to the caller's entitled group units. */
+    public List<Map<String, Object>> instances(String groupUnit, String cobDate, String region, String status) {
+        var ent = currentUser.entitlements();
+        return repo.instances(groupUnit, cobDate, region, status).stream()
+                .filter(row -> ent.canSeeGroupUnit(str(row, "groupUnitId")))
+                .toList();
     }
 
     public Map<String, Object> context(int liveClients) {
@@ -48,7 +73,9 @@ public class StitchService {
 
     public Map<String, Object> instanceDetail(String instanceId) {
         Map<String, Object> inst = repo.instance(instanceId);
-        if (inst == null) {
+        // Fail-closed: unknown or unentitled both return null -> the controller answers 404 (never 403),
+        // so a caller cannot probe for instances outside their entitled group units.
+        if (inst == null || !currentUser.entitlements().canSeeGroupUnit(str(inst, "groupUnitId"))) {
             return null;
         }
         return Map.of(
@@ -58,21 +85,18 @@ public class StitchService {
                 "events", repo.eventsForInstance(instanceId));
     }
 
-    public Map<String, Object> signoff(String instanceId, String user) {
-        Map<String, Object> inst = repo.instance(instanceId);
-        if (inst == null) {
-            throw new IllegalArgumentException("Unknown instance " + instanceId);
-        }
+    public Map<String, Object> signoff(String instanceId) {
+        Map<String, Object> inst = requireEntitledInstance(instanceId);
         if (!"READY".equals(inst.get("status"))) {
             throw new IllegalStateException("Only a READY instance can be signed off (was " + inst.get("status") + ")");
         }
         repo.updateInstanceStatus(instanceId, "CLEARED", null, null);
-        String actor = user == null ? "praveen.kumar" : user;
+        String actor = currentUser.actor();
         repo.insertAudit(actor, "SIGN_OFF", instanceId, "OK", json(Map.of("from", inst.get("status"), "to", "CLEARED")));
         publishWorkflow("OUTCOME_SIGNED_OFF", instanceId, inst, Map.of("by", actor));
         repo.insertNotification("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
                 str(inst, "groupUnitId"), inst.get("kitId") + " " + inst.get("sliceKey") + " cleared",
-                "Instance " + instanceId + " signed off by " + (user == null ? "praveen.kumar" : user),
+                "Instance " + instanceId + " signed off by " + actor,
                 "SSE", instanceId, str(inst, "groupUnitId"));
         stream.broadcast("notification", Map.of("severity", "INFO", "transition", "CLEARED",
                 "title", inst.get("kitId") + " " + inst.get("sliceKey") + " cleared", "instanceId", instanceId));
@@ -81,26 +105,20 @@ public class StitchService {
     }
 
     public Map<String, Object> post(String instanceId) {
-        Map<String, Object> inst = repo.instance(instanceId);
-        if (inst == null) {
-            throw new IllegalArgumentException("Unknown instance " + instanceId);
-        }
+        Map<String, Object> inst = requireEntitledInstance(instanceId);
         String runId = "RUN-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         repo.insertPendingCommandRun(runId, instanceId, "FAS_MOTIF");
-        repo.insertAudit("praveen.kumar", "POST", instanceId, "OK", json(Map.of("runId", runId, "dest", "FAS_MOTIF")));
+        repo.insertAudit(currentUser.actor(), "POST", instanceId, "OK", json(Map.of("runId", runId, "dest", "FAS_MOTIF")));
         publishWorkflow("POST_REQUESTED", instanceId, inst, Map.of("runId", runId, "dest", "FAS_MOTIF"));
         fold.broadcastOutcome(instanceId);
         return Map.of("instanceId", instanceId, "runId", runId, "dest", "FAS_MOTIF", "echoPending", true);
     }
 
     public Map<String, Object> escalate(String instanceId, String reason) {
-        Map<String, Object> inst = repo.instance(instanceId);
-        if (inst == null) {
-            throw new IllegalArgumentException("Unknown instance " + instanceId);
-        }
+        Map<String, Object> inst = requireEntitledInstance(instanceId);
         String escalationId = "ESC-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         repo.insertEscalation(escalationId, instanceId, "HUMAN");
-        repo.insertAudit("praveen.kumar", "ESCALATE", instanceId, "OK",
+        repo.insertAudit(currentUser.actor(), "ESCALATE", instanceId, "OK",
                 json(Map.of("escalationId", escalationId, "reason", reason == null ? "" : reason)));
         publishWorkflow("ESCALATION_RAISED", instanceId, inst,
                 Map.of("escalationId", escalationId, "reason", reason == null ? "" : reason));
@@ -140,7 +158,7 @@ public class StitchService {
             repo.insertKitEmbed(kitId, str((Map<String, Object>) e, "url"),
                     str((Map<String, Object>) e, "allowedOrigin"), str((Map<String, Object>) e, "chrome"));
         }
-        repo.insertAudit("praveen.kumar", "REGISTER_KIT", kitId, "OK",
+        repo.insertAudit(currentUser.actor(), "REGISTER_KIT", kitId, "OK",
                 json(Map.of("groupUnit", str(body, "groupUnitId"), "renderer", String.valueOf(kit.get("renderer")))));
         stream.broadcast("kit", Map.of("kitId", kitId, "status", "LIVE"));
         return Map.of("kitId", kitId, "status", "LIVE", "message", "Kit registered as data — no Java type added.");
@@ -155,13 +173,13 @@ public class StitchService {
         String fieldMap = json(body.getOrDefault("fieldMap", body));
         String ceesReport = body.getOrDefault("ceesReport", "report:" + viewId).toString();
         repo.insertView(viewId, groupUnit, datasetId, widget, fieldMap, ceesReport);
-        repo.insertAudit("praveen.kumar", "SAVE_VIEW", viewId, "OK", json(Map.of("groupUnit", groupUnit, "widget", widget)));
+        repo.insertAudit(currentUser.actor(), "SAVE_VIEW", viewId, "OK", json(Map.of("groupUnit", groupUnit, "widget", widget)));
         return Map.of("viewId", viewId, "status", "SAVED");
     }
 
     public void reset() {
         repo.resetDemo();
-        repo.insertAudit("praveen.kumar", "RESET", "demo", "OK", null);
+        repo.insertAudit(currentUser.actor(), "RESET", "demo", "OK", null);
         stream.broadcast("reset", Map.of("at", clock.instant().toString()));
     }
 

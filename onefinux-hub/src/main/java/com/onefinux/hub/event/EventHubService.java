@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onefinux.hub.stream.StreamHub;
 import com.onefinux.hub.translation.TranslationService;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,31 +41,41 @@ public class EventHubService {
     private final StreamHub stream;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private final MeterRegistry metrics;
 
     public EventHubService(EventRecordRepository repository, TranslationService translation,
                            ApplicationEventPublisher publisher, StreamHub stream,
-                           ObjectMapper mapper, Clock clock) {
+                           ObjectMapper mapper, Clock clock, MeterRegistry metrics) {
         this.repository = repository;
         this.translation = translation;
         this.publisher = publisher;
         this.stream = stream;
         this.mapper = mapper;
         this.clock = clock;
+        this.metrics = metrics;
     }
 
     public synchronized IngestResult ingest(InboundEvent in) {
         String eventId = StringUtils.hasText(in.eventId()) ? in.eventId().trim() : deterministicId(in);
         if (repository.existsById(eventId)) {
             log.debug("Duplicate event {} ignored", eventId);
+            metrics.counter("onefinux.events.ingested", "result", "duplicate",
+                    "source", safeTag(in.sourceSystem())).increment();
             return IngestResult.duplicate(eventId);
         }
         BusinessEvent event = translation.translate(in, eventId, clock.instant());
         repository.save(toRecord(event));
         log.info("{} {} {} {} [{} {}]", event.sourceSystem(), event.eventType(), event.sourceKey(),
                 event.status(), event.cobDate(), event.region());
+        metrics.counter("onefinux.events.ingested", "result", "accepted",
+                "source", safeTag(event.sourceSystem())).increment();
         stream.broadcast("event", event);
         publisher.publishEvent(new EventIngested(event, false));
         return IngestResult.accepted(event);
+    }
+
+    private static String safeTag(String value) {
+        return value == null || value.isBlank() ? "unknown" : value.trim().toUpperCase();
     }
 
     /** Workflow decisions (overrides, action runs) are events too, so they are audited and replayable. */
