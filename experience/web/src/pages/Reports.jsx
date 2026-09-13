@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import { outcomesApi, runScenario } from '../api';
+import { Link } from 'react-router-dom';
+import { outcomesApi } from '../api';
 import { StatusPill, Meter, Loading } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
@@ -96,7 +97,6 @@ function ReportModal({ outcome, onClose }) {
 
 export default function Reports() {
   const [outcomes, setOutcomes] = useState(null);
-  const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(null);
 
   const load = useCallback(async () => {
@@ -108,11 +108,6 @@ export default function Reports() {
     const t = setInterval(load, 1500);
     return () => clearInterval(t);
   }, [load]);
-
-  async function run(failure) {
-    setBusy(true);
-    try { await runScenario('15c3', failure ? { failure: 'true' } : null); await load(); } finally { setBusy(false); }
-  }
 
   if (!outcomes) return <Loading what="Loading reports…" />;
 
@@ -126,12 +121,7 @@ export default function Reports() {
           </h1>
         </div>
         <div className="ph-actions">
-          <button className="btn ghost" disabled={busy} onClick={() => run(true)} title="Run with a feed failure and recovery">
-            <Icon name="bolt" size={15} /> Run with failure
-          </button>
-          <button className="btn" disabled={busy} onClick={() => run(false)}>
-            <Icon name="play" size={15} /> Run 15C3 feeds
-          </button>
+          <Link className="btn ghost" to="/drive"><Icon name="bolt" size={15} /> Drive a scenario</Link>
         </div>
       </div>
 
@@ -180,7 +170,7 @@ export default function Reports() {
             </div>
           );
         })}
-        {outcomes.length === 0 && <div className="empty">No report outcomes yet. Run the 15C3 feeds to start the flow.</div>}
+        {outcomes.length === 0 && <div className="empty">No report outcomes yet. Open the <Link to="/drive">Drive screen</Link> to run the 15C3 feeds.</div>}
       </div>
 
       {open && <ReportModal outcome={open} onClose={() => setOpen(null)} />}

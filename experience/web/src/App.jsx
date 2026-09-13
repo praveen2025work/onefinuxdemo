@@ -10,6 +10,7 @@ import Analyst from './pages/Analyst.jsx';
 import Configuration from './pages/Configuration.jsx';
 import Monitoring from './pages/Monitoring.jsx';
 import Reports from './pages/Reports.jsx';
+import Drive from './pages/Drive.jsx';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/analyst" element={<Analyst />} />
         <Route path="/configuration" element={<Configuration />} />
         <Route path="/monitoring" element={<Monitoring />} />
+        <Route path="/drive" element={<Drive />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

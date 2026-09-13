@@ -73,6 +73,11 @@ export const outcomesApi = {
     if (!res.ok) throw new Error(`${res.status} on /api/outcomes`);
     return res.json();
   },
+  definitions: async () => {
+    const res = await fetch('/api/outcomes/definitions');
+    if (!res.ok) throw new Error(`${res.status} on /api/outcomes/definitions`);
+    return res.json();
+  },
   report: async (outcomeId, cobDate, region) => {
     const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}/report`);
     if (!res.ok) {
@@ -91,3 +96,6 @@ export async function runScenario(name, params) {
   if (!res.ok) throw new Error(`${res.status} on /sim/scenarios/${name}`);
   return res.json();
 }
+
+// Cancel any scenario events the simulator still has scheduled (the drip of a running scenario).
+export const cancelScenarios = () => runScenario('cancel');
