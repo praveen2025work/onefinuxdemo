@@ -17,6 +17,8 @@ const P = {
   check: <path d="m4 12 5 5L20 6" />,
   bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 7.8h.01" /></>,
+  activity: <path d="M3 12h4l2.5 7 5-16L17 12h4" />,
+  share: <><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="5.5" r="2.6" /><circle cx="18" cy="18.5" r="2.6" /><path d="M8.3 10.8 15.7 6.7M8.3 13.2l7.4 4.1" /></>,
 };
 
 export default function Icon({ name, size = 18, fill = 'none', className = '' }) {

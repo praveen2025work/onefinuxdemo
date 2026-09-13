@@ -9,7 +9,7 @@ export function useStream(handlers) {
   ref.current = handlers;
   useEffect(() => {
     const es = new EventSource('/api/stream');
-    const names = ['hello', 'event', 'outcome', 'notification', 'reset', 'kit'];
+    const names = ['hello', 'event', 'outcome', 'notification', 'reset', 'kit', 'propagation'];
     const listeners = names.map((name) => {
       const fn = (e) => {
         let data = null;

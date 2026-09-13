@@ -16,6 +16,9 @@ const NAV = [
   { grp: 'Explore', items: [
     { to: '/analyst', label: 'Analyst explorer', icon: 'grid' },
   ] },
+  { grp: 'Observe', items: [
+    { to: '/monitoring', label: 'Monitoring', icon: 'activity' },
+  ] },
   { grp: 'Build', items: [
     { to: '/onboarding', label: 'Onboarding', icon: 'build' },
     { to: '/configuration', label: 'Configuration', icon: 'config' },
