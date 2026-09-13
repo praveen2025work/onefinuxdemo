@@ -1,0 +1,16 @@
+stateDiagram-v2
+  direction LR
+  [*] --> NOT_YET
+  NOT_YET --> DELAYED: past SLA, keys pending
+  NOT_YET --> READY: all keys complete
+  NOT_YET --> BLOCKED: a key failed
+  DELAYED --> READY: keys complete
+  DELAYED --> BLOCKED: a key failed
+  BLOCKED --> READY: dead letter replayed / re-run
+  READY --> CLEARED: sign-off (audited)
+  CLEARED --> POSTED: publish (audited)
+  READY --> ESCALATED: raised to RTB (audited)
+  BLOCKED --> ESCALATED: raised to RTB (audited)
+  READY --> REVOKED: upstream restated
+  POSTED --> [*]
+  REVOKED --> NOT_YET: re-open
