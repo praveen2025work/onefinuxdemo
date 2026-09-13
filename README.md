@@ -11,7 +11,7 @@ The requirements live in `docs/One_Finance_UX_BRD.docx`. This README covers runn
 | Module | Port | Role |
 |---|---|---|
 | `onefinux-hub` | 7070 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, live board |
-| `source-simulator` | 7081 | Stands in for Motif, SAP, GMIS, RAM, US Castle, Finance Store, Axiom. Also runs mock **Helix** and **Axiom** services that receive commands and publish completions back |
+| `source-simulator` | 7081 | Stands in for Motif, SAP, GMIS, RAMP, US Castle, Finance Store, Axiom. Also runs mock **Helix** and **Axiom** services that receive commands and publish completions back |
 
 The three outcomes are configured in `onefinux-hub/src/main/resources/application.yml` as metadata, not code:
 
@@ -19,7 +19,7 @@ The three outcomes are configured in `onefinux-hub/src/main/resources/applicatio
 |---|---|---|---|
 | `FOBO_HELIX` | Can I execute FOBO analysis? | 300 × `MASTERBOOK_READY` (Motif) | Hub triggers Helix and waits for `HELIX_ANALYSIS_COMPLETE` |
 | `REPORT_15C3` | Can I produce the 15C3 report? | 5 × each of `SAP_TB_COMPLETE`, `USCASTLE_COMPLETE`, `FINSTORE_LOADED`, `AXIOM_READY` | Hub triggers Axiom and waits for `REG_REPORT_GENERATED` |
-| `PNL_REPORTING` | Can I run PnL reporting? | 3 × `GMIS_LOADED`, 2 × `RAM_CHORUS_READY`, 5 × `SAP_TB_COMPLETE` (shared with 15C3) | Notify only |
+| `PNL_REPORTING` | Can I run PnL reporting? | 3 × `GMIS_LOADED`, 2 × `RAMP_CHORUS_READY`, 5 × `SAP_TB_COMPLETE` (shared with 15C3) | Notify only |
 
 ## Run it
 

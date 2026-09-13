@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
- * Plays the part of the finance estate for the POC: Motif, SAP, GMIS, RAM, US Castle, Finance Store and
+ * Plays the part of the finance estate for the POC: Motif, SAP, GMIS, RAMP, US Castle, Finance Store and
  * Axiom publish events to the hub over HTTP, and mock Helix / Axiom accept downstream commands and
  * report back with their own completion events. Nothing here is polled.
  */

@@ -14,7 +14,7 @@ import java.util.TreeMap;
 
 /**
  * Component 2 - Event Translation Layer.
- * Motif speaks Master Book, SAP speaks Cost Centre, GMIS speaks Book ID, RAM speaks Chorus Group.
+ * Motif speaks Master Book, SAP speaks Cost Centre, GMIS speaks Book ID, RAMP speaks Chorus Group.
  * This service stamps every event with its business identifier type and any known cross references
  * so the outcome engine can correlate events across systems.
  *

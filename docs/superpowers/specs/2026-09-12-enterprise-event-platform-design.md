@@ -27,7 +27,7 @@ The platform replaces that scavenger hunt with a single, entitled view:
 - **“Can I produce the IFRS pack?”**
 - **“The report is ready — open it here.”**
 
-One Finance UX is **not** a replacement for Helix, Axiom, Motif, SAP, GMIS, RAM, US Castle, or Finance Store. Those systems remain systems of record. One Finance is the **outcome orchestrator, event bus citizen, entitlement-aware UX, and unified report surface**.
+One Finance UX is **not** a replacement for Helix, Axiom, Motif, SAP, GMIS, RAMP, US Castle, or Finance Store. Those systems remain systems of record. One Finance is the **outcome orchestrator, event bus citizen, entitlement-aware UX, and unified report surface**.
 
 ---
 
@@ -121,7 +121,7 @@ flowchart TB
     Motif[Motif / FO books]
     SAP[SAP TB]
     GMIS[GMIS]
-    RAM[RAM Chorus]
+    RAMP[RAMP Chorus]
     Castle[US Castle]
     FinStore[Finance Store]
     Helix[Helix FOBO]
@@ -162,7 +162,7 @@ flowchart TB
   Motif --> GW
   SAP --> GW
   GMIS --> GW
-  RAM --> GW
+  RAMP --> GW
   Castle --> GW
   FinStore --> GW
   Helix --> GW
@@ -390,7 +390,7 @@ Feed readers live in `adapters/<source>-feed/` (project structure spec). They ar
 
 ## 9. Translation and identity
 
-Motif speaks master book. SAP speaks cost centre. GMIS speaks book id. RAM speaks chorus group. Helix speaks analysis run.
+Motif speaks master book. SAP speaks cost centre. GMIS speaks book id. RAMP speaks chorus group. Helix speaks analysis run.
 
 The translation layer stamps every event with:
 
