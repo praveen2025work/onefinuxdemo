@@ -18,6 +18,7 @@ const P = {
   bolt: <path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z" />,
   info: <><circle cx="12" cy="12" r="9" /><path d="M12 11v5M12 7.8h.01" /></>,
   activity: <path d="M3 12h4l2.5 7 5-16L17 12h4" />,
+  report: <><path d="M6 2.5h8l4 4V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z" /><path d="M14 2.5V6.5h4M8.5 13h7M8.5 16.5h7M8.5 9.5h3" /></>,
   share: <><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="5.5" r="2.6" /><circle cx="18" cy="18.5" r="2.6" /><path d="M8.3 10.8 15.7 6.7M8.3 13.2l7.4 4.1" /></>,
 };
 
@@ -36,7 +37,7 @@ export function BrandMark({ size = 34 }) {
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
       <defs>
         <linearGradient id="ofx-g" x1="0" y1="0" x2="40" y2="40">
-          <stop offset="0" stopColor="#37b6ff" /><stop offset="1" stopColor="#34d3e0" />
+          <stop offset="0" stopColor="#00aeef" /><stop offset="1" stopColor="#00395d" />
         </linearGradient>
       </defs>
       <rect x="1.5" y="1.5" width="37" height="37" rx="10" fill="url(#ofx-g)" />

@@ -16,6 +16,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/sim/**").allowedOrigins(properties.allowedOrigin()).allowedMethods("GET", "POST");
+        // The configured origin (the hub, when the console is served same-origin) plus any localhost port,
+        // so the dev console's scenario buttons work whichever Vite port they land on (5173, 5174, ...).
+        registry.addMapping("/sim/**")
+                .allowedOriginPatterns(properties.allowedOrigin(), "http://localhost:*", "http://127.0.0.1:*")
+                .allowedMethods("GET", "POST");
     }
 }

@@ -41,6 +41,7 @@ class OutcomeInstance {
     private boolean breached;
     private String actionRunId;
     private String resultSummary;
+    private ReportArtifact report;
     private String lastMessage;
 
     OutcomeInstance(OutcomeDefinition definition, LocalDate cobDate, String region, ZoneId zone) {
@@ -112,12 +113,14 @@ class OutcomeInstance {
         completedAt = null;
         actionRunId = null;
         resultSummary = null;
+        report = null;
     }
 
     void markActionRunning(String runId) {
         status = OutcomeStatus.ACTION_RUNNING;
         actionRunId = runId;
         resultSummary = null;
+        report = null;
     }
 
     void markActionFailed(String summary) {
@@ -125,10 +128,31 @@ class OutcomeInstance {
         resultSummary = summary;
     }
 
-    void markCompleted(Instant at, String summary) {
+    void markCompleted(Instant at, String summary, ReportArtifact report) {
         status = OutcomeStatus.COMPLETED;
         completedAt = at;
         resultSummary = summary;
+        this.report = report;
+    }
+
+    ReportArtifact report() {
+        return report;
+    }
+
+    /**
+     * Derived business stage for the report flow the console draws:
+     * feeds arriving → ready → processing → generated → available to view.
+     */
+    String stage() {
+        return switch (status) {
+            case NOT_STARTED -> "NOT_STARTED";
+            case IN_PROGRESS -> "FEEDS";
+            case BLOCKED -> "BLOCKED";
+            case READY -> "READY";
+            case ACTION_RUNNING -> "PROCESSING";
+            case ACTION_FAILED -> "FAILED";
+            case COMPLETED -> report != null ? "AVAILABLE" : "GENERATED";
+        };
     }
 
     boolean announceMilestone(int milestone) {
@@ -220,6 +244,6 @@ class OutcomeInstance {
                 definition.ownerGroup(), status, percent(), completed(), expected(), expected() - completed(),
                 eta, deadline(), atRisk, breached, readyAt, completedAt, definition.hasAction(),
                 definition.onReady() == null ? null : definition.onReady().actionLabel(),
-                actionRunId, resultSummary, lastMessage, updatedAt, deps);
+                actionRunId, resultSummary, lastMessage, updatedAt, deps, stage(), report);
     }
 }

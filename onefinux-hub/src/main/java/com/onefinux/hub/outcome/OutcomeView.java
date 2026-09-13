@@ -30,5 +30,9 @@ public record OutcomeView(
         String resultSummary,
         String lastMessage,
         Instant updatedAt,
-        List<DependencyView> dependencies) {
+        List<DependencyView> dependencies,
+        /** Business lifecycle stage for the report flow: NOT_STARTED, FEEDS, READY, PROCESSING, GENERATED, AVAILABLE, BLOCKED, FAILED. */
+        String stage,
+        /** The generated output, once available to view. Null until the outcome completes with an artifact. */
+        ReportArtifact report) {
 }

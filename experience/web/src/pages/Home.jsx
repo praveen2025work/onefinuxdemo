@@ -13,9 +13,8 @@ const ROLES = [
 ];
 
 export default function Home() {
-  const { instances, filters, refreshInstances, refreshNotifications } = useApp();
+  const { instances, filters, refreshInstances } = useApp();
   const [events, setEvents] = useState([]);
-  const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
   const ready = instances.filter((i) => i.status === 'READY').length;
@@ -30,16 +29,6 @@ export default function Home() {
   }
   useEffect(() => { if (instances.length) loadActivity(); }, [instances]); // eslint-disable-line
 
-  async function drive() {
-    setBusy(true);
-    try {
-      await api.reset();
-      await fetch('/sim/scenarios/fobo', { method: 'POST' });
-    } finally {
-      setTimeout(() => { refreshInstances(); refreshNotifications(); setBusy(false); }, 8000);
-    }
-  }
-
   return (
     <>
       <div className="ph">
@@ -51,7 +40,7 @@ export default function Home() {
         </div>
         <div className="ph-actions">
           <button className="btn ghost" onClick={() => refreshInstances()}>↻ Refresh fold</button>
-          <button className="btn" onClick={drive} disabled={busy}>{busy ? 'Driving…' : '▶ Drive FOBO demo'}</button>
+          <Link className="btn" to="/drive">▶ Drive a scenario</Link>
         </div>
       </div>
 
@@ -118,7 +107,7 @@ export default function Home() {
                     <div className="d">{e.eventType} · {e.ingestOffset || e.region}</div>
                   </div>
                 ))}
-                {events.length === 0 && <div className="empty">Drive the FOBO demo to see live facts.</div>}
+                {events.length === 0 && <div className="empty">No live facts yet. Open the <Link to="/drive">Drive screen</Link> to run a scenario.</div>}
               </div>
             </div>
           </div>

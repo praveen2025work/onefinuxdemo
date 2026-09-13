@@ -57,10 +57,16 @@ public class DownstreamMocks {
     public ResponseEntity<Map<String, String>> axiom(@RequestBody ActionCommand command) {
         log.info("Axiom received {} for {}", command.runId(), command.correlationId());
         String reportId = "RPT-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        int rowCount = 1_800 + command.inputs() * 240 + random.nextInt(600);
+        String catalogId = "AXM-15C3-" + command.cobDate().toString().replace("-", "");
+        String reportUri = "onefinux://reports/15c3/" + command.cobDate() + "/" + command.region() + "/" + reportId;
         reply(command, "AXIOM", Map.of(
                 "reportId", reportId,
+                "catalogId", catalogId,
+                "reportUri", reportUri,
+                "rowCount", rowCount,
                 "summary", "15C3 report " + reportId + " generated from " + command.inputs()
-                        + " inputs and is ready for review."));
+                        + " inputs (" + rowCount + " rows) and is available to view."));
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("runId", command.runId(), "status", "ACCEPTED"));
     }
 
