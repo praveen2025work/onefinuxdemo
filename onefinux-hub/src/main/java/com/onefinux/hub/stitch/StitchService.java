@@ -67,7 +67,9 @@ public class StitchService {
             throw new IllegalStateException("Only a READY instance can be signed off (was " + inst.get("status") + ")");
         }
         repo.updateInstanceStatus(instanceId, "CLEARED", null, null);
-        publishWorkflow("OUTCOME_SIGNED_OFF", instanceId, inst, Map.of("by", user == null ? "praveen.kumar" : user));
+        String actor = user == null ? "praveen.kumar" : user;
+        repo.insertAudit(actor, "SIGN_OFF", instanceId, "OK", json(Map.of("from", inst.get("status"), "to", "CLEARED")));
+        publishWorkflow("OUTCOME_SIGNED_OFF", instanceId, inst, Map.of("by", actor));
         repo.insertNotification("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
                 str(inst, "groupUnitId"), inst.get("kitId") + " " + inst.get("sliceKey") + " cleared",
                 "Instance " + instanceId + " signed off by " + (user == null ? "praveen.kumar" : user),
@@ -85,6 +87,7 @@ public class StitchService {
         }
         String runId = "RUN-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         repo.insertPendingCommandRun(runId, instanceId, "FAS_MOTIF");
+        repo.insertAudit("praveen.kumar", "POST", instanceId, "OK", json(Map.of("runId", runId, "dest", "FAS_MOTIF")));
         publishWorkflow("POST_REQUESTED", instanceId, inst, Map.of("runId", runId, "dest", "FAS_MOTIF"));
         fold.broadcastOutcome(instanceId);
         return Map.of("instanceId", instanceId, "runId", runId, "dest", "FAS_MOTIF", "echoPending", true);
@@ -97,6 +100,8 @@ public class StitchService {
         }
         String escalationId = "ESC-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         repo.insertEscalation(escalationId, instanceId, "HUMAN");
+        repo.insertAudit("praveen.kumar", "ESCALATE", instanceId, "OK",
+                json(Map.of("escalationId", escalationId, "reason", reason == null ? "" : reason)));
         publishWorkflow("ESCALATION_RAISED", instanceId, inst,
                 Map.of("escalationId", escalationId, "reason", reason == null ? "" : reason));
         repo.insertNotification("WARN", "ESCALATED", str(inst, "kitId"), str(inst, "question"),
@@ -135,6 +140,8 @@ public class StitchService {
             repo.insertKitEmbed(kitId, str((Map<String, Object>) e, "url"),
                     str((Map<String, Object>) e, "allowedOrigin"), str((Map<String, Object>) e, "chrome"));
         }
+        repo.insertAudit("praveen.kumar", "REGISTER_KIT", kitId, "OK",
+                json(Map.of("groupUnit", str(body, "groupUnitId"), "renderer", String.valueOf(kit.get("renderer")))));
         stream.broadcast("kit", Map.of("kitId", kitId, "status", "LIVE"));
         return Map.of("kitId", kitId, "status", "LIVE", "message", "Kit registered as data — no Java type added.");
     }
@@ -148,11 +155,13 @@ public class StitchService {
         String fieldMap = json(body.getOrDefault("fieldMap", body));
         String ceesReport = body.getOrDefault("ceesReport", "report:" + viewId).toString();
         repo.insertView(viewId, groupUnit, datasetId, widget, fieldMap, ceesReport);
+        repo.insertAudit("praveen.kumar", "SAVE_VIEW", viewId, "OK", json(Map.of("groupUnit", groupUnit, "widget", widget)));
         return Map.of("viewId", viewId, "status", "SAVED");
     }
 
     public void reset() {
         repo.resetDemo();
+        repo.insertAudit("praveen.kumar", "RESET", "demo", "OK", null);
         stream.broadcast("reset", Map.of("at", clock.instant().toString()));
     }
 

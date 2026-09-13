@@ -286,6 +286,73 @@ public class StitchRepository {
                 p().addValue("id", deadLetterId));
     }
 
+    // ---------------------------------------------------------------- monitoring + audit
+
+    /** Global event tape — the most recent facts across every source, for the monitoring screen. */
+    public List<Map<String, Object>> recentEvents(int limit) {
+        return jdbc.queryForList("""
+                SELECT event_id AS "eventId", event_type AS "eventType", source_system AS "sourceSystem",
+                       source_key AS "sourceKey", status AS "status", CAST(cob_date AS VARCHAR) AS "cobDate",
+                       region AS "region", CAST(received_at AS VARCHAR) AS "receivedAt", instance_id AS "instanceId"
+                FROM event_store ORDER BY received_at DESC, event_id FETCH FIRST :limit ROWS ONLY""",
+                p().addValue("limit", Math.max(1, Math.min(limit, 500))));
+    }
+
+    public List<Map<String, Object>> eventCountsByStatus() {
+        return jdbc.queryForList("""
+                SELECT status AS "status", COUNT(*) AS "n" FROM event_store GROUP BY status ORDER BY status""", p());
+    }
+
+    public List<Map<String, Object>> eventCountsBySource() {
+        return jdbc.queryForList("""
+                SELECT source_system AS "sourceSystem", COUNT(*) AS "n",
+                       CAST(MAX(received_at) AS VARCHAR) AS "lastReceivedAt"
+                FROM event_store GROUP BY source_system ORDER BY source_system""", p());
+    }
+
+    public long eventTotal() {
+        Long n = jdbc.getJdbcTemplate().queryForObject("SELECT COUNT(*) FROM event_store", Long.class);
+        return n == null ? 0 : n;
+    }
+
+    public long deadLetterDepth() {
+        Long n = jdbc.getJdbcTemplate().queryForObject(
+                "SELECT COUNT(*) FROM dead_letter WHERE status = 'HOLD'", Long.class);
+        return n == null ? 0 : n;
+    }
+
+    public Map<String, Object> commandStats() {
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT SUM(CASE WHEN echo_ok = 'Y' THEN 1 ELSE 0 END) AS "echoed",
+                       SUM(CASE WHEN echo_ok IS NULL OR echo_ok <> 'Y' THEN 1 ELSE 0 END) AS "pending",
+                       COUNT(*) AS "total"
+                FROM command_run""", p());
+        Map<String, Object> r = rows.isEmpty() ? Map.of() : rows.get(0);
+        return Map.of(
+                "echoed", num(r.get("echoed")), "pending", num(r.get("pending")), "total", num(r.get("total")));
+    }
+
+    public void insertAudit(String actor, String action, String resource, String decision, String detailJson) {
+        jdbc.update("""
+                INSERT INTO audit_log (at, actor, action, resource, decision, detail_json)
+                VALUES (CURRENT_TIMESTAMP, :actor, :action, :resource, :decision, :detail)""",
+                p().addValue("actor", actor == null ? "system" : actor).addValue("action", action)
+                        .addValue("resource", resource).addValue("decision", decision == null ? "OK" : decision)
+                        .addValue("detail", detailJson));
+    }
+
+    public List<Map<String, Object>> auditLog(int limit) {
+        return jdbc.queryForList("""
+                SELECT id AS "id", CAST(at AS VARCHAR) AS "at", actor AS "actor", action AS "action",
+                       resource AS "resource", decision AS "decision", detail_json AS "detailJson"
+                FROM audit_log ORDER BY at DESC, id DESC FETCH FIRST :limit ROWS ONLY""",
+                p().addValue("limit", Math.max(1, Math.min(limit, 500))));
+    }
+
+    private static long num(Object v) {
+        return v instanceof Number n ? n.longValue() : 0L;
+    }
+
     public void insertEscalation(String escalationId, String instanceId, String kind) {
         jdbc.update("""
                 MERGE INTO escalation KEY (escalation_id)
@@ -392,6 +459,7 @@ public class StitchRepository {
                 UPDATE outcome_instance SET status = 'NOT_YET', named_blocker = NULL, run_id = NULL,
                     updated_at = CURRENT_TIMESTAMP""", p());
         jdbc.update("UPDATE escalation SET status = 'CLEARED'", p());
+        jdbc.update("DELETE FROM event_outbox", p());
         jdbc.update("DELETE FROM event_store WHERE instance_id IS NOT NULL", p());
         jdbc.update("DELETE FROM notification WHERE instance_id IS NOT NULL", p());
     }

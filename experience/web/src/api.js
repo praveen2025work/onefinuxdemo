@@ -50,4 +50,17 @@ export const api = {
   saveView: (body) => send('POST', '/views', null, body),
   deleteView: (id) => send('DELETE', `/views/${encodeURIComponent(id)}`),
   reset: () => send('POST', '/reset'),
+  monitorOverview: () => get('/monitor/overview'),
+  outbox: (status) => get('/monitor/outbox', { status }),
+  routes: () => get('/monitor/routes'),
+  retryOutbox: (id) => send('POST', `/monitor/outbox/${encodeURIComponent(id)}/retry`),
+  tape: (limit = 40) => get('/monitor/events', { limit }),
+  audit: (limit = 60) => get('/monitor/audit', { limit }),
 };
+
+// The propagated facts land in the simulator's sink (an "other system"), reachable via the /sim proxy.
+export async function fetchSink() {
+  const res = await fetch('/sim/sink');
+  if (!res.ok) throw new Error(`${res.status} on /sim/sink`);
+  return res.json();
+}
