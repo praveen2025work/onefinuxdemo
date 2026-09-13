@@ -37,7 +37,7 @@ export function BrandMark({ size = 34 }) {
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
       <defs>
         <linearGradient id="ofx-g" x1="0" y1="0" x2="40" y2="40">
-          <stop offset="0" stopColor="#37b6ff" /><stop offset="1" stopColor="#34d3e0" />
+          <stop offset="0" stopColor="#00aeef" /><stop offset="1" stopColor="#00395d" />
         </linearGradient>
       </defs>
       <rect x="1.5" y="1.5" width="37" height="37" rx="10" fill="url(#ofx-g)" />
