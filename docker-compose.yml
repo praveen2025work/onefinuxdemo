@@ -1,0 +1,38 @@
+# Local end-to-end stack: hub + simulator + console. Mirrors the tmux dev setup as containers.
+#   docker compose up --build
+# Then open http://localhost:8080 (console), http://localhost:7070/actuator (hub ops).
+services:
+  hub:
+    build:
+      context: .
+      dockerfile: onefinux-hub/Dockerfile
+    ports:
+      - "7070:7070"
+    environment:
+      # Point downstream commands + propagation sink at the simulator container.
+      ONEFINUX_SIMULATOR_URL: http://simulator:7081
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:7070/actuator/health/readiness"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 40s
+
+  simulator:
+    build:
+      context: .
+      dockerfile: source-simulator/Dockerfile
+    ports:
+      - "7081:7081"
+    environment:
+      SIM_HUB_URL: http://hub:7070
+
+  web:
+    build:
+      context: experience/web
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - hub
+      - simulator

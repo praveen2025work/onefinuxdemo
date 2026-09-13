@@ -6,6 +6,7 @@ import com.onefinux.hub.config.OneFinUxProperties.OutcomeDefinition;
 import com.onefinux.hub.event.BusinessEvent;
 import com.onefinux.hub.event.EventIngested;
 import com.onefinux.hub.event.EventStatus;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -49,15 +50,18 @@ public class OutcomeEngine {
     private final Clock clock;
     private final ZoneId zone;
     private final DateTimeFormatter timeFormat;
+    private final MeterRegistry metrics;
     private final Map<String, OutcomeInstance> instances = new LinkedHashMap<>();
 
-    public OutcomeEngine(OneFinUxProperties properties, ApplicationEventPublisher publisher, Clock clock) {
+    public OutcomeEngine(OneFinUxProperties properties, ApplicationEventPublisher publisher, Clock clock,
+                         MeterRegistry metrics) {
         this.definitions = properties.outcomes();
         this.milestones = properties.notifications().milestones().stream().sorted(Comparator.reverseOrder()).toList();
         this.publisher = publisher;
         this.clock = clock;
         this.zone = clock.getZone();
         this.timeFormat = DateTimeFormatter.ofPattern("HH:mm").withZone(zone);
+        this.metrics = metrics;
     }
 
     @EventListener
@@ -328,6 +332,9 @@ public class OutcomeEngine {
     private void emit(OutcomeInstance instance, Transition transition, String title, String message, boolean replay) {
         if (title != null) {
             instance.setLastMessage(title);
+            // Count only meaningful state transitions (not the high-frequency PROGRESS refresh) to keep
+            // metric cardinality bounded and dashboards readable.
+            metrics.counter("onefinux.outcome.transition", "transition", transition.name()).increment();
         }
         if (!replay) {
             publisher.publishEvent(new OutcomeChanged(instance.view(), transition, title, message));

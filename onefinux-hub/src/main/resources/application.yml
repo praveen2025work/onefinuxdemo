@@ -31,7 +31,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,prometheus,loggers,scheduledtasks
+  endpoint:
+    health:
+      probes:
+        enabled: true       # /actuator/health/liveness + /readiness for k8s
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: onefinux-hub    # every meter carries the app tag for multi-service dashboards
+  observations:
+    key-values:
+      application: onefinux-hub
 
 logging:
   level:

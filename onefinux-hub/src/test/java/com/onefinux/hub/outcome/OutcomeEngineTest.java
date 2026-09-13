@@ -7,6 +7,7 @@ import com.onefinux.hub.config.OneFinUxProperties.OutcomeDefinition;
 import com.onefinux.hub.config.OneFinUxProperties.Sla;
 import com.onefinux.hub.event.BusinessEvent;
 import com.onefinux.hub.event.EventStatus;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,7 +44,8 @@ class OutcomeEngineTest {
                 new OnReady("NOTIFY_ONLY", null, null, null));
         OneFinUxProperties props = new OneFinUxProperties("America/New_York", null, null, null,
                 List.of(report, pnl), null, null);
-        engine = new OutcomeEngine(props, e -> changes.add((OutcomeChanged) e), Clock.fixed(T0, ZoneId.of("America/New_York")));
+        engine = new OutcomeEngine(props, e -> changes.add((OutcomeChanged) e),
+                Clock.fixed(T0, ZoneId.of("America/New_York")), new SimpleMeterRegistry());
         engine.initialise(COB);
     }
 
