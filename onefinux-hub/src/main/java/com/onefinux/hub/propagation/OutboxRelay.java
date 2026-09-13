@@ -1,6 +1,7 @@
 package com.onefinux.hub.propagation;
 
 import com.onefinux.hub.stream.StreamHub;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,6 +37,7 @@ public class OutboxRelay {
     }
 
     @Scheduled(fixedDelay = 1500)
+    @SchedulerLock(name = "outbox-relay", lockAtLeastFor = "PT1S", lockAtMostFor = "PT20S")
     public void dispatch() {
         List<Map<String, Object>> pending = repo.pending(50);
         for (Map<String, Object> row : pending) {

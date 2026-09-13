@@ -4,6 +4,7 @@ import com.onefinux.hub.event.EventHubService;
 import com.onefinux.hub.event.EventStatus;
 import com.onefinux.hub.outcome.OutcomeEngine;
 import com.onefinux.hub.outcome.OutcomeView;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,6 +36,7 @@ class SlaMonitor {
     }
 
     @Scheduled(fixedDelay = 10_000, initialDelay = 10_000)
+    @SchedulerLock(name = "sla-monitor", lockAtLeastFor = "PT5S", lockAtMostFor = "PT30S")
     void checkDeadlines() {
         if (!live.get()) {
             return;
