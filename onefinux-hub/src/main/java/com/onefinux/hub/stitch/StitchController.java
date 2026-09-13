@@ -84,6 +84,16 @@ public class StitchController {
         return service.escalate(id, reason);
     }
 
+    /**
+     * Generic human action, gated by the instance's kit {@code userActions}. Launch a new console
+     * capability by adding a verb to the kit — no new endpoint. Ids carry '|', so travel as query params.
+     */
+    @PostMapping("/instance/action")
+    public Map<String, Object> action(@RequestParam String id, @RequestParam String action,
+                                      @RequestBody(required = false) Map<String, Object> body) {
+        return service.action(id, action, body);
+    }
+
     @GetMapping("/notifications")
     public List<Map<String, Object>> notifications(@RequestParam(defaultValue = "50") int limit) {
         return repo.notifications(limit);

@@ -36,6 +36,7 @@ export const api = {
   signoff: (id, user) => send('POST', '/instance/signoff', { id }, { user }),
   post: (id) => send('POST', '/instance/post', { id }),
   escalate: (id, reason) => send('POST', '/instance/escalate', { id }, { reason }),
+  action: (id, action, body) => send('POST', '/instance/action', { id, action }, body || {}),
   notifications: (limit = 50) => get('/notifications', { limit }),
   rtb: () => get('/rtb'),
   replay: (id) => send('POST', `/deadletters/${encodeURIComponent(id)}/replay`),
