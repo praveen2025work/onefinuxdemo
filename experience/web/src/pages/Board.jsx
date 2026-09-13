@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { StatusPill, Meter } from '../components/bits.jsx';
+import InfoHint from '../components/InfoHint.jsx';
 
 const STATUSES = ['', 'READY', 'BLOCKED', 'NOT_YET', 'CLEARED'];
 
@@ -13,8 +14,9 @@ export default function Board() {
       <div className="ph">
         <div>
           <div className="eyebrow">Business-unit head · read only</div>
-          <h1>Outcome board</h1>
-          <p className="sub">Traffic lights for the whole unit. A head sees Ready / Blocked / escalations — no book grid, no engine internals.</p>
+          <h1 className="ph-title">Outcome board
+            <InfoHint title="Outcome board">Traffic lights for the whole unit. A head sees Ready / Blocked / escalations — no book grid, no engine internals.</InfoHint>
+          </h1>
         </div>
         <div className="seg">
           {STATUSES.map((s) => (

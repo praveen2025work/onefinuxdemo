@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { StatusPill, Meter } from '../components/bits.jsx';
+import InfoHint from '../components/InfoHint.jsx';
 
 export default function Outcomes() {
   const { instances, filters } = useApp();
@@ -11,8 +12,9 @@ export default function Outcomes() {
       <div className="ph">
         <div>
           <div className="eyebrow">Outcome user · {filters.groupUnit}</div>
-          <h1>My outcomes</h1>
-          <p className="sub">Agents already ran against the stitched facts. Open a ready outcome to sign off or post; open a blocked one to see the named key.</p>
+          <h1 className="ph-title">My outcomes
+            <InfoHint title="My outcomes">Agents already ran against the stitched facts. Open a ready outcome to sign off or post; open a blocked one to see the named key.</InfoHint>
+          </h1>
         </div>
       </div>
 

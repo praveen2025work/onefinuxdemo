@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { api } from '../api';
 import { StatusPill, Meter } from '../components/bits.jsx';
+import InfoHint from '../components/InfoHint.jsx';
 
 const ROLES = [
   { to: '/board', title: 'Outcome board', q: 'Ready, blocked, delayed and escalation counts for the whole unit.', tag: 'Read only', cls: 'plain' },
@@ -44,8 +45,9 @@ export default function Home() {
       <div className="ph">
         <div>
           <div className="eyebrow">Revenue Accounting · close of business {filters.cobDate}</div>
-          <h1>Outcome control tower</h1>
-          <p className="sub">One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them.</p>
+          <h1 className="ph-title">Outcome control tower
+            <InfoHint title="Outcome control tower">One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them.</InfoHint>
+          </h1>
         </div>
         <div className="ph-actions">
           <button className="btn ghost" onClick={() => refreshInstances()}>↻ Refresh fold</button>
@@ -79,7 +81,7 @@ export default function Home() {
           </div>
 
           <div className="panel">
-            <div className="panel-hd"><h2>Every outcome instance for this unit today</h2><span className="hint">outcome_instance ⨝ product_kit</span></div>
+            <div className="panel-hd"><h2>Every outcome instance for this unit today <InfoHint title="Fail-closed entitlements" width={300}>Unentitled instances are not greyed out — they return 404 and never reach this list.</InfoHint></h2><span className="hint">outcome_instance ⨝ product_kit</span></div>
             <div className="panel-bd tight">
               <div className="tbl-wrap">
                 <table className="tbl">
@@ -101,7 +103,6 @@ export default function Home() {
                 </table>
               </div>
             </div>
-            <div className="panel-ft">🛡 Unentitled instances are not greyed out — they return 404 and never reach this list.</div>
           </div>
         </div>
 
