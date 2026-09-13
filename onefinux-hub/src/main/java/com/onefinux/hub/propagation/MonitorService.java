@@ -49,6 +49,10 @@ public class MonitorService {
         return propagation.retry(outboxId);
     }
 
+    public List<Map<String, Object>> deadLetters(int limit) {
+        return propagation.deadLetters(limit);
+    }
+
     public List<Map<String, Object>> tape(int limit) {
         return stitch.recentEvents(limit);
     }

@@ -41,45 +41,64 @@ public class PropagationRepository {
 
     public void enqueue(String outboxId, String eventId, String routeId, String subscriber, String eventType,
                         String sourceId, String targetUrl, String payloadJson) {
+        Instant now = Instant.now();
         jdbc.update("""
                 INSERT INTO event_outbox (outbox_id, event_id, route_id, subscriber, event_type, source_id,
-                                          target_url, payload_json, status, attempts, created_at)
+                                          target_url, payload_json, status, attempts, created_at, next_attempt_at)
                 VALUES (:outboxId, :eventId, :routeId, :subscriber, :eventType, :sourceId,
-                        :targetUrl, :payload, 'PENDING', 0, :now)""",
+                        :targetUrl, :payload, 'PENDING', 0, :now, :now)""",
                 p().addValue("outboxId", outboxId).addValue("eventId", eventId).addValue("routeId", routeId)
                         .addValue("subscriber", subscriber).addValue("eventType", eventType)
                         .addValue("sourceId", sourceId).addValue("targetUrl", targetUrl)
-                        .addValue("payload", payloadJson).addValue("now", Instant.now()));
+                        .addValue("payload", payloadJson).addValue("now", now));
     }
 
+    /** Rows due for a delivery attempt: never-sent (PENDING) or previously-failed whose backoff has elapsed. */
     public List<Map<String, Object>> pending(int limit) {
         return jdbc.queryForList("""
                 SELECT outbox_id AS "outboxId", event_id AS "eventId", subscriber AS "subscriber",
-                       target_url AS "targetUrl", payload_json AS "payload"
-                FROM event_outbox WHERE status = 'PENDING'
+                       target_url AS "targetUrl", payload_json AS "payload", attempts AS "attempts"
+                FROM event_outbox
+                WHERE status IN ('PENDING','FAILED')
+                  AND (next_attempt_at IS NULL OR next_attempt_at <= :now)
                 ORDER BY created_at FETCH FIRST :limit ROWS ONLY""",
-                p().addValue("limit", Math.max(1, limit)));
+                p().addValue("now", Instant.now()).addValue("limit", Math.max(1, limit)));
     }
 
     public void markDispatched(String outboxId) {
         jdbc.update("""
                 UPDATE event_outbox SET status = 'DISPATCHED', attempts = attempts + 1,
-                       dispatched_at = :now, last_error = NULL WHERE outbox_id = :id""",
+                       dispatched_at = :now, next_attempt_at = NULL, last_error = NULL WHERE outbox_id = :id""",
                 p().addValue("id", outboxId).addValue("now", Instant.now()));
     }
 
-    public void markFailed(String outboxId, String error) {
+    /**
+     * Records a failed attempt. Below the retry ceiling the row stays retryable (FAILED) with a future
+     * {@code next_attempt_at} for backoff; at/above the ceiling it is dead-lettered (DEAD) and no longer
+     * retried automatically.
+     */
+    public void recordFailure(String outboxId, String error, boolean dead, Instant nextAttemptAt) {
         jdbc.update("""
-                UPDATE event_outbox SET status = 'FAILED', attempts = attempts + 1, last_error = :err
-                WHERE outbox_id = :id""",
-                p().addValue("id", outboxId).addValue("err", error == null ? "error" : error.substring(0, Math.min(error.length(), 390))));
+                UPDATE event_outbox
+                   SET status = :status, attempts = attempts + 1, last_error = :err, next_attempt_at = :next
+                 WHERE outbox_id = :id""",
+                p().addValue("id", outboxId)
+                        .addValue("status", dead ? "DEAD" : "FAILED")
+                        .addValue("err", error == null ? "error" : error.substring(0, Math.min(error.length(), 390)))
+                        .addValue("next", dead ? null : nextAttemptAt));
     }
 
+    /** Operator redrive: return a FAILED or dead-lettered row to the queue for immediate delivery. */
     public int retry(String outboxId) {
         return jdbc.update("""
-                UPDATE event_outbox SET status = 'PENDING', last_error = NULL
-                WHERE outbox_id = :id AND status = 'FAILED'""",
-                p().addValue("id", outboxId));
+                UPDATE event_outbox SET status = 'PENDING', last_error = NULL, next_attempt_at = :now
+                WHERE outbox_id = :id AND status IN ('FAILED','DEAD')""",
+                p().addValue("id", outboxId).addValue("now", Instant.now()));
+    }
+
+    /** Dead-letter queue: rows that exhausted their retries and await an operator. */
+    public List<Map<String, Object>> deadLetters(int limit) {
+        return outbox("DEAD", limit);
     }
 
     public List<Map<String, Object>> outbox(String status, int limit) {
@@ -105,17 +124,19 @@ public class PropagationRepository {
         long pending = 0;
         long dispatched = 0;
         long failed = 0;
+        long dead = 0;
         for (Map<String, Object> r : rows) {
             long n = ((Number) r.get("n")).longValue();
             switch (String.valueOf(r.get("status"))) {
                 case "PENDING" -> pending = n;
                 case "DISPATCHED" -> dispatched = n;
                 case "FAILED" -> failed = n;
+                case "DEAD" -> dead = n;
                 default -> { }
             }
         }
-        return Map.of("pending", pending, "dispatched", dispatched, "failed", failed,
-                "total", pending + dispatched + failed);
+        return Map.of("pending", pending, "dispatched", dispatched, "failed", failed, "dead", dead,
+                "total", pending + dispatched + failed + dead);
     }
 
     public List<Map<String, Object>> routes() {
