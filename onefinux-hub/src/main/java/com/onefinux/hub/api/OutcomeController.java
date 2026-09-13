@@ -1,6 +1,5 @@
 package com.onefinux.hub.api;
 
-import com.onefinux.hub.config.OneFinUxProperties;
 import com.onefinux.hub.config.OneFinUxProperties.OutcomeDefinition;
 import com.onefinux.hub.outcome.OutcomeEngine;
 import com.onefinux.hub.outcome.OutcomeView;
@@ -9,10 +8,15 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,11 +26,11 @@ import java.util.List;
 public class OutcomeController {
 
     private final OutcomeEngine engine;
-    private final OneFinUxProperties properties;
+    private final Clock clock;
 
-    public OutcomeController(OutcomeEngine engine, OneFinUxProperties properties) {
+    public OutcomeController(OutcomeEngine engine, Clock clock) {
         this.engine = engine;
-        this.properties = properties;
+        this.clock = clock;
     }
 
     @GetMapping
@@ -36,12 +40,40 @@ public class OutcomeController {
 
     /**
      * The kit registry: every outcome definition the platform folds — its business question, input
-     * feeds (with expected counts), SLA and on-ready action. This is the configuration that drives the
-     * engine, surfaced so the console can show what each outcome depends on.
+     * feeds (with expected counts), SLA and on-ready action. Includes both the seeded outcomes and any
+     * onboarded at runtime, so the console can show what each outcome depends on.
      */
     @GetMapping("/definitions")
     public List<OutcomeDefinition> definitions() {
-        return properties.outcomes();
+        return engine.definitions();
+    }
+
+    /**
+     * Onboard a new business outcome as data. In production this is gated by maker-checker; here it lets
+     * an operator define a question, its input feeds, an SLA and an optional on-ready action, and
+     * immediately see the outcome fold live on the Board and Reports for the given COB (defaults to today).
+     */
+    @PostMapping("/definitions")
+    @ResponseStatus(HttpStatus.CREATED)
+    public OutcomeView register(@RequestBody OutcomeDefinition definition,
+                                @RequestParam(required = false)
+                                @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate cobDate) {
+        if (isBlank(definition.id()) || isBlank(definition.name()) || isBlank(definition.question())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id, name and question are required");
+        }
+        if (definition.dependencies().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An outcome needs at least one input feed");
+        }
+        LocalDate cob = cobDate != null ? cobDate : LocalDate.now(clock);
+        try {
+            return engine.register(definition, cob);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
+
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
     }
 
     @GetMapping("/{outcomeId}/{cobDate}/{region}")

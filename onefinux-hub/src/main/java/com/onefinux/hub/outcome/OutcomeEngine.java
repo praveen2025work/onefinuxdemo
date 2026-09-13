@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,7 +53,7 @@ public class OutcomeEngine {
     private final Map<String, OutcomeInstance> instances = new LinkedHashMap<>();
 
     public OutcomeEngine(OneFinUxProperties properties, ApplicationEventPublisher publisher, Clock clock) {
-        this.definitions = properties.outcomes();
+        this.definitions = new ArrayList<>(properties.outcomes());
         this.milestones = properties.notifications().milestones().stream().sorted(Comparator.reverseOrder()).toList();
         this.publisher = publisher;
         this.clock = clock;
@@ -337,6 +338,32 @@ public class OutcomeEngine {
 
     public Optional<OutcomeDefinition> definition(String outcomeId) {
         return definitions.stream().filter(d -> d.id().equalsIgnoreCase(outcomeId)).findFirst();
+    }
+
+    public synchronized List<OutcomeDefinition> definitions() {
+        return List.copyOf(definitions);
+    }
+
+    /**
+     * Onboards a new outcome kit at runtime. In production a maker-checker gate sits in front of this;
+     * here it lets an operator define a question, its input feeds, an SLA and an optional action, and
+     * immediately see the outcome fold live from the same event stream as the seeded outcomes. The new
+     * definition joins the engine's list, so a demo reset (which re-runs {@link #initialise}) keeps it.
+     * Rejects a duplicate id.
+     */
+    public synchronized OutcomeView register(OutcomeDefinition definition, LocalDate cobDate) {
+        if (definitions.stream().anyMatch(d -> d.id().equalsIgnoreCase(definition.id()))) {
+            throw new IllegalArgumentException("An outcome with id " + definition.id() + " already exists");
+        }
+        definitions.add(definition);
+        OutcomeInstance seed = null;
+        for (String region : definition.regions()) {
+            OutcomeInstance instance = getOrCreate(definition, cobDate, region.toUpperCase());
+            if (seed == null) {
+                seed = instance;
+            }
+        }
+        return seed == null ? null : seed.view();
     }
 
     private OutcomeInstance getOrCreate(OutcomeDefinition definition, LocalDate cobDate, String region) {
