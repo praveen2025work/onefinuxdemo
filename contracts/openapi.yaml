@@ -1,0 +1,533 @@
+openapi: 3.0.3
+info:
+  title: One Finance UX Hub API
+  version: 0.2.0
+  description: >
+    Event ingest, the stitch fold, and the read/write APIs the console calls.
+    The browser uses only these HTTP + SSE endpoints; it never touches the bus.
+    Worked example everywhere: REV-ACC / FOBO / R-1042 READY / R-2031 BLOCKED.
+servers:
+  - url: http://localhost:7070
+    description: Local hub
+
+tags:
+  - name: ingest
+  - name: context
+  - name: instances
+  - name: actions
+  - name: notifications
+  - name: rtb
+  - name: onboarding
+  - name: analyst
+  - name: stream
+
+paths:
+  /api/events:
+    post:
+      tags: [ingest]
+      summary: Ingest one business event (a fact from a source of origin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InboundEvent' }
+      responses:
+        '202': { description: Accepted }
+        '200': { description: Duplicate eventId, ignored idempotently }
+
+  /api/stitch/context:
+    get:
+      tags: [context]
+      summary: Everything the chrome needs to fill its dropdowns
+      responses:
+        '200':
+          description: Context
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  businessDate: { type: string, format: date }
+                  zone: { type: string }
+                  liveClients: { type: integer }
+                  groupUnits:
+                    type: array
+                    items: { $ref: '#/components/schemas/GroupUnit' }
+                  cobDates:
+                    type: array
+                    items: { type: string, format: date }
+                  regions:
+                    type: array
+                    items: { type: string }
+
+  /api/stitch/group-units:
+    get:
+      tags: [context]
+      summary: Onboarded tenants
+      responses:
+        '200':
+          description: Group units
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/GroupUnit' }
+
+  /api/stitch/instances:
+    get:
+      tags: [instances]
+      summary: Board / list, with fold counts. Every filter is a query parameter.
+      parameters:
+        - { name: groupUnit, in: query, schema: { type: string } }
+        - { name: cobDate, in: query, schema: { type: string, format: date } }
+        - { name: region, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string, enum: [NOT_YET, READY, BLOCKED, CLEARED, DELAYED] } }
+      responses:
+        '200':
+          description: Instances
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Instance' }
+
+  /api/stitch/instances/{id}:
+    get:
+      tags: [instances]
+      summary: One instance with its readiness keys, embed and echo
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Instance detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InstanceDetail' }
+        '404': { description: No such instance or not entitled }
+
+  /api/stitch/instances/{id}/events:
+    get:
+      tags: [instances]
+      summary: Facts for one instance (audit trail, not the fold)
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Events
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Fact' }
+
+  /api/stitch/instances/{id}/signoff:
+    post:
+      tags: [actions]
+      summary: Sign off a READY instance (becomes CLEARED)
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { by: { type: string } } }
+      responses:
+        '200': { description: Signed off }
+        '409': { description: Instance not READY }
+
+  /api/stitch/instances/{id}/post:
+    post:
+      tags: [actions]
+      summary: Post to MOTIF via FAS. Creates a command_run; echo of runId required before CLEARED.
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { by: { type: string } } }
+      responses:
+        '200': { description: Posted, awaiting echo }
+        '409': { description: Instance not READY }
+
+  /api/stitch/instances/{id}/escalate:
+    post:
+      tags: [actions]
+      summary: Raise an escalation to run-the-bank
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                by: { type: string }
+                kind: { type: string, enum: [DELAY, AGED, SLA, HUMAN] }
+      responses:
+        '200': { description: Escalation raised }
+
+  /api/stitch/notifications:
+    get:
+      tags: [notifications]
+      summary: Notification inbox (instance-linked)
+      parameters: [ { name: limit, in: query, schema: { type: integer, default: 50 } } ]
+      responses:
+        '200':
+          description: Notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Notification' }
+
+  /api/stitch/rtb:
+    get:
+      tags: [rtb]
+      summary: Escalations, dead letters and feed watermarks
+      responses:
+        '200':
+          description: RTB view
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  escalations: { type: array, items: { $ref: '#/components/schemas/Escalation' } }
+                  deadLetters: { type: array, items: { $ref: '#/components/schemas/DeadLetter' } }
+                  watermarks: { type: array, items: { $ref: '#/components/schemas/Watermark' } }
+
+  /api/stitch/deadletters/{id}/replay:
+    post:
+      tags: [rtb]
+      summary: Dual-control replay of a held dead letter
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      requestBody:
+        content:
+          application/json:
+            schema: { type: object, properties: { by: { type: string } } }
+      responses:
+        '200': { description: Replayed }
+
+  /api/stitch/sources:
+    get:
+      tags: [onboarding]
+      summary: Origin catalog
+      responses:
+        '200':
+          description: Sources
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Source' } }
+
+  /api/stitch/destinations:
+    get:
+      tags: [onboarding]
+      summary: Destination catalog
+      responses:
+        '200':
+          description: Destinations
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Destination' } }
+
+  /api/stitch/kits:
+    get:
+      tags: [onboarding]
+      summary: Registered product kits
+      responses:
+        '200':
+          description: Kits
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Kit' } }
+    post:
+      tags: [onboarding]
+      summary: Register a product kit as data (no new code)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/KitRequest' }
+      responses:
+        '201': { description: Kit registered }
+        '400': { description: Unknown source/destination or duplicate kit }
+
+  /api/stitch/datasets:
+    get:
+      tags: [analyst]
+      summary: Bound origins for a group unit (what the explorer may read)
+      parameters: [ { name: groupUnit, in: query, schema: { type: string } } ]
+      responses:
+        '200':
+          description: Dataset locators
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Dataset' } }
+
+  /api/stitch/explore:
+    get:
+      tags: [analyst]
+      summary: Explore facts from bound origins (the analyst grid data)
+      parameters:
+        - { name: source, in: query, schema: { type: string } }
+        - { name: cobDate, in: query, schema: { type: string, format: date } }
+        - { name: region, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 200 } }
+      responses:
+        '200':
+          description: Rows
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  columns: { type: array, items: { type: string } }
+                  rows: { type: array, items: { $ref: '#/components/schemas/Fact' } }
+
+  /api/stitch/views:
+    get:
+      tags: [analyst]
+      summary: Saved analyst views for a group unit
+      parameters: [ { name: groupUnit, in: query, schema: { type: string } } ]
+      responses:
+        '200':
+          description: Views
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/AnalystView' } }
+    post:
+      tags: [analyst]
+      summary: Create or update a saved view
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AnalystView' }
+      responses:
+        '200': { description: Saved }
+
+  /api/stitch/views/{id}:
+    delete:
+      tags: [analyst]
+      summary: Delete a saved view
+      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
+      responses:
+        '200': { description: Deleted }
+
+  /api/stitch/reset:
+    post:
+      tags: [context]
+      summary: Reset the demo instances so the simulator can re-drive them
+      responses:
+        '200': { description: Reset }
+
+  /api/stream:
+    get:
+      tags: [stream]
+      summary: Server-Sent Events for the live console
+      description: 'Named events: hello, event, outcome, notification, reset.'
+      responses:
+        '200':
+          description: text/event-stream
+
+components:
+  schemas:
+    InboundEvent:
+      type: object
+      required: [eventType, sourceSystem, sourceKey, cobDate, region, status]
+      properties:
+        eventId: { type: string }
+        eventType: { type: string, example: TRADE_BOOKED }
+        sourceSystem: { type: string, example: CATS }
+        sourceKey: { type: string, example: TR-8812 }
+        cobDate: { type: string, format: date }
+        region: { type: string, example: APAC }
+        status: { type: string, enum: [STARTED, COMPLETED, FAILED, REVOKED] }
+        occurredAt: { type: string, format: date-time }
+        attributes:
+          type: object
+          additionalProperties: true
+          description: Carries instanceId (and sliceKey) so the fold can stitch the fact.
+    GroupUnit:
+      type: object
+      properties:
+        groupUnitId: { type: string }
+        name: { type: string }
+        domain: { type: string }
+        ceesResource: { type: string }
+        defaultRegion: { type: string }
+        status: { type: string }
+    Instance:
+      type: object
+      properties:
+        instanceId: { type: string }
+        kitId: { type: string }
+        groupUnitId: { type: string }
+        question: { type: string }
+        sliceKey: { type: string }
+        region: { type: string }
+        cobDate: { type: string, format: date }
+        status: { type: string }
+        runId: { type: string, nullable: true }
+        namedBlocker: { type: string, nullable: true }
+        openEscalations: { type: integer }
+        completed: { type: integer }
+        failed: { type: integer }
+        waiting: { type: integer }
+        expected: { type: integer }
+    InstanceDetail:
+      allOf:
+        - $ref: '#/components/schemas/Instance'
+        - type: object
+          properties:
+            renderer: { type: string }
+            userActions: { type: string }
+            embedUrl: { type: string, nullable: true }
+            allowedOrigin: { type: string, nullable: true }
+            chrome: { type: string, nullable: true }
+            echoOk: { type: string, nullable: true }
+            keys: { type: array, items: { $ref: '#/components/schemas/ReadinessKey' } }
+            destinations: { type: array, items: { $ref: '#/components/schemas/Destination' } }
+    ReadinessKey:
+      type: object
+      properties:
+        sourceId: { type: string }
+        sourceKey: { type: string }
+        keyStatus: { type: string }
+        lastEventId: { type: string, nullable: true }
+    Fact:
+      type: object
+      properties:
+        eventId: { type: string }
+        eventType: { type: string }
+        sourceSystem: { type: string }
+        sourceKey: { type: string }
+        businessId: { type: string, nullable: true }
+        cobDate: { type: string, format: date }
+        region: { type: string }
+        status: { type: string }
+        instanceId: { type: string, nullable: true }
+        occurredAt: { type: string, format: date-time }
+        ingestOffset: { type: string, nullable: true }
+    Notification:
+      type: object
+      properties:
+        id: { type: integer }
+        createdAt: { type: string, format: date-time }
+        severity: { type: string }
+        transition: { type: string }
+        outcomeKey: { type: string }
+        outcomeName: { type: string }
+        audience: { type: string }
+        title: { type: string }
+        message: { type: string }
+        channels: { type: string }
+        instanceId: { type: string, nullable: true }
+        groupUnitId: { type: string, nullable: true }
+    Escalation:
+      type: object
+      properties:
+        escalationId: { type: string }
+        instanceId: { type: string }
+        kind: { type: string }
+        openedAt: { type: string, format: date-time }
+        status: { type: string }
+    DeadLetter:
+      type: object
+      properties:
+        deadLetterId: { type: string }
+        sourceId: { type: string }
+        ingestOffset: { type: string }
+        reason: { type: string }
+        status: { type: string }
+        instanceId: { type: string, nullable: true }
+    Watermark:
+      type: object
+      properties:
+        sourceId: { type: string }
+        partitionId: { type: string }
+        lastOffset: { type: string }
+        lagSeconds: { type: integer }
+    Source:
+      type: object
+      properties:
+        sourceId: { type: string }
+        displayName: { type: string }
+        identifierType: { type: string }
+        ingestMode: { type: string }
+        topicOrUrl: { type: string, nullable: true }
+        mapperId: { type: string, nullable: true }
+    Destination:
+      type: object
+      properties:
+        destId: { type: string }
+        displayName: { type: string }
+        actionType: { type: string }
+        commandUrl: { type: string, nullable: true }
+        stepOrder: { type: integer, nullable: true }
+    Kit:
+      type: object
+      properties:
+        kitId: { type: string }
+        groupUnitId: { type: string }
+        domain: { type: string }
+        question: { type: string }
+        renderer: { type: string }
+        userActions: { type: string }
+        ceesProduct: { type: string }
+        slaCutoff: { type: string, nullable: true }
+        status: { type: string }
+        sources: { type: array, items: { $ref: '#/components/schemas/Source' } }
+        destinations: { type: array, items: { $ref: '#/components/schemas/Destination' } }
+    KitRequest:
+      type: object
+      required: [kitId, groupUnitId, question, renderer, userActions, ceesProduct]
+      properties:
+        kitId: { type: string }
+        groupUnitId: { type: string }
+        domain: { type: string }
+        question: { type: string }
+        renderer: { type: string, enum: [HELIX_RECON, ENGINE_REPORT, GRID_PACK, NOTIFY_MILESTONE, ANALYST_VIEW] }
+        userActions: { type: string, example: SIGN_OFF,POST }
+        ceesProduct: { type: string }
+        slaCutoff: { type: string, nullable: true }
+        sources:
+          type: array
+          items:
+            type: object
+            properties: { sourceId: { type: string }, required: { type: boolean } }
+        destinations:
+          type: array
+          items:
+            type: object
+            properties: { destId: { type: string }, stepOrder: { type: integer } }
+        embed:
+          type: object
+          nullable: true
+          properties:
+            url: { type: string }
+            allowedOrigin: { type: string }
+            chrome: { type: string }
+    Dataset:
+      type: object
+      properties:
+        datasetId: { type: string }
+        groupUnitId: { type: string }
+        sourceId: { type: string }
+        sourceName: { type: string }
+        instanceId: { type: string, nullable: true }
+        locatorUrl: { type: string }
+    AnalystView:
+      type: object
+      required: [groupUnitId, datasetId, widget, fieldMap]
+      properties:
+        viewId: { type: string, nullable: true }
+        name: { type: string }
+        groupUnitId: { type: string }
+        datasetId: { type: string }
+        widget: { type: string, enum: [GRID, PIVOT, CHART] }
+        ceesReport: { type: string }
+        fieldMap:
+          type: object
+          description: 'Columns and filters. Same JSON whether the grid is Wijmo or the fallback.'
+          properties:
+            columns: { type: array, items: { type: string } }
+            filters: { type: object, additionalProperties: true }
+        status: { type: string }
