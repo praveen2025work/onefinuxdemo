@@ -204,7 +204,7 @@ public class OutcomeEngine {
         String summary = Optional.ofNullable(event.attribute("summary")).orElse(label + " finished.");
         switch (event.status()) {
             case COMPLETED -> {
-                instance.markCompleted(event.occurredAt(), summary);
+                instance.markCompleted(event.occurredAt(), summary, reportArtifact(event));
                 emit(instance, Transition.COMPLETED, definition.name() + " is done", summary, replay);
             }
             case FAILED -> {
@@ -215,6 +215,25 @@ public class OutcomeEngine {
         }
         instance.touch(event.occurredAt());
         emit(instance, Transition.PROGRESS, null, null, replay);
+    }
+
+    /** The viewable output a completion event carries, if any (reportId is what makes it "available to view"). */
+    private ReportArtifact reportArtifact(BusinessEvent event) {
+        String reportId = event.attribute("reportId");
+        if (reportId == null || reportId.isBlank()) {
+            return null;
+        }
+        Integer rowCount = null;
+        String rows = event.attribute("rowCount");
+        if (rows != null && !rows.isBlank()) {
+            try {
+                rowCount = Integer.valueOf(rows.trim());
+            } catch (NumberFormatException ignore) {
+                // leave rowCount null when the source sends a non-numeric value
+            }
+        }
+        return new ReportArtifact(reportId, event.attribute("reportUri"), event.attribute("catalogId"),
+                rowCount, event.occurredAt());
     }
 
     // ---------------------------------------------------------------- workflow events

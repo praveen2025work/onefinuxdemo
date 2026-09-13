@@ -2,6 +2,7 @@ package com.onefinux.hub.api;
 
 import com.onefinux.hub.outcome.OutcomeEngine;
 import com.onefinux.hub.outcome.OutcomeView;
+import com.onefinux.hub.outcome.ReportDocument;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,5 +36,22 @@ public class OutcomeController {
                            @PathVariable String region) {
         return engine.view(outcomeId, cobDate, region)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No such outcome instance"));
+    }
+
+    /**
+     * The generated report, once it is available to view. Returns 404 if the instance is unknown and 409
+     * ("not available yet") while the outcome is still gathering feeds, ready, or processing.
+     */
+    @GetMapping("/{outcomeId}/{cobDate}/{region}/report")
+    public ReportDocument report(@PathVariable String outcomeId,
+                                 @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate cobDate,
+                                 @PathVariable String region) {
+        OutcomeView view = engine.view(outcomeId, cobDate, region)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No such outcome instance"));
+        if (view.report() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Report is not available yet (stage " + view.stage() + ")");
+        }
+        return ReportDocument.from(view);
     }
 }
