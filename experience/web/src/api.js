@@ -78,6 +78,20 @@ export const outcomesApi = {
     if (!res.ok) throw new Error(`${res.status} on /api/outcomes/definitions`);
     return res.json();
   },
+  register: async (definition, cobDate) => {
+    const qs = cobDate ? `?cobDate=${cobDate}` : '';
+    const res = await fetch(`/api/outcomes/definitions${qs}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(definition),
+    });
+    if (!res.ok) {
+      let detail = `${res.status} ${res.statusText}`;
+      try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
+      throw new Error(detail);
+    }
+    return res.json();
+  },
   report: async (outcomeId, cobDate, region) => {
     const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}/report`);
     if (!res.ok) {
