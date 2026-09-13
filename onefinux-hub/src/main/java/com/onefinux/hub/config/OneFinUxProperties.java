@@ -59,8 +59,14 @@ public record OneFinUxProperties(
             return dependencies.stream().mapToInt(DependencyDefinition::expectedCount).sum();
         }
 
+        /**
+         * True when readiness should auto-run a downstream capability. Any {@code onReady.action} other
+         * than {@code NOTIFY_ONLY} is dispatched through the {@code ActionExecutor} registry, so new
+         * action types (e.g. HTTP_COMMAND, LOG_COMMAND, …) are launched by config, not engine changes.
+         */
         public boolean hasAction() {
-            return onReady != null && "HTTP_COMMAND".equalsIgnoreCase(onReady.action());
+            return onReady != null && onReady.action() != null
+                    && !"NOTIFY_ONLY".equalsIgnoreCase(onReady.action());
         }
     }
 
