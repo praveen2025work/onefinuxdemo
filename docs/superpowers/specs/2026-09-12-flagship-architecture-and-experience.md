@@ -45,7 +45,7 @@ flowchart LR
     Castle[US Castle]
     FinStore
     GMIS
-    RAM
+    RAMP
     Helix
     Axiom
     Legacy[Feed readers: their Kafka/Solace/MQ/file]
@@ -94,7 +94,7 @@ flowchart LR
   Castle --> GW
   FinStore --> GW
   GMIS --> GW
-  RAM --> GW
+  RAMP --> GW
   Helix --> GW
   Axiom --> GW
   Legacy --> GW

@@ -124,13 +124,13 @@ public class ScenarioService {
     /** PnL shares SAP TB with 15C3 and has a tight 1 minute SLA, so it shows at-risk and breach alerts. */
     public ScenarioRun pnl() {
         LocalDate cob = today();
-        at(10_000, () -> event("RAM_CHORUS_READY", "RAM", "CG-RATES", cob, "AMRS", "COMPLETED", Map.of()));
+        at(10_000, () -> event("RAMP_CHORUS_READY", "RAMP", "CG-RATES", cob, "AMRS", "COMPLETED", Map.of()));
         at(20_000, () -> event("GMIS_LOADED", "GMIS", "BK-EQ", cob, "AMRS", "COMPLETED", Map.of()));
-        at(30_000, () -> event("RAM_CHORUS_READY", "RAM", "CG-CREDIT", cob, "AMRS", "COMPLETED", Map.of()));
+        at(30_000, () -> event("RAMP_CHORUS_READY", "RAMP", "CG-CREDIT", cob, "AMRS", "COMPLETED", Map.of()));
         at(50_000, () -> event("GMIS_LOADED", "GMIS", "BK-FI", cob, "AMRS", "COMPLETED", Map.of()));
         at(85_000, () -> event("GMIS_LOADED", "GMIS", "BK-FX", cob, "AMRS", "COMPLETED", Map.of()));
         return new ScenarioRun("pnl", cob, 5, 85,
-                "GMIS and RAM publish slowly. PnL also needs the SAP trial balance (sent by the 15C3 scenario). "
+                "GMIS and RAMP publish slowly. PnL also needs the SAP trial balance (sent by the 15C3 scenario). "
                         + "Run alone, it goes at risk and then breaches its 1 minute SLA.");
     }
 

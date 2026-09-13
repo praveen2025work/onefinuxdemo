@@ -49,7 +49,7 @@ onefinux:
       MOTIF: MASTER_BOOK
       SAP: COST_CENTRE
       GMIS: BOOK_ID
-      RAM: CHORUS_GROUP
+      RAMP: CHORUS_GROUP
       USCASTLE: PROCESSING_BATCH
       FINSTORE: FEED
       AXIOM: REPORT_SCHEDULE
@@ -143,10 +143,10 @@ onefinux:
           source-system: GMIS
           expected-count: 3
           label: GMIS books
-        - event-type: RAM_CHORUS_READY
-          source-system: RAM
+        - event-type: RAMP_CHORUS_READY
+          source-system: RAMP
           expected-count: 2
-          label: RAM chorus groups
+          label: RAMP chorus groups
         - event-type: SAP_TB_COMPLETE   # shared with 15C3: publish once, consumed by many outcomes
           source-system: SAP
           expected-count: 5

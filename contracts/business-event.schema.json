@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://onefinux.internal/contracts/business-event/v1",
   "title": "One Finance UX business event (v1)",
-  "description": "The single contract every source system (Motif, GMIS, RAM, SAP, Axiom, US Castle, Finance Store, Helix) publishes to the Event Hub. Producers state facts about their own identifiers; the hub translates them into business identifiers and decides what the fact means for business outcomes.",
+  "description": "The single contract every source system (Motif, GMIS, RAMP, SAP, Axiom, US Castle, Finance Store, Helix) publishes to the Event Hub. Producers state facts about their own identifiers; the hub translates them into business identifiers and decides what the fact means for business outcomes.",
   "type": "object",
   "required": ["eventType", "sourceSystem", "sourceKey", "cobDate", "region", "status"],
   "additionalProperties": false,
@@ -16,11 +16,11 @@
       "type": "string",
       "pattern": "^[A-Z][A-Z0-9_]{2,63}$",
       "description": "Governed name from the event catalogue (BRD section 9).",
-      "examples": ["MASTERBOOK_READY", "SAP_TB_COMPLETE", "USCASTLE_COMPLETE", "FINSTORE_LOADED", "AXIOM_READY", "GMIS_LOADED", "RAM_CHORUS_READY", "HELIX_ANALYSIS_COMPLETE", "REG_REPORT_GENERATED"]
+      "examples": ["MASTERBOOK_READY", "SAP_TB_COMPLETE", "USCASTLE_COMPLETE", "FINSTORE_LOADED", "AXIOM_READY", "GMIS_LOADED", "RAMP_CHORUS_READY", "HELIX_ANALYSIS_COMPLETE", "REG_REPORT_GENERATED"]
     },
     "sourceSystem": {
       "type": "string",
-      "enum": ["MOTIF", "GMIS", "RAM", "SAP", "AXIOM", "USCASTLE", "FINSTORE", "HELIX"],
+      "enum": ["MOTIF", "GMIS", "RAMP", "SAP", "AXIOM", "USCASTLE", "FINSTORE", "HELIX"],
       "description": "Publishing system of record."
     },
     "sourceKey": {
