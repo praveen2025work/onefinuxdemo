@@ -1,5 +1,7 @@
 package com.onefinux.hub.api;
 
+import com.onefinux.hub.config.OneFinUxProperties;
+import com.onefinux.hub.config.OneFinUxProperties.OutcomeDefinition;
 import com.onefinux.hub.outcome.OutcomeEngine;
 import com.onefinux.hub.outcome.OutcomeView;
 import com.onefinux.hub.outcome.ReportDocument;
@@ -20,14 +22,26 @@ import java.util.List;
 public class OutcomeController {
 
     private final OutcomeEngine engine;
+    private final OneFinUxProperties properties;
 
-    public OutcomeController(OutcomeEngine engine) {
+    public OutcomeController(OutcomeEngine engine, OneFinUxProperties properties) {
         this.engine = engine;
+        this.properties = properties;
     }
 
     @GetMapping
     public List<OutcomeView> all() {
         return engine.views();
+    }
+
+    /**
+     * The kit registry: every outcome definition the platform folds — its business question, input
+     * feeds (with expected counts), SLA and on-ready action. This is the configuration that drives the
+     * engine, surfaced so the console can show what each outcome depends on.
+     */
+    @GetMapping("/definitions")
+    public List<OutcomeDefinition> definitions() {
+        return properties.outcomes();
     }
 
     @GetMapping("/{outcomeId}/{cobDate}/{region}")
