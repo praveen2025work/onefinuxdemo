@@ -315,7 +315,9 @@ MERGE INTO command_run KEY (run_id) VALUES
 
 MERGE INTO dataset_locator KEY (dataset_id) VALUES
   ('DS-FOBO-R1042-BREAKS', 'REV-ACC', 'MBR', 'FOBO|2026-09-12|APAC|R-1042',
-   'helix://breaks/RUN-A37C', CURRENT_TIMESTAMP);
+   'helix://breaks/RUN-A37C', CURRENT_TIMESTAMP),
+  ('DS-FOBO-CATS',  'REV-ACC', 'CATS',  NULL, 'feed://cats.movements.v1',       CURRENT_TIMESTAMP),
+  ('DS-FOBO-MOTIF', 'REV-ACC', 'MOTIF', NULL, 'feed://motif.book.lifecycle.v3', CURRENT_TIMESTAMP);
 
 MERGE INTO escalation KEY (escalation_id) VALUES
   ('ESC-19', 'FOBO|2026-09-12|EMEA|R-2031', 'DELAY', CURRENT_TIMESTAMP, 'OPEN');
