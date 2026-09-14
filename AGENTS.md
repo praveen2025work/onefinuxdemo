@@ -1,32 +1,34 @@
 # One Finance UX — agent notes
 
-Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app.
+Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 
-Visual truth: `FoboControlTower_V2.html` (navy `#002D5F`, cyan `#00AEEF`).
+Visual truth: `frontend/web` (live React console; Barclays Cerulean `#00aeef`, Astronaut Blue `#00395d`). Static reference: `docs/design/mockups/`. Design truth: `docs/superpowers/specs/2026-09-14-product-as-built.md`.
 
-## Four jobs → skills
+## Jobs → skills
 
 | Job | Skill |
 |---|---|
-| Any chrome | `.cursor/skills/barclays-ib-console` |
-| BU head (outcomes only) | `.cursor/skills/bu-head-view` |
-| User sign-off / post | `.cursor/skills/colleague-view` |
-| RTB delays / escalations | `.cursor/skills/rtb-support-view` |
-| Config / onboard unit + known sources | `.cursor/skills/engineering-view` |
-| Sources / destinations | `.cursor/skills/bind-source-destination` |
-| Analyst explorer (later, same unit) | `.cursor/skills/wijmo-outcome-grid` |
-| New kit | `.cursor/skills/register-outcome-kit` |
+| Chrome / theme / mobile shell | `.cursor/skills/barclays-ib-console` |
+| Create a live outcome or kit | `.cursor/skills/register-outcome-kit` |
+| Outcome Engine fold + ActionExecutor | `.cursor/skills/outcome-engine` |
+| Inspect / govern the live registry | `.cursor/skills/engineering-view` |
+| Drive a COB scenario / exec demo | `.cursor/skills/drive-and-demo` |
+| CIO / MD traffic-light board | `.cursor/skills/bu-head-view` |
+| Controller worklist + sign-off / post / amend | `.cursor/skills/colleague-view` |
+| RTB delays / escalations / dead letters | `.cursor/skills/rtb-support-view` |
+| Bind a source or destination | `.cursor/skills/bind-source-destination` |
 | Partner iframe + shared theme | `.cursor/skills/embed-partner-screen` |
+| Analyst explorer (later, same unit) | `.cursor/skills/wijmo-outcome-grid` |
 
-Plan: `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`  
-Model: `docs/superpowers/specs/2026-09-12-three-views-and-outcome-kinds.md`  
-Stitch schema: `docs/schema/onefinux-stitch.sql` + `docs/superpowers/specs/2026-09-12-stitching-schema.md`  
-Mockups (agree before Java): `docs/design/mockups/index.html`
+Requirements: [`docs/brd.md`](docs/brd.md) → architecture-group + application BRDs.  
+Onboarding: `docs/onboarding.md`  
+Stitch schema: `docs/schema/onefinux-stitch.sql` + `docs/superpowers/specs/2026-09-12-stitching-schema.md`
 
 ## Never
 
 - `if (product == FOBO)`
 - Rebuild a partner screen that can be iframed
 - A React report per analyst ask (Wijmo def or partner iframe)
+- Drive / scenario buttons on Home or Reports
 - LLM on the readiness path
 - Kafka in the browser
