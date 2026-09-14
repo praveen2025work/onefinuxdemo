@@ -12,11 +12,11 @@ One Finance UX is a **full-viewport glass console**: frosted panels, cyan glow, 
 | Path | What it is |
 |---|---|
 | `frontend/web` | Live React console — visual truth for routes, chrome, and theme |
+| `frontend/web/src/styles.css` | Console design system |
 | `frontend/theme/onefinux-tokens.css` | The `--ofx-*` subset partner teams copy |
-| `docs/design/mockups/app.css` | Earlier static design system (compose classes; do not treat as the product) |
-| `docs/design/mockups/*.html` | Earlier four-job reference screens |
+| `docs/design/` | Requirements, as-built, architecture diagrams |
 
-Build new screens by composing existing classes. If a screen needs a primitive that is not there, add it to `app.css` once — do not inline a one-off style.
+Build new screens by composing existing classes in `frontend/web/src/styles.css`. If a screen needs a primitive that is not there, add it there once — do not inline a one-off style.
 
 ## Tokens
 
@@ -31,7 +31,7 @@ Build new screens by composing existing classes. If a screen needs a primitive t
 | fail | `#FF7B74` | BLOCKED, FAILED |
 | back office | `#C4B4FF` | Maker-checker |
 
-Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Self-hosted in `docs/design/dreamliner/fonts/` — do not add a Google Fonts link. Numerics are `tabular-nums`.
+Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Numerics are `tabular-nums`.
 
 ## Layout rules
 
@@ -51,7 +51,7 @@ Theme is persisted in `localStorage['ofx-theme']`. A review link can force it: `
 ## Common mistakes
 
 - Centring content in a narrow column — this is a console, use the width
-- Dreamliner cream/serif screens as visual truth — **`frontend/web` is truth**; mockups are the earlier static reference
+- Archived HTML or a second stylesheet as visual truth — **`frontend/web` is truth**
 - Hard-coding "FOBO Control Tower" as the platform title — the title is the current product
 - Recharts as the break viewer — Wijmo (`wijmo-outcome-grid`)
-- A new stylesheet per screen instead of extending `app.css`
+- A new stylesheet per screen instead of extending `styles.css`

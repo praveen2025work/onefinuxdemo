@@ -2,7 +2,7 @@
 
 Proper, source-controlled **Mermaid** diagrams. They render natively on GitHub (below), and are also exported to crisp **SVG** (scalable, for slides) and **PNG** (2×) under [`diagrams/`](./diagrams). Edit the `.mmd` source and re-run [`render.sh`](./diagrams/render.sh) to regenerate.
 
-These diagrams match the as-built product: `frontend/web`, the two models (Outcome Engine + stitch kit), the live console routes, and the `ActionExecutor` registry. Static HTML under `docs/design/mockups/` and `docs/design/dreamliner/` is the earlier visual reference, not the live console.
+These diagrams match the as-built product: `frontend/web`, the two models (Outcome Engine + stitch kit), the live console routes, and the `ActionExecutor` registry. Live visual truth is the React console, not archived HTML.
 
 | # | Diagram | Source | Exports |
 |---|---|---|---|

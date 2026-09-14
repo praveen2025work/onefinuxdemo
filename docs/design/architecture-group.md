@@ -1,6 +1,6 @@
 # BRD — One Finance UX (for the architecture group)
 
-Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `docs/brd.md` and `docs/One_Finance_UX_BRD.docx` (long-form archive).
+Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `README.md` and `application.md`.
 
 This is the short version. Three pages. It says what we are solving, what we unify, what the CEO-level sees, what the developers build, and how we keep everyone agreeing on the same design.
 
@@ -75,7 +75,7 @@ The same shell is **mobile-friendly** (rail collapses, grids stack, tables scrol
 
 Two artefacts are the single source of truth, and every team measures against them:
 
-- **Visual truth** — `frontend/web/` (the live React console; Barclays Cerulean `#00aeef` + Astronaut Blue `#00395d`) and `docs/design/mockups/` (the earlier static reference).
+- **Visual truth** — `frontend/web/` (the live React console; Barclays Cerulean `#00aeef` + Astronaut Blue `#00395d`).
 - **Data truth** — Flyway schema under `onefinux-hub/src/main/resources/db/migration/` plus the Outcome Engine definitions (`application.yml` and `POST /api/outcomes/definitions`).
 
 And one worked example that must be identical in every screen, query and event:
@@ -120,4 +120,4 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 3. Capabilities as data + registries; no product-named code or modules.
 4. The phased scope line in section 6.
 
-Once these are agreed, the application BRD (`docs/brd/application.md`) is the builder's document.
+Once these are agreed, the application BRD (`application.md`) is the builder's document.

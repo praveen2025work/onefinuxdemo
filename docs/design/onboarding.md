@@ -1,7 +1,7 @@
 # Onboarding — create an outcome, inspect it, drive the day
 
 This is the operator's checklist. Two paths: **create a live Outcome Engine definition** (the
-business question), and **register a stitch console kit** (the human work). Index: `docs/brd.md`.
+business question), and **register a stitch console kit** (the human work). Index: `README.md`.
 
 ## A. Create a live business outcome (preferred)
 
@@ -43,7 +43,7 @@ cd frontend/web && npm install && npm run dev   # http://localhost:5173
 ```
 
 The hub seeds `REV-ACC` + the `FOBO` kit + the two demo instances on first boot (from
-`docs/schema/onefinux-stitch.sql`), so the console is populated immediately. The steps below are how
+`schema/onefinux-stitch.sql`), so the console is populated immediately. The steps below are how
 you would onboard a *second* unit or kit from scratch.
 
 ## 1. Add a group unit (tenant)
@@ -109,7 +109,7 @@ not clone it. `allowedOrigin` is the CSP allowlist entry for the iframe.
   works without a CEES server.
 - **Bank:** entitlement is fail-**closed**. An artefact the caller is not entitled to returns **404,
   not 403** (its existence is not disclosed). The contract is documented in
-  `docs/brd/architecture-group.md` §7 and enforced at the `/api/stitch/instances` boundary.
+  `architecture-group.md` §7 and enforced at the `/api/stitch/instances` boundary.
 
 ## 6. Drive the outcome (simulator stub)
 
