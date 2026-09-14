@@ -27,7 +27,7 @@ Hold each screen 15–25 seconds. Do not click mid-sentence.
 7. Board, then phone width — CIO / MD
 8. Operations — what RTB can do (replay, not sign-off)
 
-Speak like a colleague explaining the screen, not a script. Contractions. No "good morning". No slogan close.
+Speak like you are sitting next to someone, pointing at the screen. Casual. Contractions. "Okay so", "yeah", "that's it". No greeting. No slogan. Do not sound like you are reading slides.
 
 Script: `docs/exec/narration-script.txt`. Runsheet: `docs/exec/demo-runsheet.md`.
 
