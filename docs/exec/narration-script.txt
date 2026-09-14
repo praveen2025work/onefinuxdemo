@@ -1,23 +1,15 @@
-Good morning. This is One Finance UX.
+The problem is simple, and it still burns a lot of time. At close, a controller needs to know: can I run this yet? Can I execute this rec? Can I produce the 15C3? Today that answer is scattered — Motif, CATS, Helix, SAP, Axiom — each with its own screen and its own status word. Nobody holds the whole picture, so people chase. We fold those facts into one ready or blocked answer.
 
-At close of business, a controller has one question per outcome. Can I execute this rec? Can I produce the fifteen C three report? Can I close the books?
+You start by configuring the outcome. You don't stand up a new app. You write the question, the feeds it depends on, how tight the SLA is, and what should happen when everything's in. This month-end close example is just journals and cost-centre sign-off. That's data. Save it, and it's live.
 
-Today we will create an outcome, drive it for this business date, and show both the good path and the blocked path.
+Then the owner comes here, to Configuration. Pick the outcome on the left. On the right is the actual contract — who can see it, the SLA, the action when it's ready, and every feed that has to complete. If a dependency is wrong, you catch it here, not after the close has slipped.
 
-We start on Onboarding. We name the business question, declare the input feeds, the SLA, and what to do when every feed is ready. This is data, not a new product module. When we onboard it, the outcome goes live immediately.
+When you want to run that outcome for the day, you don't do it from the product pages. You go to Drive, pick the scenario for that business date, and start it. The board and the reports stay as the real job. They only show the fold.
 
-Configuration is where the outcome owner inspects the contract. Pick the outcome on the left. The right pane shows entitlement, SLA, the on-ready action, and every feed that must complete. Onboarding creates. Configuration governs.
+If the day goes well — look at 15C3 — every feed arrives. It goes ready, then processing, then the report's generated, and then it's available to view. A controller can open it and actually proceed.
 
-For this business date, we start Drive. Drive is the testing console. We run the day's scenario for the outcome. The product pages stay clean. They only show the fold.
+If it doesn't go well, you don't get a vague red flag. This rec is blocked because Motif rejected ledger MB014. That named key. The person doing the work can escalate it to run-the-bank, instead of opening another ticket and hoping.
 
-Here is the good path. Every feed arrives. The outcome moves from feeds, to ready, to processing, to generated, and available to view. A controller opens the report, and can proceed.
+For a CIO or an MD, this is the management screen. Outcome board. Traffic lights across the unit — what's ready, what's blocked, how many escalations are open. No book grid. No engine internals. And it works on a phone. Same lights, between meetings. A mobile app can wrap this later. The job doesn't change.
 
-Here is the bad path. A required feed fails. The instance is blocked on a named key. The user sees exactly which source failed. They can escalate to run the bank.
-
-For a C I O or managing director, the Outcome board is the management screen. Traffic lights across the unit. Ready, blocked, escalations. No book grid. No engine internals.
-
-These screens are mobile friendly. The same traffic lights work on a phone between meetings. A mobile app can wrap this shell. The job does not change.
-
-Run the bank monitors delays, escalations, and dead letters. They can replay a failed event. They do not sign off a rec. That stays with the outcome user.
-
-One platform. Two models. Outcomes fold readiness. Console kits host the human work. New capabilities launch by configuration, not new code.
+Run-the-bank is a different job. They watch delays, escalations, dead letters. They can replay something that failed. They don't sign off the rec. That's still the outcome user's call.

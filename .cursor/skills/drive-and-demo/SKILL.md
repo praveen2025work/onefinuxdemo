@@ -18,14 +18,16 @@ Drive (`/drive`) is the **only** place scenario buttons live. Home and Reports s
 
 Hold each screen 15–25 seconds. Do not click mid-sentence.
 
-1. Home — the question
-2. Onboarding — create the outcome
-3. Configuration — owner inspects the contract
-4. Drive — start the day
-5. Reports — good path (feeds → available)
-6. Board / blocked instance — bad path + escalate
-7. Board at a phone width — CIO / MD + mobile
+1. Home — state the business problem (no greeting)
+2. Onboarding — configure the outcome
+3. Configuration — owner reads the contract
+4. Drive — run that outcome for the day
+5. Reports — good case
+6. Blocked instance — bad case
+7. Board, then phone width — CIO / MD
 8. Operations — what RTB can do (replay, not sign-off)
+
+Speak like a colleague explaining the screen, not a script. Contractions. No "good morning". No slogan close.
 
 Script: `docs/exec/narration-script.txt`. Runsheet: `docs/exec/demo-runsheet.md`.
 

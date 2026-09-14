@@ -21,18 +21,18 @@ Worked examples:
 
 Hold each screen 15–25 seconds. Speak at a conversational pace. Do not click during a sentence.
 
-| Time | Screen | Say |
+| Beat | Screen | What you are explaining |
 |---|---|---|
-| 0:00–0:20 | Home | At close of business a controller has one question per outcome. Can I execute this rec? Can I produce the fifteen C three report? Today we create an outcome, drive it for the day, and show both the good path and the blocked path. |
-| 0:20–0:50 | Onboarding | We start on Onboarding. We name the business question, declare the input feeds, the SLA, and what to do when every feed is ready. This is data, not a new product module. When we onboard it, the outcome goes live. |
-| 0:50–1:15 | Configuration | Configuration is where the owner inspects the contract. Pick the outcome on the left. The right pane shows entitlement, SLA, the on-ready action, and every feed that must complete. Onboarding creates. Configuration governs. |
-| 1:15–1:40 | Drive | For this business date we start Drive. Drive is the testing console. We run the day's scenario for the outcome. Product pages stay clean — they only show the fold. |
-| 1:40–2:05 | Reports | The good path. Every feed arrives. The outcome moves from feeds, to ready, to processing, to generated, and available to view. A controller can open the report and proceed. |
-| 2:05–2:25 | Outcome board + instance (blocked) | The bad path. A required feed fails. The instance is blocked on a named key. The user sees exactly which source failed. They escalate to run the bank. |
-| 2:25–2:45 | Outcome board, then narrow viewport | For a CIO or managing director, the Outcome board is the management screen. Traffic lights across the unit. Ready, blocked, escalations. No book grid. No engine internals. These screens are mobile friendly. The same traffic lights work on a phone between meetings. |
-| 2:45–3:05 | Operations | Run-the-bank monitors delays, escalations, and dead letters. They can replay a failed event. They do not sign off a rec. That stays with the outcome user. One platform. Two models. New capabilities launch by configuration, not new code. |
+| Problem | Home | Close-of-business question is scattered across systems; we fold it to ready or blocked. No greeting. |
+| Configure | Onboarding | Write the question, feeds, SLA, on-ready. Data, not a new app. |
+| Inspect | Configuration | Owner picks the outcome and reads the contract. |
+| Run the day | Drive | Start the scenario for that COB. Product pages stay the job. |
+| Good case | Reports (15C3) | Feeds land; ready → processing → available to view. |
+| Bad case | Blocked instance | Named key (Motif MB014). Escalate to RTB. |
+| Management | Outcome board, then phone width | CIO / MD traffic lights. Same board on a phone. |
+| RTB | Operations | Delays, escalations, replay. They do not sign off. |
 
-Voice: male, British, normal pace (about 140 words per minute). Script file used for TTS: `docs/exec/narration-script.txt`.
+Voice: male, British, conversational — contractions, no slogan close. Script: `docs/exec/narration-script.txt`.
 
 ---
 
