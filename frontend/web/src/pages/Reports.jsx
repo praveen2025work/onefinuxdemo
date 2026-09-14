@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { StatusPill, Meter, Loading } from '../components/bits.jsx';
+import { StatusPill, Meter, Loading, Prediction } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import InfoHint from '../components/InfoHint.jsx';
@@ -140,6 +140,7 @@ export default function Reports() {
                     <span className="chip">{o.region}</span>
                     <span className="chip">COB {o.cobDate}</span>
                     {o.atRisk && <span className="chip warn-chip">at risk</span>}
+                    {o.breached && <span className="chip warn-chip">SLA breached</span>}
                   </div>
                   <h3>{o.name}</h3>
                   <p className="q">{o.question}</p>
@@ -152,6 +153,7 @@ export default function Reports() {
               </div>
 
               <Flow stage={o.stage} />
+              <Prediction outcome={o} />
 
               <div className="rfeeds">
                 {o.dependencies.map((d) => (

@@ -15,7 +15,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |
-| `/reports` | Engine outcomes + 15C3 five-stage flow + viewable artifact | Scenario buttons |
+| `/reports` | Engine outcomes + 15C3 five-stage flow + predicted ready (from arrived facts + prior-COB P50) + viewable artifact | Scenario buttons |
 | `/board` | Unit traffic lights for CIO / MD / BU head | Sign-off / post |
 | `/outcomes` | Doer's card worklist | Head roll-ups or RTB queues |
 | `/instance/:id` | Fold + embed + kit-declared actions | Invent verbs not on the kit |
@@ -42,5 +42,6 @@ Below 820px the rail collapses to icons; grids stack; tables scroll horizontally
 - Add `if (FOBO)` or a per-product module.
 - Treat Configuration as a create form (that is Onboarding).
 - Treat a View as entitlement (that is CEES; a view only hides nav).
+- Put the ETA on the readiness fold. Predictions are advisory.
 - Jump screens in an exec demo — hold each surface long enough to read.
 - Ship a day-one Analyst explorer (that is later, Wijmo).

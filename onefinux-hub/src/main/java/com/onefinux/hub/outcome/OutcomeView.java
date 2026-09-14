@@ -34,5 +34,12 @@ public record OutcomeView(
         /** Business lifecycle stage for the report flow: NOT_STARTED, FEEDS, READY, PROCESSING, GENERATED, AVAILABLE, BLOCKED, FAILED. */
         String stage,
         /** The generated output, once available to view. Null until the outcome completes with an artifact. */
-        ReportArtifact report) {
+        ReportArtifact report,
+        /**
+         * Advisory prediction of when feeds will complete. NEVER on the readiness fold.
+         * Basis: NONE, LIVE (this COB's arrived facts), HISTORIC (P50 of prior COBs), BLENDED.
+         */
+        String etaBasis,
+        int historicSamples,
+        Instant historicP50) {
 }

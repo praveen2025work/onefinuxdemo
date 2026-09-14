@@ -82,7 +82,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready) | Maker |
 | `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
-| `/reports` | Report lifecycle: feeds → ready → processing → generated → available | Controller |
+| `/reports` | Report lifecycle + predicted ready (arrived facts + prior-COB P50; advisory) | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
 | `/instance/:id` | Fold, embed, sign-off / post / kit-declared actions | Outcome user |
@@ -95,7 +95,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 **Views.** Home and the top-bar View select persist `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail and Home start cards. It is not CEES. New-developer write-up: `start.md` and `/product?tab=start`.
 
-**Mobile.** The shell collapses the rail below 820px; grids stack; tables scroll. The management board and My outcomes are the first surfaces intended for a phone between meetings.
+**Mobile.** Below 820px the left rail is an overlay drawer (hamburger in the top bar). A labelled bottom nav is the primary way to move. Grids stack; tables and the report flow scroll horizontally. The management board and My outcomes are the first surfaces intended for a phone between meetings.
 
 ## 5. API surface
 

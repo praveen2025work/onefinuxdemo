@@ -41,6 +41,7 @@ export default function Layout({ children }) {
   const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
+  const [drawer, setDrawer] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const bellRef = useRef(null);
@@ -62,11 +63,22 @@ export default function Layout({ children }) {
   }, [bellOpen]);
 
   // Any navigation closes the panel.
-  useEffect(() => { setBellOpen(false); }, [location.pathname]);
+  useEffect(() => { setBellOpen(false); setDrawer(false); }, [location.pathname]);
 
   function toggleRail() {
+    if (window.matchMedia('(max-width: 820px)').matches) {
+      setDrawer((d) => !d);
+      return;
+    }
     setCollapsed((c) => { localStorage.setItem('ofx-rail', c ? '0' : '1'); return !c; });
   }
+
+  useEffect(() => {
+    if (!drawer) return undefined;
+    function onKey(e) { if (e.key === 'Escape') setDrawer(false); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [drawer]);
 
   const ready = instances.filter((i) => i.status === 'READY').length;
   const blocked = instances.filter((i) => i.status === 'BLOCKED').length;
@@ -74,8 +86,11 @@ export default function Layout({ children }) {
   const regions = context?.regions || [];
   const groupUnits = context?.groupUnits || [];
 
+  const bottomItems = nav.flatMap((section) => section.items);
+
   return (
-    <div className={'app' + (collapsed ? ' collapsed' : '')}>
+    <div className={'app' + (collapsed ? ' collapsed' : '') + (drawer ? ' drawer-open' : '')}>
+      <div className="rail-scrim" onClick={() => setDrawer(false)} aria-hidden={!drawer} />
       <aside className="rail">
         <div className="rail-top">
           <div className="brand">
@@ -110,7 +125,9 @@ export default function Layout({ children }) {
 
       <div className="main">
         <header className="topbar">
-          <button className="rail-toggle solo" onClick={toggleRail} title="Toggle menu"><Icon name="chevron" size={16} className={collapsed ? 'flip' : ''} /></button>
+          <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
+            <Icon name="grid" size={16} />
+          </button>
           <Select variant="header" caption="Group unit" value={filters.groupUnit}
             onChange={(v) => setFilters({ groupUnit: v })}
             options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
@@ -164,6 +181,15 @@ export default function Layout({ children }) {
 
         <main className="body"><div className="wrap">{children}</div></main>
       </div>
+
+      <nav className="bottom-nav" aria-label="Primary">
+        {bottomItems.map((it) => (
+          <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => (isActive ? 'on' : '')}>
+            <Icon name={it.icon} size={18} />
+            <span>{it.label}</span>
+          </NavLink>
+        ))}
+      </nav>
 
       {toast && (
         <div className={'toast ' + toast.severity}>

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
-import { api } from '../api';
-import { StatusPill, Meter } from '../components/bits.jsx';
+import { api, outcomesApi } from '../api';
+import { StatusPill, Meter, Prediction } from '../components/bits.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { VIEWS, viewIncludes } from '../views.js';
+import { hasPrediction } from '../eta.js';
 
 export default function Home() {
   const { instances, filters, refreshInstances, view, setView } = useApp();
   const [events, setEvents] = useState([]);
+  const [engineOutcomes, setEngineOutcomes] = useState([]);
   const navigate = useNavigate();
 
   const ready = instances.filter((i) => i.status === 'READY').length;
@@ -22,6 +24,21 @@ export default function Home() {
     setEvents(merged);
   }
   useEffect(() => { if (instances.length) loadActivity(); }, [instances]); // eslint-disable-line
+
+  useEffect(() => {
+    let alive = true;
+    async function loadEngine() {
+      try {
+        const rows = await outcomesApi.all();
+        if (alive) setEngineOutcomes(rows);
+      } catch { /* hub offline */ }
+    }
+    loadEngine();
+    const t = setInterval(loadEngine, 2000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+
+  const predicted = engineOutcomes.filter((o) => hasPrediction(o) || o.atRisk || o.breached);
 
   return (
     <>
@@ -46,6 +63,30 @@ export default function Home() {
         <div className="stat"><div className="lbl">Escalations open</div><div className="num">{esc}</div><div className="foot">owned by RTB</div></div>
         <div className="stat info"><div className="lbl">Instances in scope</div><div className="num">{instances.length}</div><div className="foot">{filters.groupUnit}</div></div>
       </div>
+
+      {predicted.length > 0 && (
+        <div className="panel">
+          <div className="panel-hd">
+            <h2>Predicted ready
+              <InfoHint title="From historic events" width={300}>
+                Each ETA is projected from facts that already arrived this COB, blended with the median ready time of prior COBs. Advisory only — it never changes Ready / Blocked.
+              </InfoHint>
+            </h2>
+            <span className="hint">advisory · not on the fold</span>
+          </div>
+          <div className="panel-bd pred-list">
+            {predicted.map((o) => (
+              <div key={o.key} className="pred-row">
+                <div>
+                  <div className="lead">{o.name}</div>
+                  <div className="sec">{o.region} · COB {o.cobDate} · {o.completed}/{o.expected} feeds</div>
+                </div>
+                <Prediction outcome={o} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="split">
         <div>

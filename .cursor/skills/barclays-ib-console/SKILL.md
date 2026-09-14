@@ -39,8 +39,8 @@ Never use `backdrop-filter`, translucent `--glass` fills, or radial cyan washes 
 
 ## Layout rules
 
-- `.app` is a `100dvh` grid: rail + main. Only `.body` scrolls. Below 820px the rail collapses to icons (mobile-friendly; a native app can wrap this shell).
-- Every screen keeps the **context ribbon** (`.ctxbar`) so the stitch keys stay visible: group unit, kit, instance, origins, run.
+- `.app` is a `100dvh` grid: rail + main. Only `.body` scrolls. Below 820px the rail becomes an overlay drawer, a hamburger opens it, and a labelled bottom nav is the primary way to move. Do not leave a 66px icon strip eating the phone width.
+- Every screen keeps the **context ribbon** (`.ctxbar`) so the stitch keys stay visible: group unit, kit, instance, origins, run. On a phone the ribbon wraps; filters stay in the top bar.
 - Content sits in `.panel` blocks with a `.panel-hd` that names the table or view behind it.
 - KPI tiles use `.stat` plus `.ok` / `.fail` / `.warn` / `.info` — left colour bar, tinted fill.
 - Detail screens use `.split` — content plus a 340px right rail for facts, event trail and rules.

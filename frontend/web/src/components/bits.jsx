@@ -1,3 +1,6 @@
+import { formatClock, etaCaption, hasPrediction } from '../eta.js';
+import InfoHint from './InfoHint.jsx';
+
 export function StatusPill({ status }) {
   const map = {
     READY: 'ok', CLEARED: 'ok', BLOCKED: 'fail', DELAYED: 'warn', NOT_YET: 'plain',
@@ -29,4 +32,33 @@ export function Loading({ what = 'Loading…' }) {
 
 export function Empty({ what = 'Nothing here yet.' }) {
   return <div className="empty">{what}</div>;
+}
+
+/** Advisory prediction from arrived facts / prior COBs. Never used as readiness. */
+export function Prediction({ outcome }) {
+  if (!hasPrediction(outcome) && !outcome?.deadline && !outcome?.atRisk) return null;
+  const eta = formatClock(outcome.eta);
+  const sla = formatClock(outcome.deadline);
+  const hist = formatClock(outcome.historicP50);
+  const late = outcome.atRisk || outcome.breached;
+  return (
+    <div className={'pred' + (late ? ' late' : '')}>
+      <div className="pred-main">
+        <div>
+          <div className="pred-k">Predicted ready
+            <InfoHint title="Advisory only" width={280}>
+              Projected from events that already arrived this COB, blended with the median (P50) ready time of prior COBs for the same outcome and region. This is <b>not</b> on the readiness fold and is not an LLM.
+            </InfoHint>
+          </div>
+          <div className="pred-v">{eta || '—'}</div>
+        </div>
+        <div>
+          <div className="pred-k">SLA deadline</div>
+          <div className="pred-v sla">{sla || '—'}</div>
+        </div>
+        {late && <span className="chip warn-chip">{outcome.breached ? 'breached' : 'at risk'}</span>}
+      </div>
+      <div className="pred-f">{etaCaption(outcome)}{hist ? ` · historic P50 ${hist}` : ''}</div>
+    </div>
+  );
 }
