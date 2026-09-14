@@ -32,7 +32,7 @@ Hold each screen 15–25 seconds. Speak at a conversational pace. Do not click d
 | Management | Outcome board, then phone width | CIO / MD traffic lights. Same board on a phone. |
 | RTB | Operations | Delays, escalations, replay. They do not sign off. |
 
-Voice: male, warm, spoken to a CIO / MD. Peer explanation, not slang and not a slide read. Script: `docs/exec/narration-script.txt`.
+Voice: male, warm, spoken to a CIO / MD. Peer explanation, not slang and not a slide read. Script: `docs/exec/narration-script.txt`. Recorded demo: `docs/exec/cio-md-demo.mp4`.
 
 ---
 
