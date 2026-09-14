@@ -2,7 +2,7 @@
 
 Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 
-Visual truth: `frontend/web` (live React console; Barclays Cerulean `#00aeef`, Astronaut Blue `#00395d`).  
+Visual truth: `frontend/web` (live React console; solid finance dashboard, Cerulean `#00aeef` accent, charcoal canvas).  
 Design folder (only one): [`docs/design/`](docs/design/README.md).
 
 ## Jobs → skills

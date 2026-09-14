@@ -136,7 +136,7 @@ Full operator steps: `onboarding.md`.
 
 ## 8. Demo build vs later
 
-**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report lifecycle; FOBO stitch console with kit-declared actions (`AMEND`); RTB operations; monitoring + outbox + audit; Barclays Cerulean / Astronaut Blue theme; pluggable action registries.
+**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`); RTB operations; monitoring + outbox + audit; solid finance-dashboard theme (Cerulean accent); pluggable action registries.
 
 **Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; Wijmo analyst studio; native mobile app wrapping the same responsive shell.
 

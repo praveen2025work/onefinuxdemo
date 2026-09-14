@@ -27,7 +27,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 ## Brand
 
-Cerulean `#00aeef` accent. Astronaut Blue `#00395d` dark canvas. Light theme uses accessible cerulean on white.
+Cerulean `#00aeef` accent. Charcoal canvas `#0b1220`, opaque cards, dark navy rail. Status colour on KPI tiles (ready / blocked / delayed). Light theme keeps the same dark rail on an off-white page. No frosted glass.
 
 ## Mobile
 

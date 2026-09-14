@@ -75,7 +75,7 @@ The same shell is **mobile-friendly** (rail collapses, grids stack, tables scrol
 
 Two artefacts are the single source of truth, and every team measures against them:
 
-- **Visual truth** — `frontend/web/` (the live React console; Barclays Cerulean `#00aeef` + Astronaut Blue `#00395d`).
+- **Visual truth** — `frontend/web/` (the live React console; solid finance dashboard, Cerulean `#00aeef` accent).
 - **Data truth** — Flyway schema under `onefinux-hub/src/main/resources/db/migration/` plus the Outcome Engine definitions (`application.yml` and `POST /api/outcomes/definitions`).
 
 And one worked example that must be identical in every screen, query and event:

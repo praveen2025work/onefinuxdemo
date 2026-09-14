@@ -1,6 +1,6 @@
 /**
  * One Finance UX theme — copy this file.
- * Glass console: frosted panels, cyan glow. Dark navy is default; light is a peer.
+ * Solid finance dashboard: opaque cards, status colour, no frost.
  * Host sets html[data-theme="dark"|"light"] and passes theme= on the iframe query.
  *
  *   <link rel="stylesheet" href="https://<one-fin-ux-host>/theme/onefinux-tokens.css">
@@ -9,55 +9,53 @@
  * Full component reference: frontend/web/src/styles.css
  */
 :root {
-  --ofx-navy: #0a1f3d;
-  --ofx-navy-700: #07162c;
-  --ofx-navy-800: #06101f;
-  --ofx-navy-900: #040b16;
-  --ofx-cyan: #3dd6ff;
+  --ofx-navy: #07111c;
+  --ofx-navy-700: #0b1220;
+  --ofx-navy-800: #152033;
+  --ofx-navy-900: #1c2b40;
+  --ofx-cyan: #38bdf8;
   --ofx-cyan-600: #00aeef;
 
-  --ofx-ink: #f3f7fc;
-  --ofx-ink-2: #d5e2ef;
-  --ofx-ink-3: #93a8bf;
-  --ofx-ink-4: #6d849c;
-  --ofx-card: rgba(14, 32, 58, .55);
-  --ofx-surface-2: rgba(255, 255, 255, .1);
-  --ofx-surface-3: rgba(255, 255, 255, .04);
-  --ofx-page: #06101c;
-  --ofx-line: rgba(255, 255, 255, .1);
-  --ofx-line-2: rgba(255, 255, 255, .16);
+  --ofx-ink: #eef3f8;
+  --ofx-ink-2: #c5d4e2;
+  --ofx-ink-3: #93a6bb;
+  --ofx-ink-4: #6e849b;
+  --ofx-card: #152033;
+  --ofx-surface-2: #1c2b40;
+  --ofx-surface-3: #101a28;
+  --ofx-page: #0b1220;
+  --ofx-line: #2a3d55;
+  --ofx-line-2: #3d5673;
 
-  --ofx-ok: #3ee0a0;
-  --ofx-ok-bg: rgba(62, 224, 160, .12);
-  --ofx-ok-line: rgba(62, 224, 160, .38);
-  --ofx-warn: #ffc46b;
-  --ofx-warn-bg: rgba(255, 196, 107, .12);
-  --ofx-warn-line: rgba(255, 196, 107, .38);
-  --ofx-fail: #ff7b74;
-  --ofx-fail-bg: rgba(255, 123, 116, .14);
-  --ofx-fail-line: rgba(255, 123, 116, .4);
-  --ofx-info: #5ed4ff;
-  --ofx-info-bg: rgba(61, 214, 255, .12);
-  --ofx-info-line: rgba(61, 214, 255, .38);
-  --ofx-bo: #c4b4ff;
-  --ofx-bo-bg: rgba(196, 180, 255, .14);
-  --ofx-bo-line: rgba(196, 180, 255, .4);
+  --ofx-ok: #22c55e;
+  --ofx-ok-bg: color-mix(in srgb, #22c55e 14%, #152033);
+  --ofx-ok-line: color-mix(in srgb, #22c55e 45%, #2a3d55);
+  --ofx-warn: #f59e0b;
+  --ofx-warn-bg: color-mix(in srgb, #f59e0b 14%, #152033);
+  --ofx-warn-line: color-mix(in srgb, #f59e0b 45%, #2a3d55);
+  --ofx-fail: #ef4444;
+  --ofx-fail-bg: color-mix(in srgb, #ef4444 14%, #152033);
+  --ofx-fail-line: color-mix(in srgb, #ef4444 45%, #2a3d55);
+  --ofx-info: #38bdf8;
+  --ofx-info-bg: color-mix(in srgb, #00aeef 14%, #152033);
+  --ofx-info-line: color-mix(in srgb, #00aeef 45%, #2a3d55);
+  --ofx-bo: #a78bfa;
+  --ofx-bo-bg: color-mix(in srgb, #a78bfa 14%, #152033);
+  --ofx-bo-line: color-mix(in srgb, #a78bfa 45%, #2a3d55);
+  --ofx-gold: #eab308;
 
-  --ofx-font: "IBM Plex Sans", Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
+  --ofx-font: "IBM Plex Sans", "Segoe UI", Helvetica, Arial, sans-serif;
   --ofx-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
 
-  --ofx-r: 12px;
-  --ofx-r-lg: 18px;
-  --ofx-sh-1: 0 8px 28px rgba(0, 8, 20, .28);
-  --ofx-sh-2: 0 16px 48px rgba(0, 8, 20, .38);
+  --ofx-r: 8px;
+  --ofx-r-lg: 10px;
+  --ofx-sh-1: 0 1px 2px rgba(0, 0, 0, .28), 0 6px 16px rgba(0, 0, 0, .16);
+  --ofx-sh-2: 0 1px 2px rgba(0, 0, 0, .32), 0 10px 24px rgba(0, 0, 0, .22);
 }
 
 .ofx-app {
   margin: 0;
-  background:
-    radial-gradient(900px 520px at 12% -10%, rgba(0, 174, 239, .28), transparent 58%),
-    radial-gradient(720px 480px at 92% 8%, rgba(124, 92, 255, .22), transparent 55%),
-    #06101c;
+  background: var(--ofx-page);
   color: var(--ofx-ink);
   font-family: var(--ofx-font);
   font-size: 13.5px;
@@ -67,64 +65,58 @@
 }
 
 html[data-theme="light"] {
-  --ofx-navy: #002d5f;
-  --ofx-navy-700: #002247;
-  --ofx-navy-800: #e8eef6;
-  --ofx-navy-900: #dce6f2;
-  --ofx-cyan: #0090c6;
-  --ofx-cyan-600: #00aeef;
+  --ofx-navy: #07111c;
+  --ofx-navy-700: #0f2740;
+  --ofx-navy-800: #ffffff;
+  --ofx-navy-900: #f4f7fb;
+  --ofx-cyan: #0369a1;
+  --ofx-cyan-600: #0284c7;
 
-  --ofx-ink: #0b1a2e;
+  --ofx-ink: #102033;
   --ofx-ink-2: #24384d;
-  --ofx-ink-3: #5b7288;
-  --ofx-ink-4: #7d93a8;
-  --ofx-card: rgba(255, 255, 255, .68);
-  --ofx-surface-2: rgba(255, 255, 255, .88);
-  --ofx-surface-3: rgba(255, 255, 255, .55);
-  --ofx-page: #e8eef6;
-  --ofx-line: rgba(0, 45, 95, .1);
-  --ofx-line-2: rgba(0, 45, 95, .16);
+  --ofx-ink-3: #4d6278;
+  --ofx-ink-4: #7a8fa3;
+  --ofx-card: #ffffff;
+  --ofx-surface-2: #f4f7fb;
+  --ofx-surface-3: #e6ebf2;
+  --ofx-page: #eef1f6;
+  --ofx-line: #d5dee8;
+  --ofx-line-2: #b9c7d6;
 
-  --ofx-ok: #0e7c4a;
-  --ofx-ok-bg: rgba(14, 124, 74, .1);
-  --ofx-ok-line: rgba(14, 124, 74, .28);
-  --ofx-warn: #9a5b06;
-  --ofx-warn-bg: rgba(154, 91, 6, .1);
-  --ofx-warn-line: rgba(154, 91, 6, .28);
-  --ofx-fail: #b3221f;
-  --ofx-fail-bg: rgba(179, 34, 31, .1);
-  --ofx-fail-line: rgba(179, 34, 31, .28);
-  --ofx-info: #0a6a92;
-  --ofx-info-bg: rgba(0, 174, 239, .1);
-  --ofx-info-line: rgba(0, 144, 198, .28);
-  --ofx-bo: #4e3c9a;
-  --ofx-bo-bg: rgba(78, 60, 154, .1);
-  --ofx-bo-line: rgba(78, 60, 154, .28);
+  --ofx-ok: #15803d;
+  --ofx-ok-bg: color-mix(in srgb, #15803d 12%, #ffffff);
+  --ofx-ok-line: color-mix(in srgb, #15803d 40%, #d5dee8);
+  --ofx-warn: #b45309;
+  --ofx-warn-bg: color-mix(in srgb, #b45309 12%, #ffffff);
+  --ofx-warn-line: color-mix(in srgb, #b45309 40%, #d5dee8);
+  --ofx-fail: #dc2626;
+  --ofx-fail-bg: color-mix(in srgb, #dc2626 12%, #ffffff);
+  --ofx-fail-line: color-mix(in srgb, #dc2626 40%, #d5dee8);
+  --ofx-info: #0369a1;
+  --ofx-info-bg: color-mix(in srgb, #0284c7 12%, #ffffff);
+  --ofx-info-line: color-mix(in srgb, #0284c7 40%, #d5dee8);
+  --ofx-bo: #6d28d9;
+  --ofx-bo-bg: color-mix(in srgb, #6d28d9 12%, #ffffff);
+  --ofx-bo-line: color-mix(in srgb, #6d28d9 40%, #d5dee8);
+  --ofx-gold: #a16207;
 
-  --ofx-sh-1: 0 8px 28px rgba(15, 40, 70, .08);
-  --ofx-sh-2: 0 16px 48px rgba(15, 40, 70, .12);
+  --ofx-sh-1: 0 1px 2px rgba(16, 32, 51, .06), 0 8px 18px rgba(16, 32, 51, .08);
+  --ofx-sh-2: 0 1px 2px rgba(16, 32, 51, .08), 0 12px 24px rgba(16, 32, 51, .12);
 }
 
-html[data-theme="light"] .ofx-app {
-  background:
-    radial-gradient(900px 520px at 8% -8%, rgba(0, 174, 239, .16), transparent 58%),
-    radial-gradient(720px 480px at 96% 0%, rgba(124, 92, 255, .1), transparent 55%),
-    #e8eef6;
-}
+html[data-theme="light"] .ofx-app { background: var(--ofx-page); }
 html[data-theme="light"] .ofx-card-hd,
 html[data-theme="light"] .ofx-btn-2 { color: var(--ofx-ink); }
-html[data-theme="light"] .ofx-tbl thead th { background: rgba(255, 255, 255, .9); }
+html[data-theme="light"] .ofx-tbl thead th { background: var(--ofx-surface-2); }
 
 .ofx-app[data-ofx-embedded="1"] { background: transparent; }
 .ofx-app[data-ofx-embedded="1"] .ofx-masthead { display: none !important; }
 
 .ofx-card {
   background: var(--ofx-card);
-  backdrop-filter: blur(22px) saturate(140%);
-  -webkit-backdrop-filter: blur(22px) saturate(140%);
   border: 1px solid var(--ofx-line);
   border-radius: var(--ofx-r-lg);
-  box-shadow: var(--ofx-sh-1), inset 0 1px 0 rgba(255,255,255,.16);
+  box-shadow: var(--ofx-sh-1);
   overflow: hidden;
 }
 .ofx-card-hd {
@@ -132,30 +124,29 @@ html[data-theme="light"] .ofx-tbl thead th { background: rgba(255, 255, 255, .9)
   padding: 13px 16px;
   border-bottom: 1px solid var(--ofx-line);
   font-weight: 600;
-  color: #fff;
+  color: var(--ofx-ink);
 }
 .ofx-card-bd { padding: 16px; }
 
 .ofx-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 7px;
   height: 36px; padding: 0 14px;
-  background: linear-gradient(180deg, #4ce3ff 0%, #0096d6 100%);
+  background: var(--ofx-cyan-600);
   color: #041018;
   border: 1px solid transparent;
-  border-radius: 999px;
+  border-radius: 6px;
   font: 600 12.5px/1 var(--ofx-font);
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(0, 174, 239, .28), inset 0 1px 0 rgba(255,255,255,.45);
 }
-.ofx-btn:hover { filter: brightness(1.06); }
+.ofx-btn:hover { filter: brightness(1.08); }
 .ofx-btn-2 {
-  background: rgba(255,255,255,.06);
-  color: #fff;
+  background: var(--ofx-surface-2);
+  color: var(--ofx-ink);
   border-color: var(--ofx-line-2);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+  box-shadow: none;
 }
 .ofx-btn:disabled {
-  background: rgba(255,255,255,.05);
+  background: var(--ofx-surface-2);
   color: var(--ofx-ink-4);
   border-color: var(--ofx-line);
   box-shadow: none;
@@ -167,12 +158,12 @@ html[data-theme="light"] .ofx-tbl thead th { background: rgba(255, 255, 255, .9)
   height: 22px; padding: 0 9px;
   border: 1px solid var(--ofx-line-2);
   border-radius: 999px;
-  background: rgba(255,255,255,.06);
+  background: var(--ofx-surface-2);
   color: var(--ofx-ink-2);
   font: 500 10.5px/1 var(--ofx-mono);
   letter-spacing: .05em;
 }
-.ofx-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.ofx-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .ofx-pill-ok { color: var(--ofx-ok); background: var(--ofx-ok-bg); border-color: var(--ofx-ok-line); }
 .ofx-pill-warn { color: var(--ofx-warn); background: var(--ofx-warn-bg); border-color: var(--ofx-warn-line); }
 .ofx-pill-fail { color: var(--ofx-fail); background: var(--ofx-fail-bg); border-color: var(--ofx-fail-line); }
@@ -181,7 +172,7 @@ html[data-theme="light"] .ofx-tbl thead th { background: rgba(255, 255, 255, .9)
 .ofx-tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; }
 .ofx-tbl thead th {
   position: sticky; top: 0; z-index: 2;
-  background: rgba(8, 20, 38, .78);
+  background: var(--ofx-surface-2);
   font: 500 9.5px/1 var(--ofx-mono);
   letter-spacing: .11em; text-transform: uppercase;
   color: var(--ofx-ink-3); text-align: left;
@@ -189,7 +180,7 @@ html[data-theme="light"] .ofx-tbl thead th { background: rgba(255, 255, 255, .9)
   border-bottom: 1px solid var(--ofx-line);
 }
 .ofx-tbl tbody td { padding: 11px 14px; border-bottom: 1px solid var(--ofx-line); color: var(--ofx-ink-2); }
-.ofx-tbl tbody tr:hover td { background: rgba(61,214,255,.06); }
+.ofx-tbl tbody tr:hover td { background: var(--ofx-surface-2); }
 .ofx-tbl .ofx-num { text-align: right; font-family: var(--ofx-mono); font-size: 12px; }
 
 .ofx-mono { font-family: var(--ofx-mono); font-size: 12px; }
