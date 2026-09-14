@@ -29,7 +29,7 @@ services:
 
   web:
     build:
-      context: experience/web
+      context: frontend/web
       dockerfile: Dockerfile
     ports:
       - "8080:8080"

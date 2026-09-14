@@ -4,12 +4,12 @@ sequenceDiagram
   participant HUB as Event Hub
   participant XL as Translation
   participant ENG as Outcome Engine
-  participant WF as Workflow
+  participant WF as ActionExecutor
   participant HX as Helix
   participant OBX as Outbox Relay
   participant DWN as Downstream (Archive/FinStore/PnL)
   participant AUD as Audit Log
-  participant UX as Console (SSE)
+  participant UX as frontend/web (SSE)
 
   SRC->>HUB: publish fact (idempotent on eventId)
   HUB->>XL: translate source key to business id
@@ -18,11 +18,11 @@ sequenceDiagram
   HUB-)OBX: enqueue outbox rows (one per matching route)
   OBX->>DWN: POST CloudEvents 1.0 (at-least-once)
   DWN-->>OBX: 2xx (subscriber de-dupes on eventId)
-  ENG->>WF: outcome READY with action
+  ENG->>WF: onReady.action (HTTP_COMMAND / LOG_COMMAND)
   WF->>HX: command run analysis (+ callback url)
   HX->>HUB: echo HELIX_ANALYSIS_COMPLETE (RUN-A37C)
   ENG-->>UX: outcome state via SSE
   Note over UX,ENG: controller reviews and signs off
-  UX->>ENG: sign-off command
+  UX->>ENG: POST /api/stitch/instance/action
   ENG->>AUD: append audit (who / when / what / why)
   ENG-->>UX: notification via SSE

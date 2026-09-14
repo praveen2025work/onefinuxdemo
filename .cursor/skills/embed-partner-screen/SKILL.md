@@ -17,7 +17,7 @@ One Fin UX is the **shell**. Other teams build the **workload**. We iframe their
 
 ## Theme (copy, do not restyle)
 
-Publish and import `experience/theme/onefinux-tokens.css`.  
+Publish and import `frontend/theme/onefinux-tokens.css`.  
 **REQUIRED:** `barclays-ib-console`. No second header inside the iframe (`data-ofx-embedded="1"`).
 
 ## Kit
@@ -43,7 +43,7 @@ Child may post: `{ type: "ofx.height", px }`, `{ type: "ofx.signedOff" }`, `{ ty
 
 ## Do not
 
-- Rebuild FOBO inside `experience/web` if Helix already has the screen
+- Rebuild FOBO inside `frontend/web` if Helix already has the screen
 - Let the partner draw a second One Fin masthead
 - Skip the theme file “because our app is already blue”
 ---

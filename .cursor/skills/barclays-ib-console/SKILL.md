@@ -1,6 +1,6 @@
 ---
 name: barclays-ib-console
-description: Use when building One Finance chrome or when another team must copy the One Fin UX theme for an iframed screen. Also use when a mock looks editorial, cream, serif, or unlike FoboControlTower_V2.
+description: Use when building One Finance chrome or when another team must copy the One Fin UX theme for an iframed screen. Also use when a mock looks editorial, cream, serif, or unlike the live frontend/web console.
 ---
 
 # Barclays IB console
@@ -11,10 +11,10 @@ One Finance UX is a **full-viewport glass console**: frosted panels, cyan glow, 
 
 | Path | What it is |
 |---|---|
-| `docs/design/mockups/app.css` | The design system: app shell, tables, pills, meters, forms, pipeline, embed frame |
-| `docs/design/mockups/components.html` | Every component rendered on one page |
-| `docs/design/mockups/*.html` | The four jobs + stitch, built only from that CSS |
-| `experience/theme/onefinux-tokens.css` | The `--ofx-*` subset partner teams copy |
+| `frontend/web` | Live React console — visual truth for routes, chrome, and theme |
+| `frontend/theme/onefinux-tokens.css` | The `--ofx-*` subset partner teams copy |
+| `docs/design/mockups/app.css` | Earlier static design system (compose classes; do not treat as the product) |
+| `docs/design/mockups/*.html` | Earlier four-job reference screens |
 
 Build new screens by composing existing classes. If a screen needs a primitive that is not there, add it to `app.css` once — do not inline a one-off style.
 
@@ -44,14 +44,14 @@ Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Self-hosted i
 
 ## Other teams
 
-Serve `experience/theme/onefinux-tokens.css` as `/theme/onefinux-tokens.css`. Partners import it, use `--ofx-*` only, set `data-ofx-embedded="1"`, and **omit** their own masthead. Host chrome sets `html[data-theme=dark|light]` and passes `theme=` on the iframe query. **REQUIRED:** `embed-partner-screen` for the host contract.
+Serve `frontend/theme/onefinux-tokens.css` as `/theme/onefinux-tokens.css`. Partners import it, use `--ofx-*` only, set `data-ofx-embedded="1"`, and **omit** their own masthead. Host chrome sets `html[data-theme=dark|light]` and passes `theme=` on the iframe query. **REQUIRED:** `embed-partner-screen` for the host contract.
 
 Theme is persisted in `localStorage['ofx-theme']`. A review link can force it: `index.html?theme=light`. Default is dark.
 
 ## Common mistakes
 
 - Centring content in a narrow column — this is a console, use the width
-- Dreamliner cream/serif screens as visual truth — **V2 + `docs/design/mockups/` are truth**
+- Dreamliner cream/serif screens as visual truth — **`frontend/web` is truth**; mockups are the earlier static reference
 - Hard-coding "FOBO Control Tower" as the platform title — the title is the current product
 - Recharts as the break viewer — Wijmo (`wijmo-outcome-grid`)
 - A new stylesheet per screen instead of extending `app.css`

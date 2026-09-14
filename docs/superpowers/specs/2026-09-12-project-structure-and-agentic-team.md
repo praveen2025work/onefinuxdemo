@@ -56,7 +56,7 @@ onefinux/                          # this repository, grown in place
 │       ├── registry/              # Admin API: catalogue, kits, maker-checker
 │       └── app/                   # Pilot composition root (wires modules in one JVM)
 │
-├── experience/                    # HUMAN EDGE — separate from fold
+├── frontend/                    # HUMAN EDGE — separate from fold
 │   ├── web/                       # Control Tower, cockpit, My Reports, Admin UI
 │   └── now/                       # Barclays Now task payload mapper (thin)
 │
@@ -79,7 +79,7 @@ onefinux/                          # this repository, grown in place
 │   └── environment.json
 ├── AGENTS.md                      # cross-tool, <200 lines
 ├── CODEOWNERS
-└── pom.xml / package.json         # root orchestrates platform + experience
+└── pom.xml / package.json         # root orchestrates platform + frontend
 ```
 
 ### 2.1 Component → folder → team
@@ -91,10 +91,10 @@ onefinux/                          # this repository, grown in place
 | Event Gateway | `platform/modules/gateway/` | Platform | Schema or auth change |
 | Event Hub + translation + fold | `platform/modules/hub/` | Platform (tight) | Fold tests first; **no product names** |
 | Workflow / commands | `platform/modules/workflow/` | Platform | New action *type*, not a new Helix if |
-| Notifications + Now | `platform/modules/notification/`, `experience/now/` | Platform + Digital Workplace | New channel |
+| Notifications + Now | `platform/modules/notification/`, `frontend/now/` | Platform + Digital Workplace | New channel |
 | Report assembly | `platform/modules/reports/` | Platform | New **binding** enum |
 | Registry / Admin API | `platform/modules/registry/` | Platform | Maker-checker, kit schema |
-| Control Tower / cockpit / reports UI | `experience/web/` | Experience | Chrome shared; no FOBO-only pages |
+| Control Tower / cockpit / reports UI | `frontend/web/` | Experience | Chrome shared; no FOBO-only pages |
 | Source adapters | `adapters/*` | Integration per system | New producer |
 | Advisory LLM | `advisory/` | Platform + model risk | Prompt + entitled snapshot only |
 | Simulator | `adapters/helix-sim/` (today `source-simulator/`) | Platform | Demo scenarios |
@@ -127,7 +127,7 @@ platform/modules/hub/
 | `source-simulator` | `adapters/helix-sim` |
 | `contracts/business-event.schema.json` | Stay; add envelope + AsyncAPI beside it |
 | `application.yml` outcomes | Move to `products/*/product.yaml`; app loads the kit |
-| `static/index.html` | `experience/web` (Dreamliner chrome) |
+| `static/index.html` | `frontend/web` (Dreamliner chrome) |
 
 No big-bang rewrite. First PR that proves the model: **add `products/mec/v1/product.yaml` and load it without a new Java type**.
 
@@ -149,7 +149,7 @@ Team pattern that works in banks:
 
 1. **One skill library in the product repo** (not only on a laptop). Versioned with the code.
 2. **CODEOWNERS on skills and contracts** — a skill change is a platform PR.
-3. **Nested `AGENTS.md`** in `contracts/`, `platform/`, `experience/`, `products/` (keep each under ~200 lines).
+3. **Nested `AGENTS.md`** in `contracts/`, `platform/`, `frontend/`, `products/` (keep each under ~200 lines).
 4. **One writer per worktree / branch.** Agents do not share an unsaved workspace.
 5. **Human merge.** Agent-authored PRs still need a named reviewer on fold + contracts.
 
@@ -167,7 +167,7 @@ Cross-tool: prefer `AGENTS.md` + Agent Skills spec ([agentskills.io](https://age
 | **Superpowers-style process skills** (brainstorm → spec → TDD → review) | Already how this design was written; keep for every feature |
 | **Java / Spring language support** | Platform modules |
 | **GitHub** | PR, CODEOWNERS, required checks |
-| **ESLint / TypeScript** (when `experience/web` exists) | Tower/cockpit |
+| **ESLint / TypeScript** (when `frontend/web` exists) | Tower/cockpit |
 | **ArchUnit or Checkstyle in CI** (not a chat plugin) | Enforce “domain has no FOBO, no HTTP” |
 
 Do **not** require every engineer to install a different agent (Cursor vs Claude vs Copilot) with private rules. Private user-rules are for taste; **repo rules win** on architecture.
@@ -215,7 +215,7 @@ Agents must not hold production CEES or bus credentials. Fold tests use fakes.
 main
  ├─ feat/kit-mec           # domain owner + agent (worktree A) — products/mec only
  ├─ feat/fold-threshold    # platform + agent (worktree B) — hub tests
- └─ feat/tower-gallery     # experience + agent (worktree C) — experience/web
+ └─ feat/tower-gallery     # frontend + agent (worktree C) — frontend/web
 ```
 
 - Each human: one branch, one worktree, one agent writer.
@@ -236,7 +236,7 @@ main
 /products/                          @onefinux-platform @domain-outcome-owners
 /products/fobo/                     @revenue-accounting
 /products/reg-15c3/                 @reg-reporting
-/experience/                        @onefinux-experience
+/frontend/                        @onefinux-frontend
 /adapters/                          @onefinux-integration
 /.cursor/skills/                    @onefinux-platform
 /AGENTS.md                          @onefinux-platform

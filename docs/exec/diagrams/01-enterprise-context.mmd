@@ -38,7 +38,7 @@ flowchart TB
     HUB["Event Hub<br/>idempotent · append-only · replay"]
     XL["Translation<br/>identity graph"]
     ENG["Outcome engine<br/>deterministic fold"]
-    WF["Workflow<br/>command dispatcher"]
+    WF["Workflow<br/>ActionExecutor registry"]
     OBX["Outbox relay"]
     NTF["Notification service"]
     ENT["Entitlement gateway (CEES)"]
@@ -56,10 +56,8 @@ flowchart TB
     PNL["P&L feed"]
   end
 
-  subgraph UX["Experience plane — entitled console"]
-    BOARD["Outcome board"]
-    OPS["Operations / RTB"]
-    MON["Monitoring"]
+  subgraph UX["Experience plane — entitled frontend/web"]
+    CONSOLE["Onboarding · Configuration · Drive<br/>Reports · Board · My outcomes<br/>Operations · Monitoring"]
   end
 
   Motif --> GW
@@ -93,18 +91,17 @@ flowchart TB
   REG --> ENG
   REG --> WF
   REG --> ENT
-  ENG --> BOARD
-  ENT --> BOARD
-  ENT --> MON
-  HUB --> MON
-  OBX --> MON
-  AUD --> MON
-  OPS --> HUB
+  ENG --> CONSOLE
+  ENT --> CONSOLE
+  HUB --> CONSOLE
+  OBX --> CONSOLE
+  AUD --> CONSOLE
+  CONSOLE --> HUB
 
   class Motif,CATS,MBR,Helix,RAMP,SAP,GMIS,Castle,FinStore,Axiom sor
   class GW,ADP edge
   class HUB,XL,ENG,WF,OBX,NTF,ENT run
   class ES,OB,AUD store
   class ARC,FS,PNL down
-  class BOARD,OPS,MON ux
+  class CONSOLE ux
   class ADMIN,REG,MK ctrl

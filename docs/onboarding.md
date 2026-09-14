@@ -39,7 +39,7 @@ API call against `onefinux-hub` (port 7070). No screen invents an id.
 ```bash
 ./scripts/run.sh                     # build + start hub (7070) and simulator (7081)
 # React console (separate terminal):
-cd experience/web && npm install && npm run dev   # http://localhost:5173
+cd frontend/web && npm install && npm run dev   # http://localhost:5173
 ```
 
 The hub seeds `REV-ACC` + the `FOBO` kit + the two demo instances on first boot (from
@@ -100,7 +100,7 @@ the board with no code change. This is the proof that "products are data."
 ## 4. Set the partner embed
 
 The `embed` block above records `kit_embed`. The partner copies
-`experience/theme/onefinux-tokens.css` and sets `data-ofx-embedded="1"`; we frame their screen, we do
+`frontend/theme/onefinux-tokens.css` and sets `data-ofx-embedded="1"`; we frame their screen, we do
 not clone it. `allowedOrigin` is the CSP allowlist entry for the iframe.
 
 ## 5. Entitlement (CEES)

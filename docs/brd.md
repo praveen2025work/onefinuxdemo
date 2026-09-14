@@ -36,3 +36,4 @@ Two models, both extensible by configuration:
 | Run-the-bank delays, escalations, dead letters | `rtb-support-view` |
 | Bind a source or destination | `bind-source-destination` |
 | Partner iframe | `embed-partner-screen` |
+| Analyst grid (later) | `wijmo-outcome-grid` |
