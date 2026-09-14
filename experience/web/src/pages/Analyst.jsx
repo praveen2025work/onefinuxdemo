@@ -145,7 +145,7 @@ export default function Analyst() {
         </div>
 
         <div className="panel">
-          <div className="panel-hd"><h2>Saved views <InfoHint title="Saved views" width={300} align="right">Views are stored server-side and scoped to a CEES report. Swap the grid for licensed Wijmo — same view JSON.</InfoHint></h2><span className="hint">analyst_view_def</span></div>
+          <div className="panel-hd"><h2>Saved views <InfoHint title="Saved views" width={300} align="right">Views are stored server-side and scoped to a CEES report. Swap the grid for licensed Wijmo (MESCIUS) — same view JSON.</InfoHint></h2><span className="hint">analyst_view_def</span></div>
           <div className="panel-bd stack">
             {views.length === 0 && <div className="muted">No saved views. Configure the grid and hit “Save view”.</div>}
             {views.map((v) => {

@@ -107,7 +107,7 @@ On button-click, query Motif, SAP, Axiom, Helix for “are you done?”
 - **Pros:** Fast to stub.
 - **Cons:** Polling; no shared notification; no replay; no restatement story; downstream systems still do not know they may start.
 
-**Recommendation: Approach A.** Approaches B and C can appear later as *optional* adapters (a CDC adapter is just another producer; a WisMO grid may fetch a file that Axiom already produced). They are not the architecture.
+**Recommendation: Approach A.** Approaches B and C can appear later as *optional* adapters (a CDC adapter is just another producer; a Wijmo grid may fetch a file that Axiom already produced). They are not the architecture.
 
 ---
 
@@ -155,7 +155,7 @@ flowchart TB
   subgraph experience [Experience plane]
     Board[Outcome board]
     Inbox[Notification inbox]
-    Viewer[Unified report viewer WisMO / template]
+    Viewer[Unified report viewer Wijmo / template]
     Tape[Event tape]
   end
 
@@ -195,7 +195,7 @@ flowchart TB
 3. Event Hub de-duplicates, persists, translates `MB014` → business identifiers (book, cost centre, rec universe).
 4. Outcome engine folds the event into `FOBO_HELIX / 2026-09-12 / GLOBAL`. If the universe is 100 books and 80 are complete, the card stays `IN_PROGRESS` at 80%.
 5. At 100/100 and no failures, status becomes `READY`. Workflow emits `WORKFLOW_ACTION_TRIGGERED` and sends a command to Helix with `runId`, callback topic, and the entitled book list.
-6. Helix processes the FOBO rec and publishes `HELIX_ANALYSIS_COMPLETE` with the same `runId` plus a **result locator** (breaks JSON, CSV, or WisMO dataset id).
+6. Helix processes the FOBO rec and publishes `HELIX_ANALYSIS_COMPLETE` with the same `runId` plus a **result locator** (breaks JSON, CSV, or Wijmo dataset id).
 7. Engine marks `COMPLETED`. Notification goes to the FOBO Controllers audience. Entitled users open the rec result in the unified viewer.
 
 **15C3 / IFRS is the same machine** with a different outcome definition: several source types, an Axiom (or IFRS engine) command, and a report locator instead of a break list.
@@ -218,7 +218,7 @@ flowchart TB
 | **Outcome definition** | The business question, dependencies, SLA, on-ready action, entitlement, report binding | Versioned |
 | **Outcome instance** | One definition × COB × region (× optional slice, see below) | Daily |
 | **Action target** | How to command Helix / Axiom / others | Versioned |
-| **Report binding** | How a completed outcome is opened: WisMO grid, WisMO chart, Excel template, external URL | Versioned |
+| **Report binding** | How a completed outcome is opened: Wijmo grid, Wijmo chart, Excel template, external URL | Versioned |
 | **Entitlement policy** | Platform capability + optional remote check URL | Versioned |
 
 ### 7.2 Outcome instance grain
@@ -249,10 +249,10 @@ One Finance does **not** ship a FOBO module, a 15C3 module, and an IFRS module. 
 | Dependencies + universe | Motif books, declared list | SAP + Castle + FinStore + Axiom | Ledger + credit + Axiom | TB + recs + journals | Liquidity feeds |
 | Ingest | FEED (Motif topic) and/or PUSH | FEED and/or PUSH | FEED and/or PUSH | FEED and/or PUSH | FEED and/or PUSH |
 | On-ready | COMMAND Helix | COMMAND Axiom | COMMAND IFRS engine | NOTIFY_ONLY or COMMAND close | COMMAND liquidity engine |
-| Report catalog | FOBO_BREAKS (WisMO) | 15C3_PACK (template) | IFRS9_ECL (template) | MEC_PACK | LCR_PACK |
+| Report catalog | FOBO_BREAKS (Wijmo) | 15C3_PACK (template) | IFRS9_ECL (template) | MEC_PACK | LCR_PACK |
 | CEES resource | `product:FOBO` | `product:REG_15C3` | `product:IFRS` | `product:MEC` | `product:LCR` |
 
-Engineers do not add `if (product == FOBO)` in the fold, the SSE payload, or the tower card. If a new product needs a new *verb* (beyond read / override / rerun / view / export) or a new *binding* (beyond WisMO / template / file / link), that is a platform increment. Everything else is data.
+Engineers do not add `if (product == FOBO)` in the fold, the SSE payload, or the tower card. If a new product needs a new *verb* (beyond read / override / rerun / view / export) or a new *binding* (beyond Wijmo / template / file / link), that is a platform increment. Everything else is data.
 
 The POC already proved this: `FOBO_HELIX`, `REPORT_15C3`, and `PNL_REPORTING` are three YAML rows in one engine. Enterprise scale is **more rows, more domains**, not a FOBO application with plugins.
 
@@ -423,7 +423,7 @@ It is **not** the live board. Controllers live on the experience plane. Platform
 | Outcome definitions | Question, dependencies, universe policy, SLA, on-ready action, audiences | Yes |
 | Routes | Which facts are forwarded to which extra consumers (beyond the engine) | Yes |
 | Action targets | Helix / Axiom / IFRS engine URLs or command topics, timeouts, retry | Yes |
-| Report bindings | Viewer type, template id, locator JSON path, WisMO widget | Yes |
+| Report bindings | Viewer type, template id, locator JSON path, Wijmo widget | Yes |
 | Entitlement policies | Platform roles + remote entitlement URL + cache TTL | Yes |
 | Dead-letter / replay | Inspect rejected events, re-submit, replay a partition | Dual-control |
 
@@ -505,8 +505,8 @@ When a user opens a completed outcome:
 
 | Binding | Source payload | UI |
 |---|---|---|
-| `WISMO_GRID` | JSON rows or CSV | WisMO grid |
-| `WISMO_CHART` | JSON series | WisMO chart |
+| `WIJMO_GRID` | JSON rows or CSV | Wijmo grid |
+| `WIJMO_CHART` | JSON series | Wijmo chart |
 | `EXCEL_TEMPLATE` | JSON/CSV + registered xlsx template | Template filled and shown / downloadable |
 | `EXTERNAL_LINK` | URL from the producer | New window, still entitlement-checked |
 | `FILE` | Object-store pointer | Download with audit |
@@ -534,7 +534,7 @@ Completion attributes grow a governed `result` object. Example:
     "runId": "RUN-A37C3728",
     "summary": "Helix analysed 100 master books: 12 FOBO breaks, 3 above materiality.",
     "result": {
-      "kind": "WISMO_GRID",
+      "kind": "WIJMO_GRID",
       "contentType": "application/json",
       "uri": "https://helix.bank/api/runs/RUN-A37C3728/breaks",
       "templateId": null
@@ -668,7 +668,7 @@ The first production **domain** is Revenue Accounting; the first production **pr
 | Notifications | `notification` | SMTP, Teams, ServiceNow, in-app |
 | *(new)* Control plane | YAML | Admin UI + registry + maker-checker |
 | *(new)* Entitlements | none | SSO + CEES + federated entitlement links |
-| *(new)* Reports | summary string only | Report assembly + WisMO / template viewer |
+| *(new)* Reports | summary string only | Report assembly + Wijmo / template viewer |
 | Simulator | `source-simulator` | Stays as a test double; production uses real producers |
 
 ---
@@ -693,7 +693,7 @@ Phases are capability slices, not calendar estimates.
 - `REFERENCE_UNIVERSE` and `DECLARED_UNIVERSE` so “80 of 100 books” is reference-data driven.
 - Optional `sliceKey` for rec / legal entity.
 - Report locators on completion events.
-- Unified viewer: WisMO grid/chart, CSV, Excel template merge.
+- Unified viewer: Wijmo grid/chart, CSV, Excel template merge.
 - Federated entitlement links to Axiom / Helix / report stores.
 - Dead-letter console and partition replay in Admin.
 
@@ -716,7 +716,7 @@ Phases are capability slices, not calendar estimates.
 
 - Replacing Helix FOBO matching, Axiom report engines, or SAP posting.
 - Building a general data warehouse or “lakehouse for finance.”
-- Embedding WisMO as a proprietary fork; we **consume** the bank’s WisMO grid/chart components.
+- Embedding Wijmo as a proprietary fork; we **consume** the bank’s Wijmo grid/chart components.
 - Copying every source ACL into One Finance.
 - Putting AI in the readiness path. Readiness stays a deterministic fold.
 - Changing POC application code in this document. This spec is the target architecture; implementation is a later plan.
@@ -728,7 +728,7 @@ Phases are capability slices, not calendar estimates.
 1. “FOMO” in the spoken brief is **FOBO** — front-office / back-office reconciliation.
 2. “Phobos trek” is **FOBO rec**. Helix (or the bank’s FOBO engine) performs it when One Finance says the universe is ready.
 3. “First instance layer” means (a) the **Admin/control plane** that configures catalogue, outcomes, routes, and targets, and (b) the **event gateway** that is the first runtime hop. Both are specified.
-4. “Wismo” is the bank’s **WisMO** grid/chart toolkit. Bindings assume we can feed it JSON or CSV.
+4. “Wismo” in the spoken brief is **Wijmo (MESCIUS)** — FlexGrid, Pivot, FlexChart. Bindings assume we can feed it JSON or CSV.
 5. The unfinished sentence about FOBO systems is covered by: failures, breaks, restatements, entitlement-gated viewing, and Helix remaining the processor.
 6. Oracle 19c and CEES remain the bank standards named in the current README.
 7. Excel templates are an **optional** binding, not a requirement for every report.
@@ -767,7 +767,7 @@ This document is the umbrella architecture. It is too large for a single impleme
 | 4 | Command dispatcher on the bus | 3 | Helix / Axiom receive `runId` commands; stale completions ignored |
 | 5 | SSO + CEES platform entitlements | 3 | Board and API hide unentitled outcomes |
 | 6 | Universe policies (`DECLARED` / `REFERENCE`) | 2, 3 | Book list is data, not `expected-count: 300` |
-| 7 | Report locators + unified viewer (WisMO / template) | 4 | Completed 15C3 / FOBO breaks open in-platform |
+| 7 | Report locators + unified viewer (Wijmo / template) | 4 | Completed 15C3 / FOBO breaks open in-platform |
 | 8 | Federated entitlement links | 5, 7 | Producer ACL decides `report.view`; fail closed |
 | 9 | Domain tenancy + delegated Admin | 2, 5 | A second division ships an outcome without a platform release |
 | 10 | Advisory LLM (why blocked / missing keys) | 5 | Entitled explanation on the card; never written as a fact |
@@ -939,13 +939,13 @@ Reports are **catalog entries on an outcome**, not ad-hoc uploads and not a seco
 | `catalogId` | `15C3_PACK` |
 | `outcomeId` | `REPORT_15C3` |
 | `title` | 15C3 official pack |
-| `binding` | `EXCEL_TEMPLATE` / `WISMO_GRID` / `WISMO_CHART` / `FILE` |
+| `binding` | `EXCEL_TEMPLATE` / `WIJMO_GRID` / `WIJMO_CHART` / `FILE` |
 | `templateId` | `TPL-15C3-US-v4` (optional) |
 | `ceesResource` | `report:15C3_PACK` |
 | `entitlementUrl` | Axiom distribution-list check (optional) |
 | `refresh` | `ON_COMPLETION` (default) — never polled |
 
-A FOBO outcome typically has `FOBO_BREAKS` (WisMO grid) and optionally `FOBO_MATERIAL_CHART` (WisMO chart). IFRS has `IFRS9_ECL` (template) and `IFRS9_MOVEMENTS` (grid).
+A FOBO outcome typically has `FOBO_BREAKS` (Wijmo grid) and optionally `FOBO_MATERIAL_CHART` (Wijmo chart). IFRS has `IFRS9_ECL` (template) and `IFRS9_MOVEMENTS` (grid).
 
 ### 26.2 What the user sees
 
@@ -955,7 +955,7 @@ A FOBO outcome typically has `FOBO_BREAKS` (WisMO grid) and optionally `FOBO_MAT
 - A **Reports** strip lists catalog entries for that outcome.
 - Each button is visible only if CEES `report.view` is true.
 - Buttons are disabled until the instance is `COMPLETED` (or `READY` for `NOTIFY_ONLY` packs that are themselves the artifact).
-- Click → entitlement decision (24.2) → WisMO / template viewer in-shell.
+- Click → entitlement decision (24.2) → Wijmo / template viewer in-shell.
 
 **My Reports (predefined gallery)**
 
@@ -965,7 +965,7 @@ A FOBO outcome typically has `FOBO_BREAKS` (WisMO grid) and optionally `FOBO_MAT
 
 **Viewer**
 
-- WisMO grid/chart for JSON/CSV locators (section 13).
+- Wijmo grid/chart for JSON/CSV locators (section 13).
 - Excel template merge for `EXCEL_TEMPLATE`.
 - Same viewer for FOBO breaks and regulatory packs — only the binding changes.
 
@@ -1036,7 +1036,7 @@ The Digital Workplace team owns the Now connector. One Finance publishes `onefin
 ### 28.2 Mobile UX (responsive web, opened from Now)
 
 - Cards and status only: question, 80/100, blocked reason, Explain (LLM).
-- **Open report** on phone: allowed for small WisMO charts and summaries; large 15C3 templates offer “Open on desktop” plus entitled download if `report.export` is granted.
+- **Open report** on phone: allowed for small Wijmo charts and summaries; large 15C3 templates offer “Open on desktop” plus entitled download if `report.export` is granted.
 - Override / re-run stay desktop (or a Now action that still posts a workflow event after CEES `override` / `rerun`).
 
 ### 28.3 Onboarding sequence (now)

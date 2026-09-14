@@ -84,7 +84,7 @@ flowchart LR
     Tower[Control Tower]
     Cockpit[Outcome cockpit]
     Gallery[My Reports]
-    Viewer[WisMO / template]
+    Viewer[Wijmo / template]
     Admin[Registry Admin]
     Now[Barclays Now tasks]
   end
@@ -193,7 +193,7 @@ Wire format is CloudEvents 1.0 + the generic payload (`contracts/generic-busines
   "runId": "RUN-A37C3728",
   "summary": "12 FOBO breaks, 3 above materiality",
   "result": {
-    "kind": "WISMO_GRID",
+    "kind": "WIJMO_GRID",
     "contentType": "application/json",
     "uri": "https://helix.internal/runs/RUN-A37C3728/breaks",
     "catalogId": "FOBO_BREAKS"
@@ -244,7 +244,7 @@ Twelve screens. That is the whole product. New “business kinds” add **cards 
 | 2 | **Outcome cockpit** (same chrome for every product) | Controller | 80/100 keys, named failures, override, re-run, Explain | `read` + verbs for actions |
 | 3 | **Lineage / event tape** | Controller / audit | Why this state; replay-safe | `read` |
 | 4 | **My Reports** | Reporter / controller | Predefined entitled gallery | `report.view` |
-| 5 | **Report viewer** | Same | WisMO / template / file | `view` + federated check |
+| 5 | **Report viewer** | Same | Wijmo / template / file | `view` + federated check |
 | 6 | **Inbox** | All | Milestones, ready, blocked, breach | audience = CEES group |
 | 7 | **Admin — Catalogue** | Platform | Event types, sources, schemas | `admin.read/publish` |
 | 8 | **Admin — Outcomes** | Outcome owner | Dependencies, universe, SLA, on-ready | maker-checker |

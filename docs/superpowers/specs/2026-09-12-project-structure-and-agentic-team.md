@@ -52,7 +52,7 @@ onefinux/                          # this repository, grown in place
 │       ├── hub/                   # Event store + translation + fold + snapshot + outbox
 │       ├── workflow/              # Command dispatcher / saga by runId
 │       ├── notification/          # inbox, email, Teams, Barclays Now
-│       ├── reports/               # locator fetch, WisMO/template assembly
+│       ├── reports/               # locator fetch, Wijmo/template assembly
 │       ├── registry/              # Admin API: catalogue, kits, maker-checker
 │       └── app/                   # Pilot composition root (wires modules in one JVM)
 │
@@ -111,7 +111,7 @@ platform/modules/hub/
   src/test/java/...  # table-driven fold tests (POC OutcomeEngineTest style)
 ```
 
-`domain` must not import `RestClient`, WisMO, CEES HTTP, or `FOBO`. ArchUnit CI fails the build if it does.
+`domain` must not import `RestClient`, Wijmo, CEES HTTP, or `FOBO`. ArchUnit CI fails the build if it does.
 
 ### 2.3 Pilot vs later extract
 
@@ -182,7 +182,7 @@ Put these in `.cursor/skills/` and own them like code.
 | `change-event-contract` | “New attribute / eventType” | Edit `contracts/` + examples + contract tests; regenerate `libs/events`. |
 | `fold-tdd` | “Readiness / revoke / runId” | Write table test in `hub` first; no Spring; no product id in the test name unless as data. |
 | `entitlement-check` | “Who can see this card/report” | CEES resource path + federated URL; fail closed; no ACL tables. |
-| `report-binding` | “WisMO / template / file” | Catalog row + locator; do not embed Helix HTML. |
+| `report-binding` | “Wijmo / template / file” | Catalog row + locator; do not embed Helix HTML. |
 | `no-product-branch` | Review | Reject `if ("FOBO".equals` / packages named `fobo`. |
 | `adapter-strangler` | “Team cannot notify us / we must read their feed” | New `adapters/<source>-feed/`; mapper + watermark; emit the generic envelope. Never poll the SoR. |
 | `advisory-llm` | “Explain why blocked” | `advisory/` only; entitled snapshot; never write a fact. |
