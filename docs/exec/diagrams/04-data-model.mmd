@@ -1,14 +1,19 @@
 erDiagram
   GROUP_UNIT ||--o{ PRODUCT_KIT : "contains"
   GROUP_UNIT ||--o{ SOURCE_SYSTEM : "binds"
+  GROUP_UNIT ||--o{ DESTINATION_SYSTEM : "binds"
   PRODUCT_KIT ||--o{ KIT_SOURCE : "requires"
+  PRODUCT_KIT ||--o{ KIT_DESTINATION : "targets"
+  PRODUCT_KIT ||--|| KIT_EMBED : "embeds"
   PRODUCT_KIT ||--o{ OUTCOME_INSTANCE : "produces"
   SOURCE_SYSTEM ||--o{ EVENT_STORE : "publishes"
   OUTCOME_INSTANCE ||--o{ EVENT_STORE : "correlates"
+  OUTCOME_INSTANCE ||--o{ READINESS_KEY : "folds"
   OUTCOME_INSTANCE ||--o{ ESCALATION : "raises"
   SOURCE_SYSTEM ||--o{ DEAD_LETTER : "quarantines"
   EVENT_ROUTE ||--o{ EVENT_OUTBOX : "governs"
   EVENT_STORE ||--o{ EVENT_OUTBOX : "fans out"
+  GROUP_UNIT ||--o{ OUTCOME_PROJECTION : "engine board"
 
   EVENT_STORE {
     string event_id PK
@@ -28,6 +33,23 @@ erDiagram
     string region
     string status
     timestamp updated_at
+  }
+  READINESS_KEY {
+    string instance_id FK
+    string source_id FK
+    string source_key
+    string key_status
+  }
+  KIT_EMBED {
+    string kit_id PK
+    string embed_url
+    string allowed_origin
+  }
+  OUTCOME_PROJECTION {
+    string instance_key PK
+    string outcome_id
+    string status
+    date   cob_date
   }
   EVENT_ROUTE {
     string route_id PK

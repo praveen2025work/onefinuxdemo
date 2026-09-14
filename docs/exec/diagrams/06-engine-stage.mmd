@@ -1,0 +1,14 @@
+stateDiagram-v2
+  direction LR
+  [*] --> NOT_STARTED
+  NOT_STARTED --> FEEDS: first matching fact
+  FEEDS --> READY: all feeds complete
+  FEEDS --> BLOCKED: a feed failed
+  BLOCKED --> FEEDS: feed recovered
+  READY --> PROCESSING: ActionExecutor runs
+  PROCESSING --> GENERATED: completion, no reportId
+  PROCESSING --> AVAILABLE: completion with reportId
+  PROCESSING --> FAILED: action failed
+  FAILED --> PROCESSING: re-run workflow
+  GENERATED --> [*]
+  AVAILABLE --> [*]

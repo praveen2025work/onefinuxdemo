@@ -2,19 +2,22 @@
 
 Proper, source-controlled **Mermaid** diagrams. They render natively on GitHub (below), and are also exported to crisp **SVG** (scalable, for slides) and **PNG** (2×) under [`diagrams/`](./diagrams). Edit the `.mmd` source and re-run [`render.sh`](./diagrams/render.sh) to regenerate.
 
+These diagrams match the as-built product: `frontend/web`, the two models (Outcome Engine + stitch kit), the live console routes, and the `ActionExecutor` registry. Static HTML under `docs/design/mockups/` and `docs/design/dreamliner/` is the earlier visual reference, not the live console.
+
 | # | Diagram | Source | Exports |
 |---|---|---|---|
 | 1 | Enterprise integration context | [`01-enterprise-context.mmd`](./diagrams/01-enterprise-context.mmd) | [svg](./diagrams/01-enterprise-context.svg) · [png](./diagrams/01-enterprise-context.png) |
 | 2 | Deployment / containers | [`02-deployment-containers.mmd`](./diagrams/02-deployment-containers.mmd) | [svg](./diagrams/02-deployment-containers.svg) · [png](./diagrams/02-deployment-containers.png) |
 | 3 | End-to-end event sequence | [`03-event-sequence.mmd`](./diagrams/03-event-sequence.mmd) | [svg](./diagrams/03-event-sequence.svg) · [png](./diagrams/03-event-sequence.png) |
 | 4 | Data model (ER) | [`04-data-model.mmd`](./diagrams/04-data-model.mmd) | [svg](./diagrams/04-data-model.svg) · [png](./diagrams/04-data-model.png) |
-| 5 | Outcome state machine | [`05-outcome-state.mmd`](./diagrams/05-outcome-state.mmd) | [svg](./diagrams/05-outcome-state.svg) · [png](./diagrams/05-outcome-state.png) |
+| 5 | Stitch kit state machine | [`05-outcome-state.mmd`](./diagrams/05-outcome-state.mmd) | [svg](./diagrams/05-outcome-state.svg) · [png](./diagrams/05-outcome-state.png) |
+| 6 | Outcome Engine stages | [`06-engine-stage.mmd`](./diagrams/06-engine-stage.mmd) | [svg](./diagrams/06-engine-stage.svg) · [png](./diagrams/06-engine-stage.png) |
 
 ---
 
 ## 1. Enterprise integration context
 
-How One Finance UX sits over an unchanged estate: sources publish facts through the edge/gateway onto the event bus; the runtime plane persists, translates, folds, acts, propagates and audits; the control plane governs; the experience plane is entitled.
+How One Finance UX sits over an unchanged estate: sources publish facts through the edge/gateway onto the event bus; the runtime plane persists, translates, folds, acts, propagates and audits; the control plane governs; the entitled console is `frontend/web`.
 
 ```mermaid
 flowchart TB
@@ -57,7 +60,7 @@ flowchart TB
     HUB["Event Hub<br/>idempotent · append-only · replay"]
     XL["Translation<br/>identity graph"]
     ENG["Outcome engine<br/>deterministic fold"]
-    WF["Workflow<br/>command dispatcher"]
+    WF["Workflow<br/>ActionExecutor registry"]
     OBX["Outbox relay"]
     NTF["Notification service"]
     ENT["Entitlement gateway (CEES)"]
@@ -75,10 +78,8 @@ flowchart TB
     PNL["P&L feed"]
   end
 
-  subgraph UX["Experience plane — entitled console"]
-    BOARD["Outcome board"]
-    OPS["Operations / RTB"]
-    MON["Monitoring"]
+  subgraph UX["Experience plane — entitled frontend/web"]
+    CONSOLE["Onboarding · Configuration · Drive<br/>Reports · Board · My outcomes<br/>Operations · Monitoring"]
   end
 
   Motif --> GW
@@ -112,26 +113,27 @@ flowchart TB
   REG --> ENG
   REG --> WF
   REG --> ENT
-  ENG --> BOARD
-  ENT --> BOARD
-  ENT --> MON
-  HUB --> MON
-  OBX --> MON
-  AUD --> MON
-  OPS --> HUB
+  ENG --> CONSOLE
+  ENT --> CONSOLE
+  HUB --> CONSOLE
+  OBX --> CONSOLE
+  AUD --> CONSOLE
+  CONSOLE --> HUB
 
   class Motif,CATS,MBR,Helix,RAMP,SAP,GMIS,Castle,FinStore,Axiom sor
   class GW,ADP edge
   class HUB,XL,ENG,WF,OBX,NTF,ENT run
   class ES,OB,AUD store
   class ARC,FS,PNL down
-  class BOARD,OPS,MON ux
+  class CONSOLE ux
   class ADMIN,REG,MK ctrl
 ```
 
+---
+
 ## 2. Deployment / containers
 
-The three deployables in the POC and how they talk. Persistence is H2 (file) for the POC and Oracle 19c in production.
+The three deployables in the POC and how they talk. Persistence is H2 (file) for the POC and Oracle 19c in production. The console lives in `frontend/web`.
 
 ```mermaid
 flowchart LR
@@ -141,17 +143,17 @@ flowchart LR
   classDef store fill:#eef7f0,stroke:#3f9d63,color:#12492a;
 
   subgraph WEB["frontend/web · React 18 + Vite · :5173"]
-    UI["Console SPA<br/>board · ops · monitoring"]
+    UI["Console SPA<br/>onboard · config · drive · reports<br/>board · outcomes · ops · monitoring"]
     SSE["SSE client /api/stream"]
   end
 
   subgraph HUB["onefinux-hub · Spring Boot 3.5 / Java 21 · :7070"]
     direction TB
     EAPI["EventController<br/>POST /api/events"]
-    OAPI["OutcomeController<br/>GET /api/outcomes"]
+    OAPI["OutcomeController<br/>GET/POST /api/outcomes"]
     SAPI["StitchController<br/>/api/stitch/*"]
     MAPI["MonitorController<br/>/api/stitch/monitor/*"]
-    CORE["Outcome engine · translation · workflow<br/>propagation relay · notifications"]
+    CORE["Outcome engine · ActionExecutor<br/>translation · workflow · outbox"]
     STR["StreamHub (SSE broadcast)"]
   end
 
@@ -183,9 +185,11 @@ flowchart LR
   class DB store
 ```
 
+---
+
 ## 3. End-to-end event sequence
 
-A fact's full journey — receive → translate → fold → act (Helix round-trip) → propagate (outbox) → audit → notify. No polling anywhere.
+A fact's full journey — receive → translate → fold → act (`ActionExecutor`) → propagate (outbox) → audit → notify. No polling anywhere.
 
 ```mermaid
 sequenceDiagram
@@ -194,12 +198,12 @@ sequenceDiagram
   participant HUB as Event Hub
   participant XL as Translation
   participant ENG as Outcome Engine
-  participant WF as Workflow
+  participant WF as ActionExecutor
   participant HX as Helix
   participant OBX as Outbox Relay
   participant DWN as Downstream (Archive/FinStore/PnL)
   participant AUD as Audit Log
-  participant UX as Console (SSE)
+  participant UX as frontend/web (SSE)
 
   SRC->>HUB: publish fact (idempotent on eventId)
   HUB->>XL: translate source key to business id
@@ -208,32 +212,39 @@ sequenceDiagram
   HUB-)OBX: enqueue outbox rows (one per matching route)
   OBX->>DWN: POST CloudEvents 1.0 (at-least-once)
   DWN-->>OBX: 2xx (subscriber de-dupes on eventId)
-  ENG->>WF: outcome READY with action
+  ENG->>WF: onReady.action (HTTP_COMMAND / LOG_COMMAND)
   WF->>HX: command run analysis (+ callback url)
   HX->>HUB: echo HELIX_ANALYSIS_COMPLETE (RUN-A37C)
   ENG-->>UX: outcome state via SSE
   Note over UX,ENG: controller reviews and signs off
-  UX->>ENG: sign-off command
+  UX->>ENG: POST /api/stitch/instance/action
   ENG->>AUD: append audit (who / when / what / why)
   ENG-->>UX: notification via SSE
 ```
 
+---
+
 ## 4. Data model (ER)
 
-The append-only spine: `event_store` (facts), `outcome_instance` (the fold), the propagation tables (`event_route`, `event_outbox`), and `audit_log`, plus onboarding (`product_kit`, `kit_source`) and RTB (`escalation`, `dead_letter`).
+The append-only spine plus the as-built stitch kit (`kit_destination`, `kit_embed`, `readiness_key`) and the engine board snapshot (`outcome_projection`).
 
 ```mermaid
 erDiagram
   GROUP_UNIT ||--o{ PRODUCT_KIT : "contains"
   GROUP_UNIT ||--o{ SOURCE_SYSTEM : "binds"
+  GROUP_UNIT ||--o{ DESTINATION_SYSTEM : "binds"
   PRODUCT_KIT ||--o{ KIT_SOURCE : "requires"
+  PRODUCT_KIT ||--o{ KIT_DESTINATION : "targets"
+  PRODUCT_KIT ||--|| KIT_EMBED : "embeds"
   PRODUCT_KIT ||--o{ OUTCOME_INSTANCE : "produces"
   SOURCE_SYSTEM ||--o{ EVENT_STORE : "publishes"
   OUTCOME_INSTANCE ||--o{ EVENT_STORE : "correlates"
+  OUTCOME_INSTANCE ||--o{ READINESS_KEY : "folds"
   OUTCOME_INSTANCE ||--o{ ESCALATION : "raises"
   SOURCE_SYSTEM ||--o{ DEAD_LETTER : "quarantines"
   EVENT_ROUTE ||--o{ EVENT_OUTBOX : "governs"
   EVENT_STORE ||--o{ EVENT_OUTBOX : "fans out"
+  GROUP_UNIT ||--o{ OUTCOME_PROJECTION : "engine board"
 
   EVENT_STORE {
     string event_id PK
@@ -253,6 +264,23 @@ erDiagram
     string region
     string status
     timestamp updated_at
+  }
+  READINESS_KEY {
+    string instance_id FK
+    string source_id FK
+    string source_key
+    string key_status
+  }
+  KIT_EMBED {
+    string kit_id PK
+    string embed_url
+    string allowed_origin
+  }
+  OUTCOME_PROJECTION {
+    string instance_key PK
+    string outcome_id
+    string status
+    date   cob_date
   }
   EVENT_ROUTE {
     string route_id PK
@@ -281,9 +309,11 @@ erDiagram
   }
 ```
 
-## 5. Outcome state machine
+---
 
-The deterministic fold every outcome instance follows. Human commands (sign-off, publish, escalate) are audited; upstream restatement revokes readiness.
+## 5. Stitch kit state machine
+
+Human work on a console kit instance (`outcome_instance.status`). Sign-off, publish and escalate are audited; upstream restatement revokes readiness.
 
 ```mermaid
 stateDiagram-v2
@@ -302,4 +332,27 @@ stateDiagram-v2
   READY --> REVOKED: upstream restated
   POSTED --> [*]
   REVOKED --> NOT_YET: re-open
+```
+
+---
+
+## 6. Outcome Engine stages
+
+Derived `stage` on an engine outcome (`OutcomeInstance.stage()`). Report-like completions with a `reportId` become `AVAILABLE`; otherwise `GENERATED`.
+
+```mermaid
+stateDiagram-v2
+  direction LR
+  [*] --> NOT_STARTED
+  NOT_STARTED --> FEEDS: first matching fact
+  FEEDS --> READY: all feeds complete
+  FEEDS --> BLOCKED: a feed failed
+  BLOCKED --> FEEDS: feed recovered
+  READY --> PROCESSING: ActionExecutor runs
+  PROCESSING --> GENERATED: completion, no reportId
+  PROCESSING --> AVAILABLE: completion with reportId
+  PROCESSING --> FAILED: action failed
+  FAILED --> PROCESSING: re-run workflow
+  GENERATED --> [*]
+  AVAILABLE --> [*]
 ```

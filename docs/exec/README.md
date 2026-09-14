@@ -6,7 +6,7 @@ Material for demonstrating One Finance UX to a Managing Director / CIO audience.
 |---|---|
 | [`executive-brief.md`](./executive-brief.md) | The narrative: problem, what they'll see, a value model (plug in your numbers), architecture-at-a-glance, roadmap, the ask, and a CIO FAQ. |
 | [`demo-runsheet.md`](./demo-runsheet.md) | Facilitator script: a 5-min **MD business story** and a 10-min **CIO deep-dive**, with the exact click path, talking points, and fallbacks. |
-| [`architecture.md`](./architecture.md) | The **diagram set** — proper Mermaid (renders on GitHub) exported to SVG/PNG: enterprise integration context, deployment/containers, end-to-end event sequence, data model (ER), and outcome state machine. Source under [`diagrams/`](./diagrams); regenerate with [`diagrams/render.sh`](./diagrams/render.sh). |
+| [`architecture.md`](./architecture.md) | The **diagram set** — proper Mermaid (renders on GitHub) exported to SVG/PNG: enterprise context, deployment (`frontend/web`), event sequence, data model, stitch kit states, and Outcome Engine stages. Source under [`diagrams/`](./diagrams); regenerate with [`diagrams/render.sh`](./diagrams/render.sh). |
 
 Supporting assets already in the repo:
 
