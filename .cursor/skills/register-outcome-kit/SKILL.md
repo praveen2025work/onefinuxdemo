@@ -5,33 +5,30 @@ description: Use when adding or changing a business product or outcome (FOBO rec
 
 # Register an outcome kit
 
-A product is **YAML**. The tower, fold, SSE, and Wijmo host do not change.
+A product is **data**. Two registration paths, matching the two models.
 
-## Kit fields
+## Outcome Engine (business question)
 
-`groupUnitId`, `productId`, `domain`, `question`, `ingest[]`, `universe`, `sla`, `onReady`, `reports[]`, `cees`, `renderer`, `userActions`, optional `embed.url` + `embed.allowedOrigin`
+Use **Onboarding** (`/onboarding`) or `POST /api/outcomes/definitions`.
 
-`renderer`: `HELIX_RECON` | `ENGINE_REPORT` | `GRID_PACK` | `NOTIFY_MILESTONE` | `ANALYST_VIEW`
+Required: `id`, `name`, `question`, at least one feed (`eventType`, `sourceSystem`, `expectedCount`, `label`). Optional: regions, ownerGroup, SLA (`withinMinutes` or `cutoff` + `dayOffset`), `onReady` (`NOTIFY_ONLY` or a registered `ActionExecutor` type such as `HTTP_COMMAND` / `LOG_COMMAND`).
 
-## Add a product
+The instance appears on Board, Reports and Configuration for the given COB. No new Java type.
 
-1. Group unit exists (`groupUnits/<id>.yaml`).
-2. `products/<id>/v1/product.yaml` — no new Java type.
-3. Bind sources/destinations (`bind-source-destination`).
-4. Optional `embed` (partner screen) and/or dataset + Wijmo view.
-5. Maker-checker publish. User card appears for CEES `groupUnit` + `product`.
+## Stitch console kit (human work)
+
+Use `POST /api/stitch/kits` with `kitId`, `question`, `renderer`, `userActions`, sources, destinations, optional embed.
+
+New human verb = add it to `userActions`. The console renders a button; `POST /api/stitch/instance/action` handles it. No new endpoint.
 
 ## FOBO first kit (copy shape, not code)
 
-- Question: Can I execute this rec?
-- Ingest: CATS, MOTIF, MBR/Rec Factory as FEED
-- On ready: COMMAND Helix; then optional FAS post; NOTIFY P&L
-- Report: partner FOBO tower via `embed.url`, or Wijmo breaks
-- Renderer: `HELIX_RECON`
+- Engine outcome `FOBO_HELIX`: feed `MASTERBOOK_READY` / MOTIF; on ready `HTTP_COMMAND` → Helix.
+- Console kit `FOBO`: sources CATS, MOTIF, MBR; actions `SIGN_OFF,POST,AMEND`; embed Helix.
 
 ## Forbidden
 
 - `products/fobo/` as a Maven module
 - Per-product skills (`fobo-recon`, `15c3-pack`)
-- `if (renderer)` exploding into product names inside the fold — renderer selects a **view**, fold stays generic
+- `if (renderer)` or `if (FOBO)` inside the fold
 ---

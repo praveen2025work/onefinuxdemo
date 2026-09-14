@@ -1,6 +1,6 @@
 # BRD — One Finance UX (for the architecture group)
 
-Owner: Praveen Kumar · Status: for review · Companion to `docs/One_Finance_UX_BRD.docx` (kept as the long-form archive).
+Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `docs/brd.md` and `docs/One_Finance_UX_BRD.docx` (long-form archive).
 
 This is the short version. Three pages. It says what we are solving, what we unify, what the CEO-level sees, what the developers build, and how we keep everyone agreeing on the same design.
 
@@ -21,8 +21,8 @@ So a head cannot see Ready/Blocked without asking. A user cannot sign off a **na
 One platform, one shape, applied to every outcome:
 
 - **Group unit** — the onboarding tenant (Revenue Accounting, Product Control, ...).
-- **Product kit** — the outcome recipe as data: its question, its sources, its destinations, its renderer, its user actions. FOBO is the first kit. There is no FOBO code path.
-- **Outcome instance** — the stitch. One row for one COB, one region, one slice, one run. This is the product.
+- **Two complementary models, both data-driven.** The **Outcome Engine** folds a business question over named feeds, an SLA and an on-ready action (15C3, PnL, month-end, FOBO analysis). The **Stitch console kit** hosts the human work — sources, destinations, embed, sign-off / post / kit-declared verbs. FOBO is the first kit. There is no FOBO code path.
+- **Outcome instance** — the stitch. One row for one COB, one region, one slice, one run. This is the product the controller acts on.
 
 Origins stay origins. Destinations stay destinations. We do **not** rebuild Helix or MOTIF. We stitch their facts into one instance and fold readiness over it.
 
@@ -53,12 +53,14 @@ flowchart LR
 
 ## 3. What the CEO-level team looks at
 
-One shell. Traffic lights. For each entitled group unit:
+**Outcome board** (`/board`) is the management screen for a CIO, MD or business-unit head. One shell. Traffic lights. For each entitled group unit:
 
-- Outcome name, renderer, status word (NOT_YET / READY / BLOCKED / CLEARED / DELAYED).
-- SLA / delay flag and escalation count.
+- Outcome name, question, status word (NOT_YET / READY / BLOCKED / CLEARED / DELAYED).
+- Readiness meter, named blocker, SLA / delay flag and escalation count.
 
-No book grid. No "how many Kafka messages." No engine internals. A head who is also a user can drill into the outcome; a head-only role sees only the board.
+No book grid. No "how many Kafka messages." No engine internals. A head who is also a user can drill into the outcome; a head-only role stays on the board.
+
+The same shell is **mobile-friendly** (rail collapses, grids stack, tables scroll). The management board and My outcomes are the first surfaces intended for a phone between meetings. A native app can wrap this shell later — the job does not change.
 
 ## 4. What the development teams look at
 
@@ -73,8 +75,8 @@ No book grid. No "how many Kafka messages." No engine internals. A head who is a
 
 Two artefacts are the single source of truth, and every team measures against them:
 
-- **Visual truth** — `docs/design/mockups/` (the console) and `experience/theme/onefinux-tokens.css` (the theme other teams copy).
-- **Data truth** — `docs/schema/onefinux-stitch.sql` (the entities and relationships) plus `contracts/openapi.yaml` (how the APIs are called).
+- **Visual truth** — `experience/web/` (the live React console; Barclays Cerulean `#00aeef` + Astronaut Blue `#00395d`) and `docs/design/mockups/` (the earlier static reference).
+- **Data truth** — Flyway schema under `onefinux-hub/src/main/resources/db/migration/` plus the Outcome Engine definitions (`application.yml` and `POST /api/outcomes/definitions`).
 
 And one worked example that must be identical in every screen, query and event:
 
@@ -89,18 +91,20 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 
 **In the demo build (a real, working slice):**
 
-- REV-ACC + FOBO kit + two instances, driven live by the stub simulator.
+- React console at `experience/web` — Home, Onboarding, Configuration, Drive, Reports, Outcome board, My outcomes, Operations, Monitoring.
+- Outcome Engine with runtime onboard; 15C3 report lifecycle (feeds → ready → processing → generated → available).
+- REV-ACC + FOBO kit + two instances, driven live from **Drive** (product pages stay view-only).
+- Sign-off / post / escalate / kit-declared verbs (e.g. AMEND) that persist and change the fold.
+- Pluggable capabilities: `ActionExecutor` registry on outcomes; generic stitch action gated by `userActions`.
 - Working COB date, region, filters, notification inbox, live activity over SSE.
-- Sign-off / post / escalate that persist and change the fold.
-- Analyst explorer over the already-bound origins, with saveable views.
-- Onboard a second kit as data — no new code.
+- Barclays brand theme; mobile-collapsing shell.
 
 **Deferred, but designed here:**
 
 - Real Kafka / Solace and FEED watermarks against production topics.
 - Real CEES entitlements (the demo ships a fail-open local stub; the contract is fail-closed).
-- Live Helix / FAS (the demo keeps the mocks on port 7081).
-- Barclays Now channel and the full React `experience/web/` rewrite.
+- Live Helix / FAS / Axiom (the demo keeps the mocks on port 7081).
+- Barclays Now channel and a native mobile wrapper of the same shell.
 
 ## 7. Non-functionals we commit to
 
@@ -111,9 +115,9 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 
 ## 8. What we are asking the architecture group to agree
 
-1. The three-entity model (group unit → kit → instance) and the stitch keys above.
+1. The two models (Outcome Engine + Stitch kit) sharing one event backbone, and the stitch keys above.
 2. Transport rule: bus for systems, SSE + REST for browsers, never Kafka in the browser.
-3. Kits as data; no product-named code or modules.
+3. Capabilities as data + registries; no product-named code or modules.
 4. The phased scope line in section 6.
 
 Once these are agreed, the application BRD (`docs/brd/application.md`) is the builder's document.
