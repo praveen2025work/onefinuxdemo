@@ -10,7 +10,8 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 | Route | Creates / shows | Does not |
 |---|---|---|
-| `/product` | Product guide: architecture, how it works, screens & setup | Live outcomes or Drive |
+| `/` Home | Morning glance + **opt-in View** (developer / architect / controller / head / rtb / maker / all) | Scenario buttons |
+| `/product` | Product guide: start path, architecture, how it works, screens & setup, how we review | Live outcomes or Drive |
 | `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |
@@ -40,5 +41,6 @@ Below 820px the rail collapses to icons; grids stack; tables scroll horizontally
 - Collapse the two models into one without a presentation binding design.
 - Add `if (FOBO)` or a per-product module.
 - Treat Configuration as a create form (that is Onboarding).
+- Treat a View as entitlement (that is CEES; a view only hides nav).
 - Jump screens in an exec demo — hold each surface long enough to read.
 - Ship a day-one Analyst explorer (that is later, Wijmo).

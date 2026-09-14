@@ -110,7 +110,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* ---- main ---- */
 .main { display: flex; flex-direction: column; min-width: 0; }
 .topbar {
-  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 9px;
+  position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 9px; flex-wrap: wrap;
   padding: 10px 22px; background: var(--surface);
   border-bottom: 1px solid var(--stroke);
 }
@@ -252,9 +252,13 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 
 /* ---- role cards / outcome cards ---- */
 .oc { display: block; padding: 15px; border-radius: 8px; background: var(--raised); border: 1px solid var(--stroke); cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; }
+button.oc { width: 100%; text-align: left; font: inherit; color: inherit; }
 .oc:hover { border-color: var(--stroke-2); box-shadow: var(--shadow); }
+.oc.on { border-color: color-mix(in srgb, var(--accent) 55%, var(--stroke)); box-shadow: inset 3px 0 0 var(--accent); }
 .oc h3 { margin: 8px 0 4px; font-size: 16px; }
 .oc .q { margin: 0; color: var(--muted); font-size: 13px; }
+.view-picks .oc { padding: 12px 13px; }
+.view-picks .oc h3 { font-size: 14.5px; }
 .oc-hd { display: flex; align-items: center; gap: 9px; }
 
 /* ---- activity timeline ---- */
@@ -279,6 +283,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .banner.ok { border-color: color-mix(in srgb, var(--ok) 45%, var(--stroke)); background: color-mix(in srgb, var(--ok) 12%, var(--surface)); }
 .banner.warn { border-color: color-mix(in srgb, var(--warn) 45%, var(--stroke)); background: color-mix(in srgb, var(--warn) 12%, var(--surface)); }
 .banner.fail { border-color: color-mix(in srgb, var(--fail) 45%, var(--stroke)); background: color-mix(in srgb, var(--fail) 12%, var(--surface)); }
+.banner.info { border-color: color-mix(in srgb, var(--accent) 45%, var(--stroke)); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
 .banner b { display: block; }
 .banner .mono-sm { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
 

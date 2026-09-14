@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { api } from './api';
 import { useStream } from './useStream';
+import { persistView, readStoredView, viewById } from './views.js';
 
 const Ctx = createContext(null);
 
@@ -18,6 +19,7 @@ export function AppProvider({ children }) {
   const [unread, setUnread] = useState(0);
   const [live, setLive] = useState(false);
   const [toast, setToast] = useState(null);
+  const [viewId, setViewId] = useState(readStoredView);
 
   const loadContext = useCallback(async () => {
     const c = await api.context();
@@ -67,11 +69,13 @@ export function AppProvider({ children }) {
 
   const setFilters = useCallback((patch) => setFiltersState((f) => ({ ...f, ...patch })), []);
   const markRead = useCallback(() => setUnread(0), []);
+  const setView = useCallback((id) => setViewId(persistView(id)), []);
+  const view = viewById(viewId);
 
   const value = useMemo(() => ({
     context, filters, setFilters, instances, notifications, unread, live, toast,
-    refreshInstances, refreshNotifications, markRead,
-  }), [context, filters, setFilters, instances, notifications, unread, live, toast, refreshInstances, refreshNotifications, markRead]);
+    refreshInstances, refreshNotifications, markRead, view, setView,
+  }), [context, filters, setFilters, instances, notifications, unread, live, toast, refreshInstances, refreshNotifications, markRead, view, setView]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { outcomesApi } from '../api';
+import { useApp } from '../store.jsx';
 import { StatusPill, Meter, Loading } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import { viewIncludes } from '../views.js';
 
 // The five stages a report walks through: feeds arriving → ready → processing → generated → available.
 const STEPS = [
@@ -96,6 +98,7 @@ function ReportModal({ outcome, onClose }) {
 }
 
 export default function Reports() {
+  const { view } = useApp();
   const [outcomes, setOutcomes] = useState(null);
   const [open, setOpen] = useState(null);
 
@@ -121,7 +124,7 @@ export default function Reports() {
           </h1>
         </div>
         <div className="ph-actions">
-          <Link className="btn ghost" to="/drive"><Icon name="bolt" size={15} /> Drive a scenario</Link>
+          <Link className="btn ghost" to="/board">Open Board</Link>
         </div>
       </div>
 
@@ -170,7 +173,13 @@ export default function Reports() {
             </div>
           );
         })}
-        {outcomes.length === 0 && <div className="empty">No report outcomes yet. Open the <Link to="/drive">Drive screen</Link> to run the 15C3 feeds.</div>}
+        {outcomes.length === 0 && (
+          <div className="empty">
+            {viewIncludes(view, '/drive')
+              ? <>No report outcomes yet. Open the <Link to="/drive">Drive screen</Link> to run the 15C3 feeds.</>
+              : <>No report outcomes yet. Switch View to Developer (or All) and drive the 15C3 feeds — Drive is not on this view.</>}
+          </div>
+        )}
       </div>
 
       {open && <ReportModal outcome={open} onClose={() => setOpen(null)} />}

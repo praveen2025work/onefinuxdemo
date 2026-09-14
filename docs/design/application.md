@@ -77,8 +77,8 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 | Route | Job | Who |
 |---|---|---|
-| `/` Home | Morning glance: ready / blocked / escalations | Everyone |
-| `/product` | Product, architecture diagrams, how it works, screens & setup | Everyone |
+| `/` Home | Morning glance + opt-in View (filters rail; not entitlement) | Everyone |
+| `/product` | Product, start path, architecture, how it works, screens, how we review PRs | Everyone |
 | `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready) | Maker |
 | `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
@@ -92,6 +92,8 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 **Outcome board vs My outcomes.** Same tenant-scoped instance list. Board is the supervisor table (status filter, blockers, escalation counts). My outcomes is the doer's card worklist. Both drill to Instance detail.
 
 **Onboarding vs Configuration.** Onboarding *creates*. Configuration *inspects and governs* (pick an outcome or kit on the left; anatomy on the right).
+
+**Views.** Home and the top-bar View select persist `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail and Home start cards. It is not CEES. New-developer write-up: `start.md` and `/product?tab=start`.
 
 **Mobile.** The shell collapses the rail below 820px; grids stack; tables scroll. The management board and My outcomes are the first surfaces intended for a phone between meetings.
 

@@ -4,16 +4,10 @@ import { useApp } from '../store.jsx';
 import { api } from '../api';
 import { StatusPill, Meter } from '../components/bits.jsx';
 import InfoHint from '../components/InfoHint.jsx';
-
-const ROLES = [
-  { to: '/board', title: 'Outcome board', q: 'Ready, blocked, delayed and escalation counts for the whole unit.', tag: 'Read only', cls: 'plain' },
-  { to: '/outcomes', title: 'My outcomes', q: 'Agents already ran. Open the ready output, sign off or post.', tag: 'user', cls: 'ok' },
-  { to: '/operations', title: 'Operations console', q: 'Delays, escalations, dead letters and dual-control replay.', tag: 'RTB', cls: 'warn' },
-  { to: '/onboarding', title: 'Onboard a kit', q: 'Bind known origins, register the kit as data, set the embed.', tag: 'maker-checker', cls: 'bo' },
-];
+import { VIEWS, viewIncludes } from '../views.js';
 
 export default function Home() {
-  const { instances, filters, refreshInstances } = useApp();
+  const { instances, filters, refreshInstances, view, setView } = useApp();
   const [events, setEvents] = useState([]);
   const navigate = useNavigate();
 
@@ -39,9 +33,9 @@ export default function Home() {
           </h1>
         </div>
         <div className="ph-actions">
+          <Link className="btn ghost" to="/product?tab=start">Start developing</Link>
           <Link className="btn ghost" to="/product">Product guide</Link>
           <button className="btn ghost" onClick={() => refreshInstances()}>↻ Refresh fold</button>
-          <Link className="btn" to="/drive">▶ Drive a scenario</Link>
         </div>
       </div>
 
@@ -56,10 +50,32 @@ export default function Home() {
       <div className="split">
         <div>
           <div className="panel">
-            <div className="panel-hd"><h2>Pick up where your job starts</h2><span className="hint">CEES decides which you can open</span></div>
+            <div className="panel-hd">
+              <h2>Opt in to one view
+                <InfoHint title="Views are not entitlement" width={320}>
+                  A view only hides nav and these start cards. It is not CEES. Unentitled instances still return 404. Pick <b>All screens</b> to see every route.
+                </InfoHint>
+              </h2>
+              <span className="hint">{view.label}</span>
+            </div>
+            <div className="panel-bd">
+              <div className="grid g3 view-picks">
+                {VIEWS.map((v) => (
+                  <button key={v.id} type="button" className={'oc' + (view.id === v.id ? ' on' : '')} onClick={() => setView(v.id)}>
+                    <div className="oc-hd"><span className={'pill ' + v.cls}>{v.tag}</span></div>
+                    <h3>{v.label}</h3>
+                    <p className="q">{v.job}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="panel">
+            <div className="panel-hd"><h2>Pick up where this view starts</h2><span className="hint">{view.who}</span></div>
             <div className="panel-bd">
               <div className="grid g2">
-                {ROLES.map((r) => (
+                {view.starts.map((r) => (
                   <Link key={r.to} to={r.to} className="oc">
                     <div className="oc-hd"><span className={'pill ' + r.cls}>{r.tag}</span></div>
                     <h3>{r.title}</h3>
@@ -108,7 +124,13 @@ export default function Home() {
                     <div className="d">{e.eventType} · {e.ingestOffset || e.region}</div>
                   </div>
                 ))}
-                {events.length === 0 && <div className="empty">No live facts yet. Open the <Link to="/drive">Drive screen</Link> to run a scenario.</div>}
+                {events.length === 0 && (
+                  <div className="empty">
+                    {viewIncludes(view, '/drive')
+                      ? <>No live facts yet. Open the <Link to="/drive">Drive screen</Link> to run a scenario.</>
+                      : <>No live facts yet. Switch View to Developer (or All) and drive a scenario — Drive is not on this view.</>}
+                  </div>
+                )}
               </div>
             </div>
           </div>

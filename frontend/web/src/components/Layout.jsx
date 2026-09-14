@@ -4,6 +4,7 @@ import { useApp } from '../store.jsx';
 import Icon, { BrandMark } from './Icon.jsx';
 import Select from './Select.jsx';
 import DatePicker from './DatePicker.jsx';
+import { VIEWS, filterNav } from '../views.js';
 
 const NAV = [
   { grp: 'Console', items: [
@@ -36,7 +37,8 @@ function toggleTheme() {
 }
 
 export default function Layout({ children }) {
-  const { context, filters, setFilters, instances, notifications, unread, live, toast, markRead } = useApp();
+  const { context, filters, setFilters, instances, notifications, unread, live, toast, markRead, view, setView } = useApp();
+  const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
   const navigate = useNavigate();
@@ -85,7 +87,7 @@ export default function Layout({ children }) {
           </button>
         </div>
         <nav className="rail-nav">
-          {NAV.map((section) => (
+          {nav.map((section) => (
             <div key={section.grp} className="nav-sec">
               <div className="nav-grp">{section.grp}</div>
               {section.items.map((it) => (
@@ -118,6 +120,8 @@ export default function Layout({ children }) {
             onChange={(v) => setFilters({ cobDate: v })} />
           <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
             options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
+          <Select variant="header" caption="View" icon="grid" value={view.id} onChange={setView}
+            options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
           <div className="bell-wrap" ref={bellRef}>
             <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications">
               <Icon name="bell" size={18} />
@@ -155,6 +159,7 @@ export default function Layout({ children }) {
           <span className="ctx"><span className="k">ready</span><span className="v ok">{ready}</span></span>
           <span className="ctx"><span className="k">blocked</span><span className="v fail">{blocked}</span></span>
           <span className="ctx"><span className="k">escalations</span><span className="v">{esc}</span></span>
+          <span className="ctx"><span className="k">view</span><span className="v">{view.label}</span></span>
         </div>
 
         <main className="body"><div className="wrap">{children}</div></main>

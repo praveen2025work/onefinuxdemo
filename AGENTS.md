@@ -3,7 +3,8 @@
 Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 
 Visual truth: `frontend/web` (live React console; solid finance dashboard, Cerulean `#00aeef` accent, charcoal canvas).  
-Design folder (only one): [`docs/design/`](docs/design/README.md).
+Design folder (only one): [`docs/design/`](docs/design/README.md).  
+New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and console `/product?tab=start`.
 
 ## Jobs → skills
 
@@ -29,3 +30,11 @@ Design folder (only one): [`docs/design/`](docs/design/README.md).
 - Drive / scenario buttons on Home or Reports
 - LLM on the readiness path
 - Kafka in the browser
+
+## Views
+
+Home and the top-bar **View** select persist `localStorage['ofx-view']`. Options: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail and Home start cards. It is **not** CEES. Instance detail stays reachable from a row.
+
+## Code review
+
+GitHub PR against `main`. CI: `mvn -B verify` + `frontend/web` `npm ci && npm run build`. No CODEOWNERS. Review against this Never list and the skill for the job that changed.
