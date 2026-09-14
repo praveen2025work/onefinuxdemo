@@ -33,7 +33,7 @@ Cerulean `#00aeef` accent. Charcoal canvas `#0b1220`, opaque cards, dark navy ra
 
 ## Mobile
 
-Below 820px the rail collapses to icons; grids stack; tables scroll horizontally. Management and worklist screens are first-class on a phone. A native app can wrap this shell; do not build a second product.
+Below 820px the left rail is an overlay drawer (hamburger). A labelled bottom nav (five primary destinations; the rest stay in the drawer) is the way to move. Grids stack; tables swipe sideways. On a phone the report flow stacks vertically so stage names stay readable. Predicted-ready clocks use 24-hour time. A native app can wrap this shell; do not build a second product.
 
 ## What not to do
 

@@ -8,24 +8,24 @@ import { VIEWS, filterNav } from '../views.js';
 
 const NAV = [
   { grp: 'Console', items: [
-    { to: '/', label: 'Home', icon: 'home', end: true },
-    { to: '/product', label: 'Product', icon: 'book' },
-    { to: '/board', label: 'Outcome board', icon: 'board' },
-    { to: '/outcomes', label: 'My outcomes', icon: 'cards', badge: 'assigned' },
-    { to: '/reports', label: 'Reports', icon: 'report' },
+    { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
+    { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
+    { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
+    { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
+    { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
   ] },
   { grp: 'Operate', items: [
-    { to: '/operations', label: 'Operations', icon: 'ops', badge: 'esc' },
+    { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },
   ] },
   { grp: 'Observe', items: [
-    { to: '/monitoring', label: 'Monitoring', icon: 'activity' },
+    { to: '/monitoring', label: 'Monitoring', short: 'Monitor', icon: 'activity' },
   ] },
   { grp: 'Build', items: [
-    { to: '/onboarding', label: 'Onboarding', icon: 'build' },
-    { to: '/configuration', label: 'Configuration', icon: 'config' },
+    { to: '/onboarding', label: 'Onboarding', short: 'Onboard', icon: 'build' },
+    { to: '/configuration', label: 'Configuration', short: 'Config', icon: 'config' },
   ] },
   { grp: 'Testing', items: [
-    { to: '/drive', label: 'Drive scenarios', icon: 'bolt' },
+    { to: '/drive', label: 'Drive scenarios', short: 'Drive', icon: 'bolt' },
   ] },
 ];
 
@@ -86,7 +86,7 @@ export default function Layout({ children }) {
   const regions = context?.regions || [];
   const groupUnits = context?.groupUnits || [];
 
-  const bottomItems = nav.flatMap((section) => section.items);
+  const bottomItems = nav.flatMap((section) => section.items).slice(0, 5);
 
   return (
     <div className={'app' + (collapsed ? ' collapsed' : '') + (drawer ? ' drawer-open' : '')}>
@@ -186,7 +186,7 @@ export default function Layout({ children }) {
         {bottomItems.map((it) => (
           <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => (isActive ? 'on' : '')}>
             <Icon name={it.icon} size={18} />
-            <span>{it.label}</span>
+            <span>{it.short || it.label}</span>
           </NavLink>
         ))}
       </nav>

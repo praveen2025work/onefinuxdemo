@@ -31,6 +31,7 @@ export default function Board() {
         <div className="panel-hd"><h2>{filters.groupUnit} · COB {filters.cobDate} · {filters.region || 'all regions'}</h2><span className="hint">v_head_board</span></div>
         <div className="panel-bd tight">
           <div className="tbl-wrap">
+            <p className="swipe-hint muted">On a phone, swipe the table sideways to reach status, blocker, and Open.</p>
             <table className="tbl">
               <thead><tr><th>Kit / question</th><th>Instance</th><th>Region</th><th>Readiness</th><th>Status</th><th>Blocker</th><th className="num">Esc.</th><th /></tr></thead>
               <tbody>

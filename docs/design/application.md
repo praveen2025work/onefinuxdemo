@@ -95,7 +95,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 **Views.** Home and the top-bar View select persist `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail and Home start cards. It is not CEES. New-developer write-up: `start.md` and `/product?tab=start`.
 
-**Mobile.** Below 820px the left rail is an overlay drawer (hamburger in the top bar). A labelled bottom nav is the primary way to move. Grids stack; tables and the report flow scroll horizontally. The management board and My outcomes are the first surfaces intended for a phone between meetings.
+**Mobile.** Below 820px the left rail is an overlay drawer (hamburger in the top bar). A labelled bottom nav (five primary destinations) is the primary way to move; the rest stay in the drawer. Grids stack; tables swipe sideways. On a phone the report flow stacks vertically. The management board and My outcomes are the first surfaces intended for a phone between meetings.
 
 ## 5. API surface
 
