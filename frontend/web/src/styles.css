@@ -535,5 +535,5 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .prod-ol li { margin: 0 0 10px; }
 .prod-ol li:last-child { margin-bottom: 0; }
 .prod-ol b { color: var(--ink); }
-.prod-fig { overflow: auto; max-height: 520px; background: #fff; border: 1px solid var(--stroke); border-radius: 8px; }
-.prod-fig img { display: block; width: 100%; min-width: 720px; background: #fff; }
+.prod-fig { overflow: auto; max-height: 560px; background: #fff; border: 1px solid var(--stroke); border-radius: 8px; }
+.prod-fig img { display: block; width: 1680px; max-width: none; height: auto; background: #fff; }
