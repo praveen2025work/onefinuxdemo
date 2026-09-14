@@ -24,46 +24,103 @@ The three outcomes are configured in `onefinux-hub/src/main/resources/applicatio
 
 ## Run it
 
-Prerequisites: **Java 21** and **Maven 3.9+**. No database or broker to install; H2 runs as a local file in `./data`.
+`./scripts/run.sh` starts the **API only** (hub + simulator). The product UI is the React console on **5173**. Do not open `http://localhost:7070` in a browser expecting a board — that port is REST + SSE.
+
+### 1. Prerequisites
+
+| Need | Notes |
+|---|---|
+| **Java 21** | Hub and simulator |
+| **Maven 3.9+** | Build + the 7 engine tests |
+| **Node.js 18+** | React console (`frontend/web`) |
+| Disk | No database or broker to install. H2 is a local file in `./data` |
+
+### 2. Start the hub and simulator (terminal 1)
 
 ```bash
 # macOS / Linux
-./scripts/run.sh          # builds, runs the 7 engine tests, starts both apps
-./scripts/demo.sh         # guided 5-act stakeholder demo
-./scripts/stop.sh
+chmod +x scripts/*.sh    # first clone only
+./scripts/run.sh         # build, run engine tests, start hub 7070 + simulator 7081
 ```
 
 ```bat
 :: Windows
 scripts\run.cmd
-powershell -ExecutionPolicy Bypass -File scripts\demo.ps1
 ```
 
-Or run each module from the IDE: `OneFinUxHubApplication` then `SourceSimulatorApplication`.
+Wait until the script prints that the hub is up. Then you have:
 
-Open the console at **http://localhost:5173** (`cd frontend/web && npm install && npm run dev`). Drive scenarios from `/drive`. The hub on **http://localhost:7070** is the API.
+| Process | URL | What it is |
+|---|---|---|
+| `onefinux-hub` | http://localhost:7070 | API (REST + SSE). Not the UI. |
+| `source-simulator` | http://localhost:7081 | Motif / SAP / Helix / Axiom stand-in |
 
-If 7070 or 7081 is already taken (common on a corporate build), override the ports. `run.sh` rewires both
-sides of the conversation for you — the hub's callback URL and simulator URL, and the simulator's hub URL
-and allowed CORS origin:
+Skip the Maven rebuild with `./scripts/run.sh --no-build` if the jars already exist.
+
+### 3. Start the React console (terminal 2)
+
+```bash
+cd frontend/web
+npm install
+npm run dev
+```
+
+Open **http://localhost:5173**. Vite proxies `/api` to 7070 and `/sim` to 7081, so the browser stays on 5173.
+
+### 4. Drive a scenario
+
+1. Go to **http://localhost:5173/drive** (nav: *Drive scenarios*). Product pages stay view-only; this is the only screen that injects facts.
+2. Click **Reset** (*Reset platform*) for a clean slate.
+3. Click one scenario button, then watch **Board** (`/board`) and **Reports** (`/reports`).
+
+| Drive card | Button | What happens |
+|---|---|---|
+| FOBO / Helix | Drive | 300 Motif master books fold to ready; the hub commands Helix |
+| 15C3 report | Run feeds | Feeds fold to ready; Axiom generates the pack |
+| 15C3 with failure | Run + fail | A named feed fails, the outcome goes Blocked, then recovers |
+| PnL reporting | Drive | Tight SLA; notify-only (no downstream command) |
+| Restate SAP | Restate | Withdraws a prior SAP completion; downstream readiness drops |
+| FOBO stitch | Drive | Stitch kit: one instance READY, one BLOCKED on a failed key |
+| Run all | Run all | Helix + 15C3 + PnL together |
+| Cancel scheduled | Cancel | Stop any drip still queued on the simulator |
+
+Optional CLI walkthrough (same acts, watch the console on 5173): `./scripts/demo.sh` (Windows: `powershell -ExecutionPolicy Bypass -File scripts\demo.ps1`).
+
+### 5. Stop
+
+```bash
+./scripts/stop.sh          # hub + simulator
+# terminal 2: Ctrl+C the Vite process
+```
+
+On Windows, close the two minimised windows titled `onefinux-hub` and `source-simulator`, then stop Vite.
+
+Delete `data/` before a stakeholder demo if you want a fully empty store (the hub re-seeds kits on boot via Flyway).
+
+### 6. Docker alternative (one command)
+
+```bash
+docker compose up --build
+```
+
+| Process | URL |
+|---|---|
+| Console | **http://localhost:8080** |
+| Hub API | http://localhost:7070 |
+| Simulator | http://localhost:7081 |
+
+### 7. Port overrides
+
+If 7070 or 7081 is already taken, `run.sh` rewires both sides (hub callback + simulator URL, simulator hub URL):
 
 ```bash
 HUB_PORT=7090 SIM_PORT=7091 ./scripts/run.sh
 HUB=http://localhost:7090 SIM=http://localhost:7091 ./scripts/demo.sh
 ```
 
-Use `./scripts/run.sh --no-build` to start from the jars you already built, and delete `data/` beforehand
-if you want a clean board for a stakeholder demo.
+The Vite proxy still targets 7070 / 7081 unless you change `frontend/web/vite.config.js`. Prefer the default ports for the console, or use Docker.
 
-## Demo script (about 5 minutes)
-
-1. **Helix / FOBO.** Click *Run Helix scenario*. The 300-square grid fills as master books arrive. The progress, ETA and notifications fire at 50% and 90%. At 300/300 the hub calls Helix itself, and the card flips to **Done** with the break count Helix reported back.
-2. **15C3 with a failure.** Click *Run 15C3 with a failure*. US Castle BATCH-03 fails, and the card goes **Blocked** naming the batch. US Regulatory Reporting gets a critical alert. The batch recovers and the report is generated automatically.
-3. **PnL.** Click *Run PnL scenario*. The inputs drip in slowly, so the hub warns *before* the deadline (at risk), then records the breach as an auditable event.
-4. **Restatement.** After 15C3 shows Done, click *Restate SAP trial balance*. SAP revokes CC-4430, and every outcome that used it loses readiness with a critical notification. When SAP re-publishes, Axiom re-runs with a **new run id**. Late results from the old run are ignored.
-5. **Human in the loop.** Expand *Override an input* on a blocked or late card and give a reason. The override is stored as an event and announced, and it is audited like any other fact.
-
-Stop the hub and start it again: the board is rebuilt exactly from the event store, SLA breaches included, and no notifications are re-sent.
+IDE: run `OneFinUxHubApplication`, then `SourceSimulatorApplication`, then step 3 (Vite).
 
 ## Publishing your own events
 
@@ -105,7 +162,7 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 
 Every notification is persisted once, then fanned out:
 
-- **In-app**: live over SSE to the board's inbox.
+- **In-app**: live over SSE to the console inbox on 5173.
 - **Email (simulated)**: written to the `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against the corporate relay.
 - **Teams webhook**: disabled by default. Set `onefinux.notifications.webhook-url` to a Teams Workflows URL to enable it.
 
@@ -191,4 +248,4 @@ network where SSH to GitHub is blocked, switch the remote to HTTPS instead:
 
 - **`Database may be already in use`**: a previous hub is still shutting down and holding the H2 file lock. Wait a few seconds, or use `scripts/stop.sh`, which waits for exit.
 - **`release version 21 not supported`**: Maven is using an older JDK. Point `JAVA_HOME` at JDK 21.
-- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7091 ./scripts/run.sh` (see *Run it*). Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator.
+- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7091 ./scripts/run.sh` (see *Run it*). Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator. The Vite proxy in `frontend/web/vite.config.js` still points at 7070 / 7081 unless you edit it.

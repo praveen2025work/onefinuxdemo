@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Build and start the One Finance UX hub (7070) and the source simulator (7081).
+# Does not start the React console — that is a second terminal: cd frontend/web && npm run dev
 # Usage: ./scripts/run.sh            build + start both
 #        ./scripts/run.sh --no-build start using existing jars
 set -euo pipefail
@@ -21,9 +22,11 @@ echo $! > logs/sim.pid
 printf "Waiting for the hub"
 for _ in $(seq 1 60); do
   if curl -sf http://localhost:$HUB_PORT/api/outcomes > /dev/null; then
-    echo; echo "Hub:       http://localhost:$HUB_PORT  (open this in a browser)"
+    echo; echo "Hub API:   http://localhost:$HUB_PORT  (REST + SSE — not the product UI)"
     echo "Simulator: http://localhost:$SIM_PORT/sim/scenarios"
-    echo "Demo:      ./scripts/demo.sh    Stop: ./scripts/stop.sh"
+    echo "Console:   cd frontend/web && npm install && npm run dev"
+    echo "           then open http://localhost:5173  Drive: /drive"
+    echo "Stop:      ./scripts/stop.sh"
     exit 0
   fi
   printf "."; sleep 1

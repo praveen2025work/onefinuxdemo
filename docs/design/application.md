@@ -142,11 +142,15 @@ Full operator steps: `onboarding.md`.
 
 ## 9. Run and verify
 
+Numbered local run (full list in the repo `README.md`):
+
+1. `./scripts/run.sh` — hub **7070** (API) + simulator **7081**. Not the UI.
+2. Separate terminal: `cd frontend/web && npm install && npm run dev` — console **http://localhost:5173**.
+3. Open `/drive`, click **Reset**, then drive one scenario. Watch Board and Reports.
+
 ```bash
-./scripts/run.sh
-cd frontend/web && npm install && npm run dev   # http://localhost:5173
 curl -s -XPOST http://localhost:7070/api/stitch/reset
 curl -s -XPOST http://localhost:7081/sim/scenarios/fobo
 ```
 
-Drive lives at `/drive`. Do not put scenario buttons on Home or Reports.
+Drive lives at `/drive`. Do not put scenario buttons on Home or Reports. Docker: `docker compose up --build` then console **http://localhost:8080**.

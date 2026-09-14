@@ -1,6 +1,6 @@
-# Local end-to-end stack: hub + simulator + console. Mirrors the tmux dev setup as containers.
+# Local end-to-end stack: hub + simulator + console.
 #   docker compose up --build
-# Then open http://localhost:8080 (console), http://localhost:7070/actuator (hub ops).
+# Then open http://localhost:8080 (console). Hub http://localhost:7070 is API only.
 services:
   hub:
     build:

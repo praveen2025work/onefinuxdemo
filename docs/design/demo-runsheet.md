@@ -6,9 +6,10 @@ Facilitator script. Two tracks: a **2–3 minute narrated MD / CIO story** (male
 
 ## Pre-flight
 
-- Hub `http://localhost:7070` · Simulator `http://localhost:7081` · Console `http://localhost:5173`
-- Theme: dark (Astronaut Blue + Cerulean) for exec rooms.
-- Reset: `POST /api/stitch/reset`. Do **not** pre-run the day's scenario — Drive it live.
+1. `./scripts/run.sh` — hub API `http://localhost:7070`, simulator `http://localhost:7081`. Do not open 7070 as the product UI.
+2. Separate terminal: `cd frontend/web && npm install && npm run dev` — console `http://localhost:5173`.
+3. Theme: dark (Astronaut Blue + Cerulean) for exec rooms.
+4. Open `/drive`, click **Reset**. Do **not** pre-run the day's scenario — Drive it live.
 
 Worked examples:
 
