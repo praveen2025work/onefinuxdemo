@@ -14,7 +14,7 @@ One Finance UX is a **full-viewport glass console**: frosted panels, cyan glow, 
 | `docs/design/mockups/app.css` | The design system: app shell, tables, pills, meters, forms, pipeline, embed frame |
 | `docs/design/mockups/components.html` | Every component rendered on one page |
 | `docs/design/mockups/*.html` | The four jobs + stitch, built only from that CSS |
-| `experience/theme/onefinux-tokens.css` | The `--ofx-*` subset partner teams copy |
+| `frontend/theme/onefinux-tokens.css` | The `--ofx-*` subset partner teams copy |
 
 Build new screens by composing existing classes. If a screen needs a primitive that is not there, add it to `app.css` once — do not inline a one-off style.
 
@@ -44,7 +44,7 @@ Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Self-hosted i
 
 ## Other teams
 
-Serve `experience/theme/onefinux-tokens.css` as `/theme/onefinux-tokens.css`. Partners import it, use `--ofx-*` only, set `data-ofx-embedded="1"`, and **omit** their own masthead. Host chrome sets `html[data-theme=dark|light]` and passes `theme=` on the iframe query. **REQUIRED:** `embed-partner-screen` for the host contract.
+Serve `frontend/theme/onefinux-tokens.css` as `/theme/onefinux-tokens.css`. Partners import it, use `--ofx-*` only, set `data-ofx-embedded="1"`, and **omit** their own masthead. Host chrome sets `html[data-theme=dark|light]` and passes `theme=` on the iframe query. **REQUIRED:** `embed-partner-screen` for the host contract.
 
 Theme is persisted in `localStorage['ofx-theme']`. A review link can force it: `index.html?theme=light`. Default is dark.
 

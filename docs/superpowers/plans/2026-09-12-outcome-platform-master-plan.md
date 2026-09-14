@@ -16,7 +16,7 @@
 - Wijmo is the only grid/pivot/chart. Company licence. No Recharts for official views.
 - **Sources of origin first.** Analyst exploration of those sources, inside the group unit, is a **later** slice — do not build the studio in Tasks 1–8.
 - Heavy UIs are **partner iframes**, not cloned in this repo.
-- Theme file `experience/theme/onefinux-tokens.css` is what other teams copy.
+- Theme file `frontend/theme/onefinux-tokens.css` is what other teams copy.
 - Feed-first ingest. LLM never in the fold.
 - Do not add manifesto/gallery screens.
 - **Schema + mockups first.** Task 1 Java starts only after `docs/design/mockups/` is accepted.
@@ -57,8 +57,8 @@
 | `groupUnits/<id>.yaml` | Tenant: name, CEES, default region |
 | `products/_kit.schema.json` | Kit + `groupUnitId` + `userActions` + `renderer` |
 | `products/fobo/v1/product.yaml` | First HELIX_RECON |
-| `experience/web/` | Four route trees: head, user, support, config + iframe host |
-| `experience/theme/onefinux-tokens.css` | Theme other teams copy |
+| `frontend/web/` | Four route trees: head, user, support, config + iframe host |
+| `frontend/theme/onefinux-tokens.css` | Theme other teams copy |
 | `adapters/<source>-feed/` | Their existing feed |
 | `docs/schema/onefinux-stitch.sql` | Stitch DDL + seed (agree before Java) |
 | `docs/design/mockups/` | Institutional screens for the four jobs + stitch |

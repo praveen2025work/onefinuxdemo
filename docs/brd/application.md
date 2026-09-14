@@ -10,7 +10,7 @@ This is the document a developer picks up to make the console a real product. It
 |---|---|---|
 | `onefinux-hub` | 7070 | Event ingest, translation, Outcome Engine fold, Stitch fold, REST + SSE, outbox, audit |
 | `source-simulator` | 7081 | Stubs systems of record and destinations. Drives Drive scenarios. |
-| `experience/web` | 5173 (dev) | React console. The product UI. |
+| `frontend/web` | 5173 (dev) | React console. The product UI. |
 
 The browser talks only to the hub (and `/sim` via the Vite proxy). Nothing in the browser touches a bus.
 
@@ -49,7 +49,7 @@ sequenceDiagram
   participant Hub as onefinux_hub
   participant Engine as OutcomeEngine
   participant Fold as StitchFold
-  participant UI as experience_web
+  participant UI as frontend_web
   Sim->>Hub: POST /api/events
   Hub->>Engine: EventIngested
   Engine->>Engine: match feeds, re-derive status, emit OutcomeChanged
@@ -145,7 +145,7 @@ Full operator steps: `docs/onboarding.md`.
 
 ```bash
 ./scripts/run.sh
-cd experience/web && npm install && npm run dev   # http://localhost:5173
+cd frontend/web && npm install && npm run dev   # http://localhost:5173
 curl -s -XPOST http://localhost:7070/api/stitch/reset
 curl -s -XPOST http://localhost:7081/sim/scenarios/fobo
 ```

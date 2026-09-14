@@ -75,7 +75,7 @@ The same shell is **mobile-friendly** (rail collapses, grids stack, tables scrol
 
 Two artefacts are the single source of truth, and every team measures against them:
 
-- **Visual truth** — `experience/web/` (the live React console; Barclays Cerulean `#00aeef` + Astronaut Blue `#00395d`) and `docs/design/mockups/` (the earlier static reference).
+- **Visual truth** — `frontend/web/` (the live React console; Barclays Cerulean `#00aeef` + Astronaut Blue `#00395d`) and `docs/design/mockups/` (the earlier static reference).
 - **Data truth** — Flyway schema under `onefinux-hub/src/main/resources/db/migration/` plus the Outcome Engine definitions (`application.yml` and `POST /api/outcomes/definitions`).
 
 And one worked example that must be identical in every screen, query and event:
@@ -91,7 +91,7 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 
 **In the demo build (a real, working slice):**
 
-- React console at `experience/web` — Home, Onboarding, Configuration, Drive, Reports, Outcome board, My outcomes, Operations, Monitoring.
+- React console at `frontend/web` — Home, Onboarding, Configuration, Drive, Reports, Outcome board, My outcomes, Operations, Monitoring.
 - Outcome Engine with runtime onboard; 15C3 report lifecycle (feeds → ready → processing → generated → available).
 - REV-ACC + FOBO kit + two instances, driven live from **Drive** (product pages stay view-only).
 - Sign-off / post / escalate / kit-declared verbs (e.g. AMEND) that persist and change the fold.
