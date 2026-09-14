@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Scripted walkthrough for a stakeholder demo. Hub APIs on 7070; watch the console on 5173.
+# Start first: ./scripts/run.sh   then   cd frontend/web && npm run dev
 set -euo pipefail
 HUB=${HUB:-http://localhost:7070}; SIM=${SIM:-http://localhost:7081}
 pause() { echo; read -r -p ">> $1  [Enter]" _; }
 
 curl -s -XPOST $HUB/api/admin/reset > /dev/null
-echo "Board reset. Three questions are on screen, all answering 'Not yet'."
+echo "Reset done. Watch http://localhost:5173 (Board / Reports) — not port 7070."
 
 pause "Act 1 - FOBO/Helix: 300 master books arrive; at 100% the hub triggers Helix itself"
 curl -s -XPOST "$SIM/sim/scenarios/helix?seconds=40"; echo
@@ -19,9 +20,9 @@ curl -s -XPOST "$SIM/sim/scenarios/pnl"; echo
 pause "Act 4 - (after 15C3 shows Done) SAP restates a trial balance; readiness is withdrawn and the report re-runs"
 curl -s -XPOST "$SIM/sim/scenarios/restate"; echo
 
-pause "Act 5 - Controller overrides the late RAM input on PnL (reason is audited)"
+pause "Act 5 - Controller overrides the late RAMP input on PnL (reason is audited)"
 curl -s -XPOST "$HUB/api/outcomes/PNL_REPORTING/$(date +%F)/AMRS/override" \
   -H 'Content-Type: application/json' \
-  -d '{"dependency":"RAM_CHORUS_READY","reason":"Confirmed with RAM support, INC0042","requestedBy":"demo.controller"}' \
+  -d '{"dependency":"RAMP_CHORUS_READY","reason":"Confirmed with RAMP support, INC0042","requestedBy":"demo.controller"}' \
   | head -c 300; echo
 echo; echo "Done. Notifications: $HUB/api/notifications"

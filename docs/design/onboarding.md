@@ -37,8 +37,9 @@ API call against `onefinux-hub` (port 7070). No screen invents an id.
 ## 0. Prerequisites
 
 ```bash
-./scripts/run.sh                     # build + start hub (7070) and simulator (7081)
-# React console (separate terminal):
+# Terminal 1 — API only (do not open 7070 as the product UI)
+./scripts/run.sh                     # hub 7070 + simulator 7081
+# Terminal 2 — React console
 cd frontend/web && npm install && npm run dev   # http://localhost:5173
 ```
 

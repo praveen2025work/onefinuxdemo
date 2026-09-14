@@ -1,6 +1,6 @@
 @echo off
 REM Build and start the One Finance UX hub and source simulator on Windows.
-REM Requires Java 21 and Maven 3.9 on PATH.
+REM Does not start the React console — that is a second terminal: cd frontend\web && npm run dev
 REM Usage: scripts\run.cmd [--no-build]
 REM        set HUB_PORT=7090 & set SIM_PORT=7091 & scripts\run.cmd   (if 7070/7081 are taken)
 setlocal
@@ -29,7 +29,8 @@ exit /b 1
 
 :ready
 echo.
-echo Hub:       http://localhost:%HUB_PORT%  ^(opening in your browser^)
+echo Hub API:   http://localhost:%HUB_PORT%  ^(REST + SSE — not the product UI^)
 echo Simulator: http://localhost:%SIM_PORT%/sim/scenarios
+echo Console:   cd frontend\web ^&^& npm install ^&^& npm run dev
+echo            then open http://localhost:5173  Drive: /drive
 echo Stop:      close the two minimised windows titled onefinux-hub and source-simulator.
-start "" http://localhost:%HUB_PORT%
