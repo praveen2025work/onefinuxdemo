@@ -73,7 +73,7 @@ The full, editable diagram set (Mermaid source + SVG/PNG exports) lives in **[`a
 | **Next** | Real CEES entitlements (fail-closed), maker-checker on commands, effective-dated reference data, Oracle persistence, the enterprise event bus, and NFR hardening (throughput/latency/DR evidence). |
 | **Later** | Analyst explorer at scale, AI assistance (agents read the event store to predict ETAs and explain bottlenecks; the engine stays deterministic). |
 
-Details: `docs/brd/architecture-group.md` (scope line §6, non-functionals §7) and `docs/superpowers/plans/2026-09-12-outcome-platform-master-plan.md`.
+Details: `architecture-group.md` (scope line §6, non-functionals §7).
 
 ## 7. The ask
 
@@ -83,7 +83,7 @@ Details: `docs/brd/architecture-group.md` (scope line §6, non-functionals §7) 
 
 ## 8. CIO deep-dive FAQ (be ready for these)
 
-- **"How does a custom system like Helix integrate?"** It publishes a fact to `POST /api/events` and echoes command completions the same way; heavy recon data stays in Helix, we hold the fact + a deep-link. (See `docs/brd/application.md` §3, and the integration write-up.)
+- **"How does a custom system like Helix integrate?"** It publishes a fact to `POST /api/events` and echoes command completions the same way; heavy recon data stays in Helix, we hold the fact + a deep-link. (See `application.md` §3.)
 - **"What if a downstream system is down?"** The outbox holds the fact and the relay retries; failed rows are visible and re-queueable on the Monitoring screen. Delivery is at-least-once; subscribers de-dupe on event id.
 - **"How do we prove what happened?"** Append-only audit log (who/when/what/why) plus the immutable event store; replay rebuilds state from history.
 - **"Security?"** Entitlement fail-closed contract; the local demo ships a fail-open stub for convenience only.

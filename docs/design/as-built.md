@@ -40,3 +40,4 @@ Below 820px the rail collapses to icons; grids stack; tables scroll horizontally
 - Add `if (FOBO)` or a per-product module.
 - Treat Configuration as a create form (that is Onboarding).
 - Jump screens in an exec demo — hold each surface long enough to read.
+- Ship a day-one Analyst explorer (that is later, Wijmo).

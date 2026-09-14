@@ -1,6 +1,6 @@
 # BRD — One Finance UX application build
 
-Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `docs/brd/architecture-group.md` and `docs/brd.md`.
+Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `architecture-group.md` and `README.md`.
 
 This is the document a developer picks up to make the console a real product. It covers the two models, who calls whom, when we decide an event, the API surface, how to onboard an outcome, which skill owns which part, and exactly what is in the demo build versus later.
 
@@ -87,7 +87,6 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/instance/:id` | Fold, embed, sign-off / post / kit-declared actions | Outcome user |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
 | `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |
-| `/analyst` | Explore bound origins | Analyst |
 
 **Outcome board vs My outcomes.** Same tenant-scoped instance list. Board is the supervisor table (status filter, blockers, escalation counts). My outcomes is the doer's card worklist. Both drill to Instance detail.
 
@@ -97,7 +96,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 ## 5. API surface
 
-Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, RTB, analyst, reset.
+Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, RTB, reset.
 
 Outcomes (`/api/outcomes`) — live views, `GET/POST /definitions`, instance + report document.
 
@@ -117,7 +116,7 @@ Simulator (`/sim/scenarios/{name}`) — `fobo`, `helix`, `15c3`, `pnl`, `restate
 
 `POST /api/stitch/kits` with kitId, sources, destinations, embed, `userActions`. No new Java type.
 
-Full operator steps: `docs/onboarding.md`.
+Full operator steps: `onboarding.md`.
 
 ## 7. Which skill owns which part
 
@@ -139,7 +138,7 @@ Full operator steps: `docs/onboarding.md`.
 
 **In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report lifecycle; FOBO stitch console with kit-declared actions (`AMEND`); RTB operations; monitoring + outbox + audit; Barclays Cerulean / Astronaut Blue theme; pluggable action registries.
 
-**Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; native mobile app wrapping the same responsive shell.
+**Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; Wijmo analyst studio; native mobile app wrapping the same responsive shell.
 
 ## 9. Run and verify
 

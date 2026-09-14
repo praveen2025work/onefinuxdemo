@@ -2,7 +2,8 @@
 
 Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 
-Visual truth: `frontend/web` (live React console; Barclays Cerulean `#00aeef`, Astronaut Blue `#00395d`). Static reference: `docs/design/mockups/`. Design truth: `docs/superpowers/specs/2026-09-14-product-as-built.md`.
+Visual truth: `frontend/web` (live React console; Barclays Cerulean `#00aeef`, Astronaut Blue `#00395d`).  
+Design folder (only one): [`docs/design/`](docs/design/README.md).
 
 ## Jobs → skills
 
@@ -19,10 +20,6 @@ Visual truth: `frontend/web` (live React console; Barclays Cerulean `#00aeef`, A
 | Bind a source or destination | `.cursor/skills/bind-source-destination` |
 | Partner iframe + shared theme | `.cursor/skills/embed-partner-screen` |
 | Analyst explorer (later, same unit) | `.cursor/skills/wijmo-outcome-grid` |
-
-Requirements: [`docs/brd.md`](docs/brd.md) → architecture-group + application BRDs.  
-Onboarding: `docs/onboarding.md`  
-Stitch schema: `docs/schema/onefinux-stitch.sql` + `docs/superpowers/specs/2026-09-12-stitching-schema.md`
 
 ## Never
 

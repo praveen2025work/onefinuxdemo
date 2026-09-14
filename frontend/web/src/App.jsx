@@ -6,7 +6,6 @@ import Outcomes from './pages/Outcomes.jsx';
 import InstanceDetail from './pages/InstanceDetail.jsx';
 import Operations from './pages/Operations.jsx';
 import Onboarding from './pages/Onboarding.jsx';
-import Analyst from './pages/Analyst.jsx';
 import Configuration from './pages/Configuration.jsx';
 import Monitoring from './pages/Monitoring.jsx';
 import Reports from './pages/Reports.jsx';
@@ -23,7 +22,6 @@ export default function App() {
         <Route path="/instance/:id" element={<InstanceDetail />} />
         <Route path="/operations" element={<Operations />} />
         <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/analyst" element={<Analyst />} />
         <Route path="/configuration" element={<Configuration />} />
         <Route path="/monitoring" element={<Monitoring />} />
         <Route path="/drive" element={<Drive />} />

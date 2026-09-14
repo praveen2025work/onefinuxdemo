@@ -4,13 +4,14 @@ This POC proves the idea behind *One Finance UX*: stop asking "Is Motif complete
 
 Source systems publish events. The hub translates them into business identifiers and folds them into **business outcomes**. It notifies the right people as each outcome moves through its lifecycle, and it triggers the downstream action (Helix, Axiom) the moment an outcome is ready. Nothing polls.
 
-The requirements live in [`docs/brd.md`](docs/brd.md) (current) and `docs/One_Finance_UX_BRD.docx` (archive). This README covers running the POC.
+The requirements and architecture live in [`docs/design/`](docs/design/README.md). This README covers running the POC.
 
 ## What's in the box
 
 | Module | Port | Role |
 |---|---|---|
-| `onefinux-hub` | 7070 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, live board |
+| `onefinux-hub` | 7070 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, REST + SSE |
+| `frontend/web` | 5173 | React console — the product UI |
 | `source-simulator` | 7081 | Stands in for Motif, SAP, GMIS, RAMP, US Castle, Finance Store, Axiom. Also runs mock **Helix** and **Axiom** services that receive commands and publish completions back |
 
 The three outcomes are configured in `onefinux-hub/src/main/resources/application.yml` as metadata, not code:
@@ -40,7 +41,7 @@ powershell -ExecutionPolicy Bypass -File scripts\demo.ps1
 
 Or run each module from the IDE: `OneFinUxHubApplication` then `SourceSimulatorApplication`.
 
-Open **http://localhost:7070**. The buttons across the top drive the simulator, so you can demo without a terminal.
+Open the console at **http://localhost:5173** (`cd frontend/web && npm install && npm run dev`). Drive scenarios from `/drive`. The hub on **http://localhost:7070** is the API.
 
 If 7070 or 7081 is already taken (common on a corporate build), override the ports. `run.sh` rewires both
 sides of the conversation for you — the hub's callback URL and simulator URL, and the simulator's hub URL
@@ -118,7 +119,7 @@ Milestones default to 50% and 90% (`onefinux.notifications.milestones`). Progres
 | 2 Event Translation Layer | `translation` |
 | 3 Business Outcome Engine | `outcome` (`OutcomeEngine` is a deterministic fold over the event stream) |
 | 4 Workflow Layer | `workflow` (action dispatch, override, re-run, SLA monitor) |
-| 5 Unified Finance UX | `api`, `stream`, `static/index.html` |
+| 5 Unified Finance UX | `api`, `stream`, `frontend/web` |
 | Notifications | `notification` |
 
 Design rules the code keeps:
@@ -144,9 +145,9 @@ mvn test
 - A manual override.
 - A silent replay.
 
-## From POC to production (summary; details in the BRD)
+## From POC to production (summary; details in `docs/design/`)
 
-The target enterprise architecture — event bus, outcome registry / Admin, FOBO and regulatory-report readiness rules, entitlements, the unified Wijmo (MESCIUS) / template report viewer, advisory LLM, and Barclays Now tasks — is specified in [`docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md`](docs/superpowers/specs/2026-09-12-enterprise-event-platform-design.md). Flagship architecture, transport choice (SSE vs Kafka vs AWS), screen inventory, and engineering principles: [`docs/superpowers/specs/2026-09-12-flagship-architecture-and-experience.md`](docs/superpowers/specs/2026-09-12-flagship-architecture-and-experience.md). Monorepo layout per component and multi-developer agentic skills/plugins: [`docs/superpowers/specs/2026-09-12-project-structure-and-agentic-team.md`](docs/superpowers/specs/2026-09-12-project-structure-and-agentic-team.md). Visuals: [`docs/design/dreamliner/gallery.html`](docs/design/dreamliner/gallery.html) (full screen walkthrough). Envelope: `contracts/generic-business-event.schema.json`.
+The as-built product, architecture diagrams, and demo-vs-later line are in [`docs/design/`](docs/design/README.md). Envelope: `contracts/generic-business-event.schema.json`.
 
 | POC | Production |
 |---|---|

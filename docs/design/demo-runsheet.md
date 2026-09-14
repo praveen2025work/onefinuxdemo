@@ -32,13 +32,13 @@ Hold each screen 15–25 seconds. Speak at a conversational pace. Do not click d
 | Management | Outcome board, then phone width | CIO / MD traffic lights. Same board on a phone. |
 | RTB | Operations | Delays, escalations, replay. They do not sign off. |
 
-Voice: male, warm, spoken to a CIO / MD. Peer explanation, not slang and not a slide read. Script: `docs/exec/narration-script.txt`. Recorded demo: `docs/exec/cio-md-demo.mp4`.
+Voice: male, warm, spoken to a CIO / MD. Peer explanation, not slang and not a slide read. Script: `narration-script.txt`. Recorded demo: `cio-md-demo.mp4`.
 
 ---
 
 ## Track B — CIO deep-dive (10 minutes)
 
-Use the same story, then stay on Monitoring (ingest → outbox → audit), Configuration (feeds as the dependency mechanism), and Instance detail (lineage + kit-declared actions). Point at `docs/exec/architecture.md` for the diagrams.
+Use the same story, then stay on Monitoring (ingest → outbox → audit), Configuration (feeds as the dependency mechanism), and Instance detail (lineage + kit-declared actions). Point at `architecture.md` for the diagrams.
 
 ---
 

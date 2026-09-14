@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * All reads and writes for the stitch schema (docs/schema/onefinux-stitch.sql).
+ * All reads and writes for the stitch schema (docs/design/schema/onefinux-stitch.sql).
  *
  * We deliberately use JdbcTemplate against the DDL rather than a JPA entity per table: the schema is
  * the agreed contract, the columns are camelCase-aliased here so the API and the React console read one

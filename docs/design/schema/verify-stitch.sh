@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Load stitch DDL into an in-memory H2 and run the job queries.
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
 HUB="$ROOT/onefinux-hub"
 OUT="${1:-/tmp/onefinux-stitch-verify.log}"
 
@@ -17,19 +17,19 @@ fi
 java -cp "$H2_JAR" org.h2.tools.RunScript \
   -url "jdbc:h2:mem:stitch;MODE=Oracle;DB_CLOSE_DELAY=-1" \
   -user sa \
-  -script "$ROOT/docs/schema/onefinux-stitch.sql"
+  -script "$ROOT/docs/design/schema/onefinux-stitch.sql"
 
 # Second pass: queries. Need a persisted mem DB — use file in /tmp instead.
 rm -f /tmp/onefinux-stitch.mv.db /tmp/onefinux-stitch.trace.db
 java -cp "$H2_JAR" org.h2.tools.RunScript \
   -url "jdbc:h2:file:/tmp/onefinux-stitch;MODE=Oracle" \
   -user sa \
-  -script "$ROOT/docs/schema/onefinux-stitch.sql"
+  -script "$ROOT/docs/design/schema/onefinux-stitch.sql"
 
 java -cp "$H2_JAR" org.h2.tools.RunScript \
   -url "jdbc:h2:file:/tmp/onefinux-stitch;MODE=Oracle" \
   -user sa \
-  -script "$ROOT/docs/schema/onefinux-stitch-queries.sql" \
+  -script "$ROOT/docs/design/schema/onefinux-stitch-queries.sql" \
   -showResults > "$OUT"
 
 echo "OK stitch verify → $OUT"

@@ -6,7 +6,7 @@
  *   <link rel="stylesheet" href="https://<one-fin-ux-host>/theme/onefinux-tokens.css">
  *   <body class="ofx-app" data-ofx-embedded="1">
  *
- * Full component reference: docs/design/mockups/app.css
+ * Full component reference: frontend/web/src/styles.css
  */
 :root {
   --ofx-navy: #0a1f3d;
