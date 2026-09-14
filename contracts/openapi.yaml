@@ -18,7 +18,6 @@ tags:
   - name: notifications
   - name: rtb
   - name: onboarding
-  - name: analyst
   - name: stream
 
 paths:
@@ -248,69 +247,6 @@ paths:
         '201': { description: Kit registered }
         '400': { description: Unknown source/destination or duplicate kit }
 
-  /api/stitch/datasets:
-    get:
-      tags: [analyst]
-      summary: Bound origins for a group unit (what the explorer may read)
-      parameters: [ { name: groupUnit, in: query, schema: { type: string } } ]
-      responses:
-        '200':
-          description: Dataset locators
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/Dataset' } }
-
-  /api/stitch/explore:
-    get:
-      tags: [analyst]
-      summary: Explore facts from bound origins (the analyst grid data)
-      parameters:
-        - { name: source, in: query, schema: { type: string } }
-        - { name: cobDate, in: query, schema: { type: string, format: date } }
-        - { name: region, in: query, schema: { type: string } }
-        - { name: status, in: query, schema: { type: string } }
-        - { name: limit, in: query, schema: { type: integer, default: 200 } }
-      responses:
-        '200':
-          description: Rows
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  columns: { type: array, items: { type: string } }
-                  rows: { type: array, items: { $ref: '#/components/schemas/Fact' } }
-
-  /api/stitch/views:
-    get:
-      tags: [analyst]
-      summary: Saved analyst views for a group unit
-      parameters: [ { name: groupUnit, in: query, schema: { type: string } } ]
-      responses:
-        '200':
-          description: Views
-          content:
-            application/json:
-              schema: { type: array, items: { $ref: '#/components/schemas/AnalystView' } }
-    post:
-      tags: [analyst]
-      summary: Create or update a saved view
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: { $ref: '#/components/schemas/AnalystView' }
-      responses:
-        '200': { description: Saved }
-
-  /api/stitch/views/{id}:
-    delete:
-      tags: [analyst]
-      summary: Delete a saved view
-      parameters: [ { name: id, in: path, required: true, schema: { type: string } } ]
-      responses:
-        '200': { description: Deleted }
-
   /api/stitch/reset:
     post:
       tags: [context]
@@ -505,29 +441,3 @@ components:
             url: { type: string }
             allowedOrigin: { type: string }
             chrome: { type: string }
-    Dataset:
-      type: object
-      properties:
-        datasetId: { type: string }
-        groupUnitId: { type: string }
-        sourceId: { type: string }
-        sourceName: { type: string }
-        instanceId: { type: string, nullable: true }
-        locatorUrl: { type: string }
-    AnalystView:
-      type: object
-      required: [groupUnitId, datasetId, widget, fieldMap]
-      properties:
-        viewId: { type: string, nullable: true }
-        name: { type: string }
-        groupUnitId: { type: string }
-        datasetId: { type: string }
-        widget: { type: string, enum: [GRID, PIVOT, CHART] }
-        ceesReport: { type: string }
-        fieldMap:
-          type: object
-          description: 'Columns and filters. Same JSON whether the grid is Wijmo or the fallback.'
-          properties:
-            columns: { type: array, items: { type: string } }
-            filters: { type: object, additionalProperties: true }
-        status: { type: string }

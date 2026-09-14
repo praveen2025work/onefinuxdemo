@@ -42,9 +42,9 @@ API call against `onefinux-hub` (port 7070). No screen invents an id.
 cd frontend/web && npm install && npm run dev   # http://localhost:5173
 ```
 
-The hub seeds `REV-ACC` + the `FOBO` kit + the two demo instances on first boot (from
-`schema/onefinux-stitch.sql`), so the console is populated immediately. The steps below are how
-you would onboard a *second* unit or kit from scratch.
+The hub seeds `REV-ACC` + the `FOBO` kit + the two demo instances on first boot (Flyway in
+`onefinux-hub`), so the console is populated immediately. The steps below are how you would
+onboard a *second* unit or kit from scratch.
 
 ## 1. Add a group unit (tenant)
 

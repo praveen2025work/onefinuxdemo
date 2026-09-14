@@ -1,6 +1,7 @@
 target/
 data/
 logs/
+recordings/
 .DS_Store
 *.iml
 .idea/

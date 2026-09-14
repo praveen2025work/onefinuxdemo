@@ -224,19 +224,6 @@ public class StitchService {
         return Map.of("kitId", kitId, "status", "LIVE", "message", "Kit registered as data — no Java type added.");
     }
 
-    public Map<String, Object> saveView(Map<String, Object> body) {
-        String viewId = body.get("viewId") != null ? str(body, "viewId")
-                : "VW-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
-        String groupUnit = str(body, "groupUnitId");
-        String datasetId = body.get("datasetId") != null ? str(body, "datasetId") : repo.firstDatasetId(groupUnit);
-        String widget = body.getOrDefault("widget", "GRID").toString();
-        String fieldMap = json(body.getOrDefault("fieldMap", body));
-        String ceesReport = body.getOrDefault("ceesReport", "report:" + viewId).toString();
-        repo.insertView(viewId, groupUnit, datasetId, widget, fieldMap, ceesReport);
-        repo.insertAudit(currentUser.actor(), "SAVE_VIEW", viewId, "OK", json(Map.of("groupUnit", groupUnit, "widget", widget)));
-        return Map.of("viewId", viewId, "status", "SAVED");
-    }
-
     public void reset() {
         repo.resetDemo();
         repo.insertAudit(currentUser.actor(), "RESET", "demo", "OK", null);

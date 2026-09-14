@@ -3,7 +3,6 @@ package com.onefinux.hub.stitch;
 import com.onefinux.hub.security.CurrentUser;
 import com.onefinux.hub.stream.StreamHub;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -145,35 +144,6 @@ public class StitchController {
                 "sources", repo.kitSources(id),
                 "destinations", repo.kitDestinations(id),
                 "embed", repo.kitEmbed(id) == null ? Map.of() : repo.kitEmbed(id)));
-    }
-
-    @GetMapping("/datasets")
-    public List<Map<String, Object>> datasets(@RequestParam(required = false) String groupUnit) {
-        return repo.datasets(groupUnit);
-    }
-
-    @GetMapping("/explore")
-    public List<Map<String, Object>> explore(@RequestParam(required = false) String groupUnit,
-                                             @RequestParam(required = false) String source,
-                                             @RequestParam(required = false) String cobDate,
-                                             @RequestParam(required = false) String region,
-                                             @RequestParam(required = false) String status) {
-        return repo.explore(groupUnit, source, cobDate, region, status);
-    }
-
-    @GetMapping("/views")
-    public List<Map<String, Object>> views(@RequestParam(required = false) String groupUnit) {
-        return repo.views(groupUnit);
-    }
-
-    @PostMapping("/views")
-    public Map<String, Object> saveView(@RequestBody Map<String, Object> body) {
-        return service.saveView(body);
-    }
-
-    @DeleteMapping("/views/{id}")
-    public Map<String, Object> deleteView(@PathVariable String id) {
-        return Map.of("viewId", id, "deleted", repo.deleteView(id) > 0);
     }
 
     @PostMapping("/reset")

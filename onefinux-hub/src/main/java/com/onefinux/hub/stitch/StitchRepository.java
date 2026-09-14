@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * All reads and writes for the stitch schema (docs/design/schema/onefinux-stitch.sql).
+ * All reads and writes for the stitch schema (Flyway under db/migration).
  *
  * We deliberately use JdbcTemplate against the DDL rather than a JPA entity per table: the schema is
  * the agreed contract, the columns are camelCase-aliased here so the API and the React console read one
@@ -383,71 +383,6 @@ public class StitchRepository {
         jdbc.update("MERGE INTO kit_embed KEY (kit_id) VALUES (:kit, :url, :origin, :chrome)",
                 p().addValue("kit", kitId).addValue("url", url).addValue("origin", allowedOrigin)
                         .addValue("chrome", chrome == null ? "HOST" : chrome));
-    }
-
-    // ---------------------------------------------------------------- analyst
-
-    public List<Map<String, Object>> datasets(String groupUnit) {
-        MapSqlParameterSource ps = p();
-        String sql = """
-                SELECT dl.dataset_id AS "datasetId", dl.group_unit_id AS "groupUnitId", dl.source_id AS "sourceId",
-                       s.display_name AS "sourceName", dl.instance_id AS "instanceId", dl.locator_url AS "locatorUrl"
-                FROM dataset_locator dl JOIN source_system s ON s.source_id = dl.source_id""";
-        if (has(groupUnit)) { sql += " WHERE dl.group_unit_id = :gu"; ps.addValue("gu", groupUnit); }
-        sql += " ORDER BY dl.dataset_id";
-        return jdbc.queryForList(sql, ps);
-    }
-
-    /** Facts from origins already bound to a group unit (the analyst explorer data set). */
-    public List<Map<String, Object>> explore(String groupUnit, String source, String cobDate,
-                                             String region, String status) {
-        StringBuilder sql = new StringBuilder("""
-                SELECT e.event_id AS "eventId", e.event_type AS "eventType", e.source_system AS "sourceSystem",
-                       e.source_key AS "sourceKey", e.status AS "status", CAST(e.cob_date AS VARCHAR) AS "cobDate", e.region AS "region",
-                       CAST(e.occurred_at AS VARCHAR) AS "occurredAt", e.instance_id AS "instanceId",
-                       e.ingest_offset AS "ingestOffset"
-                FROM event_store e
-                WHERE e.source_system IN (SELECT DISTINCT source_id FROM dataset_locator""");
-        MapSqlParameterSource ps = p();
-        if (has(groupUnit)) { sql.append(" WHERE group_unit_id = :gu"); ps.addValue("gu", groupUnit); }
-        sql.append(")");
-        if (has(source))  { sql.append(" AND e.source_system = :src"); ps.addValue("src", source); }
-        if (has(cobDate)) { sql.append(" AND CAST(e.cob_date AS VARCHAR) = :cob"); ps.addValue("cob", cobDate); }
-        if (has(region))  { sql.append(" AND e.region = :region"); ps.addValue("region", region); }
-        if (has(status))  { sql.append(" AND e.status = :status"); ps.addValue("status", status); }
-        sql.append(" ORDER BY e.occurred_at DESC, e.event_id");
-        return jdbc.queryForList(sql.toString(), ps);
-    }
-
-    public List<Map<String, Object>> views(String groupUnit) {
-        MapSqlParameterSource ps = p();
-        String sql = """
-                SELECT view_id AS "viewId", group_unit_id AS "groupUnitId", dataset_id AS "datasetId",
-                       widget AS "widget", field_map_json AS "fieldMapJson", cees_report AS "ceesReport", status AS "status"
-                FROM analyst_view_def""";
-        if (has(groupUnit)) { sql += " WHERE group_unit_id = :gu"; ps.addValue("gu", groupUnit); }
-        sql += " ORDER BY view_id";
-        return jdbc.queryForList(sql, ps);
-    }
-
-    public void insertView(String viewId, String groupUnit, String datasetId, String widget,
-                           String fieldMapJson, String ceesReport) {
-        jdbc.update("""
-                MERGE INTO analyst_view_def KEY (view_id)
-                VALUES (:id, :gu, :ds, :w, :fm, :cees, 'SAVED')""",
-                p().addValue("id", viewId).addValue("gu", groupUnit).addValue("ds", datasetId)
-                        .addValue("w", widget).addValue("fm", fieldMapJson).addValue("cees", ceesReport));
-    }
-
-    public int deleteView(String viewId) {
-        return jdbc.update("DELETE FROM analyst_view_def WHERE view_id = :id", p().addValue("id", viewId));
-    }
-
-    public String firstDatasetId(String groupUnit) {
-        List<String> r = jdbc.queryForList(
-                "SELECT dataset_id FROM dataset_locator WHERE group_unit_id = :gu ORDER BY dataset_id LIMIT 1",
-                p().addValue("gu", groupUnit), String.class);
-        return r.isEmpty() ? "DS-DEFAULT" : r.get(0);
     }
 
     // ---------------------------------------------------------------- demo reset

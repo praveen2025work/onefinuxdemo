@@ -13,7 +13,6 @@ This is the only design folder. Live visual truth is `frontend/web`, not static 
 | [`demo-runsheet.md`](demo-runsheet.md) | Facilitator | Timed CIO/MD script |
 | [`narration-script.txt`](narration-script.txt) | Voiceover | Spoken demo script |
 | [`cio-md-demo.mp4`](cio-md-demo.mp4) | Stakeholders | Recorded narrated demo |
-| [`schema/`](schema/) | Data contract | Stitch DDL / job queries (Flyway under `onefinux-hub` is runtime truth) |
 
 ## Product in one paragraph
 

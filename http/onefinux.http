@@ -52,7 +52,7 @@ Content-Type: application/json
 
 [
   { "eventType": "GMIS_LOADED", "sourceSystem": "GMIS", "sourceKey": "BK-RATES", "cobDate": "{{cob}}", "region": "AMRS", "status": "COMPLETED" },
-  { "eventType": "RAM_CHORUS_READY", "sourceSystem": "RAM", "sourceKey": "CG-RATES", "cobDate": "{{cob}}", "region": "AMRS", "status": "COMPLETED" }
+  { "eventType": "RAMP_CHORUS_READY", "sourceSystem": "RAMP", "sourceKey": "CG-RATES", "cobDate": "{{cob}}", "region": "AMRS", "status": "COMPLETED" }
 ]
 
 ### 5. Invalid event (400 ProblemDetail naming the missing fields)
