@@ -39,6 +39,7 @@ export default function Home() {
           </h1>
         </div>
         <div className="ph-actions">
+          <Link className="btn ghost" to="/product">Product guide</Link>
           <button className="btn ghost" onClick={() => refreshInstances()}>↻ Refresh fold</button>
           <Link className="btn" to="/drive">▶ Drive a scenario</Link>
         </div>

@@ -529,3 +529,11 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .odef-live { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 10px 0 2px; padding: 8px 10px; border-radius: 9px; background: var(--raised); border: 1px solid var(--stroke); }
 .odef-live .k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--faint); margin-right: 2px; }
 .odef-inst { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---- Product guide ---- */
+.prod-ol { margin: 0; padding-left: 20px; color: var(--muted); }
+.prod-ol li { margin: 0 0 10px; }
+.prod-ol li:last-child { margin-bottom: 0; }
+.prod-ol b { color: var(--ink); }
+.prod-fig { overflow: auto; max-height: 520px; background: #fff; border: 1px solid var(--stroke); border-radius: 8px; }
+.prod-fig img { display: block; width: 100%; min-width: 720px; background: #fff; }

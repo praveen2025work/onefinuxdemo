@@ -10,6 +10,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 | Route | Creates / shows | Does not |
 |---|---|---|
+| `/product` | Product guide: architecture, how it works, screens & setup | Live outcomes or Drive |
 | `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |

@@ -91,7 +91,7 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 
 **In the demo build (a real, working slice):**
 
-- React console at `frontend/web` — Home, Onboarding, Configuration, Drive, Reports, Outcome board, My outcomes, Operations, Monitoring.
+- React console at `frontend/web` — Home, Product, Onboarding, Configuration, Drive, Reports, Outcome board, My outcomes, Operations, Monitoring.
 - Outcome Engine with runtime onboard; 15C3 report lifecycle (feeds → ready → processing → generated → available).
 - REV-ACC + FOBO kit + two instances, driven live from **Drive** (product pages stay view-only).
 - Sign-off / post / escalate / kit-declared verbs (e.g. AMEND) that persist and change the fold.

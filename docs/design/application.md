@@ -78,6 +78,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | Route | Job | Who |
 |---|---|---|
 | `/` Home | Morning glance: ready / blocked / escalations | Everyone |
+| `/product` | Product, architecture diagrams, how it works, screens & setup | Everyone |
 | `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready) | Maker |
 | `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |

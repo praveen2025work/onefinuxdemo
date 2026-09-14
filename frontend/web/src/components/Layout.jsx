@@ -8,6 +8,7 @@ import DatePicker from './DatePicker.jsx';
 const NAV = [
   { grp: 'Console', items: [
     { to: '/', label: 'Home', icon: 'home', end: true },
+    { to: '/product', label: 'Product', icon: 'book' },
     { to: '/board', label: 'Outcome board', icon: 'board' },
     { to: '/outcomes', label: 'My outcomes', icon: 'cards', badge: 'assigned' },
     { to: '/reports', label: 'Reports', icon: 'report' },

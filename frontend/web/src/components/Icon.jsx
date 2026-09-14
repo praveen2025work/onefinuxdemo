@@ -20,6 +20,7 @@ const P = {
   activity: <path d="M3 12h4l2.5 7 5-16L17 12h4" />,
   report: <><path d="M6 2.5h8l4 4V21a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1Z" /><path d="M14 2.5V6.5h4M8.5 13h7M8.5 16.5h7M8.5 9.5h3" /></>,
   share: <><circle cx="6" cy="12" r="2.6" /><circle cx="18" cy="5.5" r="2.6" /><circle cx="18" cy="18.5" r="2.6" /><path d="M8.3 10.8 15.7 6.7M8.3 13.2l7.4 4.1" /></>,
+  book: <><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M8 7h8M8 11h6" /></>,
 };
 
 export default function Icon({ name, size = 18, fill = 'none', className = '' }) {
