@@ -1,15 +1,15 @@
-Okay so the problem is pretty straightforward, and it still eats a ton of time. Every night at close, someone on the desk is trying to answer a really basic question. Can I run this yet? Can I do this rec? Can I get the fifteen C three out? And the answer is just... everywhere. Motif has a screen. CATS has a screen. Helix, SAP, Axiom, all of them. Different words for done. So people chase. What we do is fold all of that into one thing. Ready, or blocked, and why.
+The problem is straightforward, and it still costs a lot of time and a lot of control. At close, leadership still cannot get a clean answer to a simple question. Can we run this process? Can we execute this rec? Can we produce the fifteen C three? Today that answer lives across Motif, CATS, Helix, SAP, Axiom. Each has its own screen, and its own language for done. So people chase. We fold those facts into one answer. Ready, or blocked, and why.
 
-Alright, you start by configuring it. You're not building an app here. You just write down the question, what feeds it needs, how tight the clock is, and what should fire when everything's in. This one's month end close. Journals, and cost centre sign off. That's it. Hit save, it's live.
+You start by configuring the outcome. This is not a new application. You define the question, the feeds it depends on, the SLA, and what should happen when everything is in. Month end close is journals and cost centre sign off. That is data. Once it is saved, it is live.
 
-Then the owner comes into Configuration. Click the outcome on the left. Right side is the contract. Who can see it, the deadline, what happens when it's ready, every feed that has to show up. If a dependency is wrong, you see it now. Not after you've already missed the close.
+The owner then comes to Configuration. Select the outcome on the left. On the right is the contract. Who is entitled to see it, the SLA, the action when it is ready, and every feed that must complete. If a dependency is wrong, you see it here. Not after the close has already slipped.
 
-When you actually want to run that thing for the day, don't do it from the real pages. That's what Drive is for. Pick the date, kick it off. Board and reports stay as the job. They just show the fold.
+When you want to run that outcome for the day, you do it from Drive, not from the product screens. You start it for that business date. The board and the reports stay as the operating view. They only show the fold.
 
-Good day looks like this. Fifteen C three. Feeds come in, it goes ready, it processes, the report gets generated, and then you can actually open it. Controller's done. They can go.
+When the day goes well, this is fifteen C three. Every feed arrives. It moves to ready, the report is generated, and it is available to view. The controller can open it and proceed, with a full trail.
 
-Bad day... you're not staring at some mystery red light. This rec is blocked because Motif bounced ledger M B zero one four. That's the key. The person on the desk sends it to run the bank. They're not raising another ticket and hoping.
+When it does not, you do not get an unexplained red. This rec is blocked because Motif rejected ledger M B oh fourteen. A named key. The person on the outcome escalates it to run the bank. They are not opening another ticket and hoping.
 
-If you're a CIO or an MD, this is your screen. Outcome board. Lights across the unit. What's green, what's stuck, how many escalations. You're not looking at books. And yeah, it works on your phone. Same board, between meetings. Later you can wrap it in an app. Same job.
+For a CIO or an MD, this is the management screen. Outcome board. Traffic lights across the unit. What is ready, what is blocked, how many escalations are open. No book grid. No engine internals. And it works on a phone. Same board, between meetings. A mobile app can wrap this later. The job does not change.
 
-Run the bank is doing something else. They're on delays, escalations, dead letters. They can replay a failed event. They don't sign the rec off. That's still the user's call.
+Run the bank has a different mandate. Delays, escalations, dead letters. They can replay a failed event. They do not sign off the rec. That remains with the outcome owner.
