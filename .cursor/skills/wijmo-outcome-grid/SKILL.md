@@ -1,9 +1,9 @@
 ---
 name: wijmo-outcome-grid
-description: Use when adding later group-unit analyst exploration (FlexGrid, Pivot, FlexChart) on sources already onboarded, or when someone asks to build the analyst studio in the first slice. Company has a Wijmo licence.
+description: Use when adding later group-unit analyst exploration (FlexGrid, Pivot, FlexChart) on sources already onboarded, or when someone asks to build the analyst studio in the first slice. Company has a Wijmo (MESCIUS) licence. Also use when text says Wismo or WisMO — the product name is Wijmo.
 ---
 
-# Wijmo — later, same unit, known origin
+# Wijmo (MESCIUS) — later, same unit, known origin
 
 **Not day one.** First we bind the source of origin. Analysts enter the same One Fin UX app **after** that, and only see data for their `groupUnitId`.
 

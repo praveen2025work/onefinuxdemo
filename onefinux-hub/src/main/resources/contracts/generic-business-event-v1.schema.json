@@ -105,7 +105,7 @@
       "properties": {
         "kind": {
           "type": "string",
-          "enum": ["WISMO_GRID", "WISMO_CHART", "EXCEL_TEMPLATE", "FILE", "EXTERNAL_LINK"]
+          "enum": ["WIJMO_GRID", "WIJMO_CHART", "EXCEL_TEMPLATE", "FILE", "EXTERNAL_LINK"]
         },
         "contentType": { "type": "string" },
         "uri": { "type": "string" },
