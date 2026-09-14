@@ -30,7 +30,10 @@ The headline question it answers on screen: **"Can I execute FOBO analysis?"** �
 | **Instance detail** | The fold of source facts into one outcome, with sign-off. "Full lineage from raw fact to business decision." |
 | **Operations (RTB)** | Escalations, dead letters, feed watermarks, dual-control replay. "Run-the-bank has its own cockpit; nothing is lost." |
 | **Monitoring** | Received → persisted → propagated → audited, live. "Every fact is stored once and pushed to other systems reliably, with a full audit trail." |
-| **Onboarding / Configuration** | A new product/recon is added **as data, not code**. "We onboard the next business without a release." |
+| **Onboarding** | Create a live outcome (question, feeds, SLA, on-ready). "We onboard the next business without a release." |
+| **Configuration** | Master-detail registry of every outcome and kit. "The owner inspects the contract — Onboarding creates, Configuration governs." |
+| **Drive** | Start the day's scenario for a COB. "Product pages stay clean; testing lives here." |
+| **Reports** | Good path: feeds → ready → processing → generated → available to view. |
 
 ## 4. The value (framework — plug in your numbers)
 

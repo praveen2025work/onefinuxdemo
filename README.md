@@ -4,7 +4,7 @@ This POC proves the idea behind *One Finance UX*: stop asking "Is Motif complete
 
 Source systems publish events. The hub translates them into business identifiers and folds them into **business outcomes**. It notifies the right people as each outcome moves through its lifecycle, and it triggers the downstream action (Helix, Axiom) the moment an outcome is ready. Nothing polls.
 
-The requirements live in `docs/One_Finance_UX_BRD.docx`. This README covers running the POC.
+The requirements live in [`docs/brd.md`](docs/brd.md) (current) and `docs/One_Finance_UX_BRD.docx` (archive). This README covers running the POC.
 
 ## What's in the box
 

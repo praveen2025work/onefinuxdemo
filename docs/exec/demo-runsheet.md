@@ -1,110 +1,49 @@
 # One Finance UX — Demo Runsheet
 
-*A facilitator script for demonstrating to an MD / CIO. Two tracks: a 5-minute **MD business story** and a 10-minute **CIO deep-dive**. Each step lists what to click, what to say, and the "so what". A fallback is given for anything that can misfire.*
+Facilitator script. Two tracks: a **2–3 minute narrated MD / CIO story** (male voice, normal pace) and a longer **CIO deep-dive**. Each step lists what to show, what to say, and the so-what. Do not jump screens quickly.
 
 ---
 
-## Pre-flight (2 min before the audience joins)
+## Pre-flight
 
-Services (already wired in this environment):
+- Hub `http://localhost:7070` · Simulator `http://localhost:7081` · Console `http://localhost:5173`
+- Theme: dark (Astronaut Blue + Cerulean) for exec rooms.
+- Reset: `POST /api/stitch/reset`. Do **not** pre-run the day's scenario — Drive it live.
 
-- Hub — `http://localhost:7070` · Simulator — `http://localhost:7081` · Console — `http://localhost:5173`
+Worked examples:
 
-Reset to a clean, known state and pre-stage the story:
-
-```bash
-# 1. Clean slate
-curl -s -X POST http://localhost:7070/api/stitch/reset -o /dev/null -w "reset=%{http_code}\n"
-
-# 2. (Optional) clear the downstream sink so "Other systems received" starts empty
-#    restart the simulator if you want a pristine sink
-
-# 3. Open the console at http://localhost:5173 and confirm the group unit is REV-ACC
-```
-
-**Golden rule:** drive the scenario *live* during the demo (below) so the board moves in front of them. Don't pre-run it.
-
-Worked example you'll narrate (fixed, memorable):
-
-- **R-1042 → READY** — all three origins arrive, Helix echoes run `RUN-A37C`.
-- **R-2031 → BLOCKED** — MOTIF rejects ledger `MB014`; the board names the blocker.
-- **ESC / DL-4402** — the block becomes an escalation and a dead letter for Run-the-Bank.
+- Good path: 15C3 (or a newly onboarded outcome) — every feed arrives → READY → PROCESSING → AVAILABLE.
+- Bad path: FOBO **R-2031 BLOCKED** — MOTIF rejects a named ledger; escalate to RTB.
 
 ---
 
-## Track A — MD business story (5 minutes)
+## Track A — 2–3 minute narrated story (normal pace)
 
-**A1. The question (30s) — Home**
-- *Click:* Home.
-- *Say:* "This is a controller's morning. One shell, traffic lights. The only question that matters — *can I run my process yet?*"
-- *So what:* Replaces chasing a dozen systems with a single glance.
+Hold each screen 15–25 seconds. Speak at a conversational pace. Do not click during a sentence.
 
-**A2. Drive the day (60s) — Home → "Drive FOBO demo"**
-- *Click:* the **Drive FOBO demo** button.
-- *Say:* "Watch the estate come to life — trades book, breaks clear, ledgers post — and the board decides in real time."
-- *So what:* The platform is reacting to the *real* facts systems emit, not a batch report.
+| Time | Screen | Say |
+|---|---|---|
+| 0:00–0:20 | Home | At close of business a controller has one question per outcome. Can I execute this rec? Can I produce the fifteen C three report? Today we create an outcome, drive it for the day, and show both the good path and the blocked path. |
+| 0:20–0:50 | Onboarding | We start on Onboarding. We name the business question, declare the input feeds, the SLA, and what to do when every feed is ready. This is data, not a new product module. When we onboard it, the outcome goes live. |
+| 0:50–1:15 | Configuration | Configuration is where the owner inspects the contract. Pick the outcome on the left. The right pane shows entitlement, SLA, the on-ready action, and every feed that must complete. Onboarding creates. Configuration governs. |
+| 1:15–1:40 | Drive | For this business date we start Drive. Drive is the testing console. We run the day's scenario for the outcome. Product pages stay clean — they only show the fold. |
+| 1:40–2:05 | Reports | The good path. Every feed arrives. The outcome moves from feeds, to ready, to processing, to generated, and available to view. A controller can open the report and proceed. |
+| 2:05–2:25 | Outcome board + instance (blocked) | The bad path. A required feed fails. The instance is blocked on a named key. The user sees exactly which source failed. They escalate to run the bank. |
+| 2:25–2:45 | Outcome board, then narrow viewport | For a CIO or managing director, the Outcome board is the management screen. Traffic lights across the unit. Ready, blocked, escalations. No book grid. No engine internals. These screens are mobile friendly. The same traffic lights work on a phone between meetings. |
+| 2:45–3:05 | Operations | Run-the-bank monitors delays, escalations, and dead letters. They can replay a failed event. They do not sign off a rec. That stays with the outcome user. One platform. Two models. New capabilities launch by configuration, not new code. |
 
-**A3. The good path (60s) — Outcome board → R-1042**
-- *Click:* Outcome board; open **R-1042**.
-- *Say:* "R-1042 is **green**. Every dependency met, and Helix confirmed run RUN-A37C. The controller can act — and sign off, with a full trail."
-- *So what:* From raw facts to a trustworthy business decision, with lineage.
-
-**A4. The bad path (60s) — R-2031**
-- *Click:* open **R-2031** (blocked).
-- *Say:* "R-2031 is **red** — and it tells you *why*: MOTIF rejected ledger MB014. No hunting. The named blocker is on screen."
-- *So what:* The system surfaces the *reason*, which is where controllers lose hours today.
-
-**A5. Run-the-Bank (45s) — Operations**
-- *Click:* Operations.
-- *Say:* "The break becomes an escalation and a dead letter here. RTB owns it, with dual-control replay. Nothing is silently dropped."
-- *So what:* Operational resilience and clear ownership — an auditor's and an MD's comfort.
-
-**A6. Close (30s)**
-- *Say:* "One question, answered live, with the reason, the owner, and the audit trail. That's the daily close made legible."
+Voice: male, British, normal pace (about 140 words per minute). Script file used for TTS: `docs/exec/narration-script.txt`.
 
 ---
 
-## Track B — CIO deep-dive (10 minutes, after the MD story)
+## Track B — CIO deep-dive (10 minutes)
 
-**B1. Integration model (2 min) — Monitoring → "Live event tape" + "By source"**
-- *Click:* Monitoring; point at the event tape and by-source counts.
-- *Say:* "Every source — CATS, MOTIF, MBR, Helix, RAMP — just publishes a small **fact** to one endpoint. We store it append-only. We never copy their databases; heavy data stays in the source, we hold the fact and a deep-link."
-- *So what:* Integration is a lightweight adapter, not a migration. No rip-and-replace.
-
-**B2. Command + echo, no polling (1 min)**
-- *Say:* "When an outcome is ready, we send the command — 'run Helix analysis' — and Helix **echoes** its completion back as another fact (RUN-A37C). No polling anywhere."
-- *So what:* Two-way, event-driven, and loosely coupled.
-
-**B3. Reliable propagation — the outbox (2.5 min) — Monitoring → "Propagation outbox" + "Routes" + "Other systems received"**
-- *Say:* "The same fact is fanned out to downstream systems — archive, Finance Store, P&L feed — through a **transactional outbox**. One row per fact per route, delivered at-least-once over HTTP as **CloudEvents 1.0**. Subscribers de-dupe on event id."
-- *Optional live failure:* take the sink offline, force a fact, show a **FAILED** row, bring the sink back, hit **Retry** → it flips to **DISPATCHED**.
-- *So what:* "What we stored" and "what we propagated" cannot drift apart, and failures are visible and recoverable.
-
-**B4. Audit + replay (1.5 min) — Monitoring → "Audit log"**
-- *Say:* "Every human command — sign-off, escalate, publish, replay — is written to an append-only **audit log**: who, when, what, why. And the whole state can be **replayed** from the immutable event store."
-- *So what:* Evidence on demand for regulators; disaster recovery by design.
-
-**B5. Onboarding as data (1.5 min) — Configuration / Onboarding**
-- *Say:* "A new product or recon is registered **as data** — sources, destinations, embed — no Java, no release. The RAMP feed we just renamed flowed through config and correlated into PnL with zero code change to the engine."
-- *So what:* The next business goes live without an engineering cycle.
-
-**B6. Entitlement & determinism (1 min)**
-- *Say:* "Every artefact is CEES-scoped; production is **fail-closed** (unentitled → 404). The outcome fold is deterministic and explainable — essential for a regulated close. AI, later, only *advises*; the engine stays deterministic."
-- *So what:* Secure, explainable, and audit-friendly.
+Use the same story, then stay on Monitoring (ingest → outbox → audit), Configuration (feeds as the dependency mechanism), and Instance detail (lineage + kit-declared actions). Point at `docs/exec/architecture.md` for the diagrams.
 
 ---
 
-## Fallbacks
+## Fallback
 
-| If this happens | Do this |
-|---|---|
-| Board doesn't move after "Drive FOBO" | Re-run: `curl -s -X POST http://localhost:7081/sim/scenarios/fobo`; give it ~8s; click Refresh on the screen. |
-| A screen looks stale | Every screen has a **Refresh**; Monitoring also polls every ~3s. |
-| Monitoring shows old data | `curl -s -X POST http://localhost:7070/api/stitch/reset` then re-drive. |
-| Downstream sink empty on B3 | It fills within a couple of seconds of driving; or restart the simulator to reset it to zero first. |
-| Need to prove a number | Hit the API directly, e.g. `GET /api/stitch/monitor/overview` (metrics) or `GET /api/outcomes` (outcome + dependency state). |
-
-## One-line talking points to leave them with
-
-- **MD:** "One question — *can I proceed?* — answered live, with the reason, the owner, and the audit trail."
-- **CIO:** "We integrate by subscribing to facts, not copying databases — resilient, audited, standards-based, and no rip-and-replace."
+- Scenario already ran / keys de-duplicated: reset, then Drive again, or post events with unique `sourceKey`.
+- Hub down: `mvn -pl onefinux-hub spring-boot:run` (port 7070).
+- Theme looks light in a dark room: click the theme dot in the header.

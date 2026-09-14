@@ -1,0 +1,23 @@
+Good morning. This is One Finance UX.
+
+At close of business, a controller has one question per outcome. Can I execute this rec? Can I produce the fifteen C three report? Can I close the books?
+
+Today we will create an outcome, drive it for this business date, and show both the good path and the blocked path.
+
+We start on Onboarding. We name the business question, declare the input feeds, the SLA, and what to do when every feed is ready. This is data, not a new product module. When we onboard it, the outcome goes live immediately.
+
+Configuration is where the outcome owner inspects the contract. Pick the outcome on the left. The right pane shows entitlement, SLA, the on-ready action, and every feed that must complete. Onboarding creates. Configuration governs.
+
+For this business date, we start Drive. Drive is the testing console. We run the day's scenario for the outcome. The product pages stay clean. They only show the fold.
+
+Here is the good path. Every feed arrives. The outcome moves from feeds, to ready, to processing, to generated, and available to view. A controller opens the report, and can proceed.
+
+Here is the bad path. A required feed fails. The instance is blocked on a named key. The user sees exactly which source failed. They can escalate to run the bank.
+
+For a C I O or managing director, the Outcome board is the management screen. Traffic lights across the unit. Ready, blocked, escalations. No book grid. No engine internals.
+
+These screens are mobile friendly. The same traffic lights work on a phone between meetings. A mobile app can wrap this shell. The job does not change.
+
+Run the bank monitors delays, escalations, and dead letters. They can replay a failed event. They do not sign off a rec. That stays with the outcome user.
+
+One platform. Two models. Outcomes fold readiness. Console kits host the human work. New capabilities launch by configuration, not new code.

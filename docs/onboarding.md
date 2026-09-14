@@ -1,9 +1,38 @@
-# Onboarding — add a group unit, bind sources, register a kit
+# Onboarding — create an outcome, inspect it, drive the day
 
-This is the operator's checklist for turning an empty platform into a working outcome. It uses the
-worked example from the BRDs: `REV-ACC → FOBO → CATS, MOTIF, MBR`. Every step is a real API call
-against `onefinux-hub` (port 7070). No screen invents an id — each dropdown is filled from one of
-these endpoints.
+This is the operator's checklist. Two paths: **create a live Outcome Engine definition** (the
+business question), and **register a stitch console kit** (the human work). Index: `docs/brd.md`.
+
+## A. Create a live business outcome (preferred)
+
+On the console: **Onboarding** (`/onboarding`). The form is a business-outcome builder — question,
+feeds, SLA, on-ready action. Submit calls `POST /api/outcomes/definitions`. The outcome appears
+immediately on Configuration, Board and Reports for the selected COB.
+
+```bash
+curl -s -XPOST 'http://localhost:7070/api/outcomes/definitions?cobDate=2026-09-13' \
+  -H 'Content-Type: application/json' -d '{
+    "id": "MEC_CLOSE",
+    "name": "Month-end close",
+    "question": "Can I close the books?",
+    "regions": ["GLOBAL"],
+    "ownerGroup": "Financial Control",
+    "sla": {"withinMinutes": 5},
+    "dependencies": [
+      {"eventType": "SAP_JOURNAL_POSTED", "sourceSystem": "SAP", "expectedCount": 12, "label": "SAP journals"},
+      {"eventType": "COSTCENTRE_SIGNED", "sourceSystem": "SAP", "expectedCount": 8, "label": "Cost-centre sign-off"}
+    ],
+    "onReady": {"action": "NOTIFY_ONLY"}
+  }'
+```
+
+Inspect it on **Configuration** (`/configuration`) — pick the outcome on the left. Drive the day
+from **Drive** (`/drive`), not from Home or Reports.
+
+## B. Register a stitch console kit
+
+The rest of this note is the kit path (`REV-ACC → FOBO → CATS, MOTIF, MBR`). Every step is a real
+API call against `onefinux-hub` (port 7070). No screen invents an id.
 
 ## 0. Prerequisites
 

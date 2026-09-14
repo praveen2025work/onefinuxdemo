@@ -22,9 +22,9 @@ Build new screens by composing existing classes. If a screen needs a primitive t
 
 | Token | Value | Use |
 |---|---|---|
-| navy canvas | `#06101C` dark · `#E8EEF6` light | Ambient page |
-| glass | dark `rgba(14,32,58,.55)` · light white frost + blur 22px | Panels, cards |
-| cyan | `#3DD6FF` dark · `#0090C6` light | Glow, active, primary |
+| navy canvas | Astronaut Blue `#00395d` dark · light grey-blue | Ambient page |
+| glass | dark frost on navy · light white frost | Panels, cards |
+| cerulean | `#00aeef` | Glow, active, primary (Barclays brand) |
 | ink | `#F3F7FC` dark · `#0B1A2E` light | Text on glass |
 | ok | `#3EE0A0` | READY, COMPLETED, CLEARED |
 | warn | `#FFC46B` | WAITING, at risk, HOLD |
@@ -35,7 +35,7 @@ Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Self-hosted i
 
 ## Layout rules
 
-- `.app` is a `100dvh` grid: rail + main. Only `.body` scrolls.
+- `.app` is a `100dvh` grid: rail + main. Only `.body` scrolls. Below 820px the rail collapses to icons (mobile-friendly; a native app can wrap this shell).
 - Every screen keeps the **context ribbon** (`.ctxbar`) so the stitch keys stay visible: group unit, kit, instance, origins, run.
 - Content sits in `.panel` blocks with a `.panel-hd` that names the table or view behind it.
 - Detail screens use `.split` — content plus a 340px right rail for facts, event trail and rules.

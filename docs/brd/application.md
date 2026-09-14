@@ -1,47 +1,45 @@
 # BRD — One Finance UX application build
 
-Owner: Praveen Kumar · Status: for the build team · Companion to `docs/brd/architecture-group.md`.
+Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `docs/brd/architecture-group.md` and `docs/brd.md`.
 
-This is the document a developer picks up to make the console a real product. It covers the entities, who calls whom, when we decide an event, the API surface, how to onboard a product, which skill owns which part, and exactly what is in the demo build versus later.
+This is the document a developer picks up to make the console a real product. It covers the two models, who calls whom, when we decide an event, the API surface, how to onboard an outcome, which skill owns which part, and exactly what is in the demo build versus later.
 
 ## 1. Modules and ports
 
 | Module | Port | Responsibility |
 |---|---|---|
-| `onefinux-hub` | 7070 | Event ingest, translation, the stitch fold, REST + SSE, serves the console at `/console/` |
-| `source-simulator` | 7081 | Stubs the systems of record (CATS/MOTIF/MBR) and the destinations (Helix/FAS). Drives the demo. |
-| `docs/design/mockups` | served at `/console/` | The console UI. `console.js` hydrates it from the hub API. |
+| `onefinux-hub` | 7070 | Event ingest, translation, Outcome Engine fold, Stitch fold, REST + SSE, outbox, audit |
+| `source-simulator` | 7081 | Stubs systems of record and destinations. Drives Drive scenarios. |
+| `experience/web` | 5173 (dev) | React console. The product UI. |
 
-The browser talks only to the hub. The hub talks to the simulator for downstream commands. Nothing in the browser touches a bus.
+The browser talks only to the hub (and `/sim` via the Vite proxy). Nothing in the browser touches a bus.
 
-## 2. Entities (already designed — do not invent a second model)
+## 2. Two models — do not collapse them, do extend each
 
-DDL: `docs/schema/onefinux-stitch.sql`. The stitch is `outcome_instance`; everything hangs off it.
+The platform keeps **two complementary models**. They share one event backbone. New capabilities launch on each by configuration, not by a new Java type.
 
-```mermaid
-erDiagram
-  group_unit ||--o{ product_kit : owns
-  product_kit ||--o{ kit_source : requires
-  product_kit ||--o{ kit_destination : steps
-  product_kit ||--o| kit_embed : frames
-  product_kit ||--o{ outcome_instance : instances
-  group_unit ||--o{ outcome_instance : scope
-  outcome_instance ||--o{ readiness_key : fold
-  source_system ||--o{ readiness_key : origin
-  source_system ||--o{ event_store : via_source_system
-  outcome_instance ||--o{ event_store : optional_link
-  outcome_instance ||--o{ command_run : runs
-  destination_system ||--o{ command_run : target
-  outcome_instance ||--o{ notification : alerts
-  outcome_instance ||--o{ escalation : rtb
-  source_system ||--o{ dead_letter : ingest_fail
-  group_unit ||--o{ dataset_locator : catalog
-  dataset_locator ||--o{ analyst_view_def : saved_views
-```
+### 2.1 Outcome Engine (business question)
 
-Locked column rule: `event_store.source_system` **is** the foreign key to `source_system.source_id`. Do not add a second `source_id` on events. `notification.outcome_key` carries the `kit_id`.
+A product is an `OutcomeDefinition`: `id`, `name`, `question`, `regions`, `ownerGroup`, `sla`, `dependencies[]` (feeds), `onReady`.
 
-Status vocabulary: instance `NOT_YET | READY | BLOCKED | CLEARED | DELAYED`; readiness key `WAITING | COMPLETED | FAILED | REVOKED`.
+- Seeded in `application.yml`: `FOBO_HELIX`, `REPORT_15C3`, `PNL_REPORTING`.
+- Runtime onboard: `POST /api/outcomes/definitions`.
+- Fold: `OutcomeEngine` matches events on `eventType` + `sourceSystem`, re-derives status, emits `OutcomeChanged`.
+- On ready: any `onReady.action` other than `NOTIFY_ONLY` is dispatched through the **`ActionExecutor` registry** (`HTTP_COMMAND`, `LOG_COMMAND`, …). Downstream reports back by publishing the completion event. No polling.
+- Report-like vs command-like is data: a completion event with `reportId` attaches a `ReportArtifact` and the derived `stage` becomes `AVAILABLE`; otherwise it is `GENERATED`.
+
+Derived stage (generic, not 15C3-specific):
+
+`NOT_STARTED → FEEDS → READY → PROCESSING → GENERATED | AVAILABLE` (or `BLOCKED` / `FAILED`).
+
+### 2.2 Stitch console kit (human work)
+
+A kit is `product_kit` + sources + destinations + embed + `userActions`. FOBO is the first kit. There is no FOBO code path.
+
+- Status vocabulary: instance `NOT_YET | READY | BLOCKED | CLEARED | DELAYED`; readiness key `WAITING | COMPLETED | FAILED | REVOKED`.
+- Human actions: `POST /api/stitch/instance/action?id=&action=` is gated by the kit's `userActions`. Known verbs (`SIGN_OFF`, `POST`, `ESCALATE`) keep rich behaviour; any other declared verb is handled generically (audit + `WORKFLOW_<VERB>`). Launching a new console capability is adding a verb to the kit.
+
+The console never invents an id. Every dropdown is filled from an API.
 
 ## 3. How an event becomes a screen
 
@@ -49,130 +47,107 @@ Status vocabulary: instance `NOT_YET | READY | BLOCKED | CLEARED | DELAYED`; rea
 sequenceDiagram
   participant Sim as source_simulator
   participant Hub as onefinux_hub
-  participant Fold as stitch_fold
-  participant DB as H2
-  participant UI as console
-  Sim->>Hub: POST /api/events (CATS/MOTIF/MBR fact, carries instanceId)
-  Hub->>DB: append event_store
-  Hub->>Fold: EventIngested
-  Fold->>DB: upsert readiness_key (distinct source_key)
-  Fold->>DB: recompute outcome_instance.status
-  alt status transition is notifiable
-    Fold->>DB: insert notification
-    Fold->>UI: SSE notification + outcome
+  participant Engine as OutcomeEngine
+  participant Fold as StitchFold
+  participant UI as experience_web
+  Sim->>Hub: POST /api/events
+  Hub->>Engine: EventIngested
+  Engine->>Engine: match feeds, re-derive status, emit OutcomeChanged
+  alt READY and hasAction
+    Engine->>Hub: ActionExecutor runs (HTTP_COMMAND / LOG_COMMAND / …)
   end
-  UI->>Hub: GET /api/stitch/instances?cobDate&region&status
-  UI->>Hub: SSE /api/stream (live activity + bell)
+  Hub->>Fold: upsert readiness_key, recompute outcome_instance
+  Fold->>UI: SSE notification + outcome
+  UI->>Hub: GET /api/outcomes and GET /api/stitch/instances
 ```
 
-### When we decide an event (the fold rule)
+### When we decide an event (stitch fold)
 
-Recompute an instance after every readiness change:
-
-- any key `FAILED` → **BLOCKED**, `named_blocker = "<SOURCE> <key> FAILED"`.
+- any key `FAILED` → **BLOCKED**, named blocker.
 - else any key `WAITING` → **NOT_YET** (or **DELAYED** if past SLA).
 - else all keys `COMPLETED` and every required source present → **READY**.
 - user signs off a READY instance → **CLEARED**.
-- `REVOKED` on any completed key drops the instance out of READY.
 
-### Which service is called
+### When we notify
 
-- Ingest and fold: the hub, in process. No product logic.
-- Downstream command (post to MOTIF via FAS, run Helix): the hub calls the simulator's `/helix/analysis` or `/fas/post`; the completion event must **echo the `runId`** or it is ignored (`command_run.echo_ok`).
-- Notify: the hub's notification channels (in-app SSE now; email/Teams/ServiceNow/Barclays Now later).
-
-### When we notify (and when we do not)
-
-Notify on: `READY, BLOCKED, DELAYED, SLA_BREACHED, REVOKED, CLEARED, SIGNED_OFF, POSTED, ESCALATED`.
+Notify on: `READY, BLOCKED, DELAYED, SLA_BREACHED, REVOKED, CLEARED, SIGNED_OFF, POSTED, ESCALATED` and kit-declared verbs.
 Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
-## 4. API surface (how the APIs work together)
+## 4. Screens (as built)
 
-Full contract: `contracts/openapi.yaml`. Summary of the stitch API (all under `/api/stitch`, plus the existing `/api/events` and `/api/stream`):
-
-| Area | Method + path | Purpose |
+| Route | Job | Who |
 |---|---|---|
-| Context | `GET /context` | business date, zone, group units, COB dates, regions, live client count |
-| Tenancy | `GET /group-units` | onboarded tenants |
-| Board / fold | `GET /instances?groupUnit&cobDate&region&status` | head board + user list; carries fold counts |
-| Detail | `GET /instances/{id}` | keys, embed, echo, destinations |
-| Facts | `GET /instances/{id}/events` | events for one instance (audit) |
-| Action | `POST /instances/{id}/signoff` | sign off a READY instance → CLEARED |
-| Action | `POST /instances/{id}/post` | post to MOTIF via FAS → command_run, echo pending |
-| Action | `POST /instances/{id}/escalate` | raise an escalation to RTB |
-| Inbox | `GET /notifications?limit` | notification inbox (instance-linked) |
-| RTB | `GET /rtb` | escalations, dead letters, feed watermarks |
-| RTB | `POST /deadletters/{id}/replay` | dual-control replay |
-| Onboard | `GET /sources`, `GET /destinations`, `GET /kits` | catalog |
-| Onboard | `POST /kits` | register a product kit as data (no code) |
-| Analyst | `GET /datasets?groupUnit` | bound origins for a unit |
-| Analyst | `GET /explore?source&cobDate&region&status` | explore facts from bound origins |
-| Analyst | `GET /views?groupUnit`, `POST /views`, `DELETE /views/{id}` | saveable grid/pivot/chart definitions |
-| Admin | `POST /reset` | reset the two demo instances so the simulator can re-drive them |
-| Live | `GET /api/stream` | SSE: `event`, `outcome`, `notification`, `reset`, `hello` |
+| `/` Home | Morning glance: ready / blocked / escalations | Everyone |
+| `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready) | Maker |
+| `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
+| `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
+| `/reports` | Report lifecycle: feeds → ready → processing → generated → available | Controller |
+| `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
+| `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
+| `/instance/:id` | Fold, embed, sign-off / post / kit-declared actions | Outcome user |
+| `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
+| `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |
+| `/analyst` | Explore bound origins | Analyst |
 
-The console never invents an id. Every dropdown (COB, region, group unit, source) is filled from one of these endpoints, and every filter is a query parameter on `GET /instances` or `GET /explore`.
+**Outcome board vs My outcomes.** Same tenant-scoped instance list. Board is the supervisor table (status filter, blockers, escalation counts). My outcomes is the doer's card worklist. Both drill to Instance detail.
 
-## 5. Onboard a product (ready-to-use)
+**Onboarding vs Configuration.** Onboarding *creates*. Configuration *inspects and governs* (pick an outcome or kit on the left; anatomy on the right).
 
-Config screen posts one body to `POST /api/stitch/kits`:
+**Mobile.** The shell collapses the rail below 820px; grids stack; tables scroll. The management board and My outcomes are the first surfaces intended for a phone between meetings.
 
-```json
-{
-  "kitId": "REG-15C3",
-  "groupUnitId": "REV-ACC",
-  "domain": "Regulatory",
-  "question": "Can I produce the 15C3 report?",
-  "renderer": "ENGINE_REPORT",
-  "userActions": "SIGN_OFF",
-  "ceesProduct": "product:REG-15C3",
-  "slaCutoff": "07:30",
-  "sources": [{"sourceId": "CATS", "required": true}],
-  "destinations": [{"destId": "PNL_AGENT", "stepOrder": 1}],
-  "embed": {"url": "https://axiom.example/15c3", "allowedOrigin": "https://axiom.example", "chrome": "HOST"}
-}
-```
+## 5. API surface
 
-The hub writes `product_kit` + `kit_source` + `kit_destination` + `kit_embed` and the kit shows up on the board with **no new Java type**. The full step-by-step is in `docs/onboarding.md`.
+Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, RTB, analyst, reset.
 
-## 6. Analyst explorer
+Outcomes (`/api/outcomes`) — live views, `GET/POST /definitions`, instance + report document.
 
-New page `docs/design/mockups/analyst.html`, backed by `GET /explore` and `analyst_view_def`.
+Events (`/api/events`) — ingest (JSON Schema validated). Stream (`/api/stream`) — SSE.
 
-- Only origins already bound to the group unit via `dataset_locator` (CATS, MOTIF, MBR). The explorer cannot register a new source — that stays config.
-- Filters: source, COB date, region, key status.
-- Grid now; pivot and chart are the same saved-view shape (`widget = GRID | PIVOT | CHART`).
-- Save / load a view: name, columns, filters. Stored in `analyst_view_def` with a `cees_report` scope.
-- Grid uses licensed Wijmo when its files are on the machine; otherwise a contract-shaped grid renders the same `field_map_json`, so swapping in Wijmo is a drop-in with no data change.
+Workflow (`/api/workflow/.../run`) — re-run an on-ready action.
+
+Simulator (`/sim/scenarios/{name}`) — `fobo`, `helix`, `15c3`, `pnl`, `restate`, `all`, `cancel`.
+
+## 6. Onboard a product (ready-to-use)
+
+### Outcome (engine)
+
+`POST /api/outcomes/definitions` with id, name, question, regions, owner, SLA, feeds, on-ready. The instance appears on Board, Reports and Configuration for the given COB.
+
+### Console kit (stitch)
+
+`POST /api/stitch/kits` with kitId, sources, destinations, embed, `userActions`. No new Java type.
+
+Full operator steps: `docs/onboarding.md`.
 
 ## 7. Which skill owns which part
 
 | Part | Skill |
 |---|---|
-| Console chrome / theme / iframe host | `barclays-ib-console`, `embed-partner-screen` |
-| Head board | `bu-head-view` |
-| Sign-off / post / ready pack | `colleague-view` |
+| Console chrome / theme / mobile | `barclays-ib-console` |
+| Create / register an outcome or kit | `register-outcome-kit` |
+| Outcome Engine fold + ActionExecutor | `outcome-engine` |
+| Drive a COB scenario / exec demo | `drive-and-demo` |
+| Configuration / bindings | `engineering-view` |
+| CIO / MD board | `bu-head-view` |
+| Sign-off / post / amend | `colleague-view` |
 | Delays / escalations / dead letters | `rtb-support-view` |
-| Onboarding + adapters + fold wiring | `engineering-view` |
-| Bind a source or destination (incl. the simulator path) | `bind-source-destination` |
-| Register a kit as data | `register-outcome-kit` |
-| Analyst grid / pivot / chart | `wijmo-outcome-grid` |
-
-A team that wants to work on one component reads its skill and the matching `/api/stitch` endpoints above.
+| Bind a source or destination | `bind-source-destination` |
+| Partner iframe | `embed-partner-screen` |
+| Analyst grid | `wijmo-outcome-grid` |
 
 ## 8. Demo build vs later
 
-**In (a workable product slice):** REV-ACC + FOBO, two instances driven by the simulator; working COB / region / filters / bell / SSE; sign-off / post / escalate that change the fold; analyst explorer with saved views; onboard a second kit as data; OpenAPI + this BRD + onboarding note.
+**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report lifecycle; FOBO stitch console with kit-declared actions (`AMEND`); RTB operations; monitoring + outbox + audit; Barclays Cerulean / Astronaut Blue theme; pluggable action registries.
 
-**Later (designed, not wired):** bank Kafka/Solace and real FEED watermarks; real CEES; live Helix/FAS; Barclays Now; React `experience/web/`.
+**Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; native mobile app wrapping the same responsive shell.
 
 ## 9. Run and verify
 
 ```bash
-./scripts/run.sh                              # build + start hub (7070) and simulator (7081)
-open http://localhost:7070/console/index.html # the console
+./scripts/run.sh
+cd experience/web && npm install && npm run dev   # http://localhost:5173
 curl -s -XPOST http://localhost:7070/api/stitch/reset
-curl -s -XPOST http://localhost:7081/sim/scenarios/fobo   # drive R-1042 READY and R-2031 BLOCKED live
+curl -s -XPOST http://localhost:7081/sim/scenarios/fobo
 ```
 
-Watch the home board flip R-1042 to READY and R-2031 to BLOCKED, a notification appear in the bell, and the activity feed update over SSE.
+Drive lives at `/drive`. Do not put scenario buttons on Home or Reports.
