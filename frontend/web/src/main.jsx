@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { AppProvider } from './store.jsx';
 import App from './App.jsx';
+import './theme/fonts.css';
 import './styles.css';
 
 const saved = localStorage.getItem('ofx-theme');

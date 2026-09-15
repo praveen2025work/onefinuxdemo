@@ -5,7 +5,7 @@ description: Use when building One Finance chrome or when another team must copy
 
 # Barclays IB console
 
-One Finance UX is a **solid finance dashboard**: opaque cards, a dark navy rail, and status colour on KPIs. Not frosted glass, not cyan glow, not a magazine, not a 2016 admin theme. Dark charcoal is the default canvas; light (`data-theme="light"`) is a first-class peer with the **same dark rail**.
+One Finance UX is a **solid finance dashboard**: opaque cards, a dark indigo rail, and status colour on KPIs. Visual language is MITR indigo-lavender (Inter / Sora / JetBrains Mono, Lucide marks). Not frosted glass, not a magazine, not a 2016 admin theme. Dark canvas is the default; light (`data-theme="light"`) is a first-class peer with the **same dark rail**.
 
 ## Reference implementation — read before writing CSS
 
@@ -22,20 +22,20 @@ Build new screens by composing existing classes in `frontend/web/src/styles.css`
 
 | Token | Value | Use |
 |---|---|---|
-| canvas | charcoal `#0b1220` dark · `#eef1f6` light | Ambient page |
-| surface | opaque `#152033` dark · white light | Panels, cards |
-| rail | solid `#07111c` in both themes | Left nav |
-| cerulean | `#00aeef` | Brand accent, primary actions, active nav |
-| gold | `#eab308` | Env chip, finance ticker accent |
-| ink | `#eef3f8` dark · `#102033` light | Body text |
-| ok | `#22c55e` | READY, COMPLETED, CLEARED |
-| warn | `#f59e0b` | WAITING, at risk, HOLD |
-| fail | `#ef4444` | BLOCKED, FAILED |
+| canvas | `#090d1c` dark · `#f5f6fb` light | Ambient page |
+| surface | opaque `#161d33` dark · white light | Panels, cards |
+| rail | solid `#090d1c` in both themes | Left nav |
+| indigo | `#818cf8` dark · `#6366f1` light | Brand accent, primary actions, active nav |
+| gold | `#fbbf24` | Env chip, finance ticker accent |
+| ink | `#e6e8ee` dark · `#0f172a` light | Body text |
+| ok | `#34d399` dark · `#059669` light | READY, COMPLETED, CLEARED |
+| warn | `#fbbf24` / `#d97706` | WAITING, at risk, HOLD |
+| fail | `#f87171` / `#dc2626` | BLOCKED, FAILED |
 | back office | `#a78bfa` | Maker-checker |
 
-Font: IBM Plex Sans, IBM Plex Mono for ids, offsets, times, money. Numerics are `tabular-nums`.
+Font: Inter (UI), Sora (display / page titles), JetBrains Mono for ids, offsets, times, money. Numerics are `tabular-nums`. Icons are Lucide (stroke 2) from the MITR kit.
 
-Never use `backdrop-filter`, translucent `--glass` fills, or radial cyan washes on the page.
+Never use `backdrop-filter`, translucent `--glass` fills, or radial indigo washes on the page. MITR ships glass utilities; this console does not use them.
 
 ## Layout rules
 
