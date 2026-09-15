@@ -217,6 +217,7 @@ SLIDES = [
             },
         },
         "points": [
+            "Optional later: read-scale only. Never the system of decision.",
             "Phase 1: no cache licence. H2 now, Oracle later — already on the estate.",
         ],
     },
@@ -400,6 +401,7 @@ SLIDES = [
             ],
         },
         "points": [
+            "No Kafka / Solace brokers. No Motif books grid. No Helix recon clone. No CEES replacement.",
             "No second mobile product. The entitled board already works on a phone between meetings.",
         ],
     },
@@ -425,6 +427,7 @@ SLIDES = [
             ],
         },
         "points": [
+            "This hub is the only Ready / Blocked system of decision. First production outcome: FOBO.",
             "Airflow only after READY. CEES fail-closed. Non-goals stay binding so the layer stays thin.",
         ],
     },
@@ -522,23 +525,25 @@ def _panel(slide, l, t, w, h, title, tone, nodes):
     ink, line = TONE_RGB.get(tone, TONE_RGB["accent"])
     card = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, l, t, w, h)
     _stroke_fill(card, SURFACE, line, 1.5)
-    title_box = slide.shapes.add_textbox(l + Inches(0.12), t + Inches(0.06), w - Inches(0.24), Inches(0.28))
+    title_box = slide.shapes.add_textbox(l + Inches(0.12), t + Inches(0.06), w - Inches(0.24), Inches(0.26))
     tf = title_box.text_frame
     p = tf.paragraphs[0]
     run = p.add_run()
     _set_run(run, title.upper(), 10, True, ink)
-    # nodes as a compact row inside the panel
     inner = [n if isinstance(n, str) else n[0] for n in nodes]
-    gap = Inches(0.08)
-    usable = w - Inches(0.2)
     n = max(1, len(inner))
-    cw = (usable - gap * (n - 1)) / n
-    y = t + Inches(0.38)
-    x = l + Inches(0.1)
-    ch = h - Inches(0.48)
-    for label in inner:
+    cols = n if n <= 3 else (2 if n == 4 else 3)
+    rows = (n + cols - 1) // cols
+    gap = Inches(0.08)
+    usable_w = w - Inches(0.2)
+    usable_h = h - Inches(0.40)
+    cw = (usable_w - gap * (cols - 1)) / cols
+    ch = (usable_h - gap * (rows - 1)) / rows
+    for idx, label in enumerate(inner):
+        r, c = divmod(idx, cols)
+        x = l + Inches(0.1) + (cw + gap) * c
+        y = t + Inches(0.34) + (ch + gap) * r
         _chip_box(slide, x, y, cw, ch, label, tone)
-        x += cw + gap
 
 
 def _draw_flow(slide, flow, left, top, width, height):
@@ -635,9 +640,13 @@ def build_pptx() -> None:
 
         if s.get("flow"):
             has_table = bool(s.get("table"))
-            flow_h = Inches(1.15) if has_table else Inches(1.28)
+            is_split = s["flow"].get("kind") == "split"
+            if has_table:
+                flow_h = Inches(1.42) if is_split else Inches(1.12)
+            else:
+                flow_h = Inches(1.72) if is_split else Inches(1.28)
             _draw_flow(slide, s["flow"], Inches(0.55), y, Inches(12.3), flow_h)
-            y = y + flow_h + Inches(0.12)
+            y = y + flow_h + Inches(0.10)
 
         if s.get("points"):
             b = slide.shapes.add_textbox(Inches(0.55), y, Inches(12.3), Inches(7.02) - y)
@@ -726,10 +735,11 @@ def _flow_html(flow: dict) -> str:
         def col(side: dict) -> str:
             tone = side.get("tone", "")
             chips = "".join(f'<span class="node {tone}">{_esc(n)}</span>' for n in side["nodes"])
+            n = len(side["nodes"])
             return (
                 f'<div class="panel {tone}">'
                 f'<div class="ptitle">{_esc(side["title"])}</div>'
-                f'<div class="prow">{chips}</div>'
+                f'<div class="prow n{n}">{chips}</div>'
                 f"</div>"
             )
 
@@ -806,13 +816,19 @@ def build_html() -> None:
     padding:10px 14px 12px; margin:0 0 12px;
   }}
   .dcap {{ color:var(--muted); font-size:13px; margin:0 0 8px; }}
-  .drow, .prow, .splitrow {{ display:flex; align-items:stretch; gap:8px; flex-wrap:nowrap; }}
-  .splitrow {{ align-items:stretch; }}
+  .drow, .splitrow {{ display:flex; align-items:stretch; gap:8px; flex-wrap:nowrap; }}
+  .prow {{ display:grid; gap:8px; }}
+  .prow.n1 {{ grid-template-columns:1fr; }}
+  .prow.n2, .prow.n4 {{ grid-template-columns:1fr 1fr; }}
+  .prow.n3 {{ grid-template-columns:1fr 1fr 1fr; }}
+  .prow.n5 {{ grid-template-columns:1fr 1fr 1fr; }}
+  .prow.n6 {{ grid-template-columns:1fr 1fr 1fr; }}
   .node {{
     flex:1; min-width:0; background:var(--chip); border:1px solid var(--stroke);
     border-radius:10px; padding:10px 8px; font-size:13px; font-weight:650;
     text-align:center; line-height:1.25; display:flex; align-items:center; justify-content:center;
   }}
+  .prow .node {{ min-height:44px; }}
   .node.ok {{ border-color:var(--ok); color:var(--ok); }}
   .node.warn {{ border-color:var(--warn); color:var(--warn); }}
   .node.fail {{ border-color:var(--fail); color:var(--fail); }}
@@ -825,7 +841,7 @@ def build_html() -> None:
   .neq {{ color:var(--fail); }}
   .panel {{
     flex:1; background:var(--chip); border:1.5px solid var(--stroke);
-    border-radius:12px; padding:8px 10px 10px;
+    border-radius:12px; padding:8px 10px 10px; min-height:132px;
   }}
   .panel.ok {{ border-color:var(--ok); }}
   .panel.warn {{ border-color:var(--warn); }}
