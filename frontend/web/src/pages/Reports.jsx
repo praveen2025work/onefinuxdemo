@@ -11,7 +11,7 @@ import { viewIncludes } from '../views.js';
 // The five stages a report walks through: feeds arriving → ready → processing → generated → available.
 const STEPS = [
   { key: 'FEEDS', label: 'Feeds in', hint: 'Sources publishing', icon: 'inbox' },
-  { key: 'READY', label: 'Ready', hint: 'All feeds complete', icon: 'check' },
+  { key: 'READY', label: 'Ready', hint: 'All feeds complete', icon: 'play' },
   { key: 'PROCESSING', label: 'Processing', hint: 'Report generating', icon: 'spark' },
   { key: 'GENERATED', label: 'Generated', hint: 'Report produced', icon: 'report' },
   { key: 'AVAILABLE', label: 'Available', hint: 'Ready to view', icon: 'eye' },
