@@ -322,7 +322,7 @@ export default function Icon({ name, size = 18, fill = 'none', className = '' })
 }
 
 export function BrandMark({ size = 34 }) {
-  // One coin (singular scope) with a currency mark — finance, not a signal chart.
+  // Generic briefcase on the MITR tile — one mark, not a chart, coin, or stitch stack.
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
       <defs>
@@ -331,11 +331,11 @@ export function BrandMark({ size = 34 }) {
           <stop offset="1" stopColor="#8b5cf6" />
         </linearGradient>
       </defs>
-      <circle cx="20" cy="20" r="18.5" fill="url(#ofx-g)" />
-      <circle cx="20" cy="20" r="13.6" stroke="#ffffff" strokeWidth="1.8" opacity="0.92" />
+      <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill="url(#ofx-g)" />
       <g stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.96">
-        <path d="M20 11.2v17.6" />
-        <path d="M25.2 14.2h-6.6a3.4 3.4 0 0 0 0 6.8h3.6a3.4 3.4 0 0 1 0 6.8H14.4" />
+        <rect x="9" y="16.5" width="22" height="13.5" rx="2.4" />
+        <path d="M15.2 16.5v-2.4a4.8 4.8 0 0 1 9.6 0v2.4" />
+        <path d="M9 22.8h22" />
       </g>
     </svg>
   );
