@@ -9,7 +9,7 @@ import { VIEWS, viewIncludes } from '../views.js';
 import { hasPrediction } from '../eta.js';
 
 export default function Home() {
-  const { instances, filters, refreshInstances, view, setView, context } = useApp();
+  const { instances, filters, view, setView, context } = useApp();
   const [events, setEvents] = useState([]);
   const [engineOutcomes, setEngineOutcomes] = useState([]);
   const navigate = useNavigate();
@@ -64,7 +64,6 @@ export default function Home() {
           <Link className="btn ghost" to="/product"><Icon name="book" size={15} /> Product story</Link>
           <Link className="btn ghost" to="/architecture"><Icon name="compass" size={15} /> Architecture</Link>
           <Link className="btn ghost" to="/guide"><Icon name="code" size={15} /> Developer guide</Link>
-          <button className="btn ghost" onClick={() => refreshInstances()}><Icon name="refresh" size={15} /> Refresh fold</button>
         </div>
       </div>
 
@@ -76,7 +75,9 @@ export default function Home() {
             <strong>{namedBlocker.region} {namedBlocker.kitId}</strong>
             {' '}is still blocked on{' '}
             <strong>{namedBlocker.namedBlocker}</strong>
-            {namedBlocker.question ? ` — ${namedBlocker.question}` : ''}.{' '}
+            {namedBlocker.question ? ` — ${namedBlocker.question}` : ''}
+            {namedBlocker.question && /[.!?]$/.test(namedBlocker.question) ? '' : '.'}
+            {' '}
             <Link to={'/instance/' + encodeURIComponent(namedBlocker.instanceId)}>Open that row</Link>
             {' · '}
             <Link to="/board">All desks</Link>
