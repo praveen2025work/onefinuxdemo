@@ -1,4 +1,4 @@
-# One Finance UX — agent notes
+# One Finance — agent notes
 
 Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 

@@ -1,4 +1,4 @@
-# BRD — One Finance UX application build
+# BRD — One Finance application build
 
 Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `architecture-group.md` and `README.md`.
 

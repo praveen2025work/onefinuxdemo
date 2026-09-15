@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.2.0",
   "type": "module",
-  "description": "One Finance UX — React console for the outcome platform (talks to onefinux-hub).",
+  "description": "One Finance — React console for the outcome platform (talks to onefinux-hub).",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

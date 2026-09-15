@@ -1,6 +1,6 @@
 # Product as built — 14 September 2026
 
-Status: current design truth for One Finance UX after Drive, Configuration master-detail, Barclays theme, 15C3 report flow, and pluggable capability registries.
+Status: current design truth for One Finance after Drive, Configuration master-detail, Barclays theme, 15C3 report flow, and pluggable capability registries.
 
 ## Intent
 
@@ -31,7 +31,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 ## Brand
 
-MITR indigo-lavender accent (`#818cf8` dark / `#6366f1` light). Canvas `#090d1c` dark / `#f5f6fb` light, opaque cards, dark indigo rail. Status colour on KPI tiles (ready / blocked / delayed). Light theme keeps the same dark rail. Inter + Sora + JetBrains Mono, Lucide icons. No frosted glass.
+Wordmark is **One Finance**. Brand mark is one circular scope holding a rising finance chart (singularity — not a three-layer stitch stack). MITR indigo-lavender accent (`#818cf8` dark / `#6366f1` light). Canvas `#090d1c` dark / `#f5f6fb` light, opaque cards, dark indigo rail. Status colour on KPI tiles (ready / blocked / delayed). Light theme keeps the same dark rail. Inter + Sora + JetBrains Mono, Lucide icons. No frosted glass.
 
 ## Mobile
 

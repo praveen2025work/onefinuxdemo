@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/** Lets the One Finance UX board's demo buttons start scenarios here. */
+/** Lets the One Finance board's demo buttons start scenarios here. */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 

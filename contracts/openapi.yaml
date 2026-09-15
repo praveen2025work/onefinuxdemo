@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: One Finance UX Hub API
+  title: One Finance Hub API
   version: 0.2.0
   description: >
     Event ingest, the stitch fold, and the read/write APIs the console calls.

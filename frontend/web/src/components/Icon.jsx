@@ -322,19 +322,22 @@ export default function Icon({ name, size = 18, fill = 'none', className = '' })
 }
 
 export function BrandMark({ size = 34 }) {
-  // Three layers stitched into one — the group unit / kit / instance stack.
+  // One circular scope + a finance chart. Singularity, not a stitch stack.
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
       <defs>
-        <linearGradient id="ofx-g" x1="0" y1="0" x2="40" y2="40">
-          <stop offset="0" stopColor="#6366f1" /><stop offset="1" stopColor="#8b5cf6" />
+        <linearGradient id="ofx-g" x1="8" y1="4" x2="34" y2="36">
+          <stop offset="0" stopColor="#6366f1" />
+          <stop offset="1" stopColor="#8b5cf6" />
         </linearGradient>
       </defs>
-      <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill="url(#ofx-g)" />
-      <g stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.94">
-        <path d="M11 14.5 20 10l9 4.5-9 4.5-9-4.5Z" />
-        <path d="M11 20l9 4.5 9-4.5" />
-        <path d="M11 25.5 20 30l9-4.5" />
+      <circle cx="20" cy="20" r="18.5" fill="url(#ofx-g)" />
+      <circle cx="20" cy="20" r="15.2" stroke="#ffffff" strokeWidth="1.7" opacity="0.38" />
+      <g stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" opacity="0.96">
+        <path d="M13.5 25.2v-5.2" />
+        <path d="M20 25.2v-8.6" />
+        <path d="M26.5 25.2v-12.2" />
+        <path d="M12.2 25.2h15.6" />
       </g>
     </svg>
   );

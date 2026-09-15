@@ -1,4 +1,4 @@
-# One Finance UX — Executive Brief
+# One Finance — Executive Brief
 
 *For an MD / CIO audience. One page of narrative, one page of value, one page of architecture and roadmap. Everything here is backed by the working demo — nothing is a slideware promise.*
 
@@ -10,7 +10,7 @@ Every day, controllers cannot answer a simple question — **"Is it safe for me 
 
 The cost of that gap: **late closes, missed SLAs, manual reconciliation, and audit findings** — because the truth is scattered and nobody holds the whole picture.
 
-## 2. What One Finance UX is
+## 2. What One Finance is
 
 A thin **outcome layer** that sits on top of the existing estate. It does **not** replace any system of record. It:
 
@@ -52,7 +52,7 @@ The platform creates value on four levers. The formulas are ready; the **illustr
 
 The full, editable diagram set (Mermaid source + SVG/PNG exports) lives in **[`architecture.md`](./architecture.md)**: enterprise integration context, deployment/containers, end-to-end event sequence, data model (ER), and the outcome state machine. The enterprise integration context is below.
 
-![One Finance UX — enterprise integration context](./diagrams/01-enterprise-context.svg)
+![One Finance — enterprise integration context](./diagrams/01-enterprise-context.svg)
 
 > Every diagram is real Mermaid you can fork ([`diagrams/*.mmd`](./diagrams)) and re-render with [`diagrams/render.sh`](./diagrams/render.sh) — nothing here is a hand-drawn picture that can drift from the build.
 

@@ -1,4 +1,4 @@
-# Multi-stage build for the One Finance UX hub.
+# Multi-stage build for the One Finance hub.
 # Build once with Maven, run on a slim JRE. The whole reactor is copied so the module can
 # resolve the parent POM; only the hub artifact is produced.
 FROM maven:3.9-eclipse-temurin-21 AS build

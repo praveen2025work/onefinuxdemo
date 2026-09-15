@@ -22,7 +22,7 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 
 ## Product in one paragraph
 
-At close of business a group unit answers one question per outcome. One Finance UX is a thin outcome layer: it folds facts systems already emit into Ready / Blocked / Delayed, acts when ready, and governs every step. Products are data.
+At close of business a group unit answers one question per outcome. One Finance is a thin outcome layer: it folds facts systems already emit into Ready / Blocked / Delayed, acts when ready, and governs every step. Products are data.
 
 1. **Outcome Engine** — question + feeds + SLA + on-ready (`ActionExecutor` registry).
 2. **Stitch console kit** — sources + destinations + embed + `userActions`.

@@ -1,4 +1,4 @@
--- One Finance UX — baseline schema (Flyway V1)
+-- One Finance — baseline schema (Flyway V1)
 -- Dialect: H2 2.x (POC). Production: Oracle 19c — see db/migration/oracle for the vendor set.
 --
 -- Flyway owns the schema now (spring.jpa.hibernate.ddl-auto=none). This migration is the single

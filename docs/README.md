@@ -1,4 +1,4 @@
-# One Finance UX — documents
+# One Finance — documents
 
 Everything about the product lives in **[`docs/design/`](design/)**.
 

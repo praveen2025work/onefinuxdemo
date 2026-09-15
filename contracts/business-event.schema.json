@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://onefinux.internal/contracts/business-event/v1",
-  "title": "One Finance UX business event (v1)",
+  "title": "One Finance business event (v1)",
   "description": "The single contract every source system (Motif, GMIS, RAMP, SAP, Axiom, US Castle, Finance Store, Helix) publishes to the Event Hub. Producers state facts about their own identifiers; the hub translates them into business identifiers and decides what the fact means for business outcomes.",
   "type": "object",
   "required": ["eventType", "sourceSystem", "sourceKey", "cobDate", "region", "status"],

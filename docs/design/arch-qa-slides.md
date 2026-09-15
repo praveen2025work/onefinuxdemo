@@ -22,7 +22,7 @@ Companions if you need more depth: `architecture-group.md` (problem + two models
 
 ## Slide 1 — Title
 
-**Title:** One Finance UX — a thin on-prem outcome layer
+**Title:** One Finance — a thin on-prem outcome layer
 
 **Say:** We are not asking for a platform programme or a cloud account. We are asking to standardise one decision layer on systems the bank already has. It subscribes to facts. It does not replace Motif or Helix.
 

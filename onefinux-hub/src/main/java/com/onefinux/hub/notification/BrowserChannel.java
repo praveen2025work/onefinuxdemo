@@ -3,7 +3,7 @@ package com.onefinux.hub.notification;
 import com.onefinux.hub.stream.StreamHub;
 import org.springframework.stereotype.Component;
 
-/** In-app notification inbox, pushed live to the One Finance UX board. */
+/** In-app notification inbox, pushed live to the One Finance board. */
 @Component
 class BrowserChannel implements NotificationChannel {
 

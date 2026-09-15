@@ -1,4 +1,4 @@
-# One Finance UX — Demo Runsheet
+# One Finance — Demo Runsheet
 
 Facilitator script. Two tracks: a **2–3 minute narrated MD / CIO story** (male voice, normal pace) and a longer **CIO deep-dive**. Each step lists what to show, what to say, and the so-what. Do not jump screens quickly.
 

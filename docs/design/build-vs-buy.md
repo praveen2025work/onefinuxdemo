@@ -12,7 +12,7 @@ The working proof is the POC in this repo (`onefinux-hub` + `frontend/web`). Pro
 
 | Question | Answer |
 |---|---|
-| Can a vendor product replace One Finance UX with **no new code**? | **No.** |
+| Can a vendor product replace One Finance with **no new code**? | **No.** |
 | Do we rebuild Motif, Helix, Kafka, Airflow, CEES? | **No.** |
 | What do we **buy / already own**? | Bus (Kafka / Solace / MQ), identity + CEES, systems of record, batch schedulers, observability. |
 | What do we **build**? | A thin **outcome layer**: ingest a fact, fold distinct keys into Ready / Blocked / Delayed, command a destination only when READY, entitle the row fail-closed, audit the human step, show one board. |

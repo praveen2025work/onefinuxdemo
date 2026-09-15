@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 /**
- * Demo scenarios that reproduce the examples in the One Finance UX vision document.
+ * Demo scenarios that reproduce the examples in the One Finance vision document.
  * Events are built at send time so occurredAt is real, which is what drives the ETA.
  */
 @Service

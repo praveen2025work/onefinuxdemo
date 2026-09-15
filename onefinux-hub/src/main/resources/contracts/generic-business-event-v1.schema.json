@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://onefinux.internal/contracts/generic-business-event/v1",
-  "title": "One Finance UX generic business event envelope (v1)",
+  "title": "One Finance generic business event envelope (v1)",
   "description": "The single wire format every Barclays system uses on the One Finance bus. Envelope fields are identical across Motif, SAP, Helix, Axiom and future producers. The catalogue eventType lives in data.eventType. Extra producer fields belong only in data.attributes and are validated by the per-type schema in the catalogue.",
   "type": "object",
   "additionalProperties": false,

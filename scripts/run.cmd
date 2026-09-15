@@ -1,5 +1,5 @@
 @echo off
-REM Build and start the One Finance UX hub and source simulator on Windows.
+REM Build and start the One Finance hub and source simulator on Windows.
 REM Does not start the React console — that is a second terminal: cd frontend\web && npm run dev
 REM Usage: scripts\run.cmd [--no-build]
 REM        set HUB_PORT=7090 & set SIM_PORT=7091 & scripts\run.cmd   (if 7070/7081 are taken)

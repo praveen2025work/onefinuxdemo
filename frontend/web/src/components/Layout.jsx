@@ -103,7 +103,7 @@ export default function Layout({ children }) {
         <div className="rail-top">
           <div className="brand">
             <BrandMark size={collapsed ? 30 : 32} />
-            <div className="txt"><b>One Finance UX</b><span>Outcome platform</span></div>
+            <div className="txt"><b>One Finance</b><span>Outcome platform</span></div>
           </div>
           <button className="rail-toggle" onClick={toggleRail} title={collapsed ? 'Expand menu' : 'Collapse menu'}>
             <Icon name="chevron" size={16} className={collapsed ? 'flip' : ''} />
