@@ -220,7 +220,7 @@ await hold('drive', 6000);
 /* 6 Reports — stay until GENERATED */
 await rail(page, '/reports');
 mark('reports');
-await chapter(page, 'The answer on this close');
+await chapter(page, 'Watch the fold');
 const reportsMin = Date.now() + Math.round(dur.reports * 1000) + 6000;
 let generated = false;
 while (Date.now() < reportsMin + 55000 && !generated) {
