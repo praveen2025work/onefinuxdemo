@@ -88,3 +88,4 @@ Details: `architecture-group.md` (scope line §6, non-functionals §7).
 - **"How do we prove what happened?"** Append-only audit log (who/when/what/why) plus the immutable event store; replay rebuilds state from history.
 - **"Security?"** Entitlement fail-closed contract; the local demo ships a fail-open stub for convenience only.
 - **"Scale?"** Architecture is bus-ready and stateless-per-fold; production NFR evidence (throughput/latency/DR) is the next hardening step.
+- **"Why not just Kafka / Airflow / a dashboard?"** Those are the mix, not the product. Kafka is transport; Airflow is batch *after* READY; a dashboard cannot fold distinct keys, name MB014, or fail-closed sign-off. Full justification: [`build-vs-buy.md`](build-vs-buy.md).

@@ -7,6 +7,7 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 | [`as-built.md`](as-built.md) | Everyone | Current product: routes, two models, brand, what not to do |
 | [`start.md`](start.md) | New developers | Plain-language idea, how to run it, first change, how we review PRs |
 | [`architecture-group.md`](architecture-group.md) | Architecture group, CIO, MD | Problem, two models, what executives see |
+| [`build-vs-buy.md`](build-vs-buy.md) | Architecture group, CIO, MD | Why Kafka/Airflow/COTS do not replace the outcome layer |
 | [`application.md`](application.md) | Build team | Modules, APIs, screens, capabilities, demo vs later |
 | [`onboarding.md`](onboarding.md) | Operators | Create an outcome, inspect it, drive the day |
 | [`helix-walkthrough.md`](helix-walkthrough.md) | Lead / joining engineer | Real-time Helix: engine (Reports) vs stitch rec (Board) |

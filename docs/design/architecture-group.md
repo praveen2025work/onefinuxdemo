@@ -120,4 +120,6 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 3. Capabilities as data + registries; no product-named code or modules.
 4. The phased scope line in section 6.
 
+**Why this is in-house, and how Kafka / Airflow sit in the mix** (objection register, capability matrix, FOBO worked example): [`build-vs-buy.md`](build-vs-buy.md).
+
 Once these are agreed, the application BRD (`application.md`) is the builder's document.
