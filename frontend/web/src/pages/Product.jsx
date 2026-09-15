@@ -51,6 +51,8 @@ export function ArchitecturePage() {
         <GuideNav />
       </div>
 
+      <FoboHow />
+
       <div className="grid g3" style={{ marginBottom: 16 }}>
         <div className="stat info"><div className="lbl">Origins</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Publish a fact</div><div className="foot">Motif, SAP, Helix, Axiom — or the simulator</div></div>
         <div className="stat ok"><div className="lbl">Hub</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Fold to Ready or Blocked</div><div className="foot">Deterministic. Named blocker when a required key fails.</div></div>
@@ -99,6 +101,53 @@ export function GuidePage() {
   );
 }
 
+function FoboHow() {
+  return (
+    <div className="panel">
+      <div className="panel-hd">
+        <h2>How a FOBO rec is completed</h2>
+        <span className="hint">FOBO does not send events</span>
+      </div>
+      <div className="panel-bd">
+        <p className="muted" style={{ marginTop: 0 }}>
+          <b>FOBO is the question</b> (“Can I execute this rec?”), not a source system.
+          Motif, CATS and MBR publish facts. The hub folds them. Helix is a destination the hub
+          calls when the fold says ready — nobody clicks Helix on Home.
+        </p>
+
+        <div className="grid g2">
+          <div className="oc" style={{ cursor: 'default' }}>
+            <div className="oc-hd"><span className="pill bo">On the board</span></div>
+            <h3>The rec a controller signs</h3>
+            <ol className="prod-ol">
+              <li><b>CATS</b> sends <span className="mono">TRADE_BOOKED</span> (a trade key).</li>
+              <li><b>Motif</b> sends <span className="mono">LEDGER_POSTED</span> or <span className="mono">LEDGER_REJECTED</span> (a book, e.g. MB012 / MB014).</li>
+              <li><b>MBR</b> sends <span className="mono">BREAK_CLEARED</span> (a break key).</li>
+              <li><b>Decide:</b> all three required keys COMPLETED → <span className="pill ok">READY</span>. Any required FAILED → <span className="pill fail">BLOCKED</span> with that named key (EMEA R-2031 = Motif MB014).</li>
+              <li><b>Finish:</b> on a READY row the controller <b>signs off</b> (instance CLEARED) or <b>posts to Motif</b> via FAS. The head does not. Helix here is the iframe + an echo fact (<span className="mono">HELIX_ANALYSIS_COMPLETE</span> RUN-A37C on APAC) — not a Home button.</li>
+            </ol>
+          </div>
+          <div className="oc" style={{ cursor: 'default' }}>
+            <div className="oc-hd"><span className="pill info">On Reports</span></div>
+            <h3>When the hub calls Helix</h3>
+            <ol className="prod-ol">
+              <li><b>Motif</b> publishes <span className="mono">MASTERBOOK_READY</span> — one fact per book (300 in the demo). FOBO still sends nothing.</li>
+              <li><b>Hub</b> counts distinct books for outcome <span className="mono">FOBO_HELIX</span>. At 300 → READY.</li>
+              <li><b>Call:</b> because on-ready is <span className="mono">HTTP_COMMAND</span> / target <span className="mono">helix</span>, the hub POSTs <span className="mono">/helix/analysis</span> with run id, COB, region, and <span className="mono">completionEvent: HELIX_ANALYSIS_COMPLETE</span>.</li>
+              <li><b>Helix</b> answers 202 ACCEPTED, runs the analysis, then publishes <span className="mono">HELIX_ANALYSIS_COMPLETE</span> back to the hub with that <span className="mono">runId</span>. No polling.</li>
+              <li><b>Finish:</b> the engine stage moves READY → PROCESSING → GENERATED. Watch it on <Link to="/reports">Reports</Link>, not on Home.</li>
+            </ol>
+          </div>
+        </div>
+
+        <p className="muted" style={{ marginBottom: 0, marginTop: 14 }}>
+          Prove it on Drive (testing only): <b>FOBO stitch</b> = CATS/Motif/MBR → Board. <b>FOBO / Helix</b> = 300 Motif books → hub POSTs Helix → Reports.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ProductStory() {
   return (
     <>
@@ -140,6 +189,8 @@ function ProductStory() {
         </div>
       </div>
 
+      <FoboHow />
+
       <div className="grid g3" style={{ marginBottom: 16 }}>
         <div className="stat info"><div className="lbl">We keep</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Motif, SAP, Helix, Axiom</div><div className="foot">Their screens stay theirs. We frame them when we must.</div></div>
         <div className="stat ok"><div className="lbl">We add</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>One row per outcome</div><div className="foot">Ready, blocked, delayed — with a named reason</div></div>
@@ -153,7 +204,7 @@ function ProductStory() {
             <div className="oc" style={{ cursor: 'default' }}>
               <div className="oc-hd"><span className="pill info">The question</span></div>
               <h3>Outcome Engine</h3>
-              <p className="q">A business question plus the feeds that must land, an SLA, and what to do when ready. 15C3 and PnL live here. When every feed is in, the hub can tell Axiom to generate the pack — no one polls.</p>
+              <p className="q">A business question plus the feeds that must land, an SLA, and what to do when ready. FOBO analysis and 15C3 live here. When Motif’s books are in, the hub POSTs Helix. When 15C3 feeds are in, it POSTs Axiom. No one polls.</p>
             </div>
             <div className="oc" style={{ cursor: 'default' }}>
               <div className="oc-hd"><span className="pill bo">The work</span></div>
