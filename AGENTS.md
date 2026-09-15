@@ -33,7 +33,7 @@ New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and consol
 
 ## Views
 
-Home and the top-bar **View** select persist `localStorage['ofx-view']`. Options: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail and Home start cards. It is **not** CEES. Instance detail stays reachable from a row.
+The top-bar **View** select persists `localStorage['ofx-view']`. Options: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail. It is **not** CEES and it is not a Home screen. Instance detail stays reachable from a row.
 
 ## Code review
 

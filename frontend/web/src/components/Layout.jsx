@@ -145,6 +145,7 @@ export default function Layout({ children }) {
           <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
             options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
           <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
+            title="Filters the left rail for this session. Not entitlement."
             options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
           <div className="bell-wrap" ref={bellRef}>
             <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications">

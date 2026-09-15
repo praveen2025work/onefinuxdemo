@@ -10,7 +10,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 | Route | Creates / shows | Does not |
 |---|---|---|
-| `/` Home | Today’s close story + fold. Opt-in View is collapsed | Scenario buttons |
+| `/` Home | Today’s close story + fold. View is the top-bar select | Scenario buttons, role picker, duplicate Guide buttons |
 | `/product` | Product story a BU head recognises | Live outcomes or Drive |
 | `/architecture` | Same diagrams as `docs/design` | Live outcomes or Drive |
 | `/guide` | Developer on-ramp: run it, add data, review a PR | Live outcomes or Drive |

@@ -1,5 +1,5 @@
 // Opt-in console views. This is a developer/demo convenience, not entitlement.
-// CEES still fail-closes unentitled instances. A view only hides nav and Home starts.
+// CEES still fail-closes unentitled instances. A view only hides nav. Pick it in the top bar.
 
 export const VIEW_KEY = 'ofx-view';
 

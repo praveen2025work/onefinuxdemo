@@ -5,7 +5,7 @@ import { PageTitle } from '../components/bits.jsx';
 import GuideNav from '../components/GuideNav.jsx';
 
 const SCREENS = [
-  { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold. Pick a role if you want a shorter rail.', creates: 'Nothing — read + pick a view', not: 'Scenario buttons' },
+  { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold. View lives in the top bar.', creates: 'Nothing — read', not: 'Scenario buttons or a role picker' },
   { to: '/product', title: 'Product', who: 'Everyone', job: 'Why this exists. The morning story a BU head and a controller both recognise.', creates: 'This guide', not: 'Live outcomes' },
   { to: '/architecture', title: 'Architecture', who: 'Everyone', job: 'How facts become Ready or Blocked. Same diagrams as docs/design.', creates: 'This guide', not: 'Live outcomes' },
   { to: '/guide', title: 'Developer guide', who: 'Engineer', job: 'Run it, extend it with data, review a PR. First change is Onboarding, not a Java type.', creates: 'This guide', not: 'Live outcomes' },
@@ -190,7 +190,7 @@ function StartTab() {
       <div className="banner info" style={{ marginBottom: 16 }}>
         <Icon name="info" size={16} />
         <div>
-          <b>New to this repo? Read this page, then pick the Developer view on Home if you want a shorter rail.</b>
+          <b>New to this repo? Read this page, then top bar → View → Developer if you want a shorter rail.</b>
           <span className="mono-sm">Same write-up: docs/design/start.md · views are a nav filter, not security</span>
         </div>
       </div>

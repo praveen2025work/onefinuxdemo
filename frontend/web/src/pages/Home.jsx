@@ -3,13 +3,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { api, outcomesApi } from '../api';
 import { StatusPill, Meter, Prediction, PageTitle } from '../components/bits.jsx';
-import Icon, { iconForRoute } from '../components/Icon.jsx';
+import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
-import { VIEWS, viewIncludes } from '../views.js';
+import { viewIncludes } from '../views.js';
 import { hasPrediction } from '../eta.js';
 
 export default function Home() {
-  const { instances, filters, view, setView, context } = useApp();
+  const { instances, filters, view, context } = useApp();
   const [events, setEvents] = useState([]);
   const [engineOutcomes, setEngineOutcomes] = useState([]);
   const navigate = useNavigate();
@@ -57,13 +57,7 @@ export default function Home() {
           <PageTitle icon="tower">Today’s close
             <InfoHint title="Outcome control tower">One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them.</InfoHint>
           </PageTitle>
-          <p className="sub">The fold is the work: ready rows, a named blocker, and whether the clock still holds. Guides live in the left rail — Product, Architecture, Developer guide.</p>
-        </div>
-        <div className="ph-actions">
-          <Link className="btn" to="/board"><Icon name="board" size={15} /> Open board</Link>
-          <Link className="btn ghost" to="/product"><Icon name="book" size={15} /> Product story</Link>
-          <Link className="btn ghost" to="/architecture"><Icon name="compass" size={15} /> Architecture</Link>
-          <Link className="btn ghost" to="/guide"><Icon name="code" size={15} /> Developer guide</Link>
+          <p className="sub">Ready rows, a named blocker, and whether the clock still holds. Product and Architecture sit in the left rail.</p>
         </div>
       </div>
 
@@ -112,13 +106,6 @@ export default function Home() {
             })}
           </div>
         )}
-        <p className="story-walk">
-          Walk the story: <Link to="/product">Product</Link>
-          {' · '}
-          <Link to="/architecture">Architecture</Link>
-          {' · '}
-          <Link to="/guide">Developer guide</Link>
-        </p>
       </section>
 
       <div className="grid g5" style={{ marginBottom: 16 }}>
@@ -156,24 +143,6 @@ export default function Home() {
       <div className="split">
         <div>
           <div className="panel">
-            <div className="panel-hd"><h2><Icon name="play" size={16} /> Pick up where this view starts</h2><span className="hint">{view.who}</span></div>
-            <div className="panel-bd">
-              <div className="grid g2">
-                {view.starts.map((r) => (
-                  <Link key={r.to} to={r.to} className="oc">
-                    <div className="oc-hd">
-                      <span className={'oc-ico ' + r.cls}><Icon name={iconForRoute(r.to)} size={15} /></span>
-                      <span className={'pill ' + r.cls}>{r.tag}</span>
-                    </div>
-                    <h3>{r.title}</h3>
-                    <p className="q">{r.q}</p>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="panel">
             <div className="panel-hd"><h2><Icon name="layers" size={16} /> Every outcome instance for this unit today <InfoHint title="Fail-closed entitlements" width={300}>Unentitled instances are not greyed out — they return 404 and never reach this list.</InfoHint></h2><span className="hint">outcome_instance ⨝ product_kit</span></div>
             <div className="panel-bd tight">
               <div className="tbl-wrap">
@@ -197,39 +166,6 @@ export default function Home() {
               </div>
             </div>
           </div>
-
-          <details className="panel view-opt">
-            <summary>
-              <Icon name="eye" size={16} />
-              <span>
-                <span className="kicker">Optional</span>
-                <strong>Opt in to one view</strong>
-                <span className="sec">{view.id === 'all' ? 'Everyone sees the same close. Pick a job if you want a thinner rail.' : `On: ${view.label}.`}</span>
-              </span>
-            </summary>
-            <div className="panel-bd">
-              <p className="muted" style={{ marginTop: 0 }}>
-                Same live data. A view only hides nav and these start cards — it is not entitlement.{' '}
-                <Link to="/product">Product</Link>
-                {' · '}
-                <Link to="/architecture">Architecture</Link>
-                {' · '}
-                <Link to="/guide">Developer guide</Link>
-              </p>
-              <div className="grid g3 view-picks">
-                {VIEWS.map((v) => (
-                  <button key={v.id} type="button" className={'oc' + (view.id === v.id ? ' on' : '')} onClick={() => setView(v.id)}>
-                    <div className="oc-hd">
-                      <span className={'oc-ico ' + v.cls}><Icon name={v.icon} size={15} /></span>
-                      <span className={'pill ' + v.cls}>{v.tag}</span>
-                    </div>
-                    <h3>{v.label}</h3>
-                    <p className="q">{v.job}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </details>
         </div>
 
         <div>
@@ -247,8 +183,8 @@ export default function Home() {
                 {events.length === 0 && (
                   <div className="empty">
                     {viewIncludes(view, '/drive')
-                      ? <>No live facts yet. Open the <Link to="/drive">Drive screen</Link> to run a scenario.</>
-                      : <>No live facts yet. Switch View to Developer (or All) and drive a scenario — Drive is not on this view.</>}
+                      ? <>No live facts yet. Open Drive in the left rail to run a scenario.</>
+                      : <>No live facts yet. Top bar View → Developer (or All) to reach Drive.</>}
                   </div>
                 )}
               </div>

@@ -12,7 +12,7 @@ import Icon from './Icon.jsx';
  * window blur as well as outside click, so it can never get "stuck open" behind other content.
  */
 export default function Select({ value, onChange, options, placeholder = 'Select…', caption, icon,
-  variant = 'default', minWidth }) {
+  variant = 'default', minWidth, title }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
   const [rect, setRect] = useState(null);
@@ -55,8 +55,9 @@ export default function Select({ value, onChange, options, placeholder = 'Select
   }, [open, active, options, onChange]);
 
   return (
-    <div className={'sel2 ' + variant + (open ? ' open' : '')} style={minWidth ? { minWidth } : undefined}>
+    <div className={'sel2 ' + variant + (open ? ' open' : '')} style={minWidth ? { minWidth } : undefined} title={title}>
       <button ref={trigRef} type="button" className="sel2-trig"
+        title={title}
         onClick={() => { setOpen((o) => !o); setActive(options.findIndex((o) => o.value === value)); }}>
         {icon && <Icon name={icon} size={15} className="sel2-ic" />}
         <span className="sel2-txt">

@@ -77,7 +77,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 | Route | Job | Who |
 |---|---|---|
-| `/` Home | Today’s close in one paragraph, then the fold. Opt-in View is collapsed (filters rail; not entitlement) | Everyone |
+| `/` Home | Today’s close in one paragraph, then the fold | Everyone |
 | `/product` | Product story a BU head recognises | Everyone |
 | `/architecture` | How facts become Ready or Blocked — same diagrams as `docs/design` | Everyone |
 | `/guide` | Developer on-ramp: run it, add an outcome as data, review a PR | Engineer |
@@ -95,7 +95,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 **Onboarding vs Configuration.** Onboarding *creates*. Configuration *inspects and governs* (pick an outcome or kit on the left; anatomy on the right).
 
-**Views.** Home and the top-bar View select persist `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail and Home start cards. It is not CEES. Guide pages (`/product`, `/architecture`, `/guide`) stay on the rail in every view. New-developer write-up: `start.md` and `/guide`.
+**Views.** The top-bar View select persists `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail. It is not CEES and it is not a Home panel. Guide pages (`/product`, `/architecture`, `/guide`) stay on the rail in every view. New-developer write-up: `start.md` and `/guide`.
 
 **Mobile.** Below 820px the left rail is an overlay drawer (hamburger in the top bar). A labelled bottom nav (five primary destinations) is the primary way to move; the rest stay in the drawer. Grids stack; tables swipe sideways. On a phone the report flow stacks vertically. The management board and My outcomes are the first surfaces intended for a phone between meetings.
 
