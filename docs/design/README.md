@@ -15,9 +15,8 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 | [`helix-narration.txt`](helix-narration.txt) | Voiceover | Spoken script for the 3-minute cut |
 | [`architecture.md`](architecture.md) | Engineers / exec | Mermaid diagrams (source + SVG/PNG in [`diagrams/`](diagrams/)) |
 | [`executive-brief.md`](executive-brief.md) | MD / CIO demo | Narrative, value, ask |
-| [`arch-qa-deck.html`](arch-qa-deck.html) | Architecture group / CEO | Q&A slides — explanation + simple diagram on every slide |
-| [`arch-qa-deck.pptx`](arch-qa-deck.pptx) | Same room | PowerPoint of the same deck |
-| [`build-vs-buy.md`](build-vs-buy.md) | Architecture group | Speaker notes: why the fold is in-house |
+| [`arch-qa-slides.md`](arch-qa-slides.md) | Architecture group / CEO | Slide source — titles, spoken lines, mermaid, pushbacks. Build your own deck. |
+| [`build-vs-buy.md`](build-vs-buy.md) | Architecture group | Full FAQ and speaker notes |
 | [`demo-runsheet.md`](demo-runsheet.md) | Facilitator | Timed CIO/MD script |
 | [`narration-script.txt`](narration-script.txt) | Voiceover | Spoken demo script |
 

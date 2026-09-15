@@ -323,7 +323,7 @@ If a counter-proposal cannot point to an equivalent artefact for **named blocker
 
 Companion asks: `executive-brief.md` §7. Builder’s BRD: `application.md`. Visual truth: `frontend/web`.
 
-Speaker slides for the room: [`arch-qa-deck.html`](arch-qa-deck.html) and [`arch-qa-deck.pptx`](arch-qa-deck.pptx).
+Slide source for the room (build your own deck): [`arch-qa-slides.md`](arch-qa-slides.md).
 
 ---
 
