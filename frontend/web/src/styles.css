@@ -125,13 +125,14 @@ p { text-wrap: pretty; }
 .rail-user b { font-size: 12.5px; display: block; white-space: nowrap; color: var(--rail-ink); }
 .rail-user span { display: block; font-size: 10.5px; color: var(--rail-muted); white-space: nowrap; }
 
-/* collapsed rail: icons only — keep wordmark off the rail, not off the top header */
+/* collapsed rail: icons only — wordmark + brand mark move to the top header, toggle keeps the brand slot */
 .app.collapsed .rail .txt,
 .app.collapsed .rail .nav-grp,
 .app.collapsed .rail .brand .txt,
 .app.collapsed .rail-user .who,
 .app.collapsed .rail .nav-a .tag { display: none; }
-.app.collapsed .rail-top { flex-direction: column; gap: 10px; padding-bottom: 12px; }
+.app.collapsed:not(.drawer-open) .rail .brand { display: none; }
+.app.collapsed:not(.drawer-open) .rail-top { justify-content: center; padding-bottom: 12px; }
 .app.collapsed .rail-toggle { margin-left: 0; }
 .app.collapsed .nav-a { justify-content: center; padding: 10px 0; }
 .app.collapsed .nav-sec + .nav-sec { border-top: 1px solid var(--rail-line); margin-top: 4px; padding-top: 4px; }
