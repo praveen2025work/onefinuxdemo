@@ -15,7 +15,7 @@ export default function Modal({ title, subtitle, onClose, children, footer, widt
       <div className="modal" style={{ width }} onMouseDown={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="modal-hd">
           <div><div className="modal-ttl">{title}</div>{subtitle && <div className="modal-sub">{subtitle}</div>}</div>
-          <button className="modal-x" onClick={onClose} aria-label="Close"><Icon name="chevron" size={16} className="flip" /></button>
+          <button className="modal-x" onClick={onClose} aria-label="Close"><Icon name="x" size={16} /></button>
         </div>
         <div className="modal-bd">{children}</div>
         {footer && <div className="modal-ft">{footer}</div>}

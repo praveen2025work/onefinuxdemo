@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { api, outcomesApi } from '../api';
-import { StatusPill, Meter, Prediction, PageTitle } from '../components/bits.jsx';
+import { StatusPill, Meter, Prediction, PageTitle, Stat } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { viewIncludes } from '../views.js';
@@ -108,12 +108,12 @@ export default function Home() {
         )}
       </section>
 
-      <div className="grid g5" style={{ marginBottom: 16 }}>
-        <div className="stat ok"><span className="stat-ico"><Icon name="check" size={18} /></span><div className="lbl">Ready to action</div><div className="num">{ready}</div><div className="foot">signed-off: {cleared}</div></div>
-        <div className="stat fail"><span className="stat-ico"><Icon name="shield" size={18} /></span><div className="lbl">Blocked</div><div className="num">{blocked}</div><div className="foot">named key holds the fold</div></div>
-        <div className="stat warn"><span className="stat-ico"><Icon name="clock" size={18} /></span><div className="lbl">Delayed</div><div className="num">{instances.filter((i) => i.status === 'DELAYED').length}</div><div className="foot">inside tolerance</div></div>
-        <div className="stat"><span className="stat-ico"><Icon name="alert" size={18} /></span><div className="lbl">Escalations open</div><div className="num">{esc}</div><div className="foot">owned by RTB</div></div>
-        <div className="stat info"><span className="stat-ico"><Icon name="layers" size={18} /></span><div className="lbl">Instances in scope</div><div className="num">{instances.length}</div><div className="foot">{filters.groupUnit}</div></div>
+      <div className="stats">
+        <Stat tone="ok" icon="check" label="Ready to action" value={ready} foot={`signed-off: ${cleared}`} />
+        <Stat tone="fail" icon="shield" label="Blocked" value={blocked} foot="named key holds the fold" />
+        <Stat tone="warn" icon="clock" label="Delayed" value={instances.filter((i) => i.status === 'DELAYED').length} foot="inside tolerance" />
+        <Stat icon="alert" label="Escalations open" value={esc} foot="owned by RTB" />
+        <Stat tone="info" icon="layers" label="Instances in scope" value={instances.length} foot={filters.groupUnit} />
       </div>
 
       {predicted.length > 0 && (
@@ -146,18 +146,18 @@ export default function Home() {
             <div className="panel-hd"><h2><Icon name="layers" size={16} /> Every outcome instance for this unit today <InfoHint title="Fail-closed entitlements" width={300}>Unentitled instances are not greyed out — they return 404 and never reach this list.</InfoHint></h2><span className="hint">outcome_instance ⨝ product_kit</span></div>
             <div className="panel-bd tight">
               <div className="tbl-wrap">
-                <table className="tbl">
+                <table className="tbl cards-sm">
                   <thead><tr><th>Kit / question</th><th>Instance</th><th>Readiness</th><th>Status</th><th>Run</th><th className="num">Esc.</th><th /></tr></thead>
                   <tbody>
                     {instances.map((i) => (
                       <tr key={i.instanceId}>
-                        <td><span className="lead">{i.kitId}</span><div className="sec">{i.question}</div></td>
-                        <td className="mono" style={{ fontSize: 12 }}>{i.instanceId}</td>
-                        <td><Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} /></td>
-                        <td><StatusPill status={i.status} /></td>
-                        <td className="mono">{i.runId || '—'}</td>
-                        <td className="num">{i.openEscalations}</td>
-                        <td><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
+                        <td className="cell-lead"><span className="lead">{i.kitId}</span><div className="sec">{i.question}</div></td>
+                        <td data-label="Instance"><span className="mono lead">{i.sliceKey}</span><div className="sec mono nowrap">{i.region} · {i.cobDate}</div></td>
+                        <td className="cell-wide" data-label="Readiness"><Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} /></td>
+                        <td data-label="Status"><StatusPill status={i.status} /></td>
+                        <td className="mono nowrap" data-label="Run">{i.runId || '—'}</td>
+                        <td className="num" data-label="Escalations">{i.openEscalations}</td>
+                        <td className="cell-act"><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
                       </tr>
                     ))}
                     {instances.length === 0 && <tr><td colSpan={7} className="empty">No instances for this COB / region.</td></tr>}

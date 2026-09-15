@@ -62,6 +62,9 @@ const P = {
       <path d="M9.4 19.4a2.6 2.6 0 0 0 5.2 0" />
     </>
   ),
+  moon: <path d="M19.8 14.4A8 8 0 0 1 9.6 4.2a8 8 0 1 0 10.2 10.2Z" />,
+  plus: <path d="M12 5v14M5 12h14" />,
+  x: <path d="m6.5 6.5 11 11M17.5 6.5l-11 11" />,
   chevron: <path d="m14.8 5.5-6.3 6.5 6.3 6.5" />,
   down: <path d="m6 9 6 6 6-6" />,
   calendar: (

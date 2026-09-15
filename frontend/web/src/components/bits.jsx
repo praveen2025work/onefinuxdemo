@@ -31,19 +31,47 @@ export function PageTitle({ icon, children }) {
   );
 }
 
+// Up to this many keys, the meter draws one segment per key so a reader can count the stitch.
+const SEGMENT_MAX = 12;
+
 export function Meter({ completed, total, blocked }) {
+  const label = `${completed} of ${total} keys complete${blocked ? ', blocked' : ''}`;
+  if (total > 0 && total <= SEGMENT_MAX) {
+    const failed = blocked ? Math.min(1, total - completed) : 0;
+    const segs = Array.from({ length: total }, (_, i) => (i < completed ? 'ok' : i < completed + failed ? 'fail' : 'wait'));
+    return (
+      <div className="meter" role="img" aria-label={label}>
+        <span className="meter-seg">{segs.map((c, i) => <i key={i} className={c} />)}</span>
+        <span className="val">{completed}/{total}</span>
+      </div>
+    );
+  }
   const t = Math.max(total, 1);
   const okPct = Math.round((completed / t) * 100);
   const failPct = blocked ? Math.round((1 / t) * 100) : 0;
   const waitPct = Math.max(0, 100 - okPct - failPct);
   return (
-    <div className="meter">
+    <div className="meter" role="img" aria-label={label}>
       <span className="meter-t">
         <i className="ok" style={{ width: okPct + '%' }} />
         {blocked ? <i className="fail" style={{ width: failPct + '%' }} /> : null}
         <i className="wait" style={{ width: waitPct + '%' }} />
       </span>
       <span className="val">{completed}/{total}</span>
+    </div>
+  );
+}
+
+/** KPI tile. The tone only lights when the count is non-zero, so a quiet morning reads quiet. */
+export function Stat({ tone, icon, label, value, foot }) {
+  const n = Number(value);
+  const lit = tone && (Number.isFinite(n) ? n > 0 : Boolean(value));
+  return (
+    <div className={'stat' + (lit ? ' ' + tone : '')}>
+      {icon && <span className="stat-ico"><Icon name={icon} size={18} /></span>}
+      <div className="lbl">{label}</div>
+      <div className="num">{value}</div>
+      {foot && <div className="foot">{foot}</div>}
     </div>
   );
 }

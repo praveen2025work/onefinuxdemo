@@ -43,19 +43,19 @@ export default function Board() {
         <div className="panel-bd tight">
           <div className="tbl-wrap">
             <p className="swipe-hint muted">On a phone, swipe the table sideways to reach status, blocker, and Open.</p>
-            <table className="tbl">
+            <table className="tbl cards-sm">
               <thead><tr><th>Kit / question</th><th>Instance</th><th>Region</th><th>Readiness</th><th>Status</th><th>Blocker</th><th className="num">Esc.</th><th /></tr></thead>
               <tbody>
                 {instances.map((i) => (
                   <tr key={i.instanceId}>
-                    <td><span className="lead">{i.kitId}</span><div className="sec">{i.question}</div></td>
-                    <td className="mono" style={{ fontSize: 12 }}>{i.sliceKey}</td>
-                    <td><span className="chip">{i.region}</span></td>
-                    <td><Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} /></td>
-                    <td><StatusPill status={i.status} /></td>
-                    <td className="sec">{i.namedBlocker || '—'}</td>
-                    <td className="num">{i.openEscalations}</td>
-                    <td><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
+                    <td className="cell-lead"><span className="lead">{i.kitId}</span><div className="sec">{i.question}</div></td>
+                    <td className="mono" data-label="Instance">{i.sliceKey}</td>
+                    <td data-label="Region"><span className="chip">{i.region}</span></td>
+                    <td className="cell-wide" data-label="Readiness"><Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} /></td>
+                    <td data-label="Status"><StatusPill status={i.status} /></td>
+                    <td className="sec cell-wide" data-label="Blocker">{i.namedBlocker || '—'}</td>
+                    <td className="num" data-label="Escalations">{i.openEscalations}</td>
+                    <td className="cell-act"><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
                   </tr>
                 ))}
                 {instances.length === 0 && <tr><td colSpan={8} className="empty">No instances match this filter.</td></tr>}
