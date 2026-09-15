@@ -33,19 +33,13 @@ const NAV = [
   ] },
 ];
 
-function toggleTheme() {
-  const el = document.documentElement;
-  const next = el.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-  el.setAttribute('data-theme', next);
-  localStorage.setItem('ofx-theme', next);
-}
-
 export default function Layout({ children }) {
   const { context, filters, setFilters, instances, notifications, unread, live, toast, markRead, view, setView } = useApp();
   const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
   const [drawer, setDrawer] = useState(false);
+  const [theme, setTheme] = useState(() => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'));
   const navigate = useNavigate();
   const location = useLocation();
   const bellRef = useRef(null);
@@ -68,6 +62,13 @@ export default function Layout({ children }) {
 
   // Any navigation closes the panel.
   useEffect(() => { setBellOpen(false); setDrawer(false); }, [location.pathname]);
+
+  function toggleTheme() {
+    const next = theme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('ofx-theme', next);
+    setTheme(next);
+  }
 
   function toggleRail() {
     if (window.matchMedia('(max-width: 820px)').matches) {
@@ -140,15 +141,18 @@ export default function Layout({ children }) {
             options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
               : [{ value: filters.groupUnit, label: filters.groupUnit }]} />
           <div className="spacer" />
-          <DatePicker value={filters.cobDate} cobDates={context?.cobDates}
-            onChange={(v) => setFilters({ cobDate: v })} />
-          <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
-            options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
-          <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
-            title="Filters the left rail for this session. Not entitlement."
-            options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
+          <div className="tb-filters">
+            <DatePicker value={filters.cobDate} cobDates={context?.cobDates}
+              onChange={(v) => setFilters({ cobDate: v })} />
+            <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
+              options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
+            <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
+              title="Filters the left rail for this session. Not entitlement."
+              options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
+          </div>
           <div className="bell-wrap" ref={bellRef}>
-            <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications">
+            <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications"
+              aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={bellOpen}>
               <Icon name="bell" size={18} />
               {unread > 0 && <span className="dot-n">{unread}</span>}
             </button>
@@ -171,20 +175,28 @@ export default function Layout({ children }) {
               </div>
             )}
           </div>
-          <button className="tb-icon" onClick={toggleTheme} title="Toggle theme"><span className="theme-dot" /></button>
+          <button className="tb-icon" onClick={toggleTheme}
+            title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
+            aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}>
+            <Icon name={theme === 'light' ? 'moon' : 'sun'} size={17} />
+          </button>
           <span className="live-pill"><span className={'live-dot' + (live ? '' : ' off')} />{live ? 'live' : 'offline'}</span>
           <span className="env">UAT</span>
         </header>
 
-        <div className="ctxbar">
-          <span className="ctx"><span className="k">group_unit</span><span className="v">{filters.groupUnit}</span></span>
-          <span className="ctx"><span className="k">cob</span><span className="v">{filters.cobDate || '—'}</span></span>
-          <span className="ctx"><span className="k">region</span><span className="v">{filters.region || 'ALL'}</span></span>
-          <span className="ctx"><span className="k">instances</span><span className="v">{instances.length}</span></span>
-          <span className="ctx"><span className="k">ready</span><span className="v ok">{ready}</span></span>
-          <span className="ctx"><span className="k">blocked</span><span className="v fail">{blocked}</span></span>
-          <span className="ctx"><span className="k">escalations</span><span className="v">{esc}</span></span>
-          <span className="ctx"><span className="k">view</span><span className="v">{view.label}</span></span>
+        <div className="ctxbar" aria-label="Current scope">
+          <div className="ctx-grp">
+            <span className="ctx"><span className="k">group_unit</span><span className="v">{filters.groupUnit}</span></span>
+            <span className="ctx"><span className="k">cob</span><span className="v">{filters.cobDate || '—'}</span></span>
+            <span className="ctx"><span className="k">region</span><span className="v">{filters.region || 'ALL'}</span></span>
+            <span className="ctx"><span className="k">view</span><span className="v">{view.label}</span></span>
+          </div>
+          <div className="ctx-grp">
+            <span className="ctx"><span className="k">instances</span><span className="v">{instances.length}</span></span>
+            <span className="ctx"><i className={'ctx-dot' + (ready ? ' ok' : '')} /><span className="k">ready</span><span className="v">{ready}</span></span>
+            <span className="ctx"><i className={'ctx-dot' + (blocked ? ' fail' : '')} /><span className="k">blocked</span><span className="v">{blocked}</span></span>
+            <span className="ctx"><i className={'ctx-dot' + (esc ? ' warn' : '')} /><span className="k">escalations</span><span className="v">{esc}</span></span>
+          </div>
         </div>
 
         <main className="body"><div className="wrap">{children}</div></main>

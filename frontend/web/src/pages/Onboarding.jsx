@@ -192,12 +192,12 @@ export default function Onboarding() {
                       <input className="inp mono" placeholder="SAP_JOURNAL_POSTED" value={fd.eventType} onChange={(e) => setFeed(i, { eventType: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} />
                       <input className="inp mono" placeholder="SAP" value={fd.sourceSystem} onChange={(e) => setFeed(i, { sourceSystem: e.target.value.toUpperCase() })} list="known-sources" />
                       <input className="inp mono sm" type="number" min="1" value={fd.expectedCount} onChange={(e) => setFeed(i, { expectedCount: e.target.value })} />
-                      <button type="button" className="ob-x" title="Remove feed" onClick={() => removeFeed(i)} disabled={form.feeds.length === 1}>×</button>
+                      <button type="button" className="ob-x" title="Remove feed" aria-label="Remove feed" onClick={() => removeFeed(i)} disabled={form.feeds.length === 1}><Icon name="x" size={13} /></button>
                     </div>
                   ))}
                   <datalist id="known-sources">{knownSources.map((s) => <option key={s} value={s} />)}</datalist>
                 </div>
-                <button type="button" className="btn ghost sm" onClick={addFeed}><Icon name="bolt" size={13} /> Add feed</button>
+                <button type="button" className="btn ghost sm" onClick={addFeed}><Icon name="plus" size={13} /> Add feed</button>
               </div>
 
               <div className="field">

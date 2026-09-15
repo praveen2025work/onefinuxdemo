@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, fetchSink } from '../api';
 import { useStream } from '../useStream';
-import { Loading, PageTitle } from '../components/bits.jsx';
+import { Loading, PageTitle, Stat } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 
@@ -101,12 +101,12 @@ export default function Monitoring() {
         </div>
       </div>
 
-      <div className="grid g5" style={{ marginBottom: 16 }}>
-        <div className="stat info"><span className="stat-ico"><Icon name="inbox" size={18} /></span><div className="lbl">Events received</div><div className="num">{ev.total ?? 0}</div><div className="foot">persisted to event store</div></div>
-        <div className="stat ok"><span className="stat-ico"><Icon name="share" size={18} /></span><div className="lbl">Propagated</div><div className="num">{ob.dispatched ?? 0}</div><div className="foot">delivered to subscribers</div></div>
-        <div className="stat warn"><span className="stat-ico"><Icon name="clock" size={18} /></span><div className="lbl">Outbox pending</div><div className="num">{ob.pending ?? 0}</div><div className="foot">awaiting relay</div></div>
-        <div className={'stat' + ((ob.failed ?? 0) > 0 ? ' fail' : '')}><span className="stat-ico"><Icon name="alert" size={18} /></span><div className="lbl">Outbox failed</div><div className="num">{ob.failed ?? 0}</div><div className="foot">needs retry</div></div>
-        <div className={'stat' + ((overview.deadLetters ?? 0) > 0 ? ' fail' : '')}><span className="stat-ico"><Icon name="warning" size={18} /></span><div className="lbl">Dead letters</div><div className="num">{overview.deadLetters ?? 0}</div><div className="foot">held for RTB replay</div></div>
+      <div className="stats">
+        <Stat tone="info" icon="inbox" label="Events received" value={ev.total ?? 0} foot="persisted to event store" />
+        <Stat tone="ok" icon="share" label="Propagated" value={ob.dispatched ?? 0} foot="delivered to subscribers" />
+        <Stat tone="warn" icon="clock" label="Outbox pending" value={ob.pending ?? 0} foot="awaiting relay" />
+        <Stat tone="fail" icon="alert" label="Outbox failed" value={ob.failed ?? 0} foot="needs retry" />
+        <Stat tone="fail" icon="warning" label="Dead letters" value={overview.deadLetters ?? 0} foot="held for RTB replay" />
       </div>
 
       <div className="split">

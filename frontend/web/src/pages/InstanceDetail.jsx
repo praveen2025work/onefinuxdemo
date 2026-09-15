@@ -45,6 +45,11 @@ export default function InstanceDetail() {
   const isReady = i.status === 'READY';
   const isBlocked = i.status === 'BLOCKED';
   const actions = (i.userActions || '').split(',').map((s) => s.trim());
+  const gated = actions.includes('SIGN_OFF') || actions.includes('POST');
+  // A disabled action is a fact from the fold, so say why next to the buttons.
+  const why = gated && !isReady
+    ? `Sign off and post need READY. This instance is ${i.status}${isBlocked && i.namedBlocker ? ` on ${i.namedBlocker}` : ''}.`
+    : null;
 
   return (
     <>
@@ -54,6 +59,7 @@ export default function InstanceDetail() {
           <PageTitle icon="cards">{i.sliceKey} <StatusPill status={i.status} /></PageTitle>
           <p className="sub">{i.question}</p>
         </div>
+        <div className="ph-side">
         <div className="ph-actions">
           {actions.includes('SIGN_OFF') && <button className="btn" disabled={busy || !isReady} onClick={() => act('signoff')}><Icon name="check" size={15} /> Sign off</button>}
           {actions.includes('POST') && <button className="btn ghost" disabled={busy || !isReady} onClick={() => act('post')}><Icon name="share" size={15} /> Post to MOTIF</button>}
@@ -61,6 +67,8 @@ export default function InstanceDetail() {
             <button key={a} className="btn ghost" disabled={busy} onClick={() => act('generic:' + a)}>{labelOf(a)}</button>
           ))}
           <button className="btn ghost" disabled={busy} onClick={() => act('escalate')}><Icon name="alert" size={15} /> Escalate</button>
+        </div>
+        {why && <p className="act-why"><Icon name="info" size={13} /> {why}</p>}
         </div>
       </div>
 
@@ -130,7 +138,7 @@ export default function InstanceDetail() {
             <div className="panel-bd stack">
               <div className="row"><span className="muted">renderer</span><span className="chip">{i.renderer}</span></div>
               <div className="row"><span className="muted">run</span><span className="mono">{i.runId || 'pending'}</span></div>
-              <a className="btn ghost sm" href={i.embedUrl} target="_blank" rel="noreferrer">Open {i.embedUrl} ↗</a>
+              <div className="wrapflex"><a className="btn ghost sm" href={i.embedUrl} target="_blank" rel="noreferrer"><Icon name="open" size={13} /> Open partner screen</a><span className="mono sec">{i.embedUrl}</span></div>
               <p className="muted" style={{ margin: 0, fontSize: 12 }}>Heavy screens stay with the owner and are framed with the shared theme — not cloned here.</p>
             </div>
           </div>

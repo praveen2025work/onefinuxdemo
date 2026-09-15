@@ -93,9 +93,9 @@ export default function Configuration() {
 
       <div className="cfg-steps">
         <span className="cfg-step"><span className="n">1</span> Pick an outcome or kit</span>
-        <Icon name="chevron" size={14} />
+        <Icon name="chevron" size={14} className="flip" />
         <span className="cfg-step"><span className="n">2</span> Inspect its configuration &amp; live state</span>
-        <Icon name="chevron" size={14} />
+        <Icon name="chevron" size={14} className="flip" />
         <span className="cfg-step muted"><span className="n">+</span> Need a new one? <Link to="/onboarding">Onboard</Link></span>
       </div>
 
