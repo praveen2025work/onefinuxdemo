@@ -7,6 +7,7 @@ export const VIEWS = [
   {
     id: 'all',
     label: 'All screens',
+    icon: 'grid',
     who: 'Anyone',
     tag: 'opt out',
     cls: 'plain',
@@ -22,6 +23,7 @@ export const VIEWS = [
   {
     id: 'developer',
     label: 'Developer',
+    icon: 'code',
     who: 'Engineer joining the repo',
     tag: 'start here',
     cls: 'info',
@@ -37,6 +39,7 @@ export const VIEWS = [
   {
     id: 'architect',
     label: 'Architect',
+    icon: 'compass',
     who: 'Platform / design',
     tag: 'shape',
     cls: 'bo',
@@ -52,6 +55,7 @@ export const VIEWS = [
   {
     id: 'controller',
     label: 'Controller',
+    icon: 'user',
     who: 'Outcome user',
     tag: 'act',
     cls: 'ok',
@@ -66,6 +70,7 @@ export const VIEWS = [
   {
     id: 'head',
     label: 'BU head',
+    icon: 'sun',
     who: 'CIO / MD / BU head',
     tag: 'glance',
     cls: 'plain',
@@ -79,6 +84,7 @@ export const VIEWS = [
   {
     id: 'rtb',
     label: 'RTB',
+    icon: 'headset',
     who: 'Run the bank',
     tag: 'ops',
     cls: 'warn',
@@ -93,6 +99,7 @@ export const VIEWS = [
   {
     id: 'maker',
     label: 'Maker',
+    icon: 'wrench',
     who: 'Config / onboarding',
     tag: 'create',
     cls: 'bo',

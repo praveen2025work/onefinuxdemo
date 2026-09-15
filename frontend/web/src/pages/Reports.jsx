@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { StatusPill, Meter, Loading, Prediction } from '../components/bits.jsx';
+import { StatusPill, Meter, Loading, Prediction, PageTitle } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import InfoHint from '../components/InfoHint.jsx';
@@ -10,11 +10,11 @@ import { viewIncludes } from '../views.js';
 
 // The five stages a report walks through: feeds arriving → ready → processing → generated → available.
 const STEPS = [
-  { key: 'FEEDS', label: 'Feeds in', hint: 'Sources publishing' },
-  { key: 'READY', label: 'Ready', hint: 'All feeds complete' },
-  { key: 'PROCESSING', label: 'Processing', hint: 'Report generating' },
-  { key: 'GENERATED', label: 'Generated', hint: 'Report produced' },
-  { key: 'AVAILABLE', label: 'Available', hint: 'Ready to view' },
+  { key: 'FEEDS', label: 'Feeds in', hint: 'Sources publishing', icon: 'inbox' },
+  { key: 'READY', label: 'Ready', hint: 'All feeds complete', icon: 'check' },
+  { key: 'PROCESSING', label: 'Processing', hint: 'Report generating', icon: 'spark' },
+  { key: 'GENERATED', label: 'Generated', hint: 'Report produced', icon: 'report' },
+  { key: 'AVAILABLE', label: 'Available', hint: 'Ready to view', icon: 'eye' },
 ];
 
 // How far along the flow each stage is (index of the step it has reached; AVAILABLE clears all five).
@@ -38,7 +38,7 @@ function Flow({ stage }) {
         const st = stepState(stage, i);
         return (
           <div key={s.key} className={'rstep ' + st}>
-            <div className="rdot">{st === 'done' ? <Icon name="check" size={13} /> : i + 1}</div>
+            <div className="rdot">{st === 'done' ? <Icon name="check" size={13} /> : <Icon name={s.icon} size={13} />}</div>
             <div className="rmeta">
               <div className="rlbl">{s.label}</div>
               <div className="rhint">{s.hint}</div>
@@ -119,12 +119,12 @@ export default function Reports() {
       <div className="ph">
         <div>
           <div className="eyebrow">Regulatory reporting</div>
-          <h1 className="ph-title">Reports
+          <PageTitle icon="report">Reports
             <InfoHint title="Report flow">Each report is a business outcome: its feeds fold to ready, the hub asks the generator to run, and the finished report becomes available to view. No polling — every feed is an event.</InfoHint>
-          </h1>
+          </PageTitle>
         </div>
         <div className="ph-actions">
-          <Link className="btn ghost" to="/board">Open Board</Link>
+          <Link className="btn ghost" to="/board"><Icon name="board" size={15} /> Open Board</Link>
         </div>
       </div>
 

@@ -1,13 +1,14 @@
 import { Link, useSearchParams } from 'react-router-dom';
 import InfoHint from '../components/InfoHint.jsx';
 import Icon from '../components/Icon.jsx';
+import { PageTitle } from '../components/bits.jsx';
 
 const TABS = [
-  { id: 'start', label: 'Start here' },
-  { id: 'product', label: 'Product' },
-  { id: 'works', label: 'How it works' },
-  { id: 'architecture', label: 'Architecture' },
-  { id: 'screens', label: 'Screens & setup' },
+  { id: 'start', label: 'Start here', icon: 'code' },
+  { id: 'product', label: 'Product', icon: 'book' },
+  { id: 'works', label: 'How it works', icon: 'layers' },
+  { id: 'architecture', label: 'Architecture', icon: 'compass' },
+  { id: 'screens', label: 'Screens & setup', icon: 'grid' },
 ];
 
 const SCREENS = [
@@ -43,14 +44,14 @@ export default function Product() {
       <div className="ph">
         <div>
           <div className="eyebrow">One Finance UX · product, architecture, setup</div>
-          <h1 className="ph-title">Product
+          <PageTitle icon="book">Product
             <InfoHint title="Product">The live guide for this console. Same content as docs/design — start path for new developers, architecture diagrams, how the fold works, every screen, and how we review code.</InfoHint>
-          </h1>
+          </PageTitle>
           <p className="sub">A thin outcome layer. Origins stay origins. Destinations stay destinations. We stitch their facts into Ready / Blocked / Delayed and act when ready.</p>
         </div>
         <div className="seg">
           {TABS.map((t) => (
-            <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)}>{t.label}</button>
+            <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)}><Icon name={t.icon} size={14} /> {t.label}</button>
           ))}
         </div>
       </div>

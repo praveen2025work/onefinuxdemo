@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { api, outcomesApi } from '../api';
-import { StatusPill, Meter, Prediction } from '../components/bits.jsx';
+import { StatusPill, Meter, Prediction, PageTitle } from '../components/bits.jsx';
+import Icon, { iconForRoute } from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { VIEWS, viewIncludes } from '../views.js';
 import { hasPrediction } from '../eta.js';
@@ -45,29 +46,29 @@ export default function Home() {
       <div className="ph">
         <div>
           <div className="eyebrow">Revenue Accounting · close of business {filters.cobDate}</div>
-          <h1 className="ph-title">Outcome control tower
+          <PageTitle icon="tower">Outcome control tower
             <InfoHint title="Outcome control tower">One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them.</InfoHint>
-          </h1>
+          </PageTitle>
         </div>
         <div className="ph-actions">
-          <Link className="btn ghost" to="/product?tab=start">Start developing</Link>
-          <Link className="btn ghost" to="/product">Product guide</Link>
-          <button className="btn ghost" onClick={() => refreshInstances()}>↻ Refresh fold</button>
+          <Link className="btn ghost" to="/product?tab=start"><Icon name="code" size={15} /> Start developing</Link>
+          <Link className="btn ghost" to="/product"><Icon name="book" size={15} /> Product guide</Link>
+          <button className="btn ghost" onClick={() => refreshInstances()}><Icon name="refresh" size={15} /> Refresh fold</button>
         </div>
       </div>
 
       <div className="grid g5" style={{ marginBottom: 16 }}>
-        <div className="stat ok"><div className="lbl">Ready to action</div><div className="num">{ready}</div><div className="foot">signed-off: {cleared}</div></div>
-        <div className="stat fail"><div className="lbl">Blocked</div><div className="num">{blocked}</div><div className="foot">named key holds the fold</div></div>
-        <div className="stat warn"><div className="lbl">Delayed</div><div className="num">{instances.filter((i) => i.status === 'DELAYED').length}</div><div className="foot">inside tolerance</div></div>
-        <div className="stat"><div className="lbl">Escalations open</div><div className="num">{esc}</div><div className="foot">owned by RTB</div></div>
-        <div className="stat info"><div className="lbl">Instances in scope</div><div className="num">{instances.length}</div><div className="foot">{filters.groupUnit}</div></div>
+        <div className="stat ok"><span className="stat-ico"><Icon name="check" size={18} /></span><div className="lbl">Ready to action</div><div className="num">{ready}</div><div className="foot">signed-off: {cleared}</div></div>
+        <div className="stat fail"><span className="stat-ico"><Icon name="shield" size={18} /></span><div className="lbl">Blocked</div><div className="num">{blocked}</div><div className="foot">named key holds the fold</div></div>
+        <div className="stat warn"><span className="stat-ico"><Icon name="clock" size={18} /></span><div className="lbl">Delayed</div><div className="num">{instances.filter((i) => i.status === 'DELAYED').length}</div><div className="foot">inside tolerance</div></div>
+        <div className="stat"><span className="stat-ico"><Icon name="alert" size={18} /></span><div className="lbl">Escalations open</div><div className="num">{esc}</div><div className="foot">owned by RTB</div></div>
+        <div className="stat info"><span className="stat-ico"><Icon name="layers" size={18} /></span><div className="lbl">Instances in scope</div><div className="num">{instances.length}</div><div className="foot">{filters.groupUnit}</div></div>
       </div>
 
       {predicted.length > 0 && (
         <div className="panel">
           <div className="panel-hd">
-            <h2>Predicted ready
+            <h2><Icon name="clock" size={16} /> Predicted ready
               <InfoHint title="From historic events" width={300}>
                 Each ETA is projected from facts that already arrived this COB, blended with the median ready time of prior COBs. Advisory only — it never changes Ready / Blocked.
               </InfoHint>
@@ -92,7 +93,7 @@ export default function Home() {
         <div>
           <div className="panel">
             <div className="panel-hd">
-              <h2>Opt in to one view
+              <h2><Icon name="eye" size={16} /> Opt in to one view
                 <InfoHint title="Views are not entitlement" width={320}>
                   A view only hides nav and these start cards. It is not CEES. Unentitled instances still return 404. Pick <b>All screens</b> to see every route.
                 </InfoHint>
@@ -103,7 +104,10 @@ export default function Home() {
               <div className="grid g3 view-picks">
                 {VIEWS.map((v) => (
                   <button key={v.id} type="button" className={'oc' + (view.id === v.id ? ' on' : '')} onClick={() => setView(v.id)}>
-                    <div className="oc-hd"><span className={'pill ' + v.cls}>{v.tag}</span></div>
+                    <div className="oc-hd">
+                      <span className={'oc-ico ' + v.cls}><Icon name={v.icon} size={15} /></span>
+                      <span className={'pill ' + v.cls}>{v.tag}</span>
+                    </div>
                     <h3>{v.label}</h3>
                     <p className="q">{v.job}</p>
                   </button>
@@ -113,12 +117,15 @@ export default function Home() {
           </div>
 
           <div className="panel">
-            <div className="panel-hd"><h2>Pick up where this view starts</h2><span className="hint">{view.who}</span></div>
+            <div className="panel-hd"><h2><Icon name="play" size={16} /> Pick up where this view starts</h2><span className="hint">{view.who}</span></div>
             <div className="panel-bd">
               <div className="grid g2">
                 {view.starts.map((r) => (
                   <Link key={r.to} to={r.to} className="oc">
-                    <div className="oc-hd"><span className={'pill ' + r.cls}>{r.tag}</span></div>
+                    <div className="oc-hd">
+                      <span className={'oc-ico ' + r.cls}><Icon name={iconForRoute(r.to)} size={15} /></span>
+                      <span className={'pill ' + r.cls}>{r.tag}</span>
+                    </div>
                     <h3>{r.title}</h3>
                     <p className="q">{r.q}</p>
                   </Link>
@@ -128,7 +135,7 @@ export default function Home() {
           </div>
 
           <div className="panel">
-            <div className="panel-hd"><h2>Every outcome instance for this unit today <InfoHint title="Fail-closed entitlements" width={300}>Unentitled instances are not greyed out — they return 404 and never reach this list.</InfoHint></h2><span className="hint">outcome_instance ⨝ product_kit</span></div>
+            <div className="panel-hd"><h2><Icon name="layers" size={16} /> Every outcome instance for this unit today <InfoHint title="Fail-closed entitlements" width={300}>Unentitled instances are not greyed out — they return 404 and never reach this list.</InfoHint></h2><span className="hint">outcome_instance ⨝ product_kit</span></div>
             <div className="panel-bd tight">
               <div className="tbl-wrap">
                 <table className="tbl">
@@ -142,7 +149,7 @@ export default function Home() {
                         <td><StatusPill status={i.status} /></td>
                         <td className="mono">{i.runId || '—'}</td>
                         <td className="num">{i.openEscalations}</td>
-                        <td><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}>Open</button></td>
+                        <td><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
                       </tr>
                     ))}
                     {instances.length === 0 && <tr><td colSpan={7} className="empty">No instances for this COB / region.</td></tr>}
@@ -155,7 +162,7 @@ export default function Home() {
 
         <div>
           <div className="panel accent">
-            <div className="panel-hd"><h2>Activity</h2><span className="hint">live · SSE</span></div>
+            <div className="panel-hd"><h2><Icon name="activity" size={16} /> Activity</h2><span className="hint">live · SSE</span></div>
             <div className="panel-bd">
               <div className="tl">
                 {events.map((e) => (
@@ -176,7 +183,7 @@ export default function Home() {
             </div>
           </div>
           <div className="panel">
-            <div className="panel-hd"><h2>Platform rules in force</h2></div>
+            <div className="panel-hd"><h2><Icon name="shield" size={16} /> Platform rules in force</h2></div>
             <div className="panel-bd stack">
               <p className="muted" style={{ margin: 0 }}>Readiness counts <b>distinct</b> keys. A FAILED required key blocks; REVOKED withdraws a completion.</p>
               <p className="muted" style={{ margin: 0 }}>Downstream completions must echo <span className="mono">run_id</span> or the outcome never clears.</p>

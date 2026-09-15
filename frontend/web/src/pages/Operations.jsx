@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../api';
-import { StatusPill, Loading } from '../components/bits.jsx';
+import { StatusPill, Loading, PageTitle } from '../components/bits.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 
 export default function Operations() {
@@ -22,9 +22,9 @@ export default function Operations() {
       <div className="ph">
         <div>
           <div className="eyebrow">Run-the-bank support</div>
-          <h1 className="ph-title">Operations console
+          <PageTitle icon="ops">Operations console
             <InfoHint title="Operations console">Escalations, feed watermarks and dead letters. Replay is dual-control. RTB never signs off a break or publishes a kit.</InfoHint>
-          </h1>
+          </PageTitle>
         </div>
       </div>
 

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { StatusPill, Loading } from '../components/bits.jsx';
+import { StatusPill, Loading, PageTitle } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 
@@ -81,13 +81,13 @@ export default function Configuration() {
       <div className="ph">
         <div>
           <div className="eyebrow">Configuration · live registry</div>
-          <h1 className="ph-title">Configuration
+          <PageTitle icon="config">Configuration
             <InfoHint title="Configuration governs; Onboarding creates" width={360}>Pick a business outcome (or a console kit) on the left to inspect its full anatomy on the right — question, entitlement, SLA, input feeds and on-ready contract. To <b>create</b> a new outcome, use <b>Onboarding</b>.</InfoHint>
-          </h1>
+          </PageTitle>
         </div>
         <div className="ph-actions">
           <Link className="btn ghost" to="/onboarding"><Icon name="build" size={15} /> Onboard new</Link>
-          <button className="btn ghost" onClick={refresh}>↻ Refresh</button>
+          <button className="btn ghost" onClick={refresh}><Icon name="refresh" size={15} /> Refresh</button>
         </div>
       </div>
 

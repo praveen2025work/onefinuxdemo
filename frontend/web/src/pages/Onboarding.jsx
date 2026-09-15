@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { Loading } from '../components/bits.jsx';
+import { Loading, PageTitle } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import Select from '../components/Select.jsx';
 import InfoHint from '../components/InfoHint.jsx';
@@ -119,15 +119,15 @@ export default function Onboarding() {
       <div className="ph">
         <div>
           <div className="eyebrow">Build · onboard a new outcome</div>
-          <h1 className="ph-title">Onboard a business outcome
+          <PageTitle icon="build">Onboard a business outcome
             <InfoHint title="Onboarding vs Configuration" width={360}>
               <b>Onboarding creates.</b> Define a new business outcome here — its question, the feeds it depends on, its SLA and what to do when ready — and it goes live immediately.<br /><br />
               <b>Configuration governs.</b> Once live, inspect and manage it on the Configuration screen. New products are a kit of data, not a new app.
             </InfoHint>
-          </h1>
+          </PageTitle>
         </div>
         <div className="ph-actions">
-          <Link className="btn ghost" to="/configuration">Configuration (govern) →</Link>
+          <Link className="btn ghost" to="/configuration"><Icon name="config" size={15} /> Configuration (govern)</Link>
         </div>
       </div>
 

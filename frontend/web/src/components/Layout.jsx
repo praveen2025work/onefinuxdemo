@@ -108,7 +108,7 @@ export default function Layout({ children }) {
               {section.items.map((it) => (
                 <NavLink key={it.to} to={it.to} end={it.end} title={it.label}
                   className={({ isActive }) => 'nav-a' + (isActive ? ' on' : '')}>
-                  <Icon name={it.icon} size={18} />
+                  <Icon name={it.icon} size={19} />
                   <span className="txt">{it.label}</span>
                   {it.badge === 'assigned' && instances.length > 0 && <span className="tag">{instances.length}</span>}
                   {it.badge === 'esc' && esc > 0 && <span className="tag fail">{esc}</span>}
@@ -126,7 +126,7 @@ export default function Layout({ children }) {
       <div className="main">
         <header className="topbar">
           <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
-            <Icon name="grid" size={16} />
+            <Icon name="menu" size={16} />
           </button>
           <Select variant="header" caption="Group unit" value={filters.groupUnit}
             onChange={(v) => setFilters({ groupUnit: v })}
@@ -137,7 +137,7 @@ export default function Layout({ children }) {
             onChange={(v) => setFilters({ cobDate: v })} />
           <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
             options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
-          <Select variant="header" caption="View" icon="grid" value={view.id} onChange={setView}
+          <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
             options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
           <div className="bell-wrap" ref={bellRef}>
             <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications">
@@ -185,7 +185,7 @@ export default function Layout({ children }) {
       <nav className="bottom-nav" aria-label="Primary">
         {bottomItems.map((it) => (
           <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => (isActive ? 'on' : '')}>
-            <Icon name={it.icon} size={18} />
+            <Icon name={it.icon} size={20} />
             <span>{it.short || it.label}</span>
           </NavLink>
         ))}
