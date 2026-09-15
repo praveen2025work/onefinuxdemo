@@ -64,6 +64,7 @@ for i in $(seq 1 40); do
 done
 curl -sf "http://127.0.0.1:${CDP_PORT}/json/version" >/dev/null
 
+cp -f "$REPO/scripts/helix-narrated-walkthrough.mjs" /tmp/ofx-pup/helix-narrated-walkthrough.mjs
 cd /tmp/ofx-pup
 OFX_BASE="$BASE" OFX_CDP="http://127.0.0.1:${CDP_PORT}" node helix-narrated-walkthrough.mjs >/tmp/ofx-helix-tour.log 2>&1 &
 TOUR_PID=$!
