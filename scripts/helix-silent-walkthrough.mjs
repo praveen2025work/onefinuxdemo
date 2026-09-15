@@ -9,13 +9,13 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const CSS = `
 #ofx-chapter {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 2147483646; pointer-events: none;
-  background: linear-gradient(90deg, #4338ca, #6366f1 42%, #818cf8);
-  color: #f8fafc; font: 650 15px/1.2 Inter, Sora, sans-serif;
-  padding: 9px 24px 9px 232px; letter-spacing: .01em;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, .35);
+  position: fixed; left: 228px; bottom: 108px; z-index: 2147483646; pointer-events: none;
+  background: linear-gradient(90deg, #4338ca, #6366f1);
+  color: #f8fafc; font: 650 14px/1.2 Inter, Sora, sans-serif;
+  padding: 8px 14px; letter-spacing: .01em; border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .35); max-width: min(560px, calc(100vw - 260px));
 }
-#ofx-chapter span { opacity: .82; font-weight: 500; margin-left: 10px; }
+#ofx-chapter span { opacity: .82; font-weight: 500; margin-left: 8px; }
 #ofx-caption {
   position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
   z-index: 2147483647; pointer-events: none;
@@ -387,6 +387,8 @@ await page.evaluate(() => {
 await sleep(400);
 await highlightText(page, '.panel, h2', 'How a FOBO rec', 'Two Helix stories — do not mix them', 'Left: stitch rec a controller signs (Board, COB 12 Sep 2026). Right: engine Helix the hub calls (Reports, COB today).', 7000);
 await highlightText(page, '.oc, h3', 'When the hub calls Helix', 'Engine path — Reports', 'Motif 300 MASTERBOOK_READY → FOBO_HELIX READY → POST /helix/analysis → HELIX_ANALYSIS_COMPLETE → GENERATED. Watch Reports.', 8000);
+await rail(page, '/guide');
+await chapter(page, '3 · Helix use case', 'What the hub actually does');
 await page.evaluate(() => {
   const h = [...document.querySelectorAll('h2')].find((n) => /Run Helix in real time/i.test(n.innerText));
   h?.closest('.panel')?.scrollIntoView({ block: 'center', behavior: 'instant' });
@@ -439,39 +441,42 @@ while (Date.now() < watchUntil && !done) {
   const info = await page.evaluate(() => {
     const card = document.querySelector('[data-ofx-helix]') || [...document.querySelectorAll('.rcard')].find((c) => /FOBO investigation/i.test(c.innerText));
     if (!card) return { found: false };
-    const text = card.innerText;
     const ft = card.querySelector('.rcard-ft')?.innerText || '';
     const meter = card.querySelector('.rfeed')?.innerText || '';
-    const stageEl = card.querySelector('.rstep.active .rlbl, .rcard-cta .pill, .rcard-cta')?.innerText || '';
+    const cta = (card.querySelector('.rcard-cta')?.innerText || '').replace(/\s+/g, ' ').trim();
+    const active = (card.querySelector('.rstep.active .rlbl')?.innerText || '').trim();
     let stage = 'FEEDS';
-    if (/AVAILABLE/.test(text)) stage = 'AVAILABLE';
-    else if (/GENERATED/.test(text)) stage = 'GENERATED';
-    else if (/PROCESSING/.test(text)) stage = 'PROCESSING';
-    else if (/READY/.test(text) && !/NOT_STARTED/.test(text)) stage = 'READY';
-    else if (/BLOCKED/.test(text)) stage = 'BLOCKED';
-    else if (/NOT_STARTED/.test(text)) stage = 'NOT_STARTED';
-    return { found: true, stage, ft, meter, stageEl, text: text.slice(0, 280) };
+    if (/\bAVAILABLE\b/.test(cta)) stage = 'AVAILABLE';
+    else if (/\bGENERATED\b/.test(cta)) stage = 'GENERATED';
+    else if (/\bPROCESSING\b/.test(cta)) stage = 'PROCESSING';
+    else if (/\bBLOCKED\b/.test(cta)) stage = 'BLOCKED';
+    else if (/\bNOT_STARTED\b/.test(cta)) stage = 'NOT_STARTED';
+    else if (/\bFEEDS\b/.test(cta) || /feeds in/i.test(active)) stage = 'FEEDS';
+    else if (/\bREADY\b/.test(cta)) stage = 'READY';
+    const m = meter.match(/(\d+)\s*\/\s*(\d+)/);
+    return { found: true, stage, ft, meter, cta, done: m ? Number(m[1]) : 0, total: m ? Number(m[2]) : 300 };
   });
   console.log('HELIX', JSON.stringify(info));
-  let title = 'FOBO investigation — feeds arriving';
-  let sub = info.meter || 'Motif MASTERBOOK_READY facts. Expected 300. Percent climbs here.';
+  let title = `FOBO investigation — ${info.done || 0}/${info.total || 300} Motif books`;
+  let sub = `${info.ft || 'Feeds arriving'} · stage FEEDS. Helix is not called until 300/300.`;
   if (info.stage === 'NOT_STARTED') {
     title = 'Waiting for the first Motif book';
-    sub = 'Stage NOT_STARTED. The drip has been scheduled — first MASTERBOOK_READY is about to land.';
+    sub = 'Stage NOT_STARTED. The drip is scheduled — first MASTERBOOK_READY is about to land.';
   } else if (info.stage === 'READY') {
     title = '300/300 — READY';
-    sub = 'Fold is complete. On-ready HTTP_COMMAND fires. Hub POSTs http://localhost:7081/helix/analysis with a run id.';
+    sub = 'Fold is complete. On-ready HTTP_COMMAND fires. Hub POSTs /helix/analysis with a run id.';
   } else if (info.stage === 'PROCESSING') {
     title = 'PROCESSING — Helix is running';
-    sub = 'Mock Helix returned 202 ACCEPTED and works ~6 seconds, then publishes HELIX_ANALYSIS_COMPLETE with that runId.';
+    sub = 'Helix returned 202 ACCEPTED and works ~6 seconds, then publishes HELIX_ANALYSIS_COMPLETE with that runId.';
   } else if (info.stage === 'GENERATED' || info.stage === 'AVAILABLE') {
     title = 'GENERATED — Helix finished';
-    sub = info.ft || 'Result summary is on this row. Helix analysed the books. No one polled. Watch Monitoring for the completion fact.';
+    sub = info.ft || 'Result is on this row. No one polled. Watch Monitoring for the completion fact.';
   } else if (info.stage === 'BLOCKED') {
     title = 'Blocked — a named key failed';
     sub = info.ft || 'A failed Motif book would be named here. Escalate; do not invent a fix.';
   }
-  const capKey = `${info.stage}|${title}`;
+  const bucket = info.stage === 'FEEDS' ? Math.floor((info.done || 0) / 50) : 0;
+  const capKey = `${info.stage}|${bucket}|${title}`;
   if (capKey !== lastCap) {
     await highlight(page, '[data-ofx-helix], .rcard', title, sub, 0);
     lastCap = capKey;

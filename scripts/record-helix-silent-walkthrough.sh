@@ -18,18 +18,27 @@ if command -v xdotool >/dev/null; then
   done
 fi
 
+if [[ -f /tmp/ofx-helix-chrome.pid ]]; then
+  old=$(cat /tmp/ofx-helix-chrome.pid)
+  kill "$old" 2>/dev/null || true
+  sleep 0.4
+fi
+
 google-chrome-stable \
-  --no-sandbox --disable-gpu --disable-dev-shm-usage \
+  --no-sandbox --test-type --disable-gpu --disable-dev-shm-usage \
   --use-gl=angle --use-angle=swiftshader-webgl \
   --password-store=basic --no-first-run --no-default-browser-check \
   --disable-session-crashed-bubble --disable-infobars --disable-translate \
-  --disable-features=Translate,TranslateUI \
+  --disable-component-update --disable-background-networking --noerrdialogs \
+  --disable-features=Translate,TranslateUI,ChromeWhatsNewUI \
+  --check-for-update-interval=31536000 \
   --user-data-dir="$USER_DIR" \
   --window-size=1920,1200 --window-position=0,0 \
   --remote-debugging-port="$CDP_PORT" \
   --class=ofx-helix-walk \
-  "${BASE}/?theme=dark" >/tmp/ofx-helix-chrome.log 2>&1 &
+  --app="${BASE}/?theme=dark" >/tmp/ofx-helix-chrome.log 2>&1 &
 CHROME_PID=$!
+echo "$CHROME_PID" > /tmp/ofx-helix-chrome.pid
 echo "chrome pid $CHROME_PID"
 
 for i in $(seq 1 40); do
