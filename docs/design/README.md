@@ -10,6 +10,8 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 | [`application.md`](application.md) | Build team | Modules, APIs, screens, capabilities, demo vs later |
 | [`onboarding.md`](onboarding.md) | Operators | Create an outcome, inspect it, drive the day |
 | [`helix-walkthrough.md`](helix-walkthrough.md) | Lead / joining engineer | Real-time Helix: engine (Reports) vs stitch rec (Board) |
+| [`helix-silent-walkthrough.md`](helix-silent-walkthrough.md) | Anyone | Silent UI recording: group unit, onboard, Drive Helix, Reports |
+| [`helix-silent-walkthrough.mp4`](helix-silent-walkthrough.mp4) | Anyone | Captioned walkthrough, no voice |
 | [`architecture.md`](architecture.md) | Engineers / exec | Mermaid diagrams (source + SVG/PNG in [`diagrams/`](diagrams/)) |
 | [`executive-brief.md`](executive-brief.md) | MD / CIO demo | Narrative, value, ask |
 | [`demo-runsheet.md`](demo-runsheet.md) | Facilitator | Timed CIO/MD script |
