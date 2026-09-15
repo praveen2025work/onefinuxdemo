@@ -322,7 +322,7 @@ export default function Icon({ name, size = 18, fill = 'none', className = '' })
 }
 
 export function BrandMark({ size = 34 }) {
-  // One circular scope + a finance chart. Singularity, not a stitch stack.
+  // One coin (singular scope) with a currency mark — finance, not a signal chart.
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
       <defs>
@@ -332,12 +332,10 @@ export function BrandMark({ size = 34 }) {
         </linearGradient>
       </defs>
       <circle cx="20" cy="20" r="18.5" fill="url(#ofx-g)" />
-      <circle cx="20" cy="20" r="15.2" stroke="#ffffff" strokeWidth="1.7" opacity="0.38" />
-      <g stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" opacity="0.96">
-        <path d="M13.5 25.2v-5.2" />
-        <path d="M20 25.2v-8.6" />
-        <path d="M26.5 25.2v-12.2" />
-        <path d="M12.2 25.2h15.6" />
+      <circle cx="20" cy="20" r="13.6" stroke="#ffffff" strokeWidth="1.8" opacity="0.92" />
+      <g stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.96">
+        <path d="M20 11.2v17.6" />
+        <path d="M25.2 14.2h-6.6a3.4 3.4 0 0 0 0 6.8h3.6a3.4 3.4 0 0 1 0 6.8H14.4" />
       </g>
     </svg>
   );

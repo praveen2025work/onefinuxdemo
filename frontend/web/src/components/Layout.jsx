@@ -136,6 +136,10 @@ export default function Layout({ children }) {
           <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
             <Icon name="menu" size={16} />
           </button>
+          <div className="brand top-brand">
+            <BrandMark size={28} />
+            <div className="txt"><b>One Finance</b><span>Outcome platform</span></div>
+          </div>
           <Select variant="header" caption="Group unit" value={filters.groupUnit}
             onChange={(v) => setFilters({ groupUnit: v })}
             options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
