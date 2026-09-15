@@ -31,7 +31,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 ## Brand
 
-Cerulean `#00aeef` accent. Charcoal canvas `#0b1220`, opaque cards, dark navy rail. Status colour on KPI tiles (ready / blocked / delayed). Light theme keeps the same dark rail on an off-white page. No frosted glass.
+MITR indigo-lavender accent (`#818cf8` dark / `#6366f1` light). Canvas `#090d1c` dark / `#f5f6fb` light, opaque cards, dark indigo rail. Status colour on KPI tiles (ready / blocked / delayed). Light theme keeps the same dark rail. Inter + Sora + JetBrains Mono, Lucide icons. No frosted glass.
 
 ## Mobile
 

@@ -2,7 +2,7 @@
 
 Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 
-Visual truth: `frontend/web` (live React console; solid finance dashboard, Cerulean `#00aeef` accent, charcoal canvas).  
+Visual truth: `frontend/web` (live React console; solid finance dashboard, MITR indigo `#6366f1` / `#818cf8`, canvas `#090d1c`).  
 Design folder (only one): [`docs/design/`](docs/design/README.md).  
 New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and console **`/guide`**. Architecture diagrams: console **`/architecture`**. Product story: **`/product`**.
 

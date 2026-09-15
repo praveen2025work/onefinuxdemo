@@ -8,7 +8,7 @@ Facilitator script. Two tracks: a **2–3 minute narrated MD / CIO story** (male
 
 1. `./scripts/run.sh` — hub API `http://localhost:7070`, simulator `http://localhost:7081`. Do not open 7070 as the product UI.
 2. Separate terminal: `cd frontend/web && npm install && npm run dev` — console `http://localhost:5173`.
-3. Theme: dark (charcoal dashboard + Cerulean accent) for exec rooms.
+3. Theme: dark (indigo-slate dashboard + MITR accent) for exec rooms.
 4. Open `/drive`, click **Reset**. Do **not** pre-run the day's scenario — Drive it live.
 
 Worked examples:
