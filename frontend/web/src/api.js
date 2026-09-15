@@ -88,6 +88,15 @@ export const outcomesApi = {
     }
     return res.json();
   },
+  one: async (outcomeId, cobDate, region) => {
+    const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}`);
+    if (!res.ok) {
+      let detail = `${res.status} ${res.statusText}`;
+      try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
+      throw new Error(detail);
+    }
+    return res.json();
+  },
   report: async (outcomeId, cobDate, region) => {
     const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}/report`);
     if (!res.ok) {

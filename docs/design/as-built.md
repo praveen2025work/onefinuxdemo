@@ -17,7 +17,8 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |
-| `/reports` | Engine outcomes + 15C3 five-stage flow + predicted ready (from arrived facts + prior-COB P50) + viewable artifact | Scenario buttons |
+| `/reports` | Engine outcomes + 15C3 five-stage flow + predicted ready; Normal / Compact / Table layouts | Scenario buttons |
+| `/reports/:outcomeId/:cobDate/:region` | The produced report document (open from any Reports layout) | Drive / generate |
 | `/board` | Unit traffic lights for CIO / MD / BU head | Sign-off / post |
 | `/outcomes` | Doer's card worklist | Head roll-ups or RTB queues |
 | `/instance/:id` | Fold + embed + kit-declared actions | Invent verbs not on the kit |
