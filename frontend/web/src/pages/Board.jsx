@@ -9,6 +9,9 @@ const STATUSES = ['', 'READY', 'BLOCKED', 'NOT_YET', 'CLEARED'];
 export default function Board() {
   const { instances, filters, setFilters } = useApp();
   const navigate = useNavigate();
+  const ready = instances.filter((i) => i.status === 'READY').length;
+  const blocked = instances.filter((i) => i.status === 'BLOCKED').length;
+  const named = instances.find((i) => i.status === 'BLOCKED');
 
   return (
     <>
@@ -18,6 +21,13 @@ export default function Board() {
           <PageTitle icon="board">Outcome board
             <InfoHint title="Outcome board">Traffic lights for the whole unit. A head sees Ready / Blocked / escalations — no book grid, no engine internals.</InfoHint>
           </PageTitle>
+          <p className="sub">
+            {blocked
+              ? `${ready} ready. ${blocked} blocked — ${named.region} ${named.kitId} on ${named.namedBlocker || named.status}.`
+              : ready
+                ? `${ready} ready across the unit. No named blockers.`
+                : 'No instances match this filter.'}
+          </p>
         </div>
         <div className="seg">
           {STATUSES.map((s) => (

@@ -6,7 +6,7 @@ Source systems publish events. The hub translates them into business identifiers
 
 The requirements and architecture live in [`docs/design/`](docs/design/README.md). This README covers running the POC.
 
-**New to the repo?** Read [`docs/design/start.md`](docs/design/start.md), then open the console at `/product?tab=start`. Pick a **View** (Developer, BU head, RTB, …) so the left rail only shows that job. Views are a nav filter, not security.
+**New to the repo?** Read [`docs/design/start.md`](docs/design/start.md), then open the console at `/guide`. Architecture diagrams: `/architecture`. Product story: `/product`. Pick a **View** (Developer, BU head, RTB, …) if you want a thinner operate/build rail — Guide stays visible. Views are a nav filter, not security.
 
 ## What's in the box
 

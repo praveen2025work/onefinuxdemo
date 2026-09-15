@@ -1,6 +1,6 @@
 # Start here — new developers
 
-This is the plain-language on-ramp. The same content is on the console at **`/product?tab=start`**. Visual truth is `frontend/web`.
+This is the plain-language on-ramp. The same content is on the console at **`/guide`**. Architecture diagrams: **`/architecture`**. Product story: **`/product`**. Visual truth is `frontend/web`.
 
 ## The idea
 
@@ -19,7 +19,7 @@ Two models share one event backbone:
 
 1. `./scripts/run.sh` — hub **7070** (API only) + simulator **7081**. Do not open 7070 as the UI.
 2. `cd frontend/web && npm install && npm run dev` — console **http://localhost:5173**.
-3. Top bar → **View** → **Developer**. The left rail now shows only that job.
+3. Left rail **Guide** — Product, Architecture, Developer guide. Or top bar → **View** → **Developer** if you want a shorter operate/build rail.
 4. **Onboarding** — submit the Month-end close example. That is `POST /api/outcomes/definitions`. No new Java type.
 5. **Drive** → Reset → one scenario. Watch **Monitoring**. Switch View to **BU head** and open Board; Drive leaves the rail on purpose.
 

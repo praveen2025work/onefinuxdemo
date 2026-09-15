@@ -237,6 +237,8 @@ const P = {
 export const ROUTE_ICON = {
   '/': 'home',
   '/product': 'book',
+  '/architecture': 'compass',
+  '/guide': 'code',
   '/board': 'board',
   '/outcomes': 'cards',
   '/reports': 'report',

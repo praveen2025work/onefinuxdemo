@@ -1,21 +1,16 @@
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useSearchParams } from 'react-router-dom';
 import InfoHint from '../components/InfoHint.jsx';
 import Icon from '../components/Icon.jsx';
 import { PageTitle } from '../components/bits.jsx';
-
-const TABS = [
-  { id: 'start', label: 'Start here', icon: 'code' },
-  { id: 'product', label: 'Product', icon: 'book' },
-  { id: 'works', label: 'How it works', icon: 'layers' },
-  { id: 'architecture', label: 'Architecture', icon: 'compass' },
-  { id: 'screens', label: 'Screens & setup', icon: 'grid' },
-];
+import GuideNav from '../components/GuideNav.jsx';
 
 const SCREENS = [
-  { to: '/', title: 'Home', who: 'Everyone', job: 'Morning glance plus opt-in views. Pick one job; the rail hides the rest.', creates: 'Nothing — read + pick a view', not: 'Scenario buttons' },
-  { to: '/product', title: 'Product', who: 'Everyone', job: 'What the platform is, how the fold works, architecture diagrams, start path, and how we review code.', creates: 'This guide', not: 'Live outcomes' },
-  { to: '/onboarding', title: 'Onboarding', who: 'Maker', job: 'Create a live OutcomeDefinition: question, feeds, SLA, on-ready action.', creates: 'A new outcome (data, not a release)', not: 'Inspecting every existing outcome' },
-  { to: '/configuration', title: 'Configuration', who: 'Owner / config', job: 'Govern the registry. Pick an outcome or kit on the left; anatomy and live state on the right.', creates: 'Nothing — inspect and bind', not: 'A create form (that is Onboarding)' },
+  { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold. Pick a role if you want a shorter rail.', creates: 'Nothing — read + pick a view', not: 'Scenario buttons' },
+  { to: '/product', title: 'Product', who: 'Everyone', job: 'Why this exists. The morning story a BU head and a controller both recognise.', creates: 'This guide', not: 'Live outcomes' },
+  { to: '/architecture', title: 'Architecture', who: 'Everyone', job: 'How facts become Ready or Blocked. Same diagrams as docs/design.', creates: 'This guide', not: 'Live outcomes' },
+  { to: '/guide', title: 'Developer guide', who: 'Engineer', job: 'Run it, extend it with data, review a PR. First change is Onboarding, not a Java type.', creates: 'This guide', not: 'Live outcomes' },
+  { to: '/onboarding', title: 'Onboarding', who: 'Maker', job: 'Create a live outcome: question, feeds, SLA, on-ready action.', creates: 'A new outcome (data, not a release)', not: 'Inspecting every existing outcome' },
+  { to: '/configuration', title: 'Configuration', who: 'Owner / config', job: 'Govern the registry. Pick an outcome or kit on the left; anatomy on the right.', creates: 'Nothing — inspect and bind', not: 'A create form (that is Onboarding)' },
   { to: '/drive', title: 'Drive scenarios', who: 'Demo / QA', job: 'Reset and inject COB facts. Product pages stay view-only.', creates: 'Simulator events into the hub', not: 'Buttons on Home or Reports' },
   { to: '/reports', title: 'Reports', who: 'Controller', job: 'Engine outcomes and the 15C3 five-stage pack: feeds → ready → processing → generated → available.', creates: 'Nothing — view the artifact', not: 'Scenario buttons' },
   { to: '/board', title: 'Outcome board', who: 'CIO / MD / BU head', job: 'Traffic lights for the whole unit. Named blocker, SLA, escalation count.', creates: 'Nothing — read only', not: 'Sign-off or post' },
@@ -35,32 +30,156 @@ const DIAGRAMS = [
 ];
 
 export default function Product() {
-  const [params, setParams] = useSearchParams();
-  const tab = TABS.some((t) => t.id === params.get('tab')) ? params.get('tab') : 'product';
-  function go(id) { setParams(id === 'product' ? {} : { tab: id }, { replace: true }); }
+  const [params] = useSearchParams();
+  const tab = params.get('tab');
+  if (tab === 'architecture') return <Navigate to="/architecture" replace />;
+  if (tab === 'start' || tab === 'works' || tab === 'screens') return <Navigate to="/guide" replace />;
+  return <ProductStory />;
+}
 
+export function ArchitecturePage() {
   return (
     <>
       <div className="ph">
         <div>
-          <div className="eyebrow">One Finance UX · product, architecture, setup</div>
-          <PageTitle icon="book">Product
-            <InfoHint title="Product">The live guide for this console. Same content as docs/design — start path for new developers, architecture diagrams, how the fold works, every screen, and how we review code.</InfoHint>
+          <div className="eyebrow">How facts become an answer</div>
+          <PageTitle icon="compass">Architecture
+            <InfoHint title="Architecture">Same diagrams as docs/design/architecture.md. Origins stay origins. The hub folds. This console is the only UX.</InfoHint>
           </PageTitle>
-          <p className="sub">A thin outcome layer. Origins stay origins. Destinations stay destinations. We stitch their facts into Ready / Blocked / Delayed and act when ready.</p>
+          <p className="sub">Three processes. The browser never sees Kafka. Motif, SAP, Helix and Axiom keep their screens — we stitch their facts.</p>
         </div>
-        <div className="seg">
-          {TABS.map((t) => (
-            <button key={t.id} className={tab === t.id ? 'on' : ''} onClick={() => go(t.id)}><Icon name={t.icon} size={14} /> {t.label}</button>
-          ))}
+        <GuideNav />
+      </div>
+
+      <div className="grid g3" style={{ marginBottom: 16 }}>
+        <div className="stat info"><div className="lbl">Origins</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Publish a fact</div><div className="foot">Motif, SAP, Helix, Axiom — or the simulator</div></div>
+        <div className="stat ok"><div className="lbl">Hub</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Fold to Ready or Blocked</div><div className="foot">Deterministic. Named blocker when a required key fails.</div></div>
+        <div className="stat"><div className="lbl">Console</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Show the answer, then act</div><div className="foot">SSE. Sign-off lives on the instance, not on Home.</div></div>
+      </div>
+
+      <div className="banner info" style={{ marginBottom: 16 }}>
+        <Icon name="info" size={16} />
+        <div>
+          <b>These pictures are the product, not a second deck.</b>
+          <span className="mono-sm">Mermaid source: docs/design/diagrams/*.md — do not treat the SVG as a second design.</span>
+        </div>
+      </div>
+      {DIAGRAMS.map((d) => (
+        <div key={d.src} className="panel">
+          <div className="panel-hd"><h2>{d.title}</h2></div>
+          <div className="panel-bd">
+            <p className="muted" style={{ marginTop: 0 }}>{d.caption}</p>
+            <div className="prod-fig">
+              <img src={d.src} alt={d.title} />
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+export function GuidePage() {
+  return (
+    <>
+      <div className="ph">
+        <div>
+          <div className="eyebrow">Join the repo · about 15 minutes</div>
+          <PageTitle icon="code">Developer guide
+            <InfoHint title="Developer guide">How to run the three processes, add an outcome as data, and get a PR reviewed. Same write-up as docs/design/start.md.</InfoHint>
+          </PageTitle>
+          <p className="sub">Your first change is a row of data, not a Java product type. FOBO is a kit. There is no FOBO code path.</p>
+        </div>
+        <GuideNav />
+      </div>
+      <StartTab />
+      <div id="how-it-works"><WorksTab /></div>
+      <div id="screens"><ScreensTab /></div>
+    </>
+  );
+}
+
+function ProductStory() {
+  return (
+    <>
+      <div className="ph">
+        <div>
+          <div className="eyebrow">Why this exists</div>
+          <PageTitle icon="book">One answer at close of business
+            <InfoHint title="Product">A thin outcome layer. Origins stay origins. Destinations stay destinations. We stitch their facts into Ready / Blocked / Delayed and act when ready.</InfoHint>
+          </PageTitle>
+          <p className="sub">Revenue Accounting is not asking “is Motif done?”. It is asking: can I run this rec, produce this report, post this book — for this COB, in this region?</p>
+        </div>
+        <GuideNav />
+      </div>
+
+      <div className="story" style={{ marginBottom: 16 }}>
+        <div className="story-kicker">A morning a BU head recognises</div>
+        <h2>Two rows. One unit. Different days.</h2>
+        <p className="story-lead">Same question: <b>Can I execute this rec?</b> APAC is ready — the controller signs off. EMEA is blocked — Motif rejected ledger MB014. RTB owns that delay. Nobody opens a second ticket and hopes.</p>
+        <div className="story-rows">
+          <div className="story-row ok">
+            <span className="pill ok">READY</span>
+            <div>
+              <b>APAC · R-1042</b>
+              <div className="sec">All required keys arrived. The person who owns the rec can sign off or post. The head does not.</div>
+            </div>
+          </div>
+          <div className="story-row fail">
+            <span className="pill fail">BLOCKED</span>
+            <div>
+              <b>EMEA · R-2031 · Motif MB014</b>
+              <div className="sec">A named key failed. Escalation sits with RTB. Replay is dual-control. Sign-off is not.</div>
+            </div>
+          </div>
+        </div>
+        <div className="wrapflex">
+          <Link className="btn" to="/board">Open the unit board</Link>
+          <Link className="btn ghost" to="/architecture">See how this is stitched</Link>
+          <Link className="btn ghost" to="/guide">Developer guide</Link>
         </div>
       </div>
 
-      {tab === 'start' && <StartTab />}
-      {tab === 'product' && <ProductTab />}
-      {tab === 'works' && <WorksTab />}
-      {tab === 'architecture' && <ArchitectureTab />}
-      {tab === 'screens' && <ScreensTab />}
+      <div className="grid g3" style={{ marginBottom: 16 }}>
+        <div className="stat info"><div className="lbl">We keep</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Motif, SAP, Helix, Axiom</div><div className="foot">Their screens stay theirs. We frame them when we must.</div></div>
+        <div className="stat ok"><div className="lbl">We add</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>One row per outcome</div><div className="foot">Ready, blocked, delayed — with a named reason</div></div>
+        <div className="stat"><div className="lbl">We never</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Rebuild the books grid</div><div className="foot">No FOBO code path. Products are data.</div></div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-hd"><h2>Two models, one event backbone</h2><span className="hint">plain language</span></div>
+        <div className="panel-bd">
+          <div className="grid g2">
+            <div className="oc" style={{ cursor: 'default' }}>
+              <div className="oc-hd"><span className="pill info">The question</span></div>
+              <h3>Outcome Engine</h3>
+              <p className="q">A business question plus the feeds that must land, an SLA, and what to do when ready. 15C3 and PnL live here. When every feed is in, the hub can tell Axiom to generate the pack — no one polls.</p>
+            </div>
+            <div className="oc" style={{ cursor: 'default' }}>
+              <div className="oc-hd"><span className="pill bo">The work</span></div>
+              <h3>Stitch kit</h3>
+              <p className="q">The human console: sources, destinations, the partner screen in a frame, buttons like sign-off. FOBO is the first kit. Adding the next kit is data, not a fork of this app.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-hd"><h2>Walk a visitor through it</h2><span className="hint">four beats</span></div>
+        <div className="panel-bd">
+          <ol className="prod-ol">
+            <li><b>Home</b> — today’s close in one paragraph, then the named blocker.</li>
+            <li><b>Board</b> — what a CIO sees. Open the blocked row.</li>
+            <li><b>Architecture</b> — why Motif is still Motif, and how a failed key becomes that red cell.</li>
+            <li><b>Developer guide</b> — if they will build: run three processes, onboard as data, watch the tape.</li>
+          </ol>
+          <div className="wrapflex" style={{ marginTop: 12 }}>
+            <Link className="btn" to="/">Start on Home</Link>
+            <Link className="btn ghost" to="/architecture">Architecture</Link>
+            <Link className="btn ghost" to="/guide">Developer guide</Link>
+          </div>
+        </div>
+      </div>
     </>
   );
 }
@@ -71,7 +190,7 @@ function StartTab() {
       <div className="banner info" style={{ marginBottom: 16 }}>
         <Icon name="info" size={16} />
         <div>
-          <b>New to this repo? Read this tab, then pick the Developer view on Home.</b>
+          <b>New to this repo? Read this page, then pick the Developer view on Home if you want a shorter rail.</b>
           <span className="mono-sm">Same write-up: docs/design/start.md · views are a nav filter, not security</span>
         </div>
       </div>
@@ -97,14 +216,14 @@ function StartTab() {
           <ol className="prod-ol">
             <li><b>API:</b> from the repo root run <span className="mono">./scripts/run.sh</span>. Hub is 7070, simulator is 7081. Do not open 7070 as the UI.</li>
             <li><b>Console:</b> <span className="mono">cd frontend/web && npm install && npm run dev</span>. Open http://localhost:5173.</li>
-            <li><b>Pick a view:</b> top bar → View → <b>Developer</b> (or the chooser on Home). The left rail now shows only the screens for that job.</li>
+            <li><b>Read the story:</b> <Link to="/product">Product</Link>, then <Link to="/architecture">Architecture</Link>. Then pick View → <b>Developer</b> if you want a shorter rail.</li>
             <li><b>First change:</b> open <Link to="/onboarding">Onboarding</Link>, submit the Month-end close example. That is <span className="mono">POST /api/outcomes/definitions</span> — no Java class.</li>
             <li><b>Prove it:</b> <Link to="/drive">Drive</Link> → Reset → one scenario. Watch <Link to="/monitoring">Monitoring</Link>. Switch View to <b>BU head</b> and open Board — Drive disappears from the rail on purpose.</li>
           </ol>
           <div className="wrapflex" style={{ marginTop: 12 }}>
             <Link className="btn" to="/onboarding">Open Onboarding</Link>
             <Link className="btn ghost" to="/drive">Open Drive</Link>
-            <Link className="btn ghost" to="/">Choose a view on Home</Link>
+            <Link className="btn ghost" to="/architecture">Open Architecture</Link>
           </div>
         </div>
       </div>
@@ -137,67 +256,6 @@ function StartTab() {
             <li><b>Local before you push:</b> <span className="mono">mvn -B test</span> and <span className="mono">cd frontend/web && npm run build</span>. Then click the screens you changed — a green build is not a demo.</li>
           </ol>
           <p className="muted" style={{ marginBottom: 0, marginTop: 12 }}>Skills are the review contract: <span className="mono">barclays-ib-console</span> (chrome), <span className="mono">register-outcome-kit</span> (onboard), <span className="mono">outcome-engine</span> (fold + ActionExecutor), <span className="mono">drive-and-demo</span> (scenarios).</p>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-hd"><h2>Unwanted screens or leftover code?</h2><span className="hint">audit 14 Sep 2026</span></div>
-        <div className="panel-bd">
-          <p className="muted" style={{ marginTop: 0 }}><b>No unused product screens.</b> Every page under <span className="mono">frontend/web/src/pages</span> is routed and has a job. Instance detail is drill-down only (no rail item). Drive is testing-only — it is not a leftover; it is kept off Home and Reports on purpose.</p>
-          <p className="muted">Pairs that look like duplicates are not: <b>Board</b> vs <b>My outcomes</b> (supervisor table vs doer cards, same instances). <b>Onboarding</b> vs <b>Configuration</b> (create vs govern).</p>
-          <p className="muted">Already removed in earlier cleanups: leftover static HTML board, Analyst explorer UI, unused stitch analyst APIs, design docs outside <span className="mono">docs/design/</span>.</p>
-          <p className="muted" style={{ marginBottom: 0 }}><b>Kept on purpose, not wired to a screen:</b> hub <span className="mono">/api/contracts</span>, <span className="mono">/api/workflow</span>, <span className="mono">/api/config</span>, <span className="mono">/dev-token</span> (platform APIs and <span className="mono">http/onefinux.http</span>). Client helpers <span className="mono">api.destinations</span> and <span className="mono">api.registerKit</span> match live hub endpoints; kit create is still API-only. This pass dropped unused <span className="mono">PromptModal</span> / <span className="mono">ConfirmModal</span> and unused <span className="mono">search</span> / <span className="mono">play</span> icons.</p>
-        </div>
-      </div>
-    </>
-  );
-}
-
-function ProductTab() {
-  return (
-    <>
-      <div className="grid g3" style={{ marginBottom: 16 }}>
-        <div className="stat info"><div className="lbl">The question</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Can I run this rec / produce this report / post this book?</div><div className="foot">one answer per outcome, per COB, per region</div></div>
-        <div className="stat ok"><div className="lbl">What we unify</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Group unit · two models · one instance row</div><div className="foot">products are data, never a Java type</div></div>
-        <div className="stat"><div className="lbl">What we do not do</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Rebuild Helix, Motif or Axiom</div><div className="foot">heavy screens stay partner iframes</div></div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-hd"><h2>Two complementary models</h2><span className="hint">share one event backbone</span></div>
-        <div className="panel-bd">
-          <div className="grid g2">
-            <div className="oc" style={{ cursor: 'default' }}>
-              <div className="oc-hd"><span className="pill info">Outcome Engine</span></div>
-              <h3>Business question</h3>
-              <p className="q">An <span className="mono">OutcomeDefinition</span> is question + feeds + SLA + on-ready. Seeded: FOBO_HELIX, REPORT_15C3, PNL_REPORTING. Runtime onboard: POST /api/outcomes/definitions. On ready, ActionExecutor runs HTTP_COMMAND or LOG_COMMAND — no polling.</p>
-            </div>
-            <div className="oc" style={{ cursor: 'default' }}>
-              <div className="oc-hd"><span className="pill bo">Stitch console kit</span></div>
-              <h3>Human work</h3>
-              <p className="q">A kit is sources + destinations + embed + userActions. FOBO is the first kit — there is no FOBO code path. Sign-off, post, escalate and kit-declared verbs (AMEND) go through POST /api/stitch/instance/action.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-hd"><h2>Worked example (must match every screen)</h2><span className="hint">design contract</span></div>
-        <div className="panel-bd">
-          <p className="muted" style={{ marginTop: 0 }}>REV-ACC → FOBO → <span className="mono">R-1042 READY (RUN-A37C)</span> / <span className="mono">R-2031 BLOCKED (MOTIF MB014, ESC-19, DL-4402)</span>. Sources: CATS, MOTIF, MBR.</p>
-          <div className="wrapflex">
-            <Link className="btn" to="/product?tab=architecture">Open architecture</Link>
-            <Link className="btn ghost" to="/product?tab=start">Start developing</Link>
-            <Link className="btn ghost" to="/product?tab=screens">Screens &amp; setup</Link>
-            <Link className="btn ghost" to="/onboarding">Create an outcome</Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-hd"><h2>Brand and shell</h2></div>
-        <div className="panel-bd stack">
-          <p className="muted" style={{ margin: 0 }}>Solid finance dashboard. Charcoal canvas, opaque cards, dark navy rail in both themes. Cerulean <span className="mono">#00aeef</span> accent. Gold UAT chip. Status colour on KPI tiles. No frosted glass.</p>
-          <p className="muted" style={{ margin: 0 }}>Below 820px the rail collapses to icons. A native app can wrap this shell — do not build a second product.</p>
         </div>
       </div>
     </>
@@ -264,28 +322,6 @@ function WorksTab() {
   );
 }
 
-function ArchitectureTab() {
-  return (
-    <>
-      <div className="banner info" style={{ marginBottom: 16 }}>
-        <Icon name="info" size={16} />
-        <div><b>Same diagrams as docs/design/architecture.md.</b><span className="mono-sm">Mermaid source lives in docs/design/diagrams/*.mmd — do not treat the SVG as a second design.</span></div>
-      </div>
-      {DIAGRAMS.map((d) => (
-        <div key={d.src} className="panel">
-          <div className="panel-hd"><h2>{d.title}</h2></div>
-          <div className="panel-bd">
-            <p className="muted" style={{ marginTop: 0 }}>{d.caption}</p>
-            <div className="prod-fig">
-              <img src={d.src} alt={d.title} />
-            </div>
-          </div>
-        </div>
-      ))}
-    </>
-  );
-}
-
 function ScreensTab() {
   return (
     <>
@@ -316,7 +352,6 @@ function ScreensTab() {
               <p className="q">Master-detail registry. Pick an outcome or kit on the left; read the contract and live fold on the right. Do not treat this as a create form.</p>
             </Link>
           </div>
-          <p className="muted" style={{ marginBottom: 0, marginTop: 14 }}>A second kit is POST /api/stitch/kits with sources, destinations, embed and userActions. No new Java type. Full operator curl path: docs/design/onboarding.md.</p>
         </div>
       </div>
 
@@ -342,14 +377,6 @@ function ScreensTab() {
               </tbody>
             </table>
           </div>
-        </div>
-      </div>
-
-      <div className="panel">
-        <div className="panel-hd"><h2>Demo vs later</h2></div>
-        <div className="panel-bd">
-          <p className="muted" style={{ marginTop: 0 }}><b>In this build:</b> React console, runtime onboard, Drive, Configuration master-detail, 15C3 report flow, FOBO stitch with AMEND, RTB operations, monitoring + outbox + audit, pluggable ActionExecutor.</p>
-          <p className="muted" style={{ marginBottom: 0 }}><b>Later:</b> bank Kafka/Solace, live CEES, live Helix/FAS/Axiom, Barclays Now, Wijmo analyst studio, native mobile wrapping this shell.</p>
         </div>
       </div>
     </>

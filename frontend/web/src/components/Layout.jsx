@@ -9,10 +9,14 @@ import { VIEWS, filterNav } from '../views.js';
 const NAV = [
   { grp: 'Console', items: [
     { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
-    { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
     { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
     { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
     { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
+  ] },
+  { grp: 'Guide', items: [
+    { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
+    { to: '/architecture', label: 'Architecture', short: 'Arch', icon: 'compass' },
+    { to: '/guide', label: 'Developer guide', short: 'Guide', icon: 'code' },
   ] },
   { grp: 'Operate', items: [
     { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },
@@ -86,7 +90,10 @@ export default function Layout({ children }) {
   const regions = context?.regions || [];
   const groupUnits = context?.groupUnits || [];
 
-  const bottomItems = nav.flatMap((section) => section.items).slice(0, 5);
+  const railItems = nav.flatMap((section) => section.items);
+  const bottomPref = ['/', '/board', '/reports', '/product', '/guide'];
+  const bottomPicked = bottomPref.map((to) => railItems.find((it) => it.to === to)).filter(Boolean);
+  const bottomItems = bottomPicked.length >= 3 ? bottomPicked.slice(0, 5) : railItems.slice(0, 5);
 
   return (
     <div className={'app' + (collapsed ? ' collapsed' : '') + (drawer ? ' drawer-open' : '')}>

@@ -10,7 +10,7 @@ import Configuration from './pages/Configuration.jsx';
 import Monitoring from './pages/Monitoring.jsx';
 import Reports from './pages/Reports.jsx';
 import Drive from './pages/Drive.jsx';
-import Product from './pages/Product.jsx';
+import Product, { ArchitecturePage, GuidePage } from './pages/Product.jsx';
 
 export default function App() {
   return (
@@ -18,6 +18,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/product" element={<Product />} />
+        <Route path="/architecture" element={<ArchitecturePage />} />
+        <Route path="/guide" element={<GuidePage />} />
         <Route path="/board" element={<Board />} />
         <Route path="/outcomes" element={<Outcomes />} />
         <Route path="/reports" element={<Reports />} />

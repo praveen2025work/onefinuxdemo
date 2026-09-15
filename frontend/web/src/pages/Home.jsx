@@ -9,7 +9,7 @@ import { VIEWS, viewIncludes } from '../views.js';
 import { hasPrediction } from '../eta.js';
 
 export default function Home() {
-  const { instances, filters, refreshInstances, view, setView } = useApp();
+  const { instances, filters, refreshInstances, view, setView, context } = useApp();
   const [events, setEvents] = useState([]);
   const [engineOutcomes, setEngineOutcomes] = useState([]);
   const navigate = useNavigate();
@@ -40,22 +40,85 @@ export default function Home() {
   }, []);
 
   const predicted = engineOutcomes.filter((o) => hasPrediction(o) || o.atRisk || o.breached);
+  const unitName = context?.groupUnits?.find((g) => g.groupUnitId === filters.groupUnit)?.name || filters.groupUnit;
+  const namedBlocker = instances.find((i) => i.status === 'BLOCKED');
+  const storyRows = [...instances]
+    .sort((a, b) => {
+      const rank = (s) => (s === 'BLOCKED' ? 0 : s === 'READY' ? 1 : 2);
+      return rank(a.status) - rank(b.status);
+    })
+    .slice(0, 4);
 
   return (
     <>
       <div className="ph">
         <div>
-          <div className="eyebrow">Revenue Accounting · close of business {filters.cobDate}</div>
-          <PageTitle icon="tower">Outcome control tower
+          <div className="eyebrow">{unitName} · close of business {filters.cobDate}</div>
+          <PageTitle icon="tower">Today’s close
             <InfoHint title="Outcome control tower">One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them.</InfoHint>
           </PageTitle>
+          <p className="sub">The fold is the work: ready rows, a named blocker, and whether the clock still holds. Guides live in the left rail — Product, Architecture, Developer guide.</p>
         </div>
         <div className="ph-actions">
-          <Link className="btn ghost" to="/product?tab=start"><Icon name="code" size={15} /> Start developing</Link>
-          <Link className="btn ghost" to="/product"><Icon name="book" size={15} /> Product guide</Link>
+          <Link className="btn" to="/board"><Icon name="board" size={15} /> Open board</Link>
+          <Link className="btn ghost" to="/product"><Icon name="book" size={15} /> Product story</Link>
+          <Link className="btn ghost" to="/architecture"><Icon name="compass" size={15} /> Architecture</Link>
+          <Link className="btn ghost" to="/guide"><Icon name="code" size={15} /> Developer guide</Link>
           <button className="btn ghost" onClick={() => refreshInstances()}><Icon name="refresh" size={15} /> Refresh fold</button>
         </div>
       </div>
+
+      <section className="story" aria-label="Close of business">
+        <p className="story-kicker">What the team is looking at</p>
+        {namedBlocker ? (
+          <p className="story-lead">
+            {ready} report{ready === 1 ? '' : 's'} can go.{' '}
+            <strong>{namedBlocker.region} {namedBlocker.kitId}</strong>
+            {' '}is still blocked on{' '}
+            <strong>{namedBlocker.namedBlocker}</strong>
+            {namedBlocker.question ? ` — ${namedBlocker.question}` : ''}.{' '}
+            <Link to={'/instance/' + encodeURIComponent(namedBlocker.instanceId)}>Open that row</Link>
+            {' · '}
+            <Link to="/board">All desks</Link>
+          </p>
+        ) : (
+          <p className="story-lead">
+            {ready
+              ? `${ready} report${ready === 1 ? '' : 's'} ready to go.`
+              : instances.length
+                ? 'Nothing is ready yet — the fold is still waiting on required keys.'
+                : 'No rows on the board yet for this COB and region.'}{' '}
+            <Link to="/board">Open the board</Link>
+          </p>
+        )}
+        {storyRows.length > 0 && (
+          <div className="story-rows">
+            {storyRows.map((row) => {
+              const tone = row.status === 'BLOCKED' ? 'fail' : row.status === 'READY' || row.status === 'CLEARED' ? 'ok' : row.status === 'DELAYED' ? 'warn' : '';
+              return (
+                <Link
+                  key={row.instanceId}
+                  className={'story-row ' + (tone || 'wait')}
+                  to={'/instance/' + encodeURIComponent(row.instanceId)}
+                >
+                  <span className={'pill ' + tone}>{row.status}</span>
+                  <div>
+                    <b>{row.region} · {row.kitId}</b>
+                    <div className="sec">{row.namedBlocker || row.question}</div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
+        <p className="story-walk">
+          Walk the story: <Link to="/product">Product</Link>
+          {' · '}
+          <Link to="/architecture">Architecture</Link>
+          {' · '}
+          <Link to="/guide">Developer guide</Link>
+        </p>
+      </section>
 
       <div className="grid g5" style={{ marginBottom: 16 }}>
         <div className="stat ok"><span className="stat-ico"><Icon name="check" size={18} /></span><div className="lbl">Ready to action</div><div className="num">{ready}</div><div className="foot">signed-off: {cleared}</div></div>
@@ -91,31 +154,6 @@ export default function Home() {
 
       <div className="split">
         <div>
-          <div className="panel">
-            <div className="panel-hd">
-              <h2><Icon name="eye" size={16} /> Opt in to one view
-                <InfoHint title="Views are not entitlement" width={320}>
-                  A view only hides nav and these start cards. It is not CEES. Unentitled instances still return 404. Pick <b>All screens</b> to see every route.
-                </InfoHint>
-              </h2>
-              <span className="hint">{view.label}</span>
-            </div>
-            <div className="panel-bd">
-              <div className="grid g3 view-picks">
-                {VIEWS.map((v) => (
-                  <button key={v.id} type="button" className={'oc' + (view.id === v.id ? ' on' : '')} onClick={() => setView(v.id)}>
-                    <div className="oc-hd">
-                      <span className={'oc-ico ' + v.cls}><Icon name={v.icon} size={15} /></span>
-                      <span className={'pill ' + v.cls}>{v.tag}</span>
-                    </div>
-                    <h3>{v.label}</h3>
-                    <p className="q">{v.job}</p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
           <div className="panel">
             <div className="panel-hd"><h2><Icon name="play" size={16} /> Pick up where this view starts</h2><span className="hint">{view.who}</span></div>
             <div className="panel-bd">
@@ -158,6 +196,39 @@ export default function Home() {
               </div>
             </div>
           </div>
+
+          <details className="panel view-opt">
+            <summary>
+              <Icon name="eye" size={16} />
+              <span>
+                <span className="kicker">Optional</span>
+                <strong>Opt in to one view</strong>
+                <span className="sec">{view.id === 'all' ? 'Everyone sees the same close. Pick a job if you want a thinner rail.' : `On: ${view.label}.`}</span>
+              </span>
+            </summary>
+            <div className="panel-bd">
+              <p className="muted" style={{ marginTop: 0 }}>
+                Same live data. A view only hides nav and these start cards — it is not entitlement.{' '}
+                <Link to="/product">Product</Link>
+                {' · '}
+                <Link to="/architecture">Architecture</Link>
+                {' · '}
+                <Link to="/guide">Developer guide</Link>
+              </p>
+              <div className="grid g3 view-picks">
+                {VIEWS.map((v) => (
+                  <button key={v.id} type="button" className={'oc' + (view.id === v.id ? ' on' : '')} onClick={() => setView(v.id)}>
+                    <div className="oc-hd">
+                      <span className={'oc-ico ' + v.cls}><Icon name={v.icon} size={15} /></span>
+                      <span className={'pill ' + v.cls}>{v.tag}</span>
+                    </div>
+                    <h3>{v.label}</h3>
+                    <p className="q">{v.job}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </details>
         </div>
 
         <div>

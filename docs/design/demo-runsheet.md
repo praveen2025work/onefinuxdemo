@@ -24,7 +24,7 @@ Hold each screen 15–25 seconds. Speak at a conversational pace. Do not click d
 
 | Beat | Screen | What you are explaining |
 |---|---|---|
-| Problem | Home | Close-of-business question is scattered across systems; we fold it to ready or blocked. No greeting. |
+| Problem | Home | Close-of-business question is scattered across systems; we fold it to ready or blocked. Lead with the named blocker, not the role picker. Guides (Product / Architecture / Developer) sit in the left rail. No greeting. |
 | Configure | Onboarding | Write the question, feeds, SLA, on-ready. Data, not a new app. |
 | Inspect | Configuration | Owner picks the outcome and reads the contract. |
 | Run the day | Drive | Start the scenario for that COB. Product pages stay the job. |

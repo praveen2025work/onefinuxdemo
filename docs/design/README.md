@@ -1,6 +1,6 @@
 # Design
 
-This is the only design folder. Live visual truth is `frontend/web` (route `/product` carries the start path, architecture, how-it-works, and setup guide), not static HTML.
+This is the only design folder. Live visual truth is `frontend/web`. Console **Guide** rail: `/product` (story), `/architecture` (diagrams), `/guide` (developer on-ramp). Not static HTML.
 
 | Document | Audience | What it is |
 |---|---|---|

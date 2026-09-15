@@ -18,7 +18,7 @@ Drive (`/drive`) is the **only** place scenario buttons live. Home and Reports s
 
 Hold each screen 15–25 seconds. Do not click mid-sentence.
 
-1. Home — state the business problem (no greeting)
+1. Home — state the business problem from the close story (named blocker). Guides are in the left rail. No greeting
 2. Onboarding — configure the outcome
 3. Configuration — owner reads the contract
 4. Drive — run that outcome for the day

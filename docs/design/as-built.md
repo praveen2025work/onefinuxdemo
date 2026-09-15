@@ -10,8 +10,10 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 | Route | Creates / shows | Does not |
 |---|---|---|
-| `/` Home | Morning glance + **opt-in View** (developer / architect / controller / head / rtb / maker / all) | Scenario buttons |
-| `/product` | Product guide: start path, architecture, how it works, screens & setup, how we review | Live outcomes or Drive |
+| `/` Home | Today’s close story + fold. Opt-in View is collapsed | Scenario buttons |
+| `/product` | Product story a BU head recognises | Live outcomes or Drive |
+| `/architecture` | Same diagrams as `docs/design` | Live outcomes or Drive |
+| `/guide` | Developer on-ramp: run it, add data, review a PR | Live outcomes or Drive |
 | `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |
