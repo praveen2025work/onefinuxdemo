@@ -208,7 +208,7 @@ mvn test
 
 ## From POC to production (summary; details in `docs/design/`)
 
-The as-built product, architecture diagrams, and demo-vs-later line are in [`docs/design/`](docs/design/README.md). Envelope: `contracts/generic-business-event.schema.json`.
+The as-built product, architecture diagrams, and demo-vs-later line are in [`docs/design/`](docs/design/README.md). Envelope: `contracts/generic-business-event.schema.json`. Kafka / Airflow / COTS vs this layer (architecture-room justification): [`docs/design/build-vs-buy.md`](docs/design/build-vs-buy.md).
 
 | POC | Production |
 |---|---|
