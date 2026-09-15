@@ -4,7 +4,7 @@ How a lead or a joining engineer **runs Helix** on this POC, what they should se
 
 Live visual truth: `frontend/web`. Drive (`/drive`) is the only screen that injects facts. Home, Board and Reports stay view-only.
 
-Play this first: [`helix-walkthrough.mp4`](helix-walkthrough.mp4) (~3 minutes, spoken). It opens on the close-of-business problem, then how outcomes help, then the live FOBO / Helix fold. Voice-only: [`helix-walkthrough.mp3`](helix-walkthrough.mp3). Script: [`helix-narration.txt`](helix-narration.txt). Long silent cut of every control: [`helix-silent-walkthrough.mp4`](helix-silent-walkthrough.mp4).
+Play this first: [`helix-walkthrough.mp4`](helix-walkthrough.mp4) (~3 minutes, spoken). It opens on the close-of-business problem, then how outcomes help, then the live FOBO / Helix fold. Voice-only: [`helix-walkthrough.mp3`](helix-walkthrough.mp3). Script: [`helix-narration.txt`](helix-narration.txt).
 
 If the in-browser player is muted, unmute the speaker icon on the video, or play the mp3.
 
