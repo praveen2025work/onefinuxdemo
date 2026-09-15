@@ -121,3 +121,5 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 4. The phased scope line in section 6.
 
 Once these are agreed, the application BRD (`application.md`) is the builder's document.
+
+Room Q&A source (copy into your own slides): [`arch-qa-slides.md`](arch-qa-slides.md). Full FAQ: [`build-vs-buy.md`](build-vs-buy.md).
