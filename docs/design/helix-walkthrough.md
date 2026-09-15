@@ -4,7 +4,7 @@ How a lead or a joining engineer **runs Helix** on this POC, what they should se
 
 Live visual truth: `frontend/web`. Drive (`/drive`) is the only screen that injects facts. Home, Board and Reports stay view-only.
 
-Silent (no voice) recording of the same path — group unit, onboard, Drive Helix, Reports: [`helix-silent-walkthrough.mp4`](helix-silent-walkthrough.mp4). Chapter list: [`helix-silent-walkthrough.md`](helix-silent-walkthrough.md).
+Play this first: [`helix-walkthrough.mp4`](helix-walkthrough.mp4) (~3 minutes, spoken). Script: [`helix-narration.txt`](helix-narration.txt). Long silent cut of every control: [`helix-silent-walkthrough.mp4`](helix-silent-walkthrough.mp4).
 
 ---
 

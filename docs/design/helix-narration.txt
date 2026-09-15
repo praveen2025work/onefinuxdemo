@@ -1,0 +1,35 @@
+# Helix walkthrough — spoken script (~3 minutes)
+
+Male, warm, peer to a CIO / MD. Not a slide read. Contractions. No greeting. No slogan.
+Voice: Edge neural `en-US-AndrewMultilingualNeural` (rate −4%, natural pitch).
+
+---
+
+## 1. Home — group unit and today
+This is the close for Revenue Accounting. Group unit sits in the header. The date is today.
+We're not asking whether Motif is finished. We're asking a simpler question: can we actually run FOBO analysis.
+One answer. Ready, or blocked, and why.
+
+## 2. Onboarding — outcome as data
+A new outcome is just data. The question it answers, the feeds it waits on, the SLA, and what should happen when everything is in.
+You don't ship a new application for month-end close. You save this, and it's live.
+
+## 3. Configuration — the Helix contract
+Configuration is where the owner reads the contract. FOBO investigation.
+Three hundred Motif books. When they're in, the hub calls Helix. Helix reports back with a run id.
+Nobody clicks Helix on Home.
+
+## 4. Drive
+Drive is the only place we inject the day. Reset, so we start clean. Then FOBO Helix.
+The board and the reports stay the operating view. They only show the fold.
+
+## 5. Reports — the live fold
+Here's Reports. Motif is publishing master books. Watch the meter.
+This isn't polling Helix. Helix hasn't been called yet. The fold is just counting distinct books.
+When we reach three hundred, the row goes ready. Only then does the hub ask Helix to run.
+Helix says accepted, works for a few seconds, and publishes a completion with that run id.
+Generated. Three hundred of three hundred. That's the answer on this close. The user doesn't open Motif to find it.
+
+## 6. Monitoring — how you prove it
+And the tape. Master book ready, then Helix analysis complete. Same facts.
+That's how you prove what happened, and how a user actually sees the result.
