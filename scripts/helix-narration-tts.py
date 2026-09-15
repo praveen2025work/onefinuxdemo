@@ -8,8 +8,6 @@ from pathlib import Path
 
 import edge_tts
 
-# Multilingual Andrew keeps the male/warm CIO-MD tone without the flat
-# "read this slide" cadence of a slowed standard Neural voice.
 VOICE = "en-US-AndrewMultilingualNeural"
 RATE = "-4%"
 PITCH = "+0Hz"
@@ -17,57 +15,61 @@ OUT = Path("/tmp/ofx-voice")
 
 BEATS = [
     {
-        "id": "home",
+        "id": "problem",
         "text": (
-            "This is the close for Revenue Accounting. Group unit sits in the header. "
-            "The date is today. We're not asking whether Motif is finished. "
-            "We're asking a simpler question: can we actually run FOBO analysis. "
-            "One answer. Ready, or blocked, and why."
+            "The problem is still the same, every close. A group unit like Revenue Accounting "
+            "cannot get a clean answer to a simple question. Is it safe to run this process yet. "
+            "Can we execute FOBO analysis. Can we produce the report. "
+            "Today that answer lives across Motif, CATS, MBR, Helix, SAP. "
+            "Each has its own screen, and its own language for done. So people chase. "
+            "They open ten tools. They wait on a chat. Closes run late. SLAs slip. "
+            "And when audit asks who knew, nobody holds the whole picture."
+        ),
+    },
+    {
+        "id": "help",
+        "text": (
+            "An outcome is that question, written down. We don't replace Motif or Helix. "
+            "We listen to the facts they already emit. Master book ready. Break cleared. Analysis complete. "
+            "Then we fold those facts into one row the user can actually use. Ready, or blocked, and why. "
+            "If it's blocked, we name the key. That's how outcomes help. One answer, instead of a hunt."
         ),
     },
     {
         "id": "onboard",
         "text": (
-            "A new outcome is just data. The question it answers, the feeds it waits on, "
-            "the SLA, and what should happen when everything is in. "
             "You don't ship a new application for month-end close. "
-            "You save this, and it's live."
+            "You write the question, the feeds it waits on, the SLA, and what should happen when everything is in. "
+            "Save it, and it's live."
         ),
     },
     {
         "id": "config",
         "text": (
-            "Configuration is where the owner reads the contract. FOBO investigation. "
-            "Three hundred Motif books. When they're in, the hub calls Helix. "
-            "Helix reports back with a run id. Nobody clicks Helix on Home."
+            "Here's the contract. FOBO investigation. Three hundred Motif books. "
+            "When they're in, the hub calls Helix. Helix reports back with a run id. "
+            "Nobody clicks Helix on Home."
         ),
     },
     {
         "id": "drive",
         "text": (
-            "Drive is the only place we inject the day. Reset, so we start clean. "
-            "Then FOBO Helix. The board and the reports stay the operating view. "
-            "They only show the fold."
+            "Drive is the only place we inject the day. Reset, then FOBO Helix. "
+            "The board and the reports stay the operating view."
         ),
     },
     {
         "id": "reports",
         "text": (
-            "Here's Reports. Motif is publishing master books. Watch the meter. "
-            "This isn't polling Helix. Helix hasn't been called yet. "
-            "The fold is just counting distinct books. "
-            "When we reach three hundred, the row goes ready. "
-            "Only then does the hub ask Helix to run. "
-            "Helix says accepted, works for a few seconds, and publishes a completion with that run id. "
-            "Generated. Three hundred of three hundred. That's the answer on this close. "
-            "The user doesn't open Motif to find it."
+            "Watch the meter. This isn't polling Helix. The fold is counting books. "
+            "At three hundred, ready. Then Helix runs."
         ),
     },
     {
-        "id": "tape",
+        "id": "done",
         "text": (
-            "And the tape. Master book ready, then Helix analysis complete. Same facts. "
-            "That's how you prove what happened, and how a user actually sees the result."
+            "Generated. Three hundred of three hundred. That's the answer on this close. "
+            "The user doesn't open Motif to find it."
         ),
     },
 ]

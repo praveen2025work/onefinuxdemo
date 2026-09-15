@@ -26,8 +26,10 @@ const beats = JSON.parse(fs.readFileSync('/tmp/ofx-voice/beats.json', 'utf8'));
 const dur = Object.fromEntries(beats.map((b) => [b.id, b.duration]));
 let t0 = Date.now();
 const timeline = [];
+const markedAt = {};
 
 function mark(id) {
+  markedAt[id] = Date.now();
   const at = (Date.now() - t0) / 1000;
   timeline.push({ id, at: Math.round(at * 1000) / 1000 });
   console.log('BEAT', id, at.toFixed(2));
@@ -125,8 +127,9 @@ async function clickText(page, selector, re) {
 }
 
 async function hold(id, extraMs) {
-  const ms = Math.round(dur[id] * 1000) + (extraMs || 0);
-  await sleep(ms);
+  const target = (markedAt[id] || Date.now()) + Math.round(dur[id] * 1000) + (extraMs || 0);
+  const wait = target - Date.now();
+  if (wait > 0) await sleep(wait);
 }
 
 const page = await connect();
@@ -141,6 +144,15 @@ for (let i = 0; i < 15; i += 1) {
   if (cob && cob !== '—') break;
   await sleep(300);
 }
+await page.click('.topbar > .sel2.header .sel2-trig').catch(() => {});
+await sleep(400);
+await clickText(page, '.sel2-opt', 'Revenue Accounting|REV-ACC');
+await sleep(200);
+await page.click('.tb-btn.cal').catch(() => {});
+await sleep(400);
+await page.evaluate(() => document.querySelector('.dp-day.today')?.click());
+await sleep(300);
+await go(page, '/product?theme=dark');
 
 try { fs.unlinkSync(GO); } catch { /* ignore */ }
 fs.writeFileSync(READY, String(Date.now()));
@@ -149,39 +161,49 @@ while (!fs.existsSync(GO) && Date.now() < waitGoUntil) await sleep(120);
 t0 = Date.now();
 await sleep(250);
 
-/* 1 Home */
-mark('home');
-await chapter(page, 'Group unit · today');
-await spot(page, '.topbar > .sel2.header');
-await sleep(3500);
-await page.click('.topbar > .sel2.header .sel2-trig').catch(() => {});
-await sleep(1800);
-await clickText(page, '.sel2-opt', 'Revenue Accounting|REV-ACC');
-await sleep(400);
-await page.click('.tb-btn.cal').catch(() => {});
-await sleep(900);
-await page.evaluate(() => document.querySelector('.dp-day.today')?.click());
-await sleep(400);
-await spot(page, '.ctxbar');
-await hold('home', 11000);
+/* 1 Product — the problem */
+mark('problem');
+await chapter(page, 'The problem at close');
+await spot(page, '.story');
+await sleep(8000);
+await page.evaluate(() => document.querySelector('.story-row.fail')?.scrollIntoView({ block: 'center', behavior: 'smooth' }));
+await hold('problem', 6000);
 
-/* 2 Onboarding */
+/* 2 Product — how outcomes help */
+mark('help');
+await chapter(page, 'How outcomes help');
+await page.evaluate(() => {
+  const grid = [...document.querySelectorAll('.grid.g3')].find((g) => /We keep|We add/i.test(g.innerText));
+  grid?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  document.querySelectorAll('.ofx-spot').forEach((el) => el.classList.remove('ofx-spot'));
+  if (grid) grid.classList.add('ofx-spot');
+});
+await sleep(10000);
+await page.evaluate(() => {
+  const panel = [...document.querySelectorAll('.panel')].find((p) => /How a FOBO rec is completed/i.test(p.innerText));
+  panel?.scrollIntoView({ block: 'start', behavior: 'smooth' });
+  document.querySelectorAll('.ofx-spot').forEach((el) => el.classList.remove('ofx-spot'));
+  if (panel) panel.classList.add('ofx-spot');
+});
+await hold('help', 5000);
+
+/* 3 Onboarding */
 await rail(page, '/onboarding');
 mark('onboard');
-await chapter(page, 'Onboard an outcome');
+await chapter(page, 'Outcome as data');
 await spot(page, 'form.panel');
-await hold('onboard', 9000);
+await hold('onboard', 5000);
 
-/* 3 Configuration Helix */
+/* 4 Configuration Helix */
 await rail(page, '/configuration');
 mark('config');
-await chapter(page, 'FOBO / Helix contract');
+await chapter(page, 'The Helix contract');
 await clickText(page, '.cfg-item', 'FOBO|investigation');
 await sleep(600);
 await spot(page, '.cfg-detail');
-await hold('config', 10000);
+await hold('config', 5000);
 
-/* 4 Drive */
+/* 5 Drive */
 await rail(page, '/drive');
 mark('drive');
 await chapter(page, 'Drive the day');
@@ -193,13 +215,13 @@ await page.evaluate(() => {
   card?.classList.add('ofx-spot');
   card?.querySelector('button')?.click();
 });
-await hold('drive', 8000);
+await hold('drive', 6000);
 
-/* 5 Reports — stay until GENERATED */
+/* 6 Reports — stay until GENERATED */
 await rail(page, '/reports');
 mark('reports');
-await chapter(page, 'Reports · live fold');
-const reportsMin = Date.now() + Math.round(dur.reports * 1000) + 8000;
+await chapter(page, 'The answer on this close');
+const reportsMin = Date.now() + Math.round(dur.reports * 1000) + 6000;
 let generated = false;
 while (Date.now() < reportsMin + 55000 && !generated) {
   generated = await page.evaluate(() => {
@@ -213,19 +235,13 @@ while (Date.now() < reportsMin + 55000 && !generated) {
   await sleep(1200);
 }
 console.log('GENERATED', generated);
-await sleep(generated ? 14000 : 5000);
-
-/* 6 Tape */
-await rail(page, '/monitoring');
-mark('tape');
-await chapter(page, 'Monitoring · the tape');
-await page.evaluate(() => {
-  const h = [...document.querySelectorAll('h2')].find((n) => /tape|event|outbox|propagat/i.test(n.innerText));
-  h?.closest('.panel')?.scrollIntoView({ block: 'start', behavior: 'instant' });
-});
-await sleep(400);
-await spot(page, '.panel');
-await hold('tape', 11000);
+if (generated) {
+  mark('done');
+  await chapter(page, 'The answer on this close');
+  await hold('done', 8000);
+} else {
+  await sleep(4000);
+}
 
 await page.evaluate(() => {
   document.querySelectorAll('.ofx-spot').forEach((el) => el.classList.remove('ofx-spot'));

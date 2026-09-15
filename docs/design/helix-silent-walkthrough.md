@@ -1,6 +1,6 @@
 # Helix silent UI walkthrough (long cut)
 
-The **3-minute narrated** cut is [`helix-walkthrough.mp4`](helix-walkthrough.mp4). Use that in a room. Script: [`helix-narration.txt`](helix-narration.txt).
+The **3-minute narrated** cut is [`helix-walkthrough.mp4`](helix-walkthrough.mp4). It starts with the close-of-business problem, then how outcomes help, then the live Helix fold. Script: [`helix-narration.txt`](helix-narration.txt).
 
 This file describes the **long silent** recording — every console control, captions only, no voice: [`helix-silent-walkthrough.mp4`](helix-silent-walkthrough.mp4).
 
