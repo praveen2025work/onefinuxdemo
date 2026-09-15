@@ -70,7 +70,7 @@ export function ArchitecturePage() {
         <Icon name="info" size={16} />
         <div>
           <b>These pictures are the product, not a second deck.</b>
-          <span className="mono-sm">Live Mermaid from docs/design/diagrams/*.mmd — follows dark/light. Not a static white SVG.</span>
+          <span className="mono-sm">Live Mermaid from docs/design/diagrams/*.mmd — follows dark/light. Charts scale to the page so the whole picture is on screen.</span>
         </div>
       </div>
       {DIAGRAMS.map((d) => (

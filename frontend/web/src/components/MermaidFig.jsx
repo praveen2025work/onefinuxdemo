@@ -47,7 +47,7 @@ export default function MermaidFig({ source, title }) {
         if (node) {
           node.removeAttribute('height');
           node.setAttribute('width', '100%');
-          node.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+          node.setAttribute('preserveAspectRatio', 'xMidYMin meet');
           node.style.width = '100%';
           node.style.maxWidth = '100%';
           node.style.height = 'auto';

@@ -44,6 +44,7 @@ export function mermaidConfig(dark) {
   return {
     startOnLoad: false,
     securityLevel: 'loose',
+    suppressErrorRendering: true,
     darkMode: dark,
     theme: 'base',
     fontFamily: '"IBM Plex Sans", "Segoe UI", system-ui, sans-serif',
@@ -139,8 +140,10 @@ function classDefs(dark) {
   ].join('\n');
 }
 
-/** Drop hardcoded pastel classDef from the .mmd and restyle to the active dashboard theme. */
+/** Drop hardcoded pastel classDef from flowcharts and restyle to the active dashboard theme.
+ * Sequence, ER, and state diagrams have no classDef — themeVariables cover them. */
 export function themedSource(source, dark) {
   const stripped = source.replace(/^[ \t]*classDef .+$/gm, '').replace(/\n{3,}/g, '\n\n').trim();
+  if (!/^\s*flowchart\b/m.test(source)) return stripped;
   return `${stripped}\n\n${classDefs(dark)}\n`;
 }
