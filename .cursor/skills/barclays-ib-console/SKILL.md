@@ -5,7 +5,7 @@ description: Use when building One Finance chrome or when another team must copy
 
 # Barclays IB console
 
-One Finance UX is a **solid finance dashboard**: opaque cards, a dark indigo rail, and status colour on KPIs. Visual language is MITR indigo-lavender (Inter / Sora / JetBrains Mono, Lucide marks). Not frosted glass, not a magazine, not a 2016 admin theme. Dark canvas is the default; light (`data-theme="light"`) is a first-class peer with the **same dark rail**.
+One Finance UX is a **solid finance dashboard**: opaque cards, a theme-matched left rail, and status colour on KPIs. Visual language is MITR indigo-lavender (Inter / Sora / JetBrains Mono, Lucide marks). Not frosted glass, not a magazine, not a 2016 admin theme. Dark canvas is the default; light (`data-theme="light"`) is a first-class peer — the rail follows the same theme (navy in dark, white in light).
 
 ## Reference implementation — read before writing CSS
 
@@ -24,7 +24,7 @@ Build new screens by composing existing classes in `frontend/web/src/styles.css`
 |---|---|---|
 | canvas | `#090d1c` dark · `#f5f6fb` light | Ambient page |
 | surface | opaque `#161d33` dark · white light | Panels, cards |
-| rail | solid `#090d1c` in both themes | Left nav |
+| rail | `#090d1c` dark · `#ffffff` light | Left nav — follows `data-theme` |
 | indigo | `#818cf8` dark · `#6366f1` light | Brand accent, primary actions, active nav |
 | gold | `#fbbf24` | Env chip, finance ticker accent |
 | ink | `#e6e8ee` dark · `#0f172a` light | Body text |
