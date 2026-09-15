@@ -111,18 +111,22 @@ for ev in tl['beats']:
     b = beats[ev['id']]
     delay = max(0, int(ev['at'] * 1000))
     inputs += ['-i', b['file']]
-    filters.append(f'[{idx}]adelay={delay}|{delay},volume=1.15[a{idx}]')
+    filters.append(f'[{idx}]adelay={delay}|{delay},volume=1.25[a{idx}]')
     labels.append(f'[a{idx}]')
     idx += 1
 n = len(labels)
-fc = ';'.join(filters) + f";{''.join(labels)}amix=inputs={n}:dropout_transition=0:normalize=0,aresample=44100,apad[a]"
+# Stereo AAC 48 kHz: mono AAC is silent in Safari / some GitHub and in-app players.
+fc = ';'.join(filters) + (
+    f";{''.join(labels)}amix=inputs={n}:dropout_transition=0:normalize=0,"
+    'aresample=48000,aformat=channel_layouts=stereo,apad[a]'
+)
 cmd = ['ffmpeg','-y','-loglevel','error', *inputs,
        '-filter_complex', fc,
        '-map','0:v','-map','[a]',
        '-vf','scale=1600:-2,fps=15',
-       '-c:v','libx264','-preset','slow','-crf','26','-pix_fmt','yuv420p',
-       '-c:a','aac','-b:a','128k','-ac','1','-ar','44100',
-       '-shortest','-movflags','+faststart',
+       '-c:v','libx264','-preset','slow','-crf','24','-pix_fmt','yuv420p',
+       '-c:a','aac','-profile:a','aac_low','-b:a','192k','-ac','2','-ar','48000',
+       '-shortest','-brand','mp42','-movflags','+faststart',
        '/tmp/helix-walkthrough.mp4']
 print('mux', ' '.join(cmd[:8]), '...')
 subprocess.check_call(cmd)

@@ -10,7 +10,8 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 | [`application.md`](application.md) | Build team | Modules, APIs, screens, capabilities, demo vs later |
 | [`onboarding.md`](onboarding.md) | Operators | Create an outcome, inspect it, drive the day |
 | [`helix-walkthrough.md`](helix-walkthrough.md) | Lead / joining engineer | Real-time Helix: engine (Reports) vs stitch rec (Board) |
-| [`helix-walkthrough.mp4`](helix-walkthrough.mp4) | Anyone | ~3 min narrated walkthrough (human voice) |
+| [`helix-walkthrough.mp4`](helix-walkthrough.mp4) | Anyone | ~3 min narrated walkthrough (stereo voice) |
+| [`helix-walkthrough.mp3`](helix-walkthrough.mp3) | Anyone | Voice-only track from the 3-minute cut |
 | [`helix-narration.txt`](helix-narration.txt) | Voiceover | Spoken script for the 3-minute cut |
 | [`helix-silent-walkthrough.md`](helix-silent-walkthrough.md) | Anyone | Long silent cut: every control, captions only |
 | [`helix-silent-walkthrough.mp4`](helix-silent-walkthrough.mp4) | Anyone | ~8 min silent, captioned |
