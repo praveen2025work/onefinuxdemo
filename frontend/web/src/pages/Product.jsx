@@ -147,6 +147,7 @@ function FoboHow() {
 
         <p className="muted" style={{ marginBottom: 0, marginTop: 14 }}>
           Prove it on Drive (testing only): <b>FOBO stitch</b> = CATS/Motif/MBR → Board. <b>FOBO / Helix</b> = 300 Motif books → hub POSTs Helix → Reports.
+          Step-by-step for a lead: <Link to="/guide">Developer guide</Link> and <span className="mono">docs/design/helix-walkthrough.md</span>.
         </p>
       </div>
     </div>
@@ -280,6 +281,25 @@ function StartTab() {
             <Link className="btn" to="/onboarding">Open Onboarding</Link>
             <Link className="btn ghost" to="/drive">Open Drive</Link>
             <Link className="btn ghost" to="/architecture">Open Architecture</Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-hd"><h2>Run Helix in real time</h2><span className="hint">lead / joining engineer</span></div>
+        <div className="panel-bd">
+          <p className="muted" style={{ marginTop: 0 }}>Two Helix stories. The engine one is what a lead should Drive first. Full write-up: <span className="mono">docs/design/helix-walkthrough.md</span>.</p>
+          <ol className="prod-ol">
+            <li><b>Do not mix COBs.</b> <b>FOBO / Helix</b> (Reports) uses <b>today</b> (NY). <b>FOBO stitch</b> (Board recs R-1042 / R-2031) uses <b>2026-09-12</b>.</li>
+            <li><b>Reset</b> on <Link to="/drive">Drive</Link> — stitch + engine. Product pages stay view-only.</li>
+            <li>Set the header date to <b>today</b>. Card <b>FOBO / Helix</b> → Drive. Motif publishes 300 <span className="mono">MASTERBOOK_READY</span> over ~45s.</li>
+            <li>Watch <Link to="/reports">Reports</Link>: FOBO investigation climbs 0/300 → READY → hub POSTs Helix → ~6s later <span className="mono">HELIX_ANALYSIS_COMPLETE</span> → GENERATED. Not a Home button.</li>
+            <li>Then set COB to <b>2026-09-12</b>, Drive <b>FOBO stitch</b>. Board: APAC R-1042 READY (Helix echo RUN-A37C); EMEA R-2031 BLOCKED on Motif MB014. Controller signs the ready row; RTB replays the failed key.</li>
+          </ol>
+          <div className="wrapflex" style={{ marginTop: 12 }}>
+            <Link className="btn" to="/drive">Open Drive</Link>
+            <Link className="btn ghost" to="/reports">Open Reports</Link>
+            <Link className="btn ghost" to="/board">Open Board</Link>
           </div>
         </div>
       </div>

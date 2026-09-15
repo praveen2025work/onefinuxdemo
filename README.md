@@ -72,8 +72,10 @@ Open **http://localhost:5173**. Vite proxies `/api` to 7070 and `/sim` to 7081, 
 ### 4. Drive a scenario
 
 1. Go to **http://localhost:5173/drive** (nav: *Drive scenarios*). Product pages stay view-only; this is the only screen that injects facts.
-2. Click **Reset** (*Reset platform*) for a clean slate.
+2. Click **Reset** (*Reset platform*) for a clean slate (stitch **and** engine).
 3. Click one scenario button, then watch **Board** (`/board`) and **Reports** (`/reports`).
+
+Helix for a lead or joining engineer (two COBs — do not mix them): [`docs/design/helix-walkthrough.md`](docs/design/helix-walkthrough.md). **FOBO / Helix** uses header date **today**; **FOBO stitch** uses **2026-09-12**.
 
 | Drive card | Button | What happens |
 |---|---|---|

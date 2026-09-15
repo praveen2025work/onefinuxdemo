@@ -22,6 +22,7 @@ Two models share one event backbone:
 3. Left rail **Guide** — Product, Architecture, Developer guide. Or top bar → **View** → **Developer** if you want a shorter operate/build rail.
 4. **Onboarding** — submit the Month-end close example. That is `POST /api/outcomes/definitions`. No new Java type.
 5. **Drive** → Reset → one scenario. Watch **Monitoring**. Switch View to **BU head** and open Board; Drive leaves the rail on purpose.
+6. **Helix (real time):** set header COB to **today**, Drive **FOBO / Helix**, watch **Reports**. Stitch recs use COB **2026-09-12**. Write-up: [`helix-walkthrough.md`](helix-walkthrough.md).
 
 Views hide nav. They are **not** entitlement. CEES still fail-closes unentitled instances (404).
 

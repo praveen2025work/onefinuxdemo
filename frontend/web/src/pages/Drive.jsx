@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, runScenario, cancelScenarios } from '../api';
+import { runScenario, cancelScenarios, resetPlatform } from '../api';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { PageTitle } from '../components/bits.jsx';
@@ -9,13 +9,13 @@ import { PageTitle } from '../components/bits.jsx';
 // every scenario that drives the demo lives here so it is obvious what is real vs. what is a trigger.
 const SCENARIOS = [
   { key: 'reset', title: 'Reset platform', icon: 'refresh', tone: 'danger', cta: 'Reset',
-    desc: 'Purge all events and re-seed the fold. Start every demo from a clean slate.',
-    run: () => api.reset() },
+    desc: 'Purge stitch instances and engine outcomes, then re-seed. Start every Helix / 15C3 demo from a clean slate.',
+    run: () => resetPlatform() },
   { key: 'fobo', title: 'FOBO stitch', icon: 'board', tone: 'ok', cta: 'Drive',
     desc: 'FOBO does not send. CATS, Motif and MBR publish facts. R-1042 READY; R-2031 BLOCKED on Motif MB014. Helix only echoes a run on the ready row.',
     run: () => runScenario('fobo') },
   { key: 'helix', title: 'FOBO / Helix', icon: 'share', tone: 'ok', cta: 'Drive',
-    desc: 'Motif sends 300 MASTERBOOK_READY facts. At 300 the hub POSTs Helix. Helix later publishes HELIX_ANALYSIS_COMPLETE. Watch Reports.',
+    desc: 'Motif sends 300 MASTERBOOK_READY facts (COB = today, NY). At 300 the hub POSTs Helix. Helix later publishes HELIX_ANALYSIS_COMPLETE. Set the header date to today, then watch Reports.',
     run: () => runScenario('helix') },
   { key: '15c3', title: '15C3 report', icon: 'report', tone: 'info', cta: 'Run feeds',
     desc: 'Feeds fold to ready, Axiom generates the regulatory pack, it becomes available to view.',

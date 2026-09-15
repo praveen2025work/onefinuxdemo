@@ -97,7 +97,23 @@ export const outcomesApi = {
     }
     return res.json();
   },
+  reset: async () => {
+    const res = await fetch('/api/admin/reset', { method: 'POST' });
+    if (!res.ok) throw new Error(`${res.status} on /api/admin/reset`);
+    return res.json();
+  },
 };
+
+/** Wipe stitch instances and engine outcomes so a Helix / 15C3 Drive starts from a clean fold. */
+export async function resetPlatform() {
+  const stitch = await api.reset();
+  const engine = await outcomesApi.reset();
+  return {
+    story: 'Stitch instances and engine outcomes re-seeded',
+    stitch,
+    engine,
+  };
+}
 
 // Kick a simulator scenario (e.g. the 15C3 feeds) through the /sim proxy.
 export async function runScenario(name, params) {
