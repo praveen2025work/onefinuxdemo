@@ -121,3 +121,5 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 4. The phased scope line in section 6.
 
 Once these are agreed, the application BRD (`application.md`) is the builder's document.
+
+Room Q&A (Kafka, AWS SNS/SQS/Lambda, Redis, zero-code, on-prem): [`arch-qa-deck.html`](arch-qa-deck.html) / [`arch-qa-deck.pptx`](arch-qa-deck.pptx). Speaker notes: [`build-vs-buy.md`](build-vs-buy.md).
