@@ -3,6 +3,13 @@ import InfoHint from '../components/InfoHint.jsx';
 import Icon from '../components/Icon.jsx';
 import { PageTitle } from '../components/bits.jsx';
 import GuideNav from '../components/GuideNav.jsx';
+import MermaidFig from '../components/MermaidFig.jsx';
+import dEnterprise from '@diagrams/01-enterprise-context.mmd?raw';
+import dDeploy from '@diagrams/02-deployment-containers.mmd?raw';
+import dSequence from '@diagrams/03-event-sequence.mmd?raw';
+import dModel from '@diagrams/04-data-model.mmd?raw';
+import dStitch from '@diagrams/05-outcome-state.mmd?raw';
+import dEngine from '@diagrams/06-engine-stage.mmd?raw';
 
 const SCREENS = [
   { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold. View lives in the top bar.', creates: 'Nothing — read', not: 'Scenario buttons or a role picker' },
@@ -21,12 +28,12 @@ const SCREENS = [
 ];
 
 const DIAGRAMS = [
-  { src: '/diagrams/01-enterprise-context.svg', title: '1. Enterprise context', caption: 'Unchanged systems of record publish facts. The hub folds them. Entitled frontend/web is the only UX.' },
-  { src: '/diagrams/02-deployment-containers.svg', title: '2. Deployment', caption: 'Three processes: console 5173, hub 7070 (REST + SSE), simulator 7081. Browser never touches a bus.' },
-  { src: '/diagrams/03-event-sequence.svg', title: '3. Event sequence', caption: 'Fact → translate → deterministic fold → ActionExecutor → outbox → SSE back to the console.' },
-  { src: '/diagrams/04-data-model.svg', title: '4. Data model', caption: 'Stitch kit (sources, destinations, embed, userActions) plus the engine projection on the same event store.' },
-  { src: '/diagrams/05-outcome-state.svg', title: '5. Stitch states', caption: 'Human kit: NOT_YET → READY → CLEARED (or BLOCKED / DELAYED / ESCALATED). Sign-off is audited.' },
-  { src: '/diagrams/06-engine-stage.svg', title: '6. Engine stages', caption: 'Report lifecycle: NOT_STARTED → FEEDS → READY → PROCESSING → GENERATED | AVAILABLE.' },
+  { source: dEnterprise, title: '1. Enterprise context', caption: 'Unchanged systems of record publish facts. The hub folds them. Entitled frontend/web is the only UX.' },
+  { source: dDeploy, title: '2. Deployment', caption: 'Three processes: console 5173, hub 7070 (REST + SSE), simulator 7081. Browser never touches a bus.' },
+  { source: dSequence, title: '3. Event sequence', caption: 'Fact → translate → deterministic fold → ActionExecutor → outbox → SSE back to the console.' },
+  { source: dModel, title: '4. Data model', caption: 'Stitch kit (sources, destinations, embed, userActions) plus the engine projection on the same event store.' },
+  { source: dStitch, title: '5. Stitch states', caption: 'Human kit: NOT_YET → READY → CLEARED (or BLOCKED / DELAYED / ESCALATED). Sign-off is audited.' },
+  { source: dEngine, title: '6. Engine stages', caption: 'Report lifecycle: NOT_STARTED → FEEDS → READY → PROCESSING → GENERATED | AVAILABLE.' },
 ];
 
 export default function Product() {
@@ -63,17 +70,15 @@ export function ArchitecturePage() {
         <Icon name="info" size={16} />
         <div>
           <b>These pictures are the product, not a second deck.</b>
-          <span className="mono-sm">Mermaid source: docs/design/diagrams/*.md — do not treat the SVG as a second design.</span>
+          <span className="mono-sm">Live Mermaid from docs/design/diagrams/*.mmd — follows dark/light. Not a static white SVG.</span>
         </div>
       </div>
       {DIAGRAMS.map((d) => (
-        <div key={d.src} className="panel">
+        <div key={d.title} className="panel">
           <div className="panel-hd"><h2>{d.title}</h2></div>
           <div className="panel-bd">
             <p className="muted" style={{ marginTop: 0 }}>{d.caption}</p>
-            <div className="prod-fig">
-              <img src={d.src} alt={d.title} />
-            </div>
+            <MermaidFig source={d.source} title={d.title} />
           </div>
         </div>
       ))}

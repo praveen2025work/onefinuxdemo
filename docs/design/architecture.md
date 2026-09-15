@@ -2,7 +2,7 @@
 
 One final set. Source of each chart is the `.mmd` file; SVG/PNG are exports (`diagrams/render.sh`). Do not treat the exports as a second design.
 
-Live visual truth is `frontend/web`. The same diagrams are on the console at **`/architecture`**. Product story: **`/product`**. Developer on-ramp: **`/guide`**. Product write-up: [`as-built.md`](as-built.md).
+Live visual truth is `frontend/web`. The console at **`/architecture`** renders the `.mmd` files with the dashboard dark/light theme — not the static white SVGs. Product story: **`/product`**. Developer on-ramp: **`/guide`**. Product write-up: [`as-built.md`](as-built.md).
 
 | # | Diagram | What it shows |
 |---|---|---|

@@ -19,8 +19,8 @@ export PUPPETEER_SKIP_DOWNLOAD=1 PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1
 for mmd in *.mmd; do
   base="${mmd%.mmd}"
   echo "rendering ${base} ..."
-  npx -y @mermaid-js/mermaid-cli@11 -p "$PUP" -c mermaid-config.json -i "$mmd" -o "${base}.svg" -b white
-  npx -y @mermaid-js/mermaid-cli@11 -p "$PUP" -c mermaid-config.json -i "$mmd" -o "${base}.png" -b white -s 2
+  npx -y @mermaid-js/mermaid-cli@11 -p "$PUP" -c mermaid-config.json -i "$mmd" -o "${base}.svg" -b transparent
+  npx -y @mermaid-js/mermaid-cli@11 -p "$PUP" -c mermaid-config.json -i "$mmd" -o "${base}.png" -b transparent -s 2
 done
 
 rm -f "$PUP"

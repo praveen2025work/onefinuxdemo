@@ -721,8 +721,34 @@ details.view-opt[open] > summary::after { content: '▴'; }
 .prod-ol li { margin: 0 0 10px; }
 .prod-ol li:last-child { margin-bottom: 0; }
 .prod-ol b { color: var(--ink); }
-.prod-fig { overflow: auto; max-height: 560px; background: #fff; border: 1px solid var(--stroke); border-radius: 8px; }
-.prod-fig img { display: block; width: 1680px; max-width: none; height: auto; background: #fff; }
+.prod-fig {
+  overflow-x: auto;
+  overflow-y: visible;
+  max-height: none;
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.prod-fig img,
+.prod-fig .mermaid-host svg {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  background: transparent;
+}
+.prod-fig .mermaid-host:empty::before {
+  content: 'Rendering diagram…';
+  display: block;
+  color: var(--muted);
+  padding: 20px 8px;
+}
+.prod-fig .mermaid-host .nodeLabel,
+.prod-fig .mermaid-host .edgeLabel,
+.prod-fig .mermaid-host .label {
+  font-family: var(--sans);
+}
 
 /* Mobile overrides MUST follow component rules so they win on cascade. */
 @media (max-width: 820px) {
