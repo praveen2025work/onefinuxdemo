@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill, Meter, Loading, Prediction, PageTitle } from '../components/bits.jsx';
@@ -162,13 +162,18 @@ function ReportTable({ outcomes }) {
   );
 }
 
+function readDensity(searchParams) {
+  const fromUrl = searchParams.get('view');
+  if (DENSITY.some((d) => d.id === fromUrl)) return fromUrl;
+  const saved = localStorage.getItem('ofx-reports-view');
+  return DENSITY.some((d) => d.id === saved) ? saved : 'normal';
+}
+
 export default function Reports() {
   const { view } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [outcomes, setOutcomes] = useState(null);
-  const [density, setDensity] = useState(() => {
-    const saved = localStorage.getItem('ofx-reports-view');
-    return DENSITY.some((d) => d.id === saved) ? saved : 'normal';
-  });
+  const [density, setDensity] = useState(() => readDensity(searchParams));
 
   const load = useCallback(async () => {
     try { setOutcomes(await outcomesApi.all()); } catch { /* keep last good */ }
@@ -183,6 +188,10 @@ export default function Reports() {
   function choose(id) {
     setDensity(id);
     localStorage.setItem('ofx-reports-view', id);
+    const next = new URLSearchParams(searchParams);
+    if (id === 'normal') next.delete('view');
+    else next.set('view', id);
+    setSearchParams(next, { replace: true });
   }
 
   if (!outcomes) return <Loading what="Loading reports…" />;
