@@ -39,6 +39,9 @@ class OutcomeInstance {
     private Instant updatedAt;
     private boolean atRisk;
     private boolean breached;
+    private String etaBasis = "NONE";
+    private int historicSamples;
+    private Instant historicP50;
     private String actionRunId;
     private String resultSummary;
     private ReportArtifact report;
@@ -68,6 +71,15 @@ class OutcomeInstance {
     OutcomeStatus status() { return status; }
     Instant readyAt() { return readyAt; }
     Instant eta() { return eta; }
+    Instant firstEventAt() { return firstEventAt; }
+
+    Duration readyDuration() {
+        if (readyAt == null || firstEventAt == null) {
+            return null;
+        }
+        Duration d = Duration.between(firstEventAt, readyAt);
+        return d.isNegative() || d.isZero() ? null : d;
+    }
     boolean atRisk() { return atRisk; }
     boolean breached() { return breached; }
     String actionRunId() { return actionRunId; }
@@ -104,6 +116,8 @@ class OutcomeInstance {
         status = OutcomeStatus.READY;
         readyAt = at;
         eta = null;
+        etaBasis = "NONE";
+        historicP50 = null;
         atRisk = false;
     }
 
@@ -184,23 +198,50 @@ class OutcomeInstance {
     }
 
     /**
-     * POC ETA: observed arrival rate projected over what is still pending.
-     * Phase 1 blends this with historical P50/P90 per dependency; Phase 3 replaces it with a model.
+     * Advisory ETA. LIVE = this COB's arrival rate. HISTORIC = P50 ready-duration of prior COBs
+     * for the same outcome + region. BLENDED = 60% live / 40% historic. Never used for readiness.
      */
-    void recomputeEta() {
+    void recomputeEta(Duration historicP50, int historicSamples, Instant now) {
+        this.historicSamples = historicSamples;
+        this.historicP50 = null;
+        this.etaBasis = "NONE";
+        this.eta = null;
+
         int done = completed();
         int total = expected();
-        if (done < 2 || done >= total || firstCompletionAt == null || lastCompletionAt == null) {
-            eta = null;
+        if (done >= total || total <= 0) {
             return;
         }
-        long elapsedMs = Duration.between(firstCompletionAt, lastCompletionAt).toMillis();
-        if (elapsedMs <= 0) {
-            eta = null;
-            return;
+
+        Instant liveEta = null;
+        if (done >= 2 && firstCompletionAt != null && lastCompletionAt != null) {
+            long elapsedMs = Duration.between(firstCompletionAt, lastCompletionAt).toMillis();
+            if (elapsedMs > 0) {
+                double msPerInput = elapsedMs / (double) (done - 1);
+                liveEta = lastCompletionAt.plusMillis((long) (msPerInput * (total - done)));
+            }
         }
-        double msPerInput = elapsedMs / (double) (done - 1);
-        eta = lastCompletionAt.plusMillis((long) (msPerInput * (total - done)));
+
+        Instant histEta = null;
+        if (historicP50 != null && !historicP50.isZero() && !historicP50.isNegative()) {
+            Instant start = firstEventAt != null ? firstEventAt : now;
+            this.historicP50 = start.plus(historicP50);
+            long remainingMs = historicP50.toMillis() * (total - done) / total;
+            histEta = now.plusMillis(Math.max(0, remainingMs));
+        }
+
+        if (liveEta != null && histEta != null) {
+            long liveRemain = Duration.between(now, liveEta).toMillis();
+            long histRemain = Duration.between(now, histEta).toMillis();
+            eta = now.plusMillis(Math.max(0, (long) (0.6 * liveRemain + 0.4 * histRemain)));
+            etaBasis = "BLENDED";
+        } else if (liveEta != null) {
+            eta = liveEta;
+            etaBasis = "LIVE";
+        } else if (histEta != null) {
+            eta = histEta;
+            etaBasis = "HISTORIC";
+        }
     }
 
     Instant deadline() {
@@ -244,6 +285,7 @@ class OutcomeInstance {
                 definition.ownerGroup(), status, percent(), completed(), expected(), expected() - completed(),
                 eta, deadline(), atRisk, breached, readyAt, completedAt, definition.hasAction(),
                 definition.onReady() == null ? null : definition.onReady().actionLabel(),
-                actionRunId, resultSummary, lastMessage, updatedAt, deps, stage(), report);
+                actionRunId, resultSummary, lastMessage, updatedAt, deps, stage(), report,
+                etaBasis, historicSamples, historicP50);
     }
 }

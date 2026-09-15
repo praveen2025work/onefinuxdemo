@@ -2,7 +2,7 @@
 
 One final set. Source of each chart is the `.mmd` file; SVG/PNG are exports (`diagrams/render.sh`). Do not treat the exports as a second design.
 
-Live visual truth is `frontend/web`. Product write-up: [`as-built.md`](as-built.md).
+Live visual truth is `frontend/web`. The same diagrams and write-up are on the console at **`/product`**. Product write-up: [`as-built.md`](as-built.md).
 
 | # | Diagram | What it shows |
 |---|---|---|

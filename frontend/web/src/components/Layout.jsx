@@ -4,26 +4,28 @@ import { useApp } from '../store.jsx';
 import Icon, { BrandMark } from './Icon.jsx';
 import Select from './Select.jsx';
 import DatePicker from './DatePicker.jsx';
+import { VIEWS, filterNav } from '../views.js';
 
 const NAV = [
   { grp: 'Console', items: [
-    { to: '/', label: 'Home', icon: 'home', end: true },
-    { to: '/board', label: 'Outcome board', icon: 'board' },
-    { to: '/outcomes', label: 'My outcomes', icon: 'cards', badge: 'assigned' },
-    { to: '/reports', label: 'Reports', icon: 'report' },
+    { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
+    { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
+    { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
+    { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
+    { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
   ] },
   { grp: 'Operate', items: [
-    { to: '/operations', label: 'Operations', icon: 'ops', badge: 'esc' },
+    { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },
   ] },
   { grp: 'Observe', items: [
-    { to: '/monitoring', label: 'Monitoring', icon: 'activity' },
+    { to: '/monitoring', label: 'Monitoring', short: 'Monitor', icon: 'activity' },
   ] },
   { grp: 'Build', items: [
-    { to: '/onboarding', label: 'Onboarding', icon: 'build' },
-    { to: '/configuration', label: 'Configuration', icon: 'config' },
+    { to: '/onboarding', label: 'Onboarding', short: 'Onboard', icon: 'build' },
+    { to: '/configuration', label: 'Configuration', short: 'Config', icon: 'config' },
   ] },
   { grp: 'Testing', items: [
-    { to: '/drive', label: 'Drive scenarios', icon: 'bolt' },
+    { to: '/drive', label: 'Drive scenarios', short: 'Drive', icon: 'bolt' },
   ] },
 ];
 
@@ -35,9 +37,11 @@ function toggleTheme() {
 }
 
 export default function Layout({ children }) {
-  const { context, filters, setFilters, instances, notifications, unread, live, toast, markRead } = useApp();
+  const { context, filters, setFilters, instances, notifications, unread, live, toast, markRead, view, setView } = useApp();
+  const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
+  const [drawer, setDrawer] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const bellRef = useRef(null);
@@ -59,11 +63,22 @@ export default function Layout({ children }) {
   }, [bellOpen]);
 
   // Any navigation closes the panel.
-  useEffect(() => { setBellOpen(false); }, [location.pathname]);
+  useEffect(() => { setBellOpen(false); setDrawer(false); }, [location.pathname]);
 
   function toggleRail() {
+    if (window.matchMedia('(max-width: 820px)').matches) {
+      setDrawer((d) => !d);
+      return;
+    }
     setCollapsed((c) => { localStorage.setItem('ofx-rail', c ? '0' : '1'); return !c; });
   }
+
+  useEffect(() => {
+    if (!drawer) return undefined;
+    function onKey(e) { if (e.key === 'Escape') setDrawer(false); }
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [drawer]);
 
   const ready = instances.filter((i) => i.status === 'READY').length;
   const blocked = instances.filter((i) => i.status === 'BLOCKED').length;
@@ -71,8 +86,11 @@ export default function Layout({ children }) {
   const regions = context?.regions || [];
   const groupUnits = context?.groupUnits || [];
 
+  const bottomItems = nav.flatMap((section) => section.items).slice(0, 5);
+
   return (
-    <div className={'app' + (collapsed ? ' collapsed' : '')}>
+    <div className={'app' + (collapsed ? ' collapsed' : '') + (drawer ? ' drawer-open' : '')}>
+      <div className="rail-scrim" onClick={() => setDrawer(false)} aria-hidden={!drawer} />
       <aside className="rail">
         <div className="rail-top">
           <div className="brand">
@@ -84,13 +102,13 @@ export default function Layout({ children }) {
           </button>
         </div>
         <nav className="rail-nav">
-          {NAV.map((section) => (
+          {nav.map((section) => (
             <div key={section.grp} className="nav-sec">
               <div className="nav-grp">{section.grp}</div>
               {section.items.map((it) => (
                 <NavLink key={it.to} to={it.to} end={it.end} title={it.label}
                   className={({ isActive }) => 'nav-a' + (isActive ? ' on' : '')}>
-                  <Icon name={it.icon} size={18} />
+                  <Icon name={it.icon} size={19} />
                   <span className="txt">{it.label}</span>
                   {it.badge === 'assigned' && instances.length > 0 && <span className="tag">{instances.length}</span>}
                   {it.badge === 'esc' && esc > 0 && <span className="tag fail">{esc}</span>}
@@ -107,7 +125,9 @@ export default function Layout({ children }) {
 
       <div className="main">
         <header className="topbar">
-          <button className="rail-toggle solo" onClick={toggleRail} title="Toggle menu"><Icon name="chevron" size={16} className={collapsed ? 'flip' : ''} /></button>
+          <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
+            <Icon name="menu" size={16} />
+          </button>
           <Select variant="header" caption="Group unit" value={filters.groupUnit}
             onChange={(v) => setFilters({ groupUnit: v })}
             options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
@@ -117,6 +137,8 @@ export default function Layout({ children }) {
             onChange={(v) => setFilters({ cobDate: v })} />
           <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
             options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
+          <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
+            options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
           <div className="bell-wrap" ref={bellRef}>
             <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications">
               <Icon name="bell" size={18} />
@@ -154,10 +176,20 @@ export default function Layout({ children }) {
           <span className="ctx"><span className="k">ready</span><span className="v ok">{ready}</span></span>
           <span className="ctx"><span className="k">blocked</span><span className="v fail">{blocked}</span></span>
           <span className="ctx"><span className="k">escalations</span><span className="v">{esc}</span></span>
+          <span className="ctx"><span className="k">view</span><span className="v">{view.label}</span></span>
         </div>
 
         <main className="body"><div className="wrap">{children}</div></main>
       </div>
+
+      <nav className="bottom-nav" aria-label="Primary">
+        {bottomItems.map((it) => (
+          <NavLink key={it.to} to={it.to} end={it.end} className={({ isActive }) => (isActive ? 'on' : '')}>
+            <Icon name={it.icon} size={20} />
+            <span>{it.short || it.label}</span>
+          </NavLink>
+        ))}
+      </nav>
 
       {toast && (
         <div className={'toast ' + toast.severity}>

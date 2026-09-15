@@ -77,11 +77,12 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 | Route | Job | Who |
 |---|---|---|
-| `/` Home | Morning glance: ready / blocked / escalations | Everyone |
+| `/` Home | Morning glance + opt-in View (filters rail; not entitlement) | Everyone |
+| `/product` | Product, start path, architecture, how it works, screens, how we review PRs | Everyone |
 | `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready) | Maker |
 | `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
-| `/reports` | Report lifecycle: feeds → ready → processing → generated → available | Controller |
+| `/reports` | Report lifecycle + predicted ready (arrived facts + prior-COB P50; advisory) | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
 | `/instance/:id` | Fold, embed, sign-off / post / kit-declared actions | Outcome user |
@@ -92,7 +93,9 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 **Onboarding vs Configuration.** Onboarding *creates*. Configuration *inspects and governs* (pick an outcome or kit on the left; anatomy on the right).
 
-**Mobile.** The shell collapses the rail below 820px; grids stack; tables scroll. The management board and My outcomes are the first surfaces intended for a phone between meetings.
+**Views.** Home and the top-bar View select persist `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail and Home start cards. It is not CEES. New-developer write-up: `start.md` and `/product?tab=start`.
+
+**Mobile.** Below 820px the left rail is an overlay drawer (hamburger in the top bar). A labelled bottom nav (five primary destinations) is the primary way to move; the rest stay in the drawer. Grids stack; tables swipe sideways. On a phone the report flow stacks vertically. The management board and My outcomes are the first surfaces intended for a phone between meetings.
 
 ## 5. API surface
 
@@ -136,7 +139,7 @@ Full operator steps: `onboarding.md`.
 
 ## 8. Demo build vs later
 
-**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report lifecycle; FOBO stitch console with kit-declared actions (`AMEND`); RTB operations; monitoring + outbox + audit; Barclays Cerulean / Astronaut Blue theme; pluggable action registries.
+**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`); RTB operations; monitoring + outbox + audit; solid finance-dashboard theme (Cerulean accent); pluggable action registries.
 
 **Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; Wijmo analyst studio; native mobile app wrapping the same responsive shell.
 

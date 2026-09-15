@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Icon from './Icon.jsx';
 
 /** On-screen modal dialog — the app never uses window.alert / prompt / confirm. */
@@ -21,34 +21,5 @@ export default function Modal({ title, subtitle, onClose, children, footer, widt
         {footer && <div className="modal-ft">{footer}</div>}
       </div>
     </div>
-  );
-}
-
-/** Prompt replacement: a titled modal with a single text input. */
-export function PromptModal({ title, subtitle, label, placeholder, initial = '', confirmText = 'Save', onCancel, onConfirm }) {
-  const [value, setValue] = useState(initial);
-  return (
-    <Modal title={title} subtitle={subtitle} onClose={onCancel}
-      footer={<><button className="btn ghost" onClick={onCancel}>Cancel</button>
-        <button className="btn" onClick={() => onConfirm(value.trim())} disabled={!value.trim()}>{confirmText}</button></>}>
-      <div className="field" style={{ margin: 0 }}>
-        {label && <label>{label}</label>}
-        {/* eslint-disable-next-line jsx-a11y/no-autofocus */}
-        <input className="inp" autoFocus value={value} placeholder={placeholder}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && value.trim()) onConfirm(value.trim()); }} />
-      </div>
-    </Modal>
-  );
-}
-
-/** Confirm replacement. */
-export function ConfirmModal({ title, subtitle, body, confirmText = 'Confirm', danger, onCancel, onConfirm }) {
-  return (
-    <Modal title={title} subtitle={subtitle} onClose={onCancel}
-      footer={<><button className="btn ghost" onClick={onCancel}>Cancel</button>
-        <button className={'btn' + (danger ? ' danger' : '')} onClick={onConfirm}>{confirmText}</button></>}>
-      <p style={{ margin: 0, color: 'var(--muted)' }}>{body}</p>
-    </Modal>
   );
 }

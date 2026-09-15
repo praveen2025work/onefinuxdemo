@@ -10,10 +10,12 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 | Route | Creates / shows | Does not |
 |---|---|---|
+| `/` Home | Morning glance + **opt-in View** (developer / architect / controller / head / rtb / maker / all) | Scenario buttons |
+| `/product` | Product guide: start path, architecture, how it works, screens & setup, how we review | Live outcomes or Drive |
 | `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |
-| `/reports` | Engine outcomes + 15C3 five-stage flow + viewable artifact | Scenario buttons |
+| `/reports` | Engine outcomes + 15C3 five-stage flow + predicted ready (from arrived facts + prior-COB P50) + viewable artifact | Scenario buttons |
 | `/board` | Unit traffic lights for CIO / MD / BU head | Sign-off / post |
 | `/outcomes` | Doer's card worklist | Head roll-ups or RTB queues |
 | `/instance/:id` | Fold + embed + kit-declared actions | Invent verbs not on the kit |
@@ -27,11 +29,11 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 ## Brand
 
-Cerulean `#00aeef` accent. Astronaut Blue `#00395d` dark canvas. Light theme uses accessible cerulean on white.
+Cerulean `#00aeef` accent. Charcoal canvas `#0b1220`, opaque cards, dark navy rail. Status colour on KPI tiles (ready / blocked / delayed). Light theme keeps the same dark rail on an off-white page. No frosted glass.
 
 ## Mobile
 
-Below 820px the rail collapses to icons; grids stack; tables scroll horizontally. Management and worklist screens are first-class on a phone. A native app can wrap this shell; do not build a second product.
+Below 820px the left rail is an overlay drawer (hamburger). A labelled bottom nav (five primary destinations; the rest stay in the drawer) is the way to move. Grids stack; tables swipe sideways. On a phone the report flow stacks vertically so stage names stay readable. Predicted-ready clocks use 24-hour time. A native app can wrap this shell; do not build a second product.
 
 ## What not to do
 
@@ -39,5 +41,7 @@ Below 820px the rail collapses to icons; grids stack; tables scroll horizontally
 - Collapse the two models into one without a presentation binding design.
 - Add `if (FOBO)` or a per-product module.
 - Treat Configuration as a create form (that is Onboarding).
+- Treat a View as entitlement (that is CEES; a view only hides nav).
+- Put the ETA on the readiness fold. Predictions are advisory.
 - Jump screens in an exec demo — hold each surface long enough to read.
 - Ship a day-one Analyst explorer (that is later, Wijmo).

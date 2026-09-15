@@ -131,6 +131,32 @@ class OutcomeEngineTest {
         assertThat(changes).isEmpty();
     }
 
+    @Test
+    void etaIsProjectedFromThisCobArrivalsAndIsNotReadiness() {
+        send("SAP_TB_COMPLETE", "SAP", "CC-4410", EventStatus.COMPLETED);
+        send("SAP_TB_COMPLETE", "SAP", "CC-4420", EventStatus.COMPLETED);
+        OutcomeView v = report();
+        assertThat(v.status()).isEqualTo(OutcomeStatus.IN_PROGRESS);
+        assertThat(v.etaBasis()).isEqualTo("LIVE");
+        assertThat(v.eta()).isNotNull();
+        assertThat(v.historicSamples()).isZero();
+    }
+
+    @Test
+    void etaUsesHistoricP50FromAPriorCobWhenThisCobHasTooFewArrivals() {
+        completeAll();
+        assertThat(report().status()).isEqualTo(OutcomeStatus.READY);
+        assertThat(report().eta()).isNull();
+
+        LocalDate next = COB.plusDays(1);
+        engine.apply(eventOn(next, "SAP_TB_COMPLETE", "SAP", "CC-4410", EventStatus.COMPLETED, Map.of()), false);
+        OutcomeView nextView = engine.view("REPORT_15C3", next, "AMRS").orElseThrow();
+        assertThat(nextView.etaBasis()).isEqualTo("HISTORIC");
+        assertThat(nextView.historicSamples()).isEqualTo(1);
+        assertThat(nextView.eta()).isNotNull();
+        assertThat(nextView.historicP50()).isNotNull();
+    }
+
     // ---------------------------------------------------------------- helpers
 
     private void completeAll() {
@@ -161,8 +187,13 @@ class OutcomeEngineTest {
     }
 
     private BusinessEvent event(String type, String source, String key, EventStatus status, Map<String, Object> attributes) {
+        return eventOn(COB, type, source, key, status, attributes);
+    }
+
+    private BusinessEvent eventOn(LocalDate cob, String type, String source, String key, EventStatus status,
+                                  Map<String, Object> attributes) {
         Instant at = T0.plusSeconds(++tick);
         return new BusinessEvent(UUID.randomUUID().toString(), type, source, key, "SOURCE_KEY", key, Map.of(),
-                COB, "AMRS", status, at, at, attributes);
+                cob, "AMRS", status, at, at, attributes);
     }
 }

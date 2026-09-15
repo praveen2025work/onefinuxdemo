@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../api';
 import { useApp } from '../store.jsx';
-import { StatusPill, Loading } from '../components/bits.jsx';
+import { StatusPill, Loading, PageTitle } from '../components/bits.jsx';
+import Icon from '../components/Icon.jsx';
 
 const labelOf = (verb) => verb.split(/[_\s]+/).map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 
@@ -50,16 +51,16 @@ export default function InstanceDetail() {
       <div className="ph">
         <div>
           <div className="eyebrow">{i.groupUnitId} · {i.kitId} · COB {i.cobDate} · {i.region}</div>
-          <h1>{i.sliceKey} <StatusPill status={i.status} /></h1>
+          <PageTitle icon="cards">{i.sliceKey} <StatusPill status={i.status} /></PageTitle>
           <p className="sub">{i.question}</p>
         </div>
         <div className="ph-actions">
-          {actions.includes('SIGN_OFF') && <button className="btn" disabled={busy || !isReady} onClick={() => act('signoff')}>✓ Sign off</button>}
-          {actions.includes('POST') && <button className="btn ghost" disabled={busy || !isReady} onClick={() => act('post')}>Post to MOTIF</button>}
+          {actions.includes('SIGN_OFF') && <button className="btn" disabled={busy || !isReady} onClick={() => act('signoff')}><Icon name="check" size={15} /> Sign off</button>}
+          {actions.includes('POST') && <button className="btn ghost" disabled={busy || !isReady} onClick={() => act('post')}><Icon name="share" size={15} /> Post to MOTIF</button>}
           {actions.filter((a) => a && !['SIGN_OFF', 'POST', 'ESCALATE'].includes(a)).map((a) => (
             <button key={a} className="btn ghost" disabled={busy} onClick={() => act('generic:' + a)}>{labelOf(a)}</button>
           ))}
-          <button className="btn ghost" disabled={busy} onClick={() => act('escalate')}>Escalate</button>
+          <button className="btn ghost" disabled={busy} onClick={() => act('escalate')}><Icon name="alert" size={15} /> Escalate</button>
         </div>
       </div>
 

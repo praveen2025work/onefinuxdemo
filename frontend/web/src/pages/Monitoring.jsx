@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, fetchSink } from '../api';
 import { useStream } from '../useStream';
-import { Loading } from '../components/bits.jsx';
+import { Loading, PageTitle } from '../components/bits.jsx';
+import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 
 const OUTBOX_FILTERS = [
@@ -86,26 +87,26 @@ export default function Monitoring() {
       <div className="ph">
         <div>
           <div className="eyebrow">Observability</div>
-          <h1 className="ph-title">Monitoring &amp; propagation
+          <PageTitle icon="activity">Monitoring &amp; propagation
             <InfoHint title="Received · persisted · propagated · audited">
               Every fact the hub receives is stored append-only in the event store, then fanned out to other
               systems through a transactional outbox (at-least-once, subscribers de-dupe on event id). This
               screen shows what arrived, how it persisted, where it was propagated, and the audit trail of
               human commands.
             </InfoHint>
-          </h1>
+          </PageTitle>
         </div>
         <div className="ph-actions">
-          <button className="btn ghost" onClick={() => load()}>↻ Refresh</button>
+          <button className="btn ghost" onClick={() => load()}><Icon name="refresh" size={15} /> Refresh</button>
         </div>
       </div>
 
       <div className="grid g5" style={{ marginBottom: 16 }}>
-        <div className="stat info"><div className="lbl">Events received</div><div className="num">{ev.total ?? 0}</div><div className="foot">persisted to event store</div></div>
-        <div className="stat ok"><div className="lbl">Propagated</div><div className="num">{ob.dispatched ?? 0}</div><div className="foot">delivered to subscribers</div></div>
-        <div className="stat warn"><div className="lbl">Outbox pending</div><div className="num">{ob.pending ?? 0}</div><div className="foot">awaiting relay</div></div>
-        <div className={'stat' + ((ob.failed ?? 0) > 0 ? ' fail' : '')}><div className="lbl">Outbox failed</div><div className="num">{ob.failed ?? 0}</div><div className="foot">needs retry</div></div>
-        <div className={'stat' + ((overview.deadLetters ?? 0) > 0 ? ' fail' : '')}><div className="lbl">Dead letters</div><div className="num">{overview.deadLetters ?? 0}</div><div className="foot">held for RTB replay</div></div>
+        <div className="stat info"><span className="stat-ico"><Icon name="inbox" size={18} /></span><div className="lbl">Events received</div><div className="num">{ev.total ?? 0}</div><div className="foot">persisted to event store</div></div>
+        <div className="stat ok"><span className="stat-ico"><Icon name="share" size={18} /></span><div className="lbl">Propagated</div><div className="num">{ob.dispatched ?? 0}</div><div className="foot">delivered to subscribers</div></div>
+        <div className="stat warn"><span className="stat-ico"><Icon name="clock" size={18} /></span><div className="lbl">Outbox pending</div><div className="num">{ob.pending ?? 0}</div><div className="foot">awaiting relay</div></div>
+        <div className={'stat' + ((ob.failed ?? 0) > 0 ? ' fail' : '')}><span className="stat-ico"><Icon name="alert" size={18} /></span><div className="lbl">Outbox failed</div><div className="num">{ob.failed ?? 0}</div><div className="foot">needs retry</div></div>
+        <div className={'stat' + ((overview.deadLetters ?? 0) > 0 ? ' fail' : '')}><span className="stat-ico"><Icon name="warning" size={18} /></span><div className="lbl">Dead letters</div><div className="num">{overview.deadLetters ?? 0}</div><div className="foot">held for RTB replay</div></div>
       </div>
 
       <div className="split">

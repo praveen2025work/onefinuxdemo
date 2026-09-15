@@ -117,7 +117,7 @@ public class OutcomeEngine {
         OutcomeStatus before = instance.status();
         OutcomeStatus derived = instance.dependencyStatus();
         String name = instance.definition().name();
-        instance.recomputeEta();
+        instance.recomputeEta(historicP50(instance), historicSamples(instance), clock.instant());
         instance.touch(at);
 
         if (before.readyOrBeyond()) {
@@ -315,6 +315,29 @@ public class OutcomeEngine {
         emit(instance, Transition.SLA_BREACHED, instance.definition().name() + " missed its deadline",
                 "Deadline was " + time(instance.deadline()) + ". Still waiting on " + instance.pendingSummary() + ".", replay);
         emit(instance, Transition.PROGRESS, null, null, replay);
+    }
+
+    private int historicSamples(OutcomeInstance current) {
+        return (int) historicReadyDurations(current).size();
+    }
+
+    private Duration historicP50(OutcomeInstance current) {
+        List<Duration> samples = historicReadyDurations(current);
+        if (samples.isEmpty()) {
+            return null;
+        }
+        return samples.get(samples.size() / 2);
+    }
+
+    private List<Duration> historicReadyDurations(OutcomeInstance current) {
+        return instances.values().stream()
+                .filter(i -> i != current)
+                .filter(i -> i.definition().id().equals(current.definition().id()))
+                .filter(i -> i.region().equals(current.region()))
+                .map(OutcomeInstance::readyDuration)
+                .filter(d -> d != null && !d.isZero() && !d.isNegative())
+                .sorted()
+                .toList();
     }
 
     // ---------------------------------------------------------------- queries and lifecycle

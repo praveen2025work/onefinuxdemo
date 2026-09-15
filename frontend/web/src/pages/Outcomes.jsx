@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
-import { StatusPill, Meter } from '../components/bits.jsx';
+import { StatusPill, Meter, PageTitle } from '../components/bits.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 
 export default function Outcomes() {
@@ -12,9 +12,9 @@ export default function Outcomes() {
       <div className="ph">
         <div>
           <div className="eyebrow">Outcome user · {filters.groupUnit}</div>
-          <h1 className="ph-title">My outcomes
+          <PageTitle icon="cards">My outcomes
             <InfoHint title="My outcomes">Agents already ran against the stitched facts. Open a ready outcome to sign off or post; open a blocked one to see the named key.</InfoHint>
-          </h1>
+          </PageTitle>
         </div>
       </div>
 

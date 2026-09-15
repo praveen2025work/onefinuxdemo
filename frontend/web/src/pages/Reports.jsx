@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { outcomesApi } from '../api';
-import { StatusPill, Meter, Loading } from '../components/bits.jsx';
+import { useApp } from '../store.jsx';
+import { StatusPill, Meter, Loading, Prediction, PageTitle } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import Modal from '../components/Modal.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import { viewIncludes } from '../views.js';
 
 // The five stages a report walks through: feeds arriving → ready → processing → generated → available.
 const STEPS = [
-  { key: 'FEEDS', label: 'Feeds in', hint: 'Sources publishing' },
-  { key: 'READY', label: 'Ready', hint: 'All feeds complete' },
-  { key: 'PROCESSING', label: 'Processing', hint: 'Report generating' },
-  { key: 'GENERATED', label: 'Generated', hint: 'Report produced' },
-  { key: 'AVAILABLE', label: 'Available', hint: 'Ready to view' },
+  { key: 'FEEDS', label: 'Feeds in', hint: 'Sources publishing', icon: 'inbox' },
+  { key: 'READY', label: 'Ready', hint: 'All feeds complete', icon: 'play' },
+  { key: 'PROCESSING', label: 'Processing', hint: 'Report generating', icon: 'spark' },
+  { key: 'GENERATED', label: 'Generated', hint: 'Report produced', icon: 'report' },
+  { key: 'AVAILABLE', label: 'Available', hint: 'Ready to view', icon: 'eye' },
 ];
 
 // How far along the flow each stage is (index of the step it has reached; AVAILABLE clears all five).
@@ -36,7 +38,7 @@ function Flow({ stage }) {
         const st = stepState(stage, i);
         return (
           <div key={s.key} className={'rstep ' + st}>
-            <div className="rdot">{st === 'done' ? <Icon name="check" size={13} /> : i + 1}</div>
+            <div className="rdot">{st === 'done' ? <Icon name="check" size={13} /> : <Icon name={s.icon} size={13} />}</div>
             <div className="rmeta">
               <div className="rlbl">{s.label}</div>
               <div className="rhint">{s.hint}</div>
@@ -96,6 +98,7 @@ function ReportModal({ outcome, onClose }) {
 }
 
 export default function Reports() {
+  const { view } = useApp();
   const [outcomes, setOutcomes] = useState(null);
   const [open, setOpen] = useState(null);
 
@@ -116,12 +119,12 @@ export default function Reports() {
       <div className="ph">
         <div>
           <div className="eyebrow">Regulatory reporting</div>
-          <h1 className="ph-title">Reports
+          <PageTitle icon="report">Reports
             <InfoHint title="Report flow">Each report is a business outcome: its feeds fold to ready, the hub asks the generator to run, and the finished report becomes available to view. No polling — every feed is an event.</InfoHint>
-          </h1>
+          </PageTitle>
         </div>
         <div className="ph-actions">
-          <Link className="btn ghost" to="/drive"><Icon name="bolt" size={15} /> Drive a scenario</Link>
+          <Link className="btn ghost" to="/board"><Icon name="board" size={15} /> Open Board</Link>
         </div>
       </div>
 
@@ -137,6 +140,7 @@ export default function Reports() {
                     <span className="chip">{o.region}</span>
                     <span className="chip">COB {o.cobDate}</span>
                     {o.atRisk && <span className="chip warn-chip">at risk</span>}
+                    {o.breached && <span className="chip warn-chip">SLA breached</span>}
                   </div>
                   <h3>{o.name}</h3>
                   <p className="q">{o.question}</p>
@@ -149,6 +153,7 @@ export default function Reports() {
               </div>
 
               <Flow stage={o.stage} />
+              <Prediction outcome={o} />
 
               <div className="rfeeds">
                 {o.dependencies.map((d) => (
@@ -170,7 +175,13 @@ export default function Reports() {
             </div>
           );
         })}
-        {outcomes.length === 0 && <div className="empty">No report outcomes yet. Open the <Link to="/drive">Drive screen</Link> to run the 15C3 feeds.</div>}
+        {outcomes.length === 0 && (
+          <div className="empty">
+            {viewIncludes(view, '/drive')
+              ? <>No report outcomes yet. Open the <Link to="/drive">Drive screen</Link> to run the 15C3 feeds.</>
+              : <>No report outcomes yet. Switch View to Developer (or All) and drive the 15C3 feeds — Drive is not on this view.</>}
+          </div>
+        )}
       </div>
 
       {open && <ReportModal outcome={open} onClose={() => setOpen(null)} />}

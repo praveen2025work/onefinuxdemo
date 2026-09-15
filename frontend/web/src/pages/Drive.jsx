@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { api, runScenario, cancelScenarios } from '../api';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import { PageTitle } from '../components/bits.jsx';
 
 // A dedicated testing surface. The product pages (Home, Board, Reports) stay clean and view-only;
 // every scenario that drives the demo lives here so it is obvious what is real vs. what is a trigger.
@@ -31,7 +32,7 @@ const SCENARIOS = [
   { key: 'all', title: 'Run all', icon: 'bolt', tone: 'ok', cta: 'Run all',
     desc: 'Helix + 15C3 + PnL together — a full close of business in miniature.',
     run: () => runScenario('all') },
-  { key: 'cancel', title: 'Cancel scheduled', icon: 'info', tone: 'plain', cta: 'Cancel',
+  { key: 'cancel', title: 'Cancel scheduled', icon: 'warning', tone: 'plain', cta: 'Cancel',
     desc: 'Stop the drip of any scenario still scheduled, so a clean run is not disturbed.',
     run: () => cancelScenarios() },
 ];
@@ -71,13 +72,13 @@ export default function Drive() {
       <div className="ph">
         <div>
           <div className="eyebrow">Testing · scenario driver</div>
-          <h1 className="ph-title">Drive scenarios
+          <PageTitle icon="bolt">Drive scenarios
             <InfoHint title="Why a separate screen">Product pages stay view-only so a demo reads like the real thing. This screen is the only place that injects facts — reset first, drive a scenario, then watch it land on the Board and Reports.</InfoHint>
-          </h1>
+          </PageTitle>
         </div>
         <div className="ph-actions">
-          <Link className="btn ghost" to="/board">Open Board</Link>
-          <Link className="btn ghost" to="/reports">Open Reports</Link>
+          <Link className="btn ghost" to="/board"><Icon name="board" size={15} /> Open Board</Link>
+          <Link className="btn ghost" to="/reports"><Icon name="report" size={15} /> Open Reports</Link>
         </div>
       </div>
 
@@ -92,7 +93,7 @@ export default function Drive() {
           return (
             <div key={s.key} className={'dcard ' + s.tone}>
               <div className="dcard-hd">
-                <span className={'dcard-ic ' + s.tone}><Icon name={s.icon} size={18} /></span>
+                <span className={'dcard-ic ' + s.tone}><Icon name={s.icon} size={20} /></span>
                 <h3>{s.title}</h3>
               </div>
               <p className="dcard-desc">{s.desc}</p>

@@ -19,6 +19,8 @@ Match `eventType` + `sourceSystem`. Re-derive status. Emit `OutcomeChanged`. No 
 
 Derived `stage`: `NOT_STARTED → FEEDS → READY → PROCESSING → GENERATED | AVAILABLE` (or `BLOCKED` / `FAILED`). `AVAILABLE` only when a completion event carries `reportId`.
 
+ETA is **advisory**: LIVE from this COB's arrived facts, HISTORIC from the P50 ready-duration of prior COBs (same outcome + region), BLENDED 60/40. It never changes readiness.
+
 ## On-ready capabilities
 
 Any `onReady.action` other than `NOTIFY_ONLY` goes through the `ActionExecutor` registry.
@@ -32,4 +34,5 @@ Any `onReady.action` other than `NOTIFY_ONLY` goes through the `ActionExecutor` 
 - Add a second readiness model for reports
 - Hard-code `HTTP_COMMAND` as the only action
 - Put Drive / scenario buttons on Reports
+- Put the ETA on the readiness fold
 ---
