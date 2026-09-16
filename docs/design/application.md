@@ -88,7 +88,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/reports/:outcomeId/:cobDate/:region` | Produced report document | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
-| `/instance/:id` | Fold, embed, sign-off / post / kit-declared actions | Outcome user |
+| `/instance/:id` | Fold (click feed for history), in-shell iframe, sign-off / post / kit-declared actions | Outcome user |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
 | `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |
 
@@ -102,7 +102,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 ## 5. API surface
 
-Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, RTB, reset.
+Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, `GET /instance/step-view` (GRID or IFRAME), RTB, reset.
 
 Outcomes (`/api/outcomes`) — live views, `GET/POST /definitions`, instance + report document.
 

@@ -60,6 +60,12 @@ public class StitchController {
         return detail == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(detail);
     }
 
+    @GetMapping("/instance/step-view")
+    public ResponseEntity<Map<String, Object>> stepView(@RequestParam String id, @RequestParam String ref) {
+        Map<String, Object> view = service.stepView(id, ref);
+        return view == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(view);
+    }
+
     @GetMapping("/instance/events")
     public List<Map<String, Object>> instanceEvents(@RequestParam String id) {
         return repo.eventsForInstance(id);

@@ -12,7 +12,7 @@ This section identifies the document, its status, and the files it sits beside.
 | --- | --- |
 | Product | One Finance |
 | Document | Specification |
-| Version | 1.1.0 |
+| Version | 1.2.0 |
 | Date | 16 September 2026 |
 | Owner | Praveen Kumar |
 | Audience | Implementers, reviewers, architecture group |
@@ -48,7 +48,7 @@ This section bounds phase 1. Work outside these bounds needs a new REQ-ID before
 
 ### 3.1 In scope
 
-HTTP ingest, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, and fail-closed 404 on unentitled stitch instances.
+HTTP ingest, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, in-shell partner iframe, and fail-closed 404 on unentitled stitch instances.
 
 ### 3.2 Out of scope
 
@@ -243,6 +243,9 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-CONSOLE-011` | Every page under frontend/web/src/pages is routed and has a job listed in this specification. |
 | `REQ-CONSOLE-012` | Dropdown options for group unit, COB, and region come from hub APIs; the console does not invent those ids. |
 | `REQ-CONSOLE-013` | Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields. |
+| `REQ-CONSOLE-014` | Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events. |
+| `REQ-CONSOLE-015` | Open partner screen renders the kit embed URL as an iframe in the console and does not navigate to a new tab. |
+| `REQ-CONSOLE-016` | GET /api/stitch/instance/step-view?id=&ref= returns kind GRID with columns and rows, or kind IFRAME with embedUrl, from destination surface data, and 404 when the instance is unentitled. |
 
 ### 11.6 Reports index and document (REPORTS)
 
@@ -1105,24 +1108,24 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 
 #### AC-CONSOLE-20
 
-- Maps to: `REQ-CONSOLE-003`
-- Given the rail is expanded
-- When the operator clicks the rail chevron
-- Then the rail collapses and the wordmark moves to the top header
+- Maps to: `REQ-CONSOLE-014`
+- Given instance R-2031 has CATS and MOTIF facts stored
+- When the operator opens the instance page
+- Then the Facts for this instance table is not shown until a feed is clicked
 
 #### AC-CONSOLE-21
 
-- Maps to: `REQ-CONSOLE-004`
-- Given the rail is collapsed
-- When the operator clicks the rail expand chevron
-- Then the wordmark returns to the rail and leaves the top header
+- Maps to: `REQ-CONSOLE-015`
+- Given the instance kit has an embed URL
+- When the operator clicks Open partner screen
+- Then the partner document loads in an iframe on the instance page and the browser does not open a new tab
 
 #### AC-CONSOLE-22
 
-- Maps to: `REQ-CONSOLE-006`
-- Given two instances are READY and zero are BLOCKED
-- When the ribbon renders
-- Then ready is 2 and blocked is 0
+- Maps to: `REQ-CONSOLE-016`
+- Given HELIX surface is IFRAME and FAS_MOTIF surface is GRID with report_source_id MOTIF
+- When GET step-view is called for HELIX then FAS_MOTIF on an entitled instance
+- Then HELIX returns kind IFRAME with the kit embedUrl and FAS_MOTIF returns kind GRID of Motif events
 
 #### AC-CONSOLE-23
 
@@ -1681,10 +1684,10 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ACTION-013` |  |
 | `REQ-CONSOLE-001` | `AC-CONSOLE-01`, `AC-CONSOLE-02` |
 | `REQ-CONSOLE-002` | `AC-CONSOLE-03` |
-| `REQ-CONSOLE-003` | `AC-CONSOLE-04`, `AC-CONSOLE-20` |
-| `REQ-CONSOLE-004` | `AC-CONSOLE-05`, `AC-CONSOLE-06`, `AC-CONSOLE-21` |
+| `REQ-CONSOLE-003` | `AC-CONSOLE-04` |
+| `REQ-CONSOLE-004` | `AC-CONSOLE-05`, `AC-CONSOLE-06` |
 | `REQ-CONSOLE-005` | `AC-CONSOLE-07`, `AC-CONSOLE-08` |
-| `REQ-CONSOLE-006` | `AC-CONSOLE-09`, `AC-CONSOLE-22` |
+| `REQ-CONSOLE-006` | `AC-CONSOLE-09` |
 | `REQ-CONSOLE-007` | `AC-CONSOLE-10`, `AC-CONSOLE-11` |
 | `REQ-CONSOLE-008` | `AC-CONSOLE-12` |
 | `REQ-CONSOLE-009` | `AC-CONSOLE-13`, `AC-CONSOLE-14` |
@@ -1692,6 +1695,9 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-CONSOLE-011` | `AC-CONSOLE-17` |
 | `REQ-CONSOLE-012` | `AC-CONSOLE-18`, `AC-CONSOLE-19` |
 | `REQ-CONSOLE-013` | `AC-CONSOLE-23` |
+| `REQ-CONSOLE-014` | `AC-CONSOLE-20` |
+| `REQ-CONSOLE-015` | `AC-CONSOLE-21` |
+| `REQ-CONSOLE-016` | `AC-CONSOLE-22` |
 | `REQ-REPORTS-001` | `AC-REPORTS-01`, `AC-REPORTS-17` |
 | `REQ-REPORTS-002` | `AC-REPORTS-02`, `AC-REPORTS-18` |
 | `REQ-REPORTS-003` | `AC-REPORTS-03`, `AC-REPORTS-04`, `AC-REPORTS-05` |
@@ -1744,7 +1750,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | FOLD | 10 | 23 |
 | ENGINE | 10 | 23 |
 | ACTION | 13 | 23 |
-| CONSOLE | 13 | 23 |
+| CONSOLE | 16 | 23 |
 | REPORTS | 10 | 23 |
 | GOVERN | 10 | 23 |
 | OPERATE | 12 | 23 |

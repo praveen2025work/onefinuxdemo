@@ -15,6 +15,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -102,6 +104,122 @@ public class StitchService {
                 "keys", repo.readinessKeys(instanceId),
                 "destinations", repo.destinationsForInstance(instanceId),
                 "events", repo.eventsForInstance(instanceId));
+    }
+
+    /**
+     * On-demand feed or destination surface for the instance page. GRID is a plain table of events
+     * (and their attributes). IFRAME is the kit embed. Unknown / unentitled stays 404.
+     */
+    public Map<String, Object> stepView(String instanceId, String ref) {
+        Map<String, Object> inst = repo.instance(instanceId);
+        if (inst == null || !currentUser.entitlements().canSeeGroupUnit(str(inst, "groupUnitId"))) {
+            return null;
+        }
+        String needle = ref == null ? "" : ref.trim();
+        if (needle.isEmpty()) {
+            return none("");
+        }
+        List<Map<String, Object>> dests = repo.destinationsForInstance(instanceId);
+        Map<String, Object> dest = dests.stream()
+                .filter(d -> needle.equals(str(d, "destId")))
+                .findFirst()
+                .orElse(null);
+        if (dest != null && "IFRAME".equalsIgnoreCase(str(dest, "surface"))) {
+            Map<String, Object> embed = repo.kitEmbed(str(inst, "kitId"));
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("kind", "IFRAME");
+            out.put("ref", needle);
+            out.put("title", dest.getOrDefault("displayName", needle));
+            out.put("embedUrl", embed == null ? null : embed.get("embedUrl"));
+            out.put("allowedOrigin", embed == null ? null : embed.get("allowedOrigin"));
+            return out;
+        }
+        String sourceFilter = dest == null ? needle : str(dest, "reportSourceId");
+        List<Map<String, Object>> matched = new ArrayList<>();
+        for (Map<String, Object> event : repo.eventsForInstance(instanceId)) {
+            if (sourceFilter != null && !sourceFilter.isBlank()) {
+                if (sourceFilter.equals(str(event, "sourceSystem"))) {
+                    matched.add(event);
+                }
+            } else if (dest != null && (needle.equals(str(event, "sourceSystem"))
+                    || String.valueOf(event.getOrDefault("eventType", "")).contains(needle))) {
+                matched.add(event);
+            }
+        }
+        String title = dest != null ? String.valueOf(dest.getOrDefault("displayName", needle)) : needle;
+        if (matched.isEmpty()) {
+            return none(needle, title);
+        }
+        return grid(needle, title, matched);
+    }
+
+    private Map<String, Object> none(String ref) {
+        return none(ref, ref);
+    }
+
+    private Map<String, Object> none(String ref, String title) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("kind", "NONE");
+        out.put("ref", ref);
+        out.put("title", title);
+        out.put("columns", List.of());
+        out.put("rows", List.of());
+        return out;
+    }
+
+    private Map<String, Object> grid(String ref, String title, List<Map<String, Object>> events) {
+        LinkedHashSet<String> extra = new LinkedHashSet<>();
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (Map<String, Object> event : events) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("occurredAt", event.get("occurredAt"));
+            row.put("eventType", event.get("eventType"));
+            row.put("status", event.get("status"));
+            row.put("sourceKey", event.get("sourceKey"));
+            for (Map.Entry<String, Object> attr : attrsOf(event).entrySet()) {
+                extra.add(attr.getKey());
+                row.put(attr.getKey(), attr.getValue());
+            }
+            rows.add(row);
+        }
+        List<Map<String, Object>> columns = new ArrayList<>();
+        columns.add(col("occurredAt", "Time"));
+        columns.add(col("eventType", "Type"));
+        columns.add(col("status", "Status"));
+        columns.add(col("sourceKey", "Key"));
+        for (String key : extra) {
+            columns.add(col(key, key));
+        }
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("kind", "GRID");
+        out.put("ref", ref);
+        out.put("title", title);
+        out.put("columns", columns);
+        out.put("rows", rows);
+        return out;
+    }
+
+    private Map<String, Object> col(String key, String label) {
+        Map<String, Object> c = new LinkedHashMap<>();
+        c.put("key", key);
+        c.put("label", label);
+        return c;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> attrsOf(Map<String, Object> event) {
+        Object raw = event.get("attributesJson");
+        if (raw instanceof Map<?, ?> map) {
+            return (Map<String, Object>) map;
+        }
+        if (raw instanceof String s && !s.isBlank()) {
+            try {
+                return mapper.readValue(s, Map.class);
+            } catch (Exception ignored) {
+                return Map.of();
+            }
+        }
+        return Map.of();
     }
 
     public Map<String, Object> signoff(String instanceId) {

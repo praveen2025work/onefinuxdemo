@@ -49,7 +49,8 @@ public class StitchRepository {
     public List<Map<String, Object>> destinations() {
         return jdbc.queryForList("""
                 SELECT dest_id AS "destId", display_name AS "displayName",
-                       action_type AS "actionType", command_url AS "commandUrl"
+                       action_type AS "actionType", command_url AS "commandUrl",
+                       surface AS "surface", report_source_id AS "reportSourceId"
                 FROM destination_system ORDER BY dest_id""", p());
     }
 
@@ -82,7 +83,8 @@ public class StitchRepository {
     public List<Map<String, Object>> kitDestinations(String kitId) {
         return jdbc.queryForList("""
                 SELECT kd.dest_id AS "destId", d.display_name AS "displayName", d.action_type AS "actionType",
-                       d.command_url AS "commandUrl", kd.step_order AS "stepOrder"
+                       d.command_url AS "commandUrl", d.surface AS "surface",
+                       d.report_source_id AS "reportSourceId", kd.step_order AS "stepOrder"
                 FROM kit_destination kd JOIN destination_system d ON d.dest_id = kd.dest_id
                 WHERE kd.kit_id = :id ORDER BY kd.step_order""", p().addValue("id", kitId));
     }
@@ -159,6 +161,7 @@ public class StitchRepository {
     public List<Map<String, Object>> destinationsForInstance(String instanceId) {
         return jdbc.queryForList("""
                 SELECT d.dest_id AS "destId", d.display_name AS "displayName", d.action_type AS "actionType",
+                       d.surface AS "surface", d.report_source_id AS "reportSourceId",
                        kd.step_order AS "stepOrder",
                        (SELECT cr.echo_ok FROM command_run cr WHERE cr.instance_id = :id AND cr.dest_id = d.dest_id
                         ORDER BY cr.commanded_at DESC LIMIT 1) AS "echoOk"

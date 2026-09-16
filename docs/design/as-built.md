@@ -21,14 +21,14 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/reports/:outcomeId/:cobDate/:region` | The produced report document (open from any Reports layout) | Drive / generate |
 | `/board` | Unit traffic lights for CIO / MD / BU head | Sign-off / post |
 | `/outcomes` | Doer's card worklist | Head roll-ups or RTB queues |
-| `/instance/:id` | Fold + accounting item + embed + kit-declared actions (Adjust / Sign off / Countersign) | Invent verbs not on the kit |
+| `/instance/:id` | Fold (click a feed for history) + accounting item + in-shell partner iframe + kit-declared actions | Invent verbs not on the kit; open Helix in a new tab |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | Sign off a rec or publish a kit |
 | `/monitoring` | Ingest / outbox / audit | Business sign-off |
 
 ## Capability registries
 
 - Outcome: `ActionExecutor` beans keyed by `onReady.action`. Built-in: `HTTP_COMMAND`, `LOG_COMMAND`. New type = new bean + config.
-- Stitch: `POST /api/stitch/instance/action` gated by kit `userActions`. Rich verbs: `SIGN_OFF`, `POST`, `ESCALATE`, `ADJUST`, `COUNTERSIGN`. Other verbs are generic. New verb = add it to the kit.
+- Stitch: `POST /api/stitch/instance/action` gated by kit `userActions`. Rich verbs: `SIGN_OFF`, `POST`, `ESCALATE`, `ADJUST`, `COUNTERSIGN`. Other verbs are generic. New verb = add it to the kit. `GET /api/stitch/instance/step-view` returns GRID or IFRAME for a feed or destination.
 
 ## Brand
 
