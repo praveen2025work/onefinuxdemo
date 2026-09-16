@@ -236,7 +236,7 @@ function OutcomeDetail({ o, live }) {
                 <td className="sec">{(g.params || []).map((p) => p.name + (p.from ? '←' + p.from : (p.value != null ? '=' + p.value : ''))).join(' · ') || '—'}</td>
               </tr>
             ))}
-            {(o.grids || []).length === 0 && <tr><td colSpan={4} className="empty">No grids on this outcome. Workspaces stays empty for this id.</td></tr>}
+            {(o.grids || []).length === 0 && <tr><td colSpan={4} className="empty">No grids on this outcome. Grid view on the instance and report stays hidden for this id.</td></tr>}
           </tbody>
         </table>
       </div>

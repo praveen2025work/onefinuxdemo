@@ -12,7 +12,6 @@ const NAV = [
     { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
     { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
     { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
-    { to: '/workspaces', label: 'Workspaces', short: 'Grids', icon: 'grid' },
     { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
   ] },
   { grp: 'Guide', items: [

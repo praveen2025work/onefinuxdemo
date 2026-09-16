@@ -2,7 +2,7 @@
 
 Controller job on one instance: see the fold and destinations first, open a feed only when they want history, open Partner view for the kit embed, and open Grid view for configured lineage FlexGrids.
 
-Configured partner **workspaces** (investigation, close) live on the outcome as `grids` and render with MESCIUS Wijmo on `/workspaces`. On the **instance page** and the **report document** they open after **Grid view**. See [`step-grid.md`](step-grid.md).
+Configured partner **workspaces** (investigation, close) live on the outcome as `grids` and render with MESCIUS Wijmo after **Grid view** on the **instance page** and the **report document**. See [`step-grid.md`](step-grid.md).
 
 ## Intent
 
@@ -43,7 +43,7 @@ Fail-closed: unknown or unentitled instance → 404.
 
 GRID columns are derived from the events for that ref (or `report_source_id` on the destination). IFRAME uses **PartnerFrame**. Destinations on the instance are clickable the same way as feeds.
 
-FOBO seed: HELIX = IFRAME; FAS_MOTIF and PNL_AGENT = GRID of event-store rows. Investigation and close FlexGrids are outcome.grids; they mount after Grid view on the instance page and the report document, and always on Workspaces.
+FOBO seed: HELIX = IFRAME; FAS_MOTIF and PNL_AGENT = GRID of event-store rows. Investigation and close FlexGrids are outcome.grids; they mount after Grid view on the instance page and the report document.
 
 ## Files
 

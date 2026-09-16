@@ -190,7 +190,7 @@ CONSOLE_REQ = [
     ("REQ-CONSOLE-013", "Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields."),
     ("REQ-CONSOLE-014", "Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events."),
     ("REQ-CONSOLE-015", "The instance page shows the readiness fold and destinations first. Partner view frames the kit embed URL in an iframe after the operator clicks that control. The browser does not navigate to a new tab."),
-    ("REQ-CONSOLE-016", "GET /api/outcomes/definitions returns optional grids on each OutcomeDefinition. Each grid names id, title, endpoint, method, and params with from or value. The console binds those params from the current context and renders each grid with MESCIUS Wijmo FlexGrid on /workspaces. The instance page and the report document render those grids after the operator clicks Grid view. GET /api/stitch/instance/step-view returns kind GRID of event-store rows or kind IFRAME with embedUrl from destination surface data. Unentitled instances return 404."),
+    ("REQ-CONSOLE-016", "GET /api/outcomes/definitions returns optional grids on each OutcomeDefinition. Each grid names id, title, endpoint, method, and params with from or value. The console binds those params from the current context and renders each grid with MESCIUS Wijmo FlexGrid after the operator clicks Grid view on the instance page and on the report document. GET /api/stitch/instance/step-view returns kind GRID of event-store rows or kind IFRAME with embedUrl from destination surface data. Unentitled instances return 404."),
     ("REQ-CONSOLE-017", "The Event lifecycle page at /lifecycle shows the received request body, the event_store persist, and the next stitch or engine state for a selected event."),
 ]
 
@@ -379,7 +379,7 @@ def render() -> str:
     a("| --- | --- |")
     a("| Product | One Finance |")
     a("| Document | Specification |")
-    a("| Version | 1.5.2 |")
+    a("| Version | 1.5.3 |")
     a("| Date | 16 September 2026 |")
     a("| Owner | Praveen Kumar |")
     a("| Audience | Implementers, reviewers, architecture group |")
@@ -417,7 +417,7 @@ def render() -> str:
     a("")
     a("### 3.1 In scope")
     a("")
-    a("HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, outcome.grids with MESCIUS Wijmo FlexGrid on `/workspaces`, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.")
+    a("HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, outcome.grids with MESCIUS Wijmo FlexGrid after Grid view, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.")
     a("")
     a("### 3.2 Out of scope")
     a("")
@@ -444,7 +444,7 @@ def render() -> str:
     a("| Drive | Testing surface at `/drive` that starts simulator scenarios |")
     a("| Feed watch | Inbox folder of JSON files ingested through the same EventHubService as HTTP |")
     a("| Event lifecycle | Console walk of receive, persist, and next state for one fact |")
-    a("| Step grid | MESCIUS Wijmo FlexGrid on `/workspaces`, configured by OutcomeDefinition.grids |")
+    a("| Step grid | MESCIUS Wijmo FlexGrid after Grid view, configured by OutcomeDefinition.grids |")
     a("| SIGNED | Maker has signed off; COUNTERSIGN from a different actor is still open |")
     a("| REQ-ID | Functional requirement identifier |")
     a("| AC-ID | Acceptance criterion identifier with Given/When/Then |")
@@ -470,9 +470,9 @@ def render() -> str:
     a("")
     a("| Actor | Uses | Does not |")
     a("| --- | --- | --- |")
-    a("| Outcome user | `/outcomes`, `/workspaces`, `/instance/:id` | Head roll-ups, RTB replay |")
+    a("| Outcome user | `/outcomes`, `/instance/:id` | Head roll-ups, RTB replay |")
     a("| BU head / CIO / MD | `/board` | Sign-off or post |")
-    a("| Controller | `/reports`, `/workspaces`, document route | Drive buttons |")
+    a("| Controller | `/reports`, document route | Drive buttons |")
     a("| Maker | `/onboarding` | Treat Configuration as create |")
     a("| Owner / config | `/configuration` | Create on that page |")
     a("| RTB | `/operations`, `/monitoring` | Business sign-off |")
@@ -686,8 +686,7 @@ def render() -> str:
     a("| --- | --- |")
     a("| `/` | CONSOLE |")
     a("| `/product` `/architecture` `/guide` `/lifecycle` | CONSOLE |")
-    a("| `/board` `/outcomes` `/instance/:id` | FOLD, ACTION, OPERATE |")
-    a("| `/workspaces` | CONSOLE |")
+    a("| `/board` `/outcomes` `/instance/:id` | FOLD, ACTION, OPERATE, CONSOLE |")
     a("| `/reports` `/reports/:outcomeId/:cobDate/:region` | REPORTS |")
     a("| `/onboarding` `/configuration` | GOVERN |")
     a("| `/drive` | OPERATE |")
@@ -763,7 +762,7 @@ def render() -> str:
     a("")
     a("### 19.3 Surfaces")
     a("")
-    a("Home tells today's close. Board is the head table. My outcomes is the doer list. Workspaces renders outcome.grids in MESCIUS Wijmo FlexGrid. The instance page shows readiness fold and destinations first. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.")
+    a("Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.")
     a("")
     a("### 19.4 Mobile")
     a("")
