@@ -1,7 +1,7 @@
 import fs from 'fs';
 import puppeteer from 'puppeteer-core';
 
-const BASE = process.env.OFX_BASE || 'http://127.0.0.1:5173';
+const BASE = process.env.OFX_BASE || 'http://127.0.0.1:7091';
 const CDP = process.env.OFX_CDP || 'http://127.0.0.1:9567';
 const READY = '/tmp/ofx-tour-ready';
 const GO = '/tmp/ofx-rec-go';
@@ -38,7 +38,7 @@ function mark(id) {
 async function connect() {
   const browser = await puppeteer.connect({ browserURL: CDP, defaultViewport: null });
   const pages = await browser.pages();
-  const page = pages.find((p) => p.url().includes('5173')) || pages[pages.length - 1];
+  const page = pages.find((p) => p.url().includes('7091')) || pages[pages.length - 1];
   await page.bringToFront();
   return page;
 }

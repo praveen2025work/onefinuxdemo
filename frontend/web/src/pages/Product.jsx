@@ -29,7 +29,7 @@ const SCREENS = [
 
 const DIAGRAMS = [
   { source: dEnterprise, title: '1. Enterprise context', caption: 'Unchanged systems of record publish facts. The hub folds them. Entitled frontend/web is the only UX.' },
-  { source: dDeploy, title: '2. Deployment', caption: 'Three processes: console 5173, hub 7070 (REST + SSE), simulator 7081. Browser never touches a bus.' },
+  { source: dDeploy, title: '2. Deployment', caption: 'Three processes: console 7091, hub 7070 (REST + SSE), simulator 7081. Browser never touches a bus.' },
   { source: dSequence, title: '3. Event sequence', caption: 'Fact → translate → deterministic fold → ActionExecutor → outbox → SSE back to the console.' },
   { source: dModel, title: '4. Data model', caption: 'Stitch kit (sources, destinations, embed, userActions) plus the engine projection on the same event store.' },
   { source: dStitch, title: '5. Stitch states', caption: 'Human kit: NOT_YET → READY → CLEARED (or BLOCKED / DELAYED / ESCALATED). Sign-off is audited.' },
@@ -272,7 +272,7 @@ function StartTab() {
         <div className="panel-bd">
           <ol className="prod-ol">
             <li><b>API:</b> from the repo root run <span className="mono">./scripts/run.sh</span>. Hub is 7070, simulator is 7081. Do not open 7070 as the UI.</li>
-            <li><b>Console:</b> <span className="mono">cd frontend/web && npm install && npm run dev</span>. Open http://localhost:5173.</li>
+            <li><b>Console:</b> <span className="mono">cd frontend/web && npm install && npm run dev</span>. Open http://localhost:7091.</li>
             <li><b>Read the story:</b> <Link to="/product">Product</Link>, then <Link to="/architecture">Architecture</Link>. Then pick View → <b>Developer</b> if you want a shorter rail.</li>
             <li><b>First change:</b> open <Link to="/onboarding">Onboarding</Link>, submit the Month-end close example. That is <span className="mono">POST /api/outcomes/definitions</span> — no Java class.</li>
             <li><b>Prove it:</b> <Link to="/drive">Drive</Link> → Reset → one scenario. Watch <Link to="/monitoring">Monitoring</Link>. Switch View to <b>BU head</b> and open Board — Drive disappears from the rail on purpose.</li>
@@ -389,7 +389,7 @@ function WorksTab() {
             <tbody>
               <tr><td className="mono">onefinux-hub</td><td>7070</td><td>Event hub, translation, both folds, REST + SSE, outbox, audit. Not the UI.</td></tr>
               <tr><td className="mono">source-simulator</td><td>7081</td><td>Stands in for Motif, SAP, Helix, Axiom. Drive scenarios land here.</td></tr>
-              <tr><td className="mono">frontend/web</td><td>5173</td><td>This console. Vite proxies /api → 7070 and /sim → 7081.</td></tr>
+              <tr><td className="mono">frontend/web</td><td>7091</td><td>This console. Vite proxies /api → 7070 and /sim → 7081.</td></tr>
             </tbody>
           </table>
         </div>
@@ -406,7 +406,7 @@ function ScreensTab() {
         <div className="panel-bd">
           <ol className="prod-ol">
             <li><b>API only:</b> <span className="mono">./scripts/run.sh</span> — hub 7070 + simulator 7081. Do not open 7070 as the product UI.</li>
-            <li><b>Console:</b> <span className="mono">cd frontend/web && npm install && npm run dev</span> — open http://localhost:5173.</li>
+            <li><b>Console:</b> <span className="mono">cd frontend/web && npm install && npm run dev</span> — open http://localhost:7091.</li>
             <li><b>Drive:</b> open <Link to="/drive">/drive</Link>, click Reset, then one scenario. Watch Board and Reports.</li>
             <li><b>Stop:</b> <span className="mono">./scripts/stop.sh</span>, then Ctrl+C Vite. Docker: <span className="mono">docker compose up --build</span> → console :8080.</li>
           </ol>

@@ -14,6 +14,8 @@ ROOT = Path(__file__).resolve().parents[1]
 WEB_CONFIG = ROOT / "frontend" / "web" / "public" / "web.config"
 README = ROOT / "README.md"
 START = ROOT / "docs" / "design" / "start.md"
+RUN_CMD = ROOT / "scripts" / "run.cmd"
+CONSOLE_CMD = ROOT / "scripts" / "console.cmd"
 WINDOWS = ROOT / "scripts" / "windows"
 REQUIRED_SCRIPTS = (
     "build-demo.cmd",
@@ -116,12 +118,54 @@ def main() -> int:
     ):
         if token not in readme:
             fail(f"README.md must document {token}")
+    if r"scripts\console.cmd" not in readme:
+        fail(r"README.md must document scripts\console.cmd")
+    if "7091" not in readme:
+        fail("README.md must document the console on 7091")
+    if "http://localhost:5173" in readme:
+        fail("README.md must not send the local console to 5173")
     ok("README.md has numbered Windows local and hosted steps")
 
     start = START.read_text(encoding="utf-8")
     if "scripts\\windows\\build-demo.cmd" not in start and "Windows hosted demo" not in start:
         fail("docs/design/start.md must point at the Windows host path")
+    if "7091" not in start:
+        fail("docs/design/start.md must open the console on 7091")
     ok("docs/design/start.md points at the Windows path")
+
+    if not RUN_CMD.is_file():
+        fail("missing scripts/run.cmd")
+    run = RUN_CMD.read_text(encoding="utf-8")
+    if "\u2014" in run or "\u2013" in run:
+        fail("run.cmd must use ASCII only; cmd.exe garbles em-dash")
+    if "console.cmd" not in run:
+        fail("run.cmd must start scripts\\console.cmd for the product UI")
+    if "7091" not in run:
+        fail("run.cmd must print the UI on 7091")
+    if "http://localhost:5173" in run:
+        fail("run.cmd must not send the UI to 5173")
+    ok("scripts/run.cmd starts Java and opens the console on 7091")
+
+    if not CONSOLE_CMD.is_file():
+        fail("missing scripts/console.cmd")
+    console = CONSOLE_CMD.read_text(encoding="utf-8")
+    if "7091" not in console:
+        fail("console.cmd must start the UI on 7091")
+    if "npm run dev" not in console:
+        fail("console.cmd must run npm run dev")
+    if "http://localhost:5173" in console:
+        fail("console.cmd must not use 5173")
+    ok("scripts/console.cmd serves the product UI on 7091")
+
+    vite = (ROOT / "frontend" / "web" / "vite.config.js").read_text(encoding="utf-8")
+    if "port: 7091" not in vite:
+        fail("vite.config.js must bind the console to 7091")
+    if "strictPort: true" not in vite:
+        fail("vite.config.js must set strictPort so a busy 7091 fails instead of hopping")
+    if "port: 5173" in vite:
+        fail("vite.config.js must not bind 5173")
+    ok("frontend/web/vite.config.js listens on 7091")
+
     print("Windows IIS + NSSM host files are in place.")
     return 0
 

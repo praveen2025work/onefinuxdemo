@@ -5,7 +5,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Allow the React console dev server (Vite on 5173) to call the hub during local development.
+ * Allow the React console dev server (Vite on 7091) to call the hub during local development.
  * In the bank the console is served same-origin behind the gateway, so this is a local-only affordance.
  */
 @Configuration

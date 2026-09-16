@@ -1,8 +1,8 @@
 @echo off
-REM Build and start the One Finance hub and source simulator on Windows.
-REM Does not start the React console — that is a second terminal: cd frontend\web && npm run dev
+REM Build and start the One Finance hub, simulator, and React console on Windows.
 REM Usage: scripts\run.cmd [--no-build]
-REM        set HUB_PORT=7090 & set SIM_PORT=7091 & scripts\run.cmd   (if 7070/7081 are taken)
+REM        set HUB_PORT=7090 & set SIM_PORT=7092 & scripts\run.cmd   (if 7070/7081 are taken)
+REM Safe to run from the repo root or from the scripts folder.
 setlocal
 cd /d "%~dp0.."
 if not exist logs mkdir logs
@@ -10,8 +10,9 @@ if "%HUB_PORT%"=="" set HUB_PORT=7070
 if "%SIM_PORT%"=="" set SIM_PORT=7081
 
 if /i not "%~1"=="--no-build" (
-  echo Building ^(Java 21 + Maven 3.9 required^)...
-  call mvn -q -DskipTests=false package || exit /b 1
+  echo Building Java ^(Java 21 + Maven 3.9 required^)...
+  REM Skip unit tests on the demo start path so a leftover WARN does not look like a failed boot. CI runs mvn verify.
+  call mvn -q -DskipTests package || exit /b 1
 )
 
 start "onefinux-hub" /min cmd /c "java -Dserver.port=%HUB_PORT% -Donefinux.public-url=http://localhost:%HUB_PORT% -Donefinux.simulator-url=http://localhost:%SIM_PORT% -jar onefinux-hub\target\onefinux-hub-0.1.0-SNAPSHOT.jar > logs\hub.log 2>&1"
@@ -29,9 +30,15 @@ exit /b 1
 
 :ready
 echo.
-echo Hub API:   http://localhost:%HUB_PORT%  ^(REST + SSE — not the product UI^)
-echo Simulator: http://localhost:%SIM_PORT%/sim/scenarios
-echo Console:   cd frontend\web ^&^& npm install ^&^& npm run dev
-echo            then open http://localhost:5173  Drive: /drive
-echo Stop:      close the two minimised windows titled onefinux-hub and source-simulator.
-echo Hosted:    scripts\windows\build-demo.cmd  then elevated install-nssm.ps1 and install-iis-site.ps1
+echo Hub is up. This prompt coming back is success.
+echo Java is running in two minimised windows: onefinux-hub and source-simulator.
+echo   API         http://localhost:%HUB_PORT%   REST + SSE, not the product UI
+echo   Simulator   http://localhost:%SIM_PORT%/sim/scenarios
+echo.
+echo Starting the product UI in a window titled onefinux-console...
+start "onefinux-console" cmd /k call "%~dp0console.cmd"
+echo When that window prints Local, open http://localhost:7091
+echo Drive: http://localhost:7091/drive
+echo Stop:  close onefinux-hub, source-simulator, and onefinux-console.
+endlocal
+cd /d "%~dp0.."

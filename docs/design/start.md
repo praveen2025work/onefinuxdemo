@@ -17,8 +17,8 @@ Two models share one event backbone:
 
 ## Start in two terminals
 
-1. `./scripts/run.sh` — hub **7070** (API only) + simulator **7081**. Do not open 7070 as the UI. Windows local: `scripts\run.cmd` (full list in README §8).
-2. `cd frontend/web && npm install && npm run dev` — console **http://localhost:5173**.
+1. `./scripts/run.sh` — hub **7070** (API only) + simulator **7081**. Do not open 7070 as the UI. Windows local: `scripts\run.cmd` starts Java **and** the console window (README §8). The prompt returning after **Hub is up** is success.
+2. Console **http://localhost:7091** — macOS/Linux: `cd frontend/web && npm install && npm run dev`. Windows: `run.cmd` already opened `onefinux-console`; to start it alone use `scripts\console.cmd` (do not `cd frontend\web` from inside `scripts\`).
 3. **Windows hosted demo** (IIS No Managed Code + NSSM Java services, no Vite): `scripts\windows\build-demo.cmd`, then elevated `install-nssm.ps1` and `install-iis-site.ps1`. Open **http://localhost:8080**. README §9.
 4. Left rail **Guide** — Product, Architecture, Developer guide. Or top bar → **View** → **Developer** if you want a shorter operate/build rail.
 5. **Onboarding** — submit the Month-end close example. That is `POST /api/outcomes/definitions`. No new Java type.

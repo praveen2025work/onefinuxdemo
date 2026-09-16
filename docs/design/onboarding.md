@@ -40,7 +40,7 @@ API call against `onefinux-hub` (port 7070). No screen invents an id.
 # Terminal 1 — API only (do not open 7070 as the product UI)
 ./scripts/run.sh                     # hub 7070 + simulator 7081
 # Terminal 2 — React console
-cd frontend/web && npm install && npm run dev   # http://localhost:5173
+cd frontend/web && npm install && npm run dev   # http://localhost:7091
 ```
 
 The hub seeds `REV-ACC` + the `FOBO` kit + the two demo instances on first boot (Flyway in
