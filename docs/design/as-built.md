@@ -18,11 +18,11 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |
 | `/reports` | Engine outcomes + 15C3 five-stage flow + predicted ready; Normal / Compact / Table layouts | Scenario buttons |
-| `/reports/:outcomeId/:cobDate/:region` | The produced report document (open from any Reports layout) | Drive / generate |
+| `/reports/:outcomeId/:cobDate/:region` | Produced report document plus lineage Wijmo grids | Drive / generate |
 | `/board` | Unit traffic lights for CIO / MD / BU head | Sign-off / post |
 | `/outcomes` | Doer's card worklist | Head roll-ups or RTB queues |
 | `/workspaces` | MESCIUS Wijmo FlexGrid from outcome.grids | Hub proxy of partner APIs |
-| `/instance/:id` | Fold (click a feed for history) + accounting item + in-shell partner iframe + kit-declared actions | Invent verbs not on the kit; open Helix in a new tab |
+| `/instance/:id` | Primary kit embed iframe + lineage Wijmo grids + fold + accounting item + kit-declared actions | Invent verbs not on the kit; open Helix in a new tab |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | Sign off a rec or publish a kit |
 | `/monitoring` | Ingest / outbox / audit | Business sign-off |
 

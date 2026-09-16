@@ -189,8 +189,8 @@ CONSOLE_REQ = [
     ("REQ-CONSOLE-012", "Dropdown options for group unit, COB, and region come from hub APIs; the console does not invent those ids."),
     ("REQ-CONSOLE-013", "Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields."),
     ("REQ-CONSOLE-014", "Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events."),
-    ("REQ-CONSOLE-015", "Open partner screen renders the kit embed URL as an iframe in the console and does not navigate to a new tab."),
-    ("REQ-CONSOLE-016", "GET /api/outcomes/definitions returns optional grids on each OutcomeDefinition. Each grid names id, title, endpoint, method, and params with from or value. The console Workspaces page at /workspaces binds those params from the current context and renders each grid with MESCIUS Wijmo FlexGrid by fetching the configured endpoint. GET /api/stitch/instance/step-view returns kind GRID of event-store rows or kind IFRAME with embedUrl from destination surface data. Unentitled instances return 404."),
+    ("REQ-CONSOLE-015", "The instance page frames the kit embed URL as the primary surface in an iframe. The browser does not navigate to a new tab."),
+    ("REQ-CONSOLE-016", "GET /api/outcomes/definitions returns optional grids on each OutcomeDefinition. Each grid names id, title, endpoint, method, and params with from or value. The console binds those params from the current context and renders each grid with MESCIUS Wijmo FlexGrid on /workspaces, on the instance page, and on the report document, by fetching the configured endpoint. GET /api/stitch/instance/step-view returns kind GRID of event-store rows or kind IFRAME with embedUrl from destination surface data. Unentitled instances return 404."),
     ("REQ-CONSOLE-017", "The Event lifecycle page at /lifecycle shows the received request body, the event_store persist, and the next stitch or engine state for a selected event."),
 ]
 
@@ -215,8 +215,8 @@ CONSOLE_AC = [
     ac("AC-CONSOLE-18", "REQ-CONSOLE-012", "GET /api/stitch/context returns group units and cobDates", "the top-bar Group unit and date controls render", "every option value equals a value from that API"),
     ac("AC-CONSOLE-19", "REQ-CONSOLE-017", "an event is stored in event_store", "the operator opens /lifecycle", "the page shows the request fields, the event_store persist, and the next stitch or engine state"),
     ac("AC-CONSOLE-20", "REQ-CONSOLE-014", "instance R-2031 has CATS and MOTIF facts stored", "the operator opens the instance page", "the Facts for this instance table is not shown until a feed is clicked"),
-    ac("AC-CONSOLE-21", "REQ-CONSOLE-015", "the instance kit has an embed URL", "the operator clicks Open partner screen", "the partner document loads in an iframe on the instance page and the browser does not open a new tab"),
-    ac("AC-CONSOLE-22", "REQ-CONSOLE-016", "FOBO_HELIX grids include investigation at /sim/grids/investigation and close at /sim/grids/close", "the operator opens /workspaces and selects FOBO_HELIX", "the console binds cobDate, region, and groupUnitId from the header context onto those endpoints and each result renders in a MESCIUS Wijmo FlexGrid"),
+    ac("AC-CONSOLE-21", "REQ-CONSOLE-015", "the instance kit has an embed URL", "the operator opens the instance page", "the partner document is visible in an iframe without a further click and the browser does not open a new tab"),
+    ac("AC-CONSOLE-22", "REQ-CONSOLE-016", "FOBO_HELIX grids include investigation at /sim/grids/investigation and close at /sim/grids/close", "the operator opens the FOBO instance page and the FOBO_HELIX report document", "both pages render those grids in a MESCIUS Wijmo FlexGrid bound from the current context"),
     ac("AC-CONSOLE-23", "REQ-CONSOLE-013", "instance R-2031 carries amount 12450000 and account 410000", "the operator opens Board and the instance page", "both surfaces show the amount and the instance page shows account, journalId, and fsLine from REQ-ACTION-013"),
 ]
 
@@ -379,7 +379,7 @@ def render() -> str:
     a("| --- | --- |")
     a("| Product | One Finance |")
     a("| Document | Specification |")
-    a("| Version | 1.5.0 |")
+    a("| Version | 1.5.1 |")
     a("| Date | 16 September 2026 |")
     a("| Owner | Praveen Kumar |")
     a("| Audience | Implementers, reviewers, architecture group |")
@@ -763,7 +763,7 @@ def render() -> str:
     a("")
     a("### 19.3 Surfaces")
     a("")
-    a("Home tells today's close. Board is the head table. My outcomes is the doer list. Workspaces renders outcome.grids in MESCIUS Wijmo FlexGrid. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.")
+    a("Home tells today's close. Board is the head table. My outcomes is the doer list. Workspaces, the instance page, and the report document render outcome.grids in MESCIUS Wijmo FlexGrid. The instance page frames the kit embed as the primary surface. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.")
     a("")
     a("### 19.4 Mobile")
     a("")
