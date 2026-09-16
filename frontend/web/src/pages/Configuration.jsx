@@ -24,6 +24,7 @@ export default function Configuration() {
   const [kits, setKits] = useState(null);
   const [groupUnits, setGroupUnits] = useState([]);
   const [defs, setDefs] = useState([]);
+  const [defsReady, setDefsReady] = useState(false);
   const [views, setViews] = useState([]);
   const [sel, setSel] = useState(null); // { type: 'outcome' | 'kit', id }
   const [kitDetail, setKitDetail] = useState(null);
@@ -43,15 +44,17 @@ export default function Configuration() {
     ]);
     setDefs(d);
     setViews(v);
+    setDefsReady(true);
   }, []);
   useEffect(() => { loadOutcomes(); }, [loadOutcomes]);
 
-  // Default selection once data lands: first outcome, else first kit.
+  // Default selection once both catalogs land: first outcome (grids live there), else first kit.
   useEffect(() => {
     if (sel) return;
+    if (!kits || !defsReady) return;
     if (defs.length) setSel({ type: 'outcome', id: defs[0].id });
-    else if (kits && kits.length) setSel({ type: 'kit', id: kits[0].kitId });
-  }, [defs, kits, sel]);
+    else if (kits.length) setSel({ type: 'kit', id: kits[0].kitId });
+  }, [defs, kits, sel, defsReady]);
 
   // Load kit binding only when a kit is selected.
   useEffect(() => {
