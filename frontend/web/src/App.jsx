@@ -12,6 +12,7 @@ import Reports from './pages/Reports.jsx';
 import ReportDocument from './pages/ReportDocument.jsx';
 import Drive from './pages/Drive.jsx';
 import Lifecycle from './pages/Lifecycle.jsx';
+import Workspaces from './pages/Workspaces.jsx';
 import Product, { ArchitecturePage, GuidePage } from './pages/Product.jsx';
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/lifecycle" element={<Lifecycle />} />
         <Route path="/board" element={<Board />} />
         <Route path="/outcomes" element={<Outcomes />} />
+        <Route path="/workspaces" element={<Workspaces />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/reports/:outcomeId/:cobDate/:region" element={<ReportDocument />} />
         <Route path="/instance/:id" element={<InstanceDetail />} />

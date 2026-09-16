@@ -88,6 +88,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/reports/:outcomeId/:cobDate/:region` | Produced report document | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
+| `/workspaces` | MESCIUS Wijmo FlexGrid from `outcome.grids` (endpoint + params) | Controller |
 | `/instance/:id` | Fold (click feed for history), in-shell iframe, sign-off / post / kit-declared actions | Outcome user |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
 | `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |

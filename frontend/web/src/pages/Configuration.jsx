@@ -13,17 +13,6 @@ function slaText(sla) {
   return '—';
 }
 
-function paramPreview(json) {
-  if (!json) return '';
-  try {
-    const spec = typeof json === 'string' ? JSON.parse(json) : json;
-    if (!Array.isArray(spec)) return '';
-    return spec.map((p) => p.name + (p.from ? '←' + p.from : '=' + p.value)).join(' · ');
-  } catch {
-    return '';
-  }
-}
-
 const RANK = { COMPLETED: 6, READY: 5, ACTION_RUNNING: 4, IN_PROGRESS: 3, BLOCKED: 2, NOT_STARTED: 1 };
 function repStatus(views) {
   if (!views.length) return 'NOT_STARTED';
@@ -231,6 +220,22 @@ function OutcomeDetail({ o, live }) {
             {(o.dependencies || []).length === 0 && <tr><td colSpan={4} className="empty">No feeds declared.</td></tr>}
           </tbody>
         </table>
+
+        <div className="cfg-sub" style={{ marginTop: 14 }}>Grids <span className="muted">(console fetches these endpoints; hub does not proxy)</span></div>
+        <table className="tbl">
+          <thead><tr><th>Grid</th><th>Endpoint</th><th>Method</th><th>Parameters</th></tr></thead>
+          <tbody>
+            {(o.grids || []).map((g) => (
+              <tr key={g.id}>
+                <td className="lead">{g.title || g.id}<div className="sec mono">{g.id}</div></td>
+                <td className="mono">{g.endpoint}</td>
+                <td><span className="chip">{g.method || 'GET'}</span></td>
+                <td className="sec">{(g.params || []).map((p) => p.name + (p.from ? '←' + p.from : (p.value != null ? '=' + p.value : ''))).join(' · ') || '—'}</td>
+              </tr>
+            ))}
+            {(o.grids || []).length === 0 && <tr><td colSpan={4} className="empty">No grids on this outcome. Workspaces stays empty for this id.</td></tr>}
+          </tbody>
+        </table>
       </div>
     </>
   );
@@ -277,24 +282,16 @@ function KitDetail({ loading, kit, detail, embed }) {
           <div>
             <div className="cfg-sub">Destinations <span className="muted">({(detail.destinations || []).length})</span></div>
             <table className="tbl">
-              <thead><tr><th>Step</th><th>Destination</th><th>Surface</th><th>Grid API</th></tr></thead>
+              <thead><tr><th>Step</th><th>Destination</th><th>Surface</th></tr></thead>
               <tbody>
                 {(detail.destinations || []).map((d) => (
                   <tr key={d.destId}>
                     <td className="mono">{d.stepOrder}</td>
                     <td className="mono lead">{d.destId}<div className="sec">{d.displayName}</div></td>
                     <td><span className="chip">{d.surface || d.actionType}</span></td>
-                    <td>
-                      {d.gridEndpoint ? (
-                        <>
-                          <span className="mono">{d.gridMethod || 'GET'} {d.gridEndpoint}</span>
-                          <div className="sec">{paramPreview(d.gridParamsJson)}</div>
-                        </>
-                      ) : <span className="muted">events</span>}
-                    </td>
                   </tr>
                 ))}
-                {(detail.destinations || []).length === 0 && <tr><td colSpan={4} className="empty">No destinations bound.</td></tr>}
+                {(detail.destinations || []).length === 0 && <tr><td colSpan={3} className="empty">No destinations bound.</td></tr>}
               </tbody>
             </table>
           </div>

@@ -226,9 +226,10 @@ export default function InstanceDetail() {
                       onClick={() => loadStep(d.destId)}
                       style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit' }}>
                       <span className="chip">step {d.stepOrder}</span>
-                      <b>{d.destId}</b>
+                      <b>{d.displayName || d.destId}</b>
+                      <span className="mono sec">{d.destId}</span>
                       <span className="muted" style={{ marginLeft: 'auto' }}>
-                        {d.surface === 'IFRAME' ? 'iframe' : (d.gridEndpoint ? 'grid api' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType))}
+                        {d.surface === 'IFRAME' ? 'iframe' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType)}
                       </span>
                     </button>
                     {open && (

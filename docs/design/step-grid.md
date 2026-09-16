@@ -1,58 +1,57 @@
-# Step grids: generic table, configured endpoint
+# Step grids: MESCIUS Wijmo, configured on the outcome
 
-Controller job: open investigation or close on an instance and see partner data in one GenericGrid. Each kit step names its own API and request parameters. One Finance does not rebuild Motif, Helix, or SAP screens.
+Controller job: open Workspaces and see investigation or close data in a licensed MESCIUS Wijmo FlexGrid. Each **outcome definition** names its own API and request parameters. The console binds those parameters and fetches. The hub does not proxy partner APIs. One Finance does not rebuild Motif, Helix, or SAP screens.
 
 ## Intent
 
-Copilot’s One Fin UX workspaces (investigation, close and sign-off, journals, exceptions) land here as **data**. A kit destination that is `GRID` may declare:
+Copilot’s One Fin UX workspaces (investigation, close and sign-off) land here as **data on the outcome**. `OutcomeDefinition.grids` may declare:
 
-- `grid_endpoint` — HTTP path the hub calls (simulator `/sim/grids/{name}` in the POC)
-- `grid_method` — `GET` or `POST`
-- `grid_params_json` — list of `{ name, from | value }`
+- `id` / `title` — tab on `/workspaces`
+- `endpoint` — HTTP path the **console** calls (simulator `/sim/grids/{name}` in the POC)
+- `method` — `GET` or `POST`
+- `params` — list of `{ name, from | value }`
 
-`from` is a field on the instance context envelope: `cobDate`, `region`, `groupUnitId`, `kitId`, `instanceId`, `sliceKey`, `account`, `journalId`, `amount`, `fsLine`, `runId`, `status`, `namedBlocker`. `value` is a literal.
+`from` is a field on the current context envelope: `cobDate`, `region`, `groupUnitId`, `kitId`, `instanceId`, `sliceKey`, `account`, `journalId`, `amount`, `fsLine`, `runId`, `status`, `namedBlocker`. `value` is a literal and wins when set.
 
-The hub binds those parameters and fetches. The console renders one **GenericGrid**. Wijmo FlexGrid stays later (analyst studio). Phase 1 uses GenericGrid.
+The console binds those parameters and fetches. Each result renders in **MESCIUS Wijmo FlexGrid**. License key is `VITE_WIJMO_LICENSE` (eval watermark is allowed when unset).
 
 ## What this is not
 
-- Not Wijmo analyst studio
+- Not a hub HTTP client or `StepGridClient`
+- Not kit_destination as the config source (Flyway V8 columns may exist unused)
 - Not a rebuilt Motif / Helix / SAP UI
-- Not the browser calling partner APIs (CORS, secrets)
-- Not `if (FOBO)` — FOBO seed is kit_destination rows
+- Not Wijmo analyst studio (pivot / chart)
+- Not `if (FOBO)` — FOBO seed is YAML `grids` on `FOBO_HELIX`
 - Not Kafka in the browser
 
 ## Surface
 
-`GET /api/stitch/instance/step-view?id=&ref=` stays the only console call.
+`GET /api/outcomes/definitions` returns `grids` with the rest of the outcome. `/workspaces` is the operator surface.
 
-| Destination data | Result |
+| Source | Result |
 |---|---|
-| `surface = IFRAME` | kit embed, unchanged |
-| `surface = GRID` and `grid_endpoint` set | hub GET/POST, return `{ kind: GRID, columns, rows, query }` |
-| `surface = GRID` and no endpoint | event-store rows as today (`report_source_id`) |
-| source id (feed click) | event-store rows as today |
+| Outcome has `grids` | Workspaces lists that outcome; each grid is a FlexGrid |
+| Outcome has no `grids` | Workspaces omits that outcome |
+| Instance fold / destinations | Unchanged: `GET /api/stitch/instance/step-view` is event-store GRID or IFRAME |
 
-`query` is `{ endpoint, method, params }` so the instance page can show the bound call. Fail-closed: unentitled instance → 404. Endpoints must resolve under the configured simulator base and path `/sim/…`.
+Bound query chips show method, endpoint, and params. Fail-closed stitch instances still return 404. Simulator `/sim/grids/{name}` is a partner JSON stub, not a rebuilt screen.
 
-## Seed (FOBO)
+## Seed (FOBO_HELIX)
 
-| Step | dest_id | Endpoint | Params from instance |
-|---|---|---|---|
-| 1 | HELIX | (iframe) | — |
-| 2 | FAS_MOTIF | `/sim/grids/investigation` | cobDate, region, groupUnitId, account, journalId |
-| 3 | PNL_AGENT | `/sim/grids/close` | cobDate, region, groupUnitId, status |
+| Grid id | Endpoint | Params from context |
+|---|---|---|
+| investigation | `/sim/grids/investigation` | cobDate, region, groupUnitId, account, journalId |
+| close | `/sim/grids/close` | cobDate, region, groupUnitId, status |
 
-Simulator catalogues those names. A new workspace is a new `/sim/grids/{name}` plus a `kit_destination` row — no Java type.
+A new workspace is a new `/sim/grids/{name}` plus a YAML `grids` entry — no Java type.
 
 ## Files
 
 | Area | Change |
 |---|---|
-| Flyway `V8` | `kit_destination.grid_endpoint`, `grid_method`, `grid_params_json` |
-| `StepGridBinder` | Bind `from` / `value` onto the instance envelope |
-| `StepGridClient` | Resolve `/sim/…` against `onefinux.simulator-url` |
-| `StitchService.stepView` | Prefer configured fetch for GRID destinations |
-| Simulator | `GET /sim/grids/{name}` investigation and close payloads |
-| Console | GenericGrid shows bound query; Configuration lists endpoint + params |
+| `OneFinUxProperties.OutcomeDefinition` | Optional `grids` (`GridStep`, `GridParam`) |
+| `application.yml` | FOBO_HELIX investigation and close |
+| Console | `WijmoGrid.jsx`, `bindGridParams.js`, `/workspaces` |
+| Configuration | Outcome anatomy lists grids |
+| Simulator | `GET /sim/grids/{name}` investigation and close payloads (unchanged stubs) |
 | Spec | REQ-CONSOLE-016 / AC-CONSOLE-22 remap |

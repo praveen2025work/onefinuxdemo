@@ -152,6 +152,35 @@ onefinux:
         target: helix
         completion-event: HELIX_ANALYSIS_COMPLETE
         action-label: Helix analysis
+      grids:
+        - id: investigation
+          title: Investigation
+          endpoint: /sim/grids/investigation
+          method: GET
+          params:
+            - name: cobDate
+              from: cobDate
+            - name: region
+              from: region
+            - name: groupUnitId
+              from: groupUnitId
+            - name: account
+              from: account
+            - name: journalId
+              from: journalId
+        - id: close
+          title: Close and sign-off
+          endpoint: /sim/grids/close
+          method: GET
+          params:
+            - name: cobDate
+              from: cobDate
+            - name: region
+              from: region
+            - name: groupUnitId
+              from: groupUnitId
+            - name: status
+              from: status
 
     - id: REPORT_15C3
       name: 15C3 report

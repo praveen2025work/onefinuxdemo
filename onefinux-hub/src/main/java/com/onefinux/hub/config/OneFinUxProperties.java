@@ -47,12 +47,21 @@ public record OneFinUxProperties(
             String ownerGroup,
             Sla sla,
             List<DependencyDefinition> dependencies,
-            OnReady onReady) {
+            OnReady onReady,
+            List<GridStep> grids) {
 
         public OutcomeDefinition {
             regions = regions == null || regions.isEmpty() ? List.of("GLOBAL") : List.copyOf(regions);
             dependencies = dependencies == null ? List.of() : List.copyOf(dependencies);
             sla = sla == null ? new Sla(null, 0, null) : sla;
+            grids = grids == null ? List.of() : List.copyOf(grids);
+        }
+
+        /** Existing 8-arg call sites keep compiling; grids default to empty. */
+        public OutcomeDefinition(String id, String name, String question, List<String> regions,
+                                 String ownerGroup, Sla sla, List<DependencyDefinition> dependencies,
+                                 OnReady onReady) {
+            this(id, name, question, regions, ownerGroup, sla, dependencies, onReady, List.of());
         }
 
         public int expectedTotal() {
@@ -83,6 +92,21 @@ public record OneFinUxProperties(
     }
 
     public record OnReady(String action, String target, String completionEvent, String actionLabel) {
+    }
+
+    /**
+     * Console-only grid step. The UI binds {@code params} from context and fetches {@code endpoint}.
+     * The hub does not proxy this call.
+     */
+    public record GridStep(String id, String title, String endpoint, String method, List<GridParam> params) {
+        public GridStep {
+            method = method == null || method.isBlank() ? "GET" : method;
+            params = params == null ? List.of() : List.copyOf(params);
+        }
+    }
+
+    /** {@code from} names a context field; {@code value} is a literal that wins when set. */
+    public record GridParam(String name, String from, String value) {
     }
 
     public record ActionTarget(String url) {

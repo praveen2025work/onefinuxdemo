@@ -8,9 +8,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test dev-proxy.test.js"
+    "test": "node --test dev-proxy.test.js src/lib/bindGridParams.test.js"
   },
   "dependencies": {
+    "@mescius/wijmo": "^5.20261.52",
+    "@mescius/wijmo.grid": "^5.20261.52",
+    "@mescius/wijmo.react.grid": "^5.20261.52",
+    "@mescius/wijmo.styles": "^5.20261.52",
     "mermaid": "^11.17.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

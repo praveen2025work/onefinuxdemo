@@ -2,15 +2,17 @@
 
 Controller job on one instance: see the fold, open a feed only when they want history, stay in this app for the partner screen, and pull a step report into a generic grid or an iframe.
 
+Configured partner **workspaces** (investigation, close) are not fetched by the hub. They live on the outcome as `grids` and render on `/workspaces` with MESCIUS Wijmo. See [`step-grid.md`](step-grid.md).
+
 ## Intent
 
-The instance page is the operating surface. The fold stays sparse. Event history is behind a click on each feed. Partner work stays in-shell as an iframe. After a step, the UI asks the hub for a report payload: **GRID** (plain table) or **IFRAME** (custom screen). No `if (FOBO)`. Destination `surface` is data.
+The instance page is the operating surface. The fold stays sparse. Event history is behind a click on each feed. Partner work stays in-shell as an iframe. After a step, the UI asks the hub for a report payload: **GRID** (event-store table) or **IFRAME** (custom screen). No `if (FOBO)`. Destination `surface` is data.
 
 ## What this is not
 
 - Not a second facts table always on screen
 - Not `target=_blank` for Helix
-- Not Wijmo
+- Not a hub proxy of partner grid APIs
 - Not rebuilding Motif / Helix in `frontend/web`
 - Not Kafka in the browser
 
@@ -33,23 +35,19 @@ Fail-closed: unknown or unentitled instance → 404.
 | `destination_system.surface` | Result |
 |---|---|
 | `IFRAME` | `{ kind: "IFRAME", title, embedUrl, allowedOrigin, ref }` |
-| `GRID` (or a source id) | `{ kind: "GRID", title, columns[], rows[], ref }` — from `event_store` unless the kit destination names `grid_endpoint` |
-| `GRID` + `grid_endpoint` | Hub binds `grid_params_json` from the instance context, GET/POST that path, return columns/rows plus `query` |
+| `GRID` (or a source id) | `{ kind: "GRID", title, columns[], rows[], ref }` from `event_store` |
 | no rows | `{ kind: "NONE", ref }` |
 
-GRID columns are derived from the events for that ref (or `report_source_id` on the destination) when no endpoint is set. A configured endpoint is the partner API; One Finance renders one **GenericGrid**. IFRAME uses **PartnerFrame**. Destinations on the instance are clickable the same way as feeds.
+GRID columns are derived from the events for that ref (or `report_source_id` on the destination). IFRAME uses **PartnerFrame**. Destinations on the instance are clickable the same way as feeds.
 
-FOBO seed: HELIX = IFRAME; FAS_MOTIF = GRID `GET /sim/grids/investigation`; PNL_AGENT = GRID `GET /sim/grids/close`.
-
-See [`step-grid.md`](step-grid.md).
+FOBO seed: HELIX = IFRAME; FAS_MOTIF and PNL_AGENT = GRID of event-store rows. Investigation and close FlexGrids are outcome.grids on Workspaces.
 
 ## Files
 
 | Area | Change |
 |---|---|
 | Flyway `V7` | `destination_system.surface`, `report_source_id`; FOBO embed → `/sim/screens/helix` |
-| Flyway `V8` | `kit_destination.grid_endpoint`, `grid_method`, `grid_params_json` |
 | `StitchService.stepView` | Entitled GRID / IFRAME / NONE |
 | Simulator | Embedded Helix stub, no masthead |
-| Console | Click-to-expand fold; GenericGrid; PartnerFrame in-app |
+| Console | Click-to-expand fold; GenericGrid for event history; PartnerFrame in-app |
 | Spec | REQ-CONSOLE-014..016 (remap AC-CONSOLE-20..22) |
