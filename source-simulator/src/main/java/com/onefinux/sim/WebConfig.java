@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/** Lets the One Finance board's demo buttons start scenarios here. */
+/** Lets the One Finance console's Drive buttons reach this simulator. Exact origins only. */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
@@ -16,10 +16,12 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // The configured origin (the hub, when the console is served same-origin) plus any localhost port,
-        // so the dev console's scenario buttons work whichever Vite port they land on (7091, ...).
+        String[] origins = properties.allowedOrigins().toArray(String[]::new);
+        if (origins.length == 0) {
+            return;
+        }
         registry.addMapping("/sim/**")
-                .allowedOriginPatterns(properties.allowedOrigin(), "http://localhost:*", "http://127.0.0.1:*")
+                .allowedOrigins(origins)
                 .allowedMethods("GET", "POST");
     }
 }

@@ -119,7 +119,7 @@ New-Item -ItemType Directory -Force -Path $logs | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $RepoRoot 'data') | Out-Null
 
 $hubParams = "-Dserver.port=$HubPort -Donefinux.public-url=http://localhost:$HubPort -Donefinux.simulator-url=http://localhost:$SimPort -jar `"$hubJar`""
-$simParams = "-Dserver.port=$SimPort -Dsim.hub-url=http://localhost:$HubPort -Dsim.allowed-origin=http://localhost:$HubPort -jar `"$simJar`""
+$simParams = "-Dserver.port=$SimPort -Dsim.hub-url=http://localhost:$HubPort -jar `"$simJar`""
 
 Set-NssmService -NssmExe $nssmExe -Name 'OneFinUxHub' `
     -DisplayName 'One Finance Hub' `

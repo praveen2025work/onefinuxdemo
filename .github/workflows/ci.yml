@@ -23,6 +23,8 @@ jobs:
           cache: maven
       - name: Build and test
         run: mvn -B verify
+      - name: CORS origins are an exact allowlist
+        run: python3 scripts/check_cors.py
       - name: Publish test report
         if: always()
         uses: actions/upload-artifact@v4
@@ -63,3 +65,5 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check Windows host enablement
         run: python3 scripts/check_windows_host.py
+      - name: CORS origins are an exact allowlist
+        run: python3 scripts/check_cors.py

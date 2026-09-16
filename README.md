@@ -174,7 +174,7 @@ Use this to **host** the app on a Windows demo machine: Java as Windows services
 
 **Does Java work as NSSM services?** Yes. Both jars run with `AppDirectory` = the repo root so H2 stays at `.\data\onefinux-hub`. Hub callbacks stay on `http://localhost:7070` (the simulator talks to the hub directly; the browser never does).
 
-Do **not** point the browser at 7070, and do **not** skip ARR and open the IIS site on one origin while calling 7070 on another. The console uses relative `/api` and `/sim`. Hub CORS allows only `http://localhost:*` and `http://127.0.0.1:*`. Same-origin ARR is the supported host path.
+Do **not** point the browser at 7070, and do **not** skip ARR and open the IIS site on one origin while calling 7070 on another. The console uses relative `/api` and `/sim`. Hub CORS is an exact allowlist (`http://localhost:7091` and `http://localhost:8080`, plus the `127.0.0.1` forms) — never a star origin and never any local port. Same-origin ARR is the supported host path.
 
 #### Prerequisites (hosted)
 
@@ -357,7 +357,7 @@ network where SSH to GitHub is blocked, switch the remote to HTTPS instead:
 
 - **`Database may be already in use`**: a previous hub is still shutting down and holding the H2 file lock. Wait a few seconds, or use `scripts/stop.sh`, which waits for exit. On Windows stop the minimised `onefinux-hub` window or `Stop-Service OneFinUxHub`.
 - **`release version 21 not supported`**: Maven is using an older JDK. Point `JAVA_HOME` at JDK 21.
-- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7092 ./scripts/run.sh` (see *Run it*). Do not move the simulator onto **7091** — that is the console. Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator. The Vite proxy in `frontend/web/vite.config.js` still points at 7070 / 7081 unless you edit it.
+- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7092 ./scripts/run.sh` (see *Run it*). Do not move the simulator onto **7091** — that is the console. Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port` and `sim.hub-url` on the simulator. CORS origins stay the exact console list in `application.yml` (`7091` / `8080`). The Vite proxy in `frontend/web/vite.config.js` still points at 7070 / 7081 unless you edit it.
 - **UI still on 5173 / port already in use**: the console is **7091** (`frontend/web/vite.config.js`, `strictPort`). Close the old Vite window and run `scripts\console.cmd`, or rerun `scripts\run.cmd`.
 - **IIS site loads but Drive / Board stay empty**: ARR proxy is off, or URL Rewrite is missing. The console calls relative `/api` and `/sim`. Enable proxy (README §9) and rerun `scripts\windows\check-host.ps1`.
 - **Live board never updates on IIS**: SSE is `/api/stream`. Confirm ARR **Enable proxy**, that `/api` compression is off in `web.config`, and that the hub service is running (`Get-Service OneFinUxHub`).

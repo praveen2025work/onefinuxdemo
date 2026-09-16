@@ -1,5 +1,6 @@
 package com.onefinux.hub.security;
 
+import com.onefinux.hub.config.CorsProperties;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,12 +12,9 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
-import java.util.List;
 
 /**
  * OAuth2 resource-server security.
@@ -32,9 +30,11 @@ import java.util.List;
 public class SecurityConfig {
 
     private final SecurityProperties props;
+    private final CorsProperties corsProperties;
 
-    public SecurityConfig(SecurityProperties props) {
+    public SecurityConfig(SecurityProperties props, CorsProperties corsProperties) {
         this.props = props;
+        this.corsProperties = corsProperties;
     }
 
     @Bean
@@ -67,13 +67,6 @@ public class SecurityConfig {
     }
 
     private CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
-        return source;
+        return HubCors.source(corsProperties);
     }
 }

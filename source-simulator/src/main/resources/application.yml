@@ -8,5 +8,10 @@ spring:
 sim:
   hub-url: http://localhost:7070
   zone: America/New_York
-  allowed-origin: http://localhost:7070
+  # Exact browser origins only — never a star origin, never any local port.
+  allowed-origins:
+    - http://localhost:7091
+    - http://127.0.0.1:7091
+    - http://localhost:8080
+    - http://127.0.0.1:8080
   downstream-seconds: 6

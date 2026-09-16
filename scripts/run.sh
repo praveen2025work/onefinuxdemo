@@ -16,7 +16,7 @@ fi
 
 java -Dserver.port="$HUB_PORT" -Donefinux.public-url="http://localhost:$HUB_PORT" -Donefinux.simulator-url="http://localhost:$SIM_PORT" -jar onefinux-hub/target/onefinux-hub-0.1.0-SNAPSHOT.jar > logs/hub.log 2>&1 &
 echo $! > logs/hub.pid
-java -Dserver.port="$SIM_PORT" -Dsim.hub-url="http://localhost:$HUB_PORT" -Dsim.allowed-origin="http://localhost:$HUB_PORT" -jar source-simulator/target/source-simulator-0.1.0-SNAPSHOT.jar > logs/sim.log 2>&1 &
+java -Dserver.port="$SIM_PORT" -Dsim.hub-url="http://localhost:$HUB_PORT" -jar source-simulator/target/source-simulator-0.1.0-SNAPSHOT.jar > logs/sim.log 2>&1 &
 echo $! > logs/sim.pid
 
 printf "Waiting for the hub"
