@@ -127,9 +127,14 @@ p { text-wrap: pretty; }
 .rail-user b { font-size: 12.5px; display: block; white-space: nowrap; color: var(--rail-ink); }
 .rail-user span { display: block; font-size: 10.5px; color: var(--rail-muted); white-space: nowrap; }
 
-/* collapsed rail: icons only */
-.app.collapsed .txt, .app.collapsed .nav-grp, .app.collapsed .brand .txt, .app.collapsed .rail-user .who, .app.collapsed .nav-a .tag { display: none; }
-.app.collapsed .rail-top { flex-direction: column; gap: 10px; padding-bottom: 12px; }
+/* collapsed rail: icons only — wordmark + brand mark move to the top header, toggle keeps the brand slot */
+.app.collapsed .rail .txt,
+.app.collapsed .rail .nav-grp,
+.app.collapsed .rail .brand .txt,
+.app.collapsed .rail-user .who,
+.app.collapsed .rail .nav-a .tag { display: none; }
+.app.collapsed:not(.drawer-open) .rail .brand { display: none; }
+.app.collapsed:not(.drawer-open) .rail-top { justify-content: center; padding-bottom: 12px; }
 .app.collapsed .rail-toggle { margin-left: 0; }
 .app.collapsed .nav-a { justify-content: center; padding: 10px 0; }
 .app.collapsed .nav-sec + .nav-sec { border-top: 1px solid var(--rail-line); margin-top: 4px; padding-top: 4px; }
@@ -142,6 +147,10 @@ p { text-wrap: pretty; }
   min-height: 56px; padding: 9px 22px; background: var(--surface);
   border-bottom: 1px solid var(--stroke);
 }
+.top-brand { display: none; flex: none; padding-right: 12px; margin-right: 4px; border-right: 1px solid var(--stroke); }
+.top-brand b { color: var(--ink); }
+.top-brand span { color: var(--muted); }
+.app.collapsed .top-brand { display: flex; }
 .spacer { flex: 1; }
 .tb-filters { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .topbar .sel2-trig { height: var(--ctl-h); padding-top: 0; padding-bottom: 0; }
@@ -264,6 +273,7 @@ p { text-wrap: pretty; }
   .app.drawer-open .nav-a { justify-content: flex-start; padding: 10px 11px; }
   .app.drawer-open .nav-a .tag { display: inline-flex; }
   .rail-toggle.solo { display: grid; }
+  .top-brand { display: flex; }
   .bottom-nav {
     display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 70;
     gap: 0; padding: 6px 2px calc(8px + env(safe-area-inset-bottom));

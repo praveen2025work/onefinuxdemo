@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * One Finance UX hub. A single deployable for the POC that contains the five logical components
+ * One Finance hub. A single deployable for the POC that contains the five logical components
  * from the vision document, each in its own package so they can be split into services later:
  *
  * <pre>

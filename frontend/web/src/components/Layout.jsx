@@ -103,7 +103,7 @@ export default function Layout({ children }) {
         <div className="rail-top">
           <div className="brand">
             <BrandMark size={collapsed ? 30 : 32} />
-            <div className="txt"><b>One Finance UX</b><span>Outcome platform</span></div>
+            <div className="txt"><b>One Finance</b><span>Outcome platform</span></div>
           </div>
           <button className="rail-toggle" onClick={toggleRail} title={collapsed ? 'Expand menu' : 'Collapse menu'}>
             <Icon name="chevron" size={16} className={collapsed ? 'flip' : ''} />
@@ -136,6 +136,10 @@ export default function Layout({ children }) {
           <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
             <Icon name="menu" size={16} />
           </button>
+          <div className="brand top-brand">
+            <BrandMark size={28} />
+            <div className="txt"><b>One Finance</b><span>Outcome platform</span></div>
+          </div>
           <Select variant="header" caption="Group unit" value={filters.groupUnit}
             onChange={(v) => setFilters({ groupUnit: v })}
             options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))

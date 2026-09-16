@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build and start the One Finance UX hub (7070) and the source simulator (7081).
+# Build and start the One Finance hub (7070) and the source simulator (7081).
 # Does not start the React console — that is a second terminal: cd frontend/web && npm run dev
 # Usage: ./scripts/run.sh            build + start both
 #        ./scripts/run.sh --no-build start using existing jars

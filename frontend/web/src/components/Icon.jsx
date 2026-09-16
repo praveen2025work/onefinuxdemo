@@ -322,19 +322,20 @@ export default function Icon({ name, size = 18, fill = 'none', className = '' })
 }
 
 export function BrandMark({ size = 34 }) {
-  // Three layers stitched into one — the group unit / kit / instance stack.
+  // Generic briefcase on the MITR tile — one mark, not a chart, coin, or stitch stack.
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
       <defs>
-        <linearGradient id="ofx-g" x1="0" y1="0" x2="40" y2="40">
-          <stop offset="0" stopColor="#6366f1" /><stop offset="1" stopColor="#8b5cf6" />
+        <linearGradient id="ofx-g" x1="8" y1="4" x2="34" y2="36">
+          <stop offset="0" stopColor="#6366f1" />
+          <stop offset="1" stopColor="#8b5cf6" />
         </linearGradient>
       </defs>
       <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill="url(#ofx-g)" />
-      <g stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.94">
-        <path d="M11 14.5 20 10l9 4.5-9 4.5-9-4.5Z" />
-        <path d="M11 20l9 4.5 9-4.5" />
-        <path d="M11 25.5 20 30l9-4.5" />
+      <g stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.96">
+        <rect x="9" y="16.5" width="22" height="13.5" rx="2.4" />
+        <path d="M15.2 16.5v-2.4a4.8 4.8 0 0 1 9.6 0v2.4" />
+        <path d="M9 22.8h22" />
       </g>
     </svg>
   );

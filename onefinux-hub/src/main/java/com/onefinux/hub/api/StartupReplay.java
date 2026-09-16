@@ -31,6 +31,6 @@ class StartupReplay implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         engine.initialise(LocalDate.now(clock));
         int replayed = hub.replay();
-        log.info("One Finance UX ready: {} outcome instances rebuilt from {} stored events", engine.views().size(), replayed);
+        log.info("One Finance ready: {} outcome instances rebuilt from {} stored events", engine.views().size(), replayed);
     }
 }

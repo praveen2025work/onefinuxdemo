@@ -1,4 +1,4 @@
-# BRD — One Finance UX (for the architecture group)
+# BRD — One Finance (for the architecture group)
 
 Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `README.md` and `application.md`.
 
@@ -33,7 +33,7 @@ flowchart LR
     MOTIF
     MBR
   end
-  subgraph onefinux [One Finance UX]
+  subgraph onefinux [One Finance]
     Hub[Event hub + fold]
     Inst["outcome_instance (the stitch)"]
   end

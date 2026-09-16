@@ -1,15 +1,15 @@
 ---
 name: embed-partner-screen
-description: Use when another team builds a heavy screen (Helix FOBO, Axiom pack, Rec Factory) that One Finance UX will iframe, when publishing the shared theme, or when a partner invents their own colours or a full second shell.
+description: Use when another team builds a heavy screen (Helix FOBO, Axiom pack, Rec Factory) that One Finance will iframe, when publishing the shared theme, or when a partner invents their own colours or a full second shell.
 ---
 
-# Partner screen inside One Finance UX
+# Partner screen inside One Finance
 
-One Fin UX is the **shell**. Other teams build the **workload**. We iframe their app so the look stays one platform.
+One Finance is the **shell**. Other teams build the **workload**. We iframe their app so the look stays one platform.
 
 ## Who builds what
 
-| One Fin UX | Partner team |
+| One Finance | Partner team |
 |---|---|
 | Head board, user cards, RTB, config | Helix FOBO tower, Axiom viewer, … |
 | Theme file + embed host + CEES gate | Screen body using `--ofx-*` tokens |

@@ -1,6 +1,6 @@
-# One Finance UX: Event-Driven Business Outcome Platform (POC)
+# One Finance: Event-Driven Business Outcome Platform (POC)
 
-This POC proves the idea behind *One Finance UX*: stop asking "Is Motif complete? Is SAP ready?" and answer the business question directly. **"Can I produce the 15C3 report?" "Can I execute FOBO analysis?"**
+This POC proves the idea behind *One Finance*: stop asking "Is Motif complete? Is SAP ready?" and answer the business question directly. **"Can I produce the 15C3 report?" "Can I execute FOBO analysis?"**
 
 Source systems publish events. The hub translates them into business identifiers and folds them into **business outcomes**. It notifies the right people as each outcome moves through its lifecycle, and it triggers the downstream action (Helix, Axiom) the moment an outcome is ready. Nothing polls.
 

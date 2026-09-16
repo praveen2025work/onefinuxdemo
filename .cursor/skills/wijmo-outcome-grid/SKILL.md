@@ -5,7 +5,7 @@ description: Use when adding later group-unit analyst exploration (FlexGrid, Piv
 
 # Wijmo (MESCIUS) — later, same unit, known origin
 
-**Not day one.** First we bind the source of origin. Analysts enter the same One Fin UX app **after** that, and only see data for their `groupUnitId`.
+**Not day one.** First we bind the source of origin. Analysts enter the same One Finance app **after** that, and only see data for their `groupUnitId`.
 
 ## When this skill applies
 

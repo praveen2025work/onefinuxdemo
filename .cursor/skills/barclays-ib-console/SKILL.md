@@ -1,11 +1,11 @@
 ---
 name: barclays-ib-console
-description: Use when building One Finance chrome or when another team must copy the One Fin UX theme for an iframed screen. Also use when a mock looks glassy, editorial, cream, serif, or unlike the live frontend/web console.
+description: Use when building One Finance chrome or when another team must copy the One Finance theme for an iframed screen. Also use when a mock looks glassy, editorial, cream, serif, or unlike the live frontend/web console.
 ---
 
 # Barclays IB console
 
-One Finance UX is a **solid finance dashboard**: opaque cards, a theme-matched left rail, and status colour on KPIs. Visual language is MITR indigo-lavender (Inter / Sora / JetBrains Mono, Lucide marks). Not frosted glass, not a magazine, not a 2016 admin theme. Dark canvas is the default; light (`data-theme="light"`) is a first-class peer — the rail follows the same theme (navy in dark, white in light).
+One Finance is a **solid finance dashboard**: opaque cards, a theme-matched left rail, and status colour on KPIs. Visual language is MITR indigo-lavender (Inter / Sora / JetBrains Mono, Lucide marks). Not frosted glass, not a magazine, not a 2016 admin theme. Dark canvas is the default; light (`data-theme="light"`) is a first-class peer — the rail follows the same theme (navy in dark, white in light).
 
 ## Reference implementation — read before writing CSS
 

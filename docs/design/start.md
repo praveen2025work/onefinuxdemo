@@ -6,7 +6,7 @@ This is the plain-language on-ramp. The same content is on the console at **`/gu
 
 At close of business a group unit is not asking “is Motif complete?” It is asking one question per outcome: **can I run this rec, produce this report, post this book?**
 
-Motif, SAP, Helix and Axiom stay as they are. They publish facts. One Finance UX **stitches** those facts into Ready / Blocked / Delayed and acts when ready.
+Motif, SAP, Helix and Axiom stay as they are. They publish facts. One Finance **stitches** those facts into Ready / Blocked / Delayed and acts when ready.
 
 Products are **data**. FOBO is the first stitch kit. There is no `if (FOBO)` code path.
 

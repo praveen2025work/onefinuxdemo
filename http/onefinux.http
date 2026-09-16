@@ -1,4 +1,4 @@
-### One Finance UX POC - sample requests
+### One Finance POC - sample requests
 ### Works with the IntelliJ HTTP Client and the VS Code "REST Client" extension.
 @hub = http://localhost:7070
 @sim = http://localhost:7081
