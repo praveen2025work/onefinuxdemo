@@ -22,7 +22,7 @@ class OutcomeDefinitionGridsTest {
                 "Can I execute FOBO analysis?", List.of("GLOBAL"), "FOBO Controllers",
                 new Sla(null, 0, 5),
                 List.of(new DependencyDefinition("MASTERBOOK_READY", "MOTIF", 1, "Master books")),
-                new OnReady("NOTIFY_ONLY", null, null, null));
+                new OnReady("NOTIFY_ONLY", null, null, null), List.of());
         assertThat(def.grids()).isEmpty();
     }
 

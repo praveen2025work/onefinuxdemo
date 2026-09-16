@@ -57,13 +57,6 @@ public record OneFinUxProperties(
             grids = grids == null ? List.of() : List.copyOf(grids);
         }
 
-        /** Existing 8-arg call sites keep compiling; grids default to empty. */
-        public OutcomeDefinition(String id, String name, String question, List<String> regions,
-                                 String ownerGroup, Sla sla, List<DependencyDefinition> dependencies,
-                                 OnReady onReady) {
-            this(id, name, question, regions, ownerGroup, sla, dependencies, onReady, List.of());
-        }
-
         public int expectedTotal() {
             return dependencies.stream().mapToInt(DependencyDefinition::expectedCount).sum();
         }
