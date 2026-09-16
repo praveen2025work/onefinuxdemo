@@ -32,7 +32,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 ## Brand
 
-Wordmark is **One Finance**. Brand mark is a generic briefcase on the MITR tile. When the left rail is collapsed, that mark appears once — in the top header beside Group unit — and the rail keeps only the expand control in the brand slot. MITR indigo-lavender accent (`#818cf8` dark / `#6366f1` light). Canvas `#090d1c` dark / `#f5f6fb` light, opaque cards, dark indigo rail. Status colour on KPI tiles (ready / blocked / delayed). Light theme keeps the same dark rail. Inter + Sora + JetBrains Mono, Lucide icons. No frosted glass.
+Wordmark is **One Finance**. Brand mark is a generic briefcase on the MITR tile. When the left rail is collapsed, that mark appears once — in the top header beside Group unit — and the rail keeps only the expand control in the brand slot. MITR indigo-lavender accent (`#818cf8` dark / `#6366f1` light). Canvas `#090d1c` dark / `#f5f6fb` light, opaque cards. Left rail follows the theme (navy `#090d1c` dark / white `#ffffff` light). Status colour on KPI tiles (ready / blocked / delayed). Inter + Sora + JetBrains Mono, Lucide icons. No frosted glass.
 
 ## Mobile
 
