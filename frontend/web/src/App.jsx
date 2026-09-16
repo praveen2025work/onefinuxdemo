@@ -9,6 +9,7 @@ import Onboarding from './pages/Onboarding.jsx';
 import Configuration from './pages/Configuration.jsx';
 import Monitoring from './pages/Monitoring.jsx';
 import Reports from './pages/Reports.jsx';
+import ReportDocument from './pages/ReportDocument.jsx';
 import Drive from './pages/Drive.jsx';
 import Product, { ArchitecturePage, GuidePage } from './pages/Product.jsx';
 
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/board" element={<Board />} />
         <Route path="/outcomes" element={<Outcomes />} />
         <Route path="/reports" element={<Reports />} />
+        <Route path="/reports/:outcomeId/:cobDate/:region" element={<ReportDocument />} />
         <Route path="/instance/:id" element={<InstanceDetail />} />
         <Route path="/operations" element={<Operations />} />
         <Route path="/onboarding" element={<Onboarding />} />

@@ -84,7 +84,8 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready) | Maker |
 | `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
-| `/reports` | Report lifecycle + predicted ready (arrived facts + prior-COB P50; advisory) | Controller |
+| `/reports` | Report lifecycle + predicted ready; Normal / Compact / Table | Controller |
+| `/reports/:outcomeId/:cobDate/:region` | Produced report document | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
 | `/instance/:id` | Fold, embed, sign-off / post / kit-declared actions | Outcome user |
