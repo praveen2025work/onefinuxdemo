@@ -47,6 +47,9 @@ jobs:
           cache-dependency-path: frontend/web/package-lock.json
       - run: npm ci
       - run: npm run build
+      - name: BrandMark unique SVG ids
+        working-directory: .
+        run: python3 scripts/check_brand_mark.py
       - name: Confirm IIS web.config landed in dist
         run: test -f dist/web.config
 
