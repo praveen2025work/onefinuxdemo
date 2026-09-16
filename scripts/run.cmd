@@ -34,3 +34,4 @@ echo Simulator: http://localhost:%SIM_PORT%/sim/scenarios
 echo Console:   cd frontend\web ^&^& npm install ^&^& npm run dev
 echo            then open http://localhost:5173  Drive: /drive
 echo Stop:      close the two minimised windows titled onefinux-hub and source-simulator.
+echo Hosted:    scripts\windows\build-demo.cmd  then elevated install-nssm.ps1 and install-iis-site.ps1

@@ -17,12 +17,13 @@ Two models share one event backbone:
 
 ## Start in two terminals
 
-1. `./scripts/run.sh` — hub **7070** (API only) + simulator **7081**. Do not open 7070 as the UI.
+1. `./scripts/run.sh` — hub **7070** (API only) + simulator **7081**. Do not open 7070 as the UI. Windows local: `scripts\run.cmd` (full list in README §8).
 2. `cd frontend/web && npm install && npm run dev` — console **http://localhost:5173**.
-3. Left rail **Guide** — Product, Architecture, Developer guide. Or top bar → **View** → **Developer** if you want a shorter operate/build rail.
-4. **Onboarding** — submit the Month-end close example. That is `POST /api/outcomes/definitions`. No new Java type.
-5. **Drive** → Reset → one scenario. Watch **Monitoring**. Switch View to **BU head** and open Board; Drive leaves the rail on purpose.
-6. **Helix (real time):** set header COB to **today**, Drive **FOBO / Helix**, watch **Reports**. Stitch recs use COB **2026-09-12**. Write-up: [`helix-walkthrough.md`](helix-walkthrough.md).
+3. **Windows hosted demo** (IIS No Managed Code + NSSM Java services, no Vite): `scripts\windows\build-demo.cmd`, then elevated `install-nssm.ps1` and `install-iis-site.ps1`. Open **http://localhost:8080**. README §9.
+4. Left rail **Guide** — Product, Architecture, Developer guide. Or top bar → **View** → **Developer** if you want a shorter operate/build rail.
+5. **Onboarding** — submit the Month-end close example. That is `POST /api/outcomes/definitions`. No new Java type.
+6. **Drive** → Reset → one scenario. Watch **Monitoring**. Switch View to **BU head** and open Board; Drive leaves the rail on purpose.
+7. **Helix (real time):** set header COB to **today**, Drive **FOBO / Helix**, watch **Reports**. Stitch recs use COB **2026-09-12**. Write-up: [`helix-walkthrough.md`](helix-walkthrough.md).
 
 Views hide nav. They are **not** entitlement. CEES still fail-closes unentitled instances (404).
 
