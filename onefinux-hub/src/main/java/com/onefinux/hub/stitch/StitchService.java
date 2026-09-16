@@ -177,6 +177,9 @@ public class StitchService {
             row.put("status", event.get("status"));
             row.put("sourceKey", event.get("sourceKey"));
             for (Map.Entry<String, Object> attr : attrsOf(event).entrySet()) {
+                if (skipAttr(attr.getKey())) {
+                    continue;
+                }
                 extra.add(attr.getKey());
                 row.put(attr.getKey(), attr.getValue());
             }
@@ -197,6 +200,10 @@ public class StitchService {
         out.put("columns", columns);
         out.put("rows", rows);
         return out;
+    }
+
+    private static boolean skipAttr(String key) {
+        return key == null || key.equalsIgnoreCase("instanceId") || key.equalsIgnoreCase("correlationId");
     }
 
     private Map<String, Object> col(String key, String label) {
