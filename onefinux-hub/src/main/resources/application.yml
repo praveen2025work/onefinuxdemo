@@ -54,6 +54,15 @@ onefinux:
   public-url: http://localhost:7070
   simulator-url: http://localhost:7081
 
+  # Exact browser origins only — never a star origin, never any local port. The console is same-origin via Vite / IIS / nginx;
+  # this list matches the Origin those proxies forward (dev 7091, hosted/docker 8080).
+  cors:
+    allowed-origins:
+      - http://localhost:7091
+      - http://127.0.0.1:7091
+      - http://localhost:8080
+      - http://127.0.0.1:8080
+
   # ---------------------------------------------------------------- Identity + entitlement (CEES)
   # POC: symmetric JWT so the hub can mint dev tokens and validate them without an IdP. Production:
   # set spring.security.oauth2.resourceserver.jwt.issuer-uri to the bank IdP, source entitlements from
