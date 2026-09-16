@@ -37,11 +37,11 @@ class OutcomeEngineTest {
                 List.of("AMRS"), "US Regulatory Reporting", new Sla(null, 0, 60),
                 List.of(new DependencyDefinition("SAP_TB_COMPLETE", "SAP", 2, "SAP trial balance"),
                         new DependencyDefinition("USCASTLE_COMPLETE", "USCASTLE", 2, "US Castle batches")),
-                new OnReady("HTTP_COMMAND", "axiom", "REG_REPORT_GENERATED", "15C3 report generation"));
+                new OnReady("HTTP_COMMAND", "axiom", "REG_REPORT_GENERATED", "15C3 report generation"), List.of());
         OutcomeDefinition pnl = new OutcomeDefinition("PNL_REPORTING", "PnL reporting", "Can I run PnL reporting?",
                 List.of("AMRS"), "Product Control", null,
                 List.of(new DependencyDefinition("SAP_TB_COMPLETE", "SAP", 2, "SAP trial balance")),
-                new OnReady("NOTIFY_ONLY", null, null, null));
+                new OnReady("NOTIFY_ONLY", null, null, null), List.of());
         OneFinUxProperties props = new OneFinUxProperties("America/New_York", null, null, null,
                 List.of(report, pnl), null, null);
         engine = new OutcomeEngine(props, e -> changes.add((OutcomeChanged) e),

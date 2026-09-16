@@ -5,6 +5,7 @@ export const GUIDE_TABS = [
   { to: '/product', label: 'Product', icon: 'book' },
   { to: '/architecture', label: 'Architecture', icon: 'compass' },
   { to: '/guide', label: 'Developer guide', icon: 'code' },
+  { to: '/lifecycle', label: 'Event lifecycle', icon: 'inbox' },
 ];
 
 export default function GuideNav() {

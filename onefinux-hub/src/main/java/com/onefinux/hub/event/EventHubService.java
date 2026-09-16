@@ -97,6 +97,13 @@ public class EventHubService {
                 .stream().map(this::fromRecord).toList();
     }
 
+    public java.util.Optional<BusinessEvent> find(String eventId) {
+        if (eventId == null || eventId.isBlank()) {
+            return java.util.Optional.empty();
+        }
+        return repository.findById(eventId).map(this::fromRecord);
+    }
+
     /** Demo reset. The callback runs while ingestion is paused so no event lands half way through. */
     public synchronized void purge(Runnable alsoWhilePaused) {
         repository.deleteAllInBatch();

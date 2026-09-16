@@ -12,12 +12,14 @@ const NAV = [
     { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
     { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
     { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
+    { to: '/workspaces', label: 'Workspaces', short: 'Grids', icon: 'grid' },
     { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
   ] },
   { grp: 'Guide', items: [
     { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
     { to: '/architecture', label: 'Architecture', short: 'Arch', icon: 'compass' },
     { to: '/guide', label: 'Developer guide', short: 'Guide', icon: 'code' },
+    { to: '/lifecycle', label: 'Event lifecycle', short: 'Lifecycle', icon: 'inbox' },
   ] },
   { grp: 'Operate', items: [
     { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },

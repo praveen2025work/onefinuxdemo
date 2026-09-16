@@ -31,6 +31,8 @@ public class ContractsController {
     private static final List<Contract> CONTRACTS = List.of(
             new Contract("inbound-event", "v1", "inbound",
                     "contracts/inbound-event-v1.schema.json"),
+            new Contract("feed-event", "v1", "inbound-feed",
+                    "contracts/feed-event-v1.schema.json"),
             new Contract("generic-business-event", "v1", "outbound",
                     "contracts/generic-business-event-v1.schema.json"));
 

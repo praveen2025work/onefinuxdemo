@@ -24,6 +24,7 @@ export default function Configuration() {
   const [kits, setKits] = useState(null);
   const [groupUnits, setGroupUnits] = useState([]);
   const [defs, setDefs] = useState([]);
+  const [defsReady, setDefsReady] = useState(false);
   const [views, setViews] = useState([]);
   const [sel, setSel] = useState(null); // { type: 'outcome' | 'kit', id }
   const [kitDetail, setKitDetail] = useState(null);
@@ -43,15 +44,17 @@ export default function Configuration() {
     ]);
     setDefs(d);
     setViews(v);
+    setDefsReady(true);
   }, []);
   useEffect(() => { loadOutcomes(); }, [loadOutcomes]);
 
-  // Default selection once data lands: first outcome, else first kit.
+  // Default selection once both catalogs land: first outcome (grids live there), else first kit.
   useEffect(() => {
     if (sel) return;
+    if (!kits || !defsReady) return;
     if (defs.length) setSel({ type: 'outcome', id: defs[0].id });
-    else if (kits && kits.length) setSel({ type: 'kit', id: kits[0].kitId });
-  }, [defs, kits, sel]);
+    else if (kits.length) setSel({ type: 'kit', id: kits[0].kitId });
+  }, [defs, kits, sel, defsReady]);
 
   // Load kit binding only when a kit is selected.
   useEffect(() => {
@@ -220,6 +223,22 @@ function OutcomeDetail({ o, live }) {
             {(o.dependencies || []).length === 0 && <tr><td colSpan={4} className="empty">No feeds declared.</td></tr>}
           </tbody>
         </table>
+
+        <div className="cfg-sub" style={{ marginTop: 14 }}>Grids <span className="muted">(console fetches these endpoints; hub does not proxy)</span></div>
+        <table className="tbl">
+          <thead><tr><th>Grid</th><th>Endpoint</th><th>Method</th><th>Parameters</th></tr></thead>
+          <tbody>
+            {(o.grids || []).map((g) => (
+              <tr key={g.id}>
+                <td className="lead">{g.title || g.id}<div className="sec mono">{g.id}</div></td>
+                <td className="mono">{g.endpoint}</td>
+                <td><span className="chip">{g.method || 'GET'}</span></td>
+                <td className="sec">{(g.params || []).map((p) => p.name + (p.from ? '←' + p.from : (p.value != null ? '=' + p.value : ''))).join(' · ') || '—'}</td>
+              </tr>
+            ))}
+            {(o.grids || []).length === 0 && <tr><td colSpan={4} className="empty">No grids on this outcome. Workspaces stays empty for this id.</td></tr>}
+          </tbody>
+        </table>
       </div>
     </>
   );
@@ -266,13 +285,13 @@ function KitDetail({ loading, kit, detail, embed }) {
           <div>
             <div className="cfg-sub">Destinations <span className="muted">({(detail.destinations || []).length})</span></div>
             <table className="tbl">
-              <thead><tr><th>Step</th><th>Destination</th><th>Action</th></tr></thead>
+              <thead><tr><th>Step</th><th>Destination</th><th>Surface</th></tr></thead>
               <tbody>
                 {(detail.destinations || []).map((d) => (
                   <tr key={d.destId}>
                     <td className="mono">{d.stepOrder}</td>
                     <td className="mono lead">{d.destId}<div className="sec">{d.displayName}</div></td>
-                    <td><span className="chip">{d.actionType}</span></td>
+                    <td><span className="chip">{d.surface || d.actionType}</span></td>
                   </tr>
                 ))}
                 {(detail.destinations || []).length === 0 && <tr><td colSpan={3} className="empty">No destinations bound.</td></tr>}

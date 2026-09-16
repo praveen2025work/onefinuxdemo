@@ -85,10 +85,11 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
 | `/reports` | Report lifecycle + predicted ready; Normal / Compact / Table | Controller |
-| `/reports/:outcomeId/:cobDate/:region` | Produced report document | Controller |
+| `/reports/:outcomeId/:cobDate/:region` | Produced report document; Grid view for lineage FlexGrids | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
-| `/instance/:id` | Fold (click feed for history), in-shell iframe, sign-off / post / kit-declared actions | Outcome user |
+| `/workspaces` | MESCIUS Wijmo FlexGrid from `outcome.grids` (endpoint + params) | Controller |
+| `/instance/:id` | Fold and destinations first; Partner view and Grid view on demand; sign-off / post / kit-declared actions | Outcome user |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
 | `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |
 
@@ -102,7 +103,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 ## 5. API surface
 
-Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, `GET /instance/step-view` (GRID or IFRAME), RTB, reset.
+Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, `GET /instance/step-view` (GRID from events or a configured endpoint, or IFRAME), RTB, reset.
 
 Outcomes (`/api/outcomes`) — live views, `GET/POST /definitions`, instance + report document.
 

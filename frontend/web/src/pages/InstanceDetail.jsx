@@ -1,14 +1,21 @@
 import { useEffect, useState, useCallback, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { api } from '../api';
+import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill, Loading, PageTitle, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import GenericGrid from '../components/GenericGrid.jsx';
 import PartnerFrame from '../components/PartnerFrame.jsx';
+import OutcomeGrids from '../components/OutcomeGrids.jsx';
+import { outcomeForSurface } from '../lib/outcomeForSurface.js';
 
 const labelOf = (verb) => verb.split(/[_\s]+/).map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 const RICH = ['SIGN_OFF', 'POST', 'ESCALATE', 'ADJUST', 'COUNTERSIGN'];
+
+function partnerViewLabel(renderer) {
+  const token = String(renderer || 'Partner').split(/[_\s]+/)[0];
+  return `${token.charAt(0).toUpperCase()}${token.slice(1).toLowerCase()} partner view`;
+}
 
 export default function InstanceDetail() {
   const { id } = useParams();
@@ -21,7 +28,9 @@ export default function InstanceDetail() {
   const [openRef, setOpenRef] = useState(null);
   const [step, setStep] = useState(null);
   const [stepBusy, setStepBusy] = useState(false);
+  const [defs, setDefs] = useState([]);
   const [partnerOpen, setPartnerOpen] = useState(false);
+  const [gridOpen, setGridOpen] = useState(false);
   const listedStatus = instances.find((row) => row.instanceId === instanceId)?.status;
 
   const load = useCallback(async () => {
@@ -31,6 +40,12 @@ export default function InstanceDetail() {
   }, [instanceId]);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    let alive = true;
+    outcomesApi.definitions().then((rows) => { if (alive) setDefs(rows); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
 
   // Board/SSE already refresh the instance list. Follow that status here so Adjust's Motif echo
   // flips this page to READY without a manual reload.
@@ -75,7 +90,17 @@ export default function InstanceDetail() {
       );
     }
     if (payload.kind === 'GRID') {
-      return <GenericGrid columns={payload.columns} rows={payload.rows} empty="No events for this feed yet." />;
+      return (
+        <>
+          {payload.error && <p className="muted" style={{ margin: '0 0 8px' }}>{String(payload.error)}</p>}
+          <GenericGrid
+            columns={payload.columns}
+            rows={payload.rows}
+            query={payload.query}
+            empty={payload.query ? 'No rows for this query.' : 'No events for this feed yet.'}
+          />
+        </>
+      );
     }
     return <p className="muted" style={{ margin: 0 }}>{payload.error || 'No report for this step yet.'}</p>;
   }
@@ -127,6 +152,23 @@ export default function InstanceDetail() {
     region: i.region,
     runId: i.runId,
     theme: document.documentElement.getAttribute('data-theme') || 'dark',
+  };
+  const outcomeDef = outcomeForSurface(defs, { kitId: i.kitId });
+  const hasGrids = Array.isArray(outcomeDef?.grids) && outcomeDef.grids.length > 0;
+  const gridContext = {
+    cobDate: i.cobDate,
+    region: i.region,
+    groupUnitId: i.groupUnitId,
+    kitId: i.kitId,
+    instanceId: i.instanceId,
+    sliceKey: i.sliceKey,
+    account: i.account,
+    journalId: i.journalId,
+    amount: i.amount,
+    fsLine: i.fsLine,
+    runId: i.runId,
+    status: i.status,
+    namedBlocker: i.namedBlocker,
   };
 
   return (
@@ -206,7 +248,7 @@ export default function InstanceDetail() {
 
         <div>
           <div className="panel">
-            <div className="panel-hd"><h2>Destinations</h2><span className="hint">click a step for its report</span></div>
+            <div className="panel-hd"><h2>Destinations</h2><span className="hint">step surface</span></div>
             <div className="panel-bd stack">
               {detail.destinations.map((d) => {
                 const open = openRef === d.destId;
@@ -216,7 +258,8 @@ export default function InstanceDetail() {
                       onClick={() => loadStep(d.destId)}
                       style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit' }}>
                       <span className="chip">step {d.stepOrder}</span>
-                      <b>{d.destId}</b>
+                      <b>{d.displayName || d.destId}</b>
+                      <span className="mono sec">{d.destId}</span>
                       <span className="muted" style={{ marginLeft: 'auto' }}>
                         {d.surface === 'IFRAME' ? 'iframe' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType)}
                       </span>
@@ -232,30 +275,57 @@ export default function InstanceDetail() {
               })}
             </div>
           </div>
-          <div className="panel">
-            <div className="panel-hd"><h2>Partner surface</h2><span className="hint">kit_embed · this app only</span></div>
-            <div className="panel-bd stack">
-              <div className="row"><span className="muted">renderer</span><span className="chip">{i.renderer}</span></div>
-              <div className="row"><span className="muted">run</span><span className="mono">{i.runId || 'pending'}</span></div>
-              {i.signedBy && <div className="row"><span className="muted">signed by</span><span className="mono">{i.signedBy}</span></div>}
-              <div className="wrapflex">
-                <button type="button" className={'btn ghost sm' + (partnerOpen ? ' on' : '')} onClick={() => setPartnerOpen((v) => !v)}>
-                  <Icon name="open" size={13} /> {partnerOpen ? 'Hide partner screen' : 'Open partner screen'}
-                </button>
-                <span className="mono sec">{i.embedUrl}</span>
-              </div>
-              {partnerOpen && (
-                <PartnerFrame
-                  url={i.embedUrl}
-                  title={i.renderer || 'Partner screen'}
-                  context={embedContext}
-                />
-              )}
-              <p className="muted" style={{ margin: 0, fontSize: 12 }}>Heavy screens stay with the owner and are framed here — not cloned, not a new tab.</p>
-            </div>
-          </div>
         </div>
       </div>
+
+      {(i.embedUrl || hasGrids) && (
+        <div className="view-toggles wrapflex">
+          {i.embedUrl && (
+            <button
+              type="button"
+              className={'btn' + (partnerOpen ? '' : ' ghost')}
+              onClick={() => setPartnerOpen((open) => !open)}
+            >
+              <Icon name="open" size={15} /> {partnerViewLabel(i.renderer)}
+            </button>
+          )}
+          {hasGrids && (
+            <button
+              type="button"
+              className={'btn' + (gridOpen ? '' : ' ghost')}
+              onClick={() => setGridOpen((open) => !open)}
+            >
+              <Icon name="grid" size={15} /> Grid view
+            </button>
+          )}
+        </div>
+      )}
+
+      {partnerOpen && i.embedUrl && (
+        <div className="panel">
+          <div className="panel-hd">
+            <h2>{i.renderer || 'Partner surface'}</h2>
+            <span className="hint">kit_embed · this app · {i.embedUrl}</span>
+          </div>
+          <div className="panel-bd stack">
+            <div className="wrapflex">
+              <span className="chip">{i.renderer}</span>
+              <span className="mono sec">run {i.runId || 'pending'}</span>
+              {i.signedBy && <span className="mono sec">signed by {i.signedBy}</span>}
+            </div>
+            <PartnerFrame
+              url={i.embedUrl}
+              title={i.renderer || 'Partner screen'}
+              context={embedContext}
+              variant="primary"
+            />
+          </div>
+        </div>
+      )}
+
+      {gridOpen && hasGrids && (
+        <OutcomeGrids definition={outcomeDef} context={gridContext} heading="Lineage grids" />
+      )}
     </>
   );
 }
