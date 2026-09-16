@@ -11,19 +11,37 @@ const RICH = ['SIGN_OFF', 'POST', 'ESCALATE', 'ADJUST', 'COUNTERSIGN'];
 export default function InstanceDetail() {
   const { id } = useParams();
   const instanceId = decodeURIComponent(id);
-  const { refreshInstances } = useApp();
+  const { refreshInstances, instances } = useApp();
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
   const [banner, setBanner] = useState(null);
   const [busy, setBusy] = useState(false);
+  const listedStatus = instances.find((row) => row.instanceId === instanceId)?.status;
 
   const load = useCallback(async () => {
     setError(null);
-    try { setDetail(await api.instance(instanceId)); }
-    catch (e) { setError(e.message); }
+    try { return await api.instance(instanceId).then((d) => { setDetail(d); return d; }); }
+    catch (e) { setError(e.message); return null; }
   }, [instanceId]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Board/SSE already refresh the instance list. Follow that status here so Adjust's Motif echo
+  // flips this page to READY without a manual reload.
+  useEffect(() => {
+    if (!listedStatus || !detail) return;
+    if (detail.instance.status === listedStatus) return;
+    load();
+  }, [listedStatus, detail, load]);
+
+  async function waitForStatus(wanted, attempts = 20) {
+    for (let i = 0; i < attempts; i += 1) {
+      const next = await load();
+      if (next && wanted.includes(next.instance.status)) return next;
+      await new Promise((res) => setTimeout(res, 400));
+    }
+    return null;
+  }
 
   async function act(kind) {
     setBusy(true); setBanner(null);
@@ -31,10 +49,15 @@ export default function InstanceDetail() {
       if (kind === 'signoff') { await api.signoff(instanceId); setBanner({ cls: 'ok', text: 'Owner signed — waiting on GLA countersign (SIGNED).' }); }
       if (kind === 'countersign') { await api.action(instanceId, 'COUNTERSIGN'); setBanner({ cls: 'ok', text: 'Countersigned — instance CLEARED.' }); }
       if (kind === 'post') { const r = await api.post(instanceId); setBanner({ cls: 'ok', text: `Posted to MOTIF via FAS — command_run ${r.runId}, echo required before CLEARED.` }); }
-      if (kind === 'adjust') { const r = await api.action(instanceId, 'ADJUST'); setBanner({ cls: 'ok', text: `Adjust commanded to Motif — run ${r.runId}. Echo flips the failed key.` }); }
+      if (kind === 'adjust') {
+        const r = await api.action(instanceId, 'ADJUST');
+        setBanner({ cls: 'ok', text: `Adjust commanded to Motif — run ${r.runId}. Waiting for the echo.` });
+        const echoed = await waitForStatus(['READY', 'SIGNED', 'CLEARED']);
+        if (echoed) setBanner({ cls: 'ok', text: `Adjust commanded to Motif — run ${r.runId}. Fold is ${echoed.instance.status}.` });
+      }
       if (kind === 'escalate') { const r = await api.escalate(instanceId, 'Manual escalation from console'); setBanner({ cls: 'warn', text: `Escalation ${r.escalationId} raised to RTB.` }); }
       if (kind.startsWith('generic:')) { const verb = kind.slice(8); await api.action(instanceId, verb); setBanner({ cls: 'ok', text: `${labelOf(verb)} recorded — workflow fact WORKFLOW_${verb} published.` }); }
-      await load();
+      if (kind !== 'adjust') await load();
       await refreshInstances();
     } catch (e) {
       setBanner({ cls: 'fail', text: e.message });

@@ -75,6 +75,6 @@ The console **Act as** control mints `/api/auth/dev-token` and sends `Authorizat
 1. Drive → Reset, then Accounting item.
 2. Board: EMEA FOBO blocked, amount visible.
 3. Open the row: account `410000`, journal `JE-8801`, amount, FS line, Helix iframe.
-4. Adjust — command `runId`, Motif echo, fold READY.
+4. Adjust — command `runId`, Motif echo, fold READY (instance page follows the echo; no reload).
 5. Act as Alice → Sign off → `SIGNED`.
 6. Act as GLA reviewer → Countersign → `CLEARED`.
