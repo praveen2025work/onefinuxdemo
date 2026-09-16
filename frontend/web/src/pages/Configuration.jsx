@@ -13,6 +13,17 @@ function slaText(sla) {
   return '—';
 }
 
+function paramPreview(json) {
+  if (!json) return '';
+  try {
+    const spec = typeof json === 'string' ? JSON.parse(json) : json;
+    if (!Array.isArray(spec)) return '';
+    return spec.map((p) => p.name + (p.from ? '←' + p.from : '=' + p.value)).join(' · ');
+  } catch {
+    return '';
+  }
+}
+
 const RANK = { COMPLETED: 6, READY: 5, ACTION_RUNNING: 4, IN_PROGRESS: 3, BLOCKED: 2, NOT_STARTED: 1 };
 function repStatus(views) {
   if (!views.length) return 'NOT_STARTED';
@@ -266,16 +277,24 @@ function KitDetail({ loading, kit, detail, embed }) {
           <div>
             <div className="cfg-sub">Destinations <span className="muted">({(detail.destinations || []).length})</span></div>
             <table className="tbl">
-              <thead><tr><th>Step</th><th>Destination</th><th>Action</th></tr></thead>
+              <thead><tr><th>Step</th><th>Destination</th><th>Surface</th><th>Grid API</th></tr></thead>
               <tbody>
                 {(detail.destinations || []).map((d) => (
                   <tr key={d.destId}>
                     <td className="mono">{d.stepOrder}</td>
                     <td className="mono lead">{d.destId}<div className="sec">{d.displayName}</div></td>
-                    <td><span className="chip">{d.actionType}</span></td>
+                    <td><span className="chip">{d.surface || d.actionType}</span></td>
+                    <td>
+                      {d.gridEndpoint ? (
+                        <>
+                          <span className="mono">{d.gridMethod || 'GET'} {d.gridEndpoint}</span>
+                          <div className="sec">{paramPreview(d.gridParamsJson)}</div>
+                        </>
+                      ) : <span className="muted">events</span>}
+                    </td>
                   </tr>
                 ))}
-                {(detail.destinations || []).length === 0 && <tr><td colSpan={3} className="empty">No destinations bound.</td></tr>}
+                {(detail.destinations || []).length === 0 && <tr><td colSpan={4} className="empty">No destinations bound.</td></tr>}
               </tbody>
             </table>
           </div>

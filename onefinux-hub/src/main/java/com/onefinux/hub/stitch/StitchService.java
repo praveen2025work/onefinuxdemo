@@ -41,16 +41,17 @@ public class StitchService {
     private final CurrentUser currentUser;
     private final DownstreamPoster poster;
     private final OneFinUxProperties properties;
+    private final StepGridFetcher grids;
 
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
                          StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser) {
-        this(repo, fold, hub, stream, mapper, clock, currentUser, (url, body) -> {}, null);
+        this(repo, fold, hub, stream, mapper, clock, currentUser, (url, body) -> {}, null, StepGridFetcher.NONE);
     }
 
     @Autowired
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
                          StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser,
-                         DownstreamPoster poster, OneFinUxProperties properties) {
+                         DownstreamPoster poster, OneFinUxProperties properties, StepGridFetcher grids) {
         this.repo = repo;
         this.fold = fold;
         this.hub = hub;
@@ -60,6 +61,7 @@ public class StitchService {
         this.currentUser = currentUser;
         this.poster = poster == null ? (url, body) -> {} : poster;
         this.properties = properties;
+        this.grids = grids == null ? StepGridFetcher.NONE : grids;
     }
 
     /**
@@ -134,6 +136,10 @@ public class StitchService {
             out.put("allowedOrigin", embed == null ? null : embed.get("allowedOrigin"));
             return out;
         }
+        String endpoint = dest == null ? null : str(dest, "gridEndpoint");
+        if (dest != null && endpoint != null && !endpoint.isBlank()) {
+            return configuredGrid(needle, dest, inst, endpoint);
+        }
         String sourceFilter = dest == null ? needle : str(dest, "reportSourceId");
         List<Map<String, Object>> matched = new ArrayList<>();
         for (Map<String, Object> event : repo.eventsForInstance(instanceId)) {
@@ -151,6 +157,93 @@ public class StitchService {
             return none(needle, title);
         }
         return grid(needle, title, matched);
+    }
+
+    private Map<String, Object> configuredGrid(String ref, Map<String, Object> dest,
+                                               Map<String, Object> inst, String endpoint) {
+        String method = str(dest, "gridMethod");
+        if (method == null || method.isBlank()) {
+            method = "GET";
+        }
+        Map<String, String> params = StepGridBinder.bind(
+                StepGridBinder.parse(str(dest, "gridParamsJson")), inst);
+        Map<String, Object> payload = grids.fetch(endpoint, method, params);
+        if (payload == null) {
+            payload = Map.of();
+        }
+        String title = payload.get("title") != null
+                ? String.valueOf(payload.get("title"))
+                : String.valueOf(dest.getOrDefault("displayName", ref));
+        List<Map<String, Object>> rows = rowsOf(payload);
+        List<Map<String, Object>> columns = columnsOf(payload);
+        if (columns.isEmpty() && !rows.isEmpty()) {
+            columns = inferColumns(rows);
+        }
+        Map<String, Object> query = new LinkedHashMap<>();
+        query.put("endpoint", endpoint);
+        query.put("method", method);
+        query.put("params", params);
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("kind", "GRID");
+        out.put("ref", ref);
+        out.put("title", title);
+        out.put("columns", columns);
+        out.put("rows", rows);
+        out.put("query", query);
+        if (payload.get("error") != null) {
+            out.put("error", payload.get("error"));
+        }
+        return out;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> rowsOf(Map<String, Object> payload) {
+        Object raw = payload.get("rows");
+        if (raw instanceof List<?> list) {
+            List<Map<String, Object>> rows = new ArrayList<>();
+            for (Object item : list) {
+                if (item instanceof Map<?, ?> map) {
+                    rows.add((Map<String, Object>) map);
+                }
+            }
+            return rows;
+        }
+        return List.of();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> columnsOf(Map<String, Object> payload) {
+        Object raw = payload.get("columns");
+        if (!(raw instanceof List<?> list)) {
+            return List.of();
+        }
+        List<Map<String, Object>> columns = new ArrayList<>();
+        for (Object item : list) {
+            if (item instanceof Map<?, ?> map) {
+                String key = str(map.get("key"));
+                if (key == null || key.isBlank()) {
+                    continue;
+                }
+                String label = str(map.get("label"));
+                columns.add(col(key, label == null || label.isBlank() ? key : label));
+            } else if (item != null) {
+                String key = String.valueOf(item);
+                columns.add(col(key, key));
+            }
+        }
+        return columns;
+    }
+
+    private List<Map<String, Object>> inferColumns(List<Map<String, Object>> rows) {
+        LinkedHashSet<String> keys = new LinkedHashSet<>();
+        for (Map<String, Object> row : rows) {
+            keys.addAll(row.keySet());
+        }
+        List<Map<String, Object>> columns = new ArrayList<>();
+        for (String key : keys) {
+            columns.add(col(key, key));
+        }
+        return columns;
     }
 
     private Map<String, Object> none(String ref) {
@@ -415,7 +508,11 @@ public class StitchService {
         for (int i = 0; i < dests.size(); i++) {
             Map<String, Object> d = (Map<String, Object>) dests.get(i);
             int step = d.get("stepOrder") instanceof Number n ? n.intValue() : i + 1;
-            repo.insertKitDestination(kitId, str(d, "destId"), step);
+            String paramsJson = d.get("gridParams") instanceof List<?> || d.get("gridParams") instanceof Map<?, ?>
+                    ? json(d.get("gridParams"))
+                    : str(d, "gridParamsJson");
+            repo.insertKitDestination(kitId, str(d, "destId"), step,
+                    str(d, "gridEndpoint"), str(d, "gridMethod"), paramsJson);
         }
         Object embed = body.get("embed");
         if (embed instanceof Map<?, ?> e) {

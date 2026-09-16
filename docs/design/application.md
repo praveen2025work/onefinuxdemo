@@ -102,7 +102,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 ## 5. API surface
 
-Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, `GET /instance/step-view` (GRID or IFRAME), RTB, reset.
+Stitch (`/api/stitch`) — kits, instances, sign-off, post, escalate, generic `POST /instance/action`, `GET /instance/step-view` (GRID from events or a configured endpoint, or IFRAME), RTB, reset.
 
 Outcomes (`/api/outcomes`) — live views, `GET/POST /definitions`, instance + report document.
 

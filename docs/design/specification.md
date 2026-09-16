@@ -12,7 +12,7 @@ This section identifies the document, its status, and the files it sits beside.
 | --- | --- |
 | Product | One Finance |
 | Document | Specification |
-| Version | 1.3.0 |
+| Version | 1.4.0 |
 | Date | 16 September 2026 |
 | Owner | Praveen Kumar |
 | Audience | Implementers, reviewers, architecture group |
@@ -48,7 +48,7 @@ This section bounds phase 1. Work outside these bounds needs a new REQ-ID before
 
 ### 3.1 In scope
 
-HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.
+HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, kit-configured step-grid endpoint and request parameters, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.
 
 ### 3.2 Out of scope
 
@@ -74,6 +74,7 @@ Phase 1 runs on-prem with HTTP ingest and the hub store. An optional later bus i
 | Drive | Testing surface at `/drive` that starts simulator scenarios |
 | Feed watch | Inbox folder of JSON files ingested through the same EventHubService as HTTP |
 | Event lifecycle | Console walk of receive, persist, and next state for one fact |
+| Step grid | GenericGrid fed by a kit destination endpoint and bound request parameters |
 | SIGNED | Maker has signed off; COUNTERSIGN from a different actor is still open |
 | REQ-ID | Functional requirement identifier |
 | AC-ID | Acceptance criterion identifier with Given/When/Then |
@@ -248,7 +249,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-CONSOLE-013` | Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields. |
 | `REQ-CONSOLE-014` | Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events. |
 | `REQ-CONSOLE-015` | Open partner screen renders the kit embed URL as an iframe in the console and does not navigate to a new tab. |
-| `REQ-CONSOLE-016` | GET /api/stitch/instance/step-view?id=&ref= returns kind GRID with columns and rows, or kind IFRAME with embedUrl, from destination surface data, and 404 when the instance is unentitled. |
+| `REQ-CONSOLE-016` | GET /api/stitch/instance/step-view?id=&ref= returns kind GRID with columns and rows, or kind IFRAME with embedUrl, from destination surface data. A GRID destination with kit_destination.grid_endpoint binds request parameters from the instance context onto that endpoint and returns the API rows. Unentitled instances return 404. |
 | `REQ-CONSOLE-017` | The Event lifecycle page at /lifecycle shows the received request body, the event_store persist, and the next stitch or engine state for a selected event. |
 
 ### 11.6 Reports index and document (REPORTS)
@@ -1127,9 +1128,9 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 #### AC-CONSOLE-22
 
 - Maps to: `REQ-CONSOLE-016`
-- Given HELIX surface is IFRAME and FAS_MOTIF surface is GRID with report_source_id MOTIF
+- Given HELIX surface is IFRAME and FAS_MOTIF surface is GRID with grid_endpoint /sim/grids/investigation and params cobDate, account, journalId from the instance
 - When GET step-view is called for HELIX then FAS_MOTIF on an entitled instance
-- Then HELIX returns kind IFRAME with the kit embedUrl and FAS_MOTIF returns kind GRID of Motif events
+- Then HELIX returns kind IFRAME with the kit embedUrl and FAS_MOTIF returns kind GRID whose query.endpoint is /sim/grids/investigation and whose query.params include the instance cobDate and account
 
 #### AC-CONSOLE-23
 
@@ -1806,6 +1807,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | GET | `/api/feeds/watch` | INGEST |
 | GET | `/api/stitch/instances` | FOLD |
 | GET | `/api/stitch/instance` | FOLD |
+| GET | `/api/stitch/instance/step-view` | CONSOLE |
 | POST | `/api/stitch/instance/signoff` | ACTION |
 | POST | `/api/stitch/instance/post` | ACTION |
 | POST | `/api/stitch/instance/escalate` | ACTION |
@@ -1820,6 +1822,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | GET | `/api/stitch/monitor/*` | OPERATE |
 | POST | `/api/stitch/deadletters/{id}/replay` | OPERATE |
 | POST | `/sim/scenarios/{name}` | OPERATE |
+| GET | `/sim/grids/{name}` | CONSOLE |
 
 ### 15.2 Console routes
 

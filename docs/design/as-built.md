@@ -28,7 +28,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 ## Capability registries
 
 - Outcome: `ActionExecutor` beans keyed by `onReady.action`. Built-in: `HTTP_COMMAND`, `LOG_COMMAND`. New type = new bean + config.
-- Stitch: `POST /api/stitch/instance/action` gated by kit `userActions`. Rich verbs: `SIGN_OFF`, `POST`, `ESCALATE`, `ADJUST`, `COUNTERSIGN`. Other verbs are generic. New verb = add it to the kit. `GET /api/stitch/instance/step-view` returns GRID or IFRAME for a feed or destination.
+- Stitch: `POST /api/stitch/instance/action` gated by kit `userActions`. Rich verbs: `SIGN_OFF`, `POST`, `ESCALATE`, `ADJUST`, `COUNTERSIGN`. Other verbs are generic. New verb = add it to the kit. `GET /api/stitch/instance/step-view` returns GRID or IFRAME for a feed or destination. A GRID destination may name `grid_endpoint` and request parameters; the hub binds them from the instance and fetches.
 
 ## Brand
 

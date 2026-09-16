@@ -75,7 +75,17 @@ export default function InstanceDetail() {
       );
     }
     if (payload.kind === 'GRID') {
-      return <GenericGrid columns={payload.columns} rows={payload.rows} empty="No events for this feed yet." />;
+      return (
+        <>
+          {payload.error && <p className="muted" style={{ margin: '0 0 8px' }}>{String(payload.error)}</p>}
+          <GenericGrid
+            columns={payload.columns}
+            rows={payload.rows}
+            query={payload.query}
+            empty={payload.query ? 'No rows for this query.' : 'No events for this feed yet.'}
+          />
+        </>
+      );
     }
     return <p className="muted" style={{ margin: 0 }}>{payload.error || 'No report for this step yet.'}</p>;
   }
@@ -206,7 +216,7 @@ export default function InstanceDetail() {
 
         <div>
           <div className="panel">
-            <div className="panel-hd"><h2>Destinations</h2><span className="hint">click a step for its report</span></div>
+            <div className="panel-hd"><h2>Destinations</h2><span className="hint">configured grid or iframe</span></div>
             <div className="panel-bd stack">
               {detail.destinations.map((d) => {
                 const open = openRef === d.destId;
@@ -218,7 +228,7 @@ export default function InstanceDetail() {
                       <span className="chip">step {d.stepOrder}</span>
                       <b>{d.destId}</b>
                       <span className="muted" style={{ marginLeft: 'auto' }}>
-                        {d.surface === 'IFRAME' ? 'iframe' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType)}
+                        {d.surface === 'IFRAME' ? 'iframe' : (d.gridEndpoint ? 'grid api' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType))}
                       </span>
                     </button>
                     {open && (

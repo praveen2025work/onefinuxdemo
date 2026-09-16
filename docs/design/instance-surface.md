@@ -33,18 +33,22 @@ Fail-closed: unknown or unentitled instance → 404.
 | `destination_system.surface` | Result |
 |---|---|
 | `IFRAME` | `{ kind: "IFRAME", title, embedUrl, allowedOrigin, ref }` |
-| `GRID` (or a source id) | `{ kind: "GRID", title, columns[], rows[], ref }` |
+| `GRID` (or a source id) | `{ kind: "GRID", title, columns[], rows[], ref }` — from `event_store` unless the kit destination names `grid_endpoint` |
+| `GRID` + `grid_endpoint` | Hub binds `grid_params_json` from the instance context, GET/POST that path, return columns/rows plus `query` |
 | no rows | `{ kind: "NONE", ref }` |
 
-GRID columns are derived from the events for that ref (or `report_source_id` on the destination). The console renders them with one **GenericGrid**. IFRAME uses **PartnerFrame**. Destinations on the instance are clickable the same way as feeds.
+GRID columns are derived from the events for that ref (or `report_source_id` on the destination) when no endpoint is set. A configured endpoint is the partner API; One Finance renders one **GenericGrid**. IFRAME uses **PartnerFrame**. Destinations on the instance are clickable the same way as feeds.
 
-FOBO seed: HELIX = IFRAME; FAS_MOTIF = GRID from MOTIF events; PNL_AGENT = GRID from workflow facts when present.
+FOBO seed: HELIX = IFRAME; FAS_MOTIF = GRID `GET /sim/grids/investigation`; PNL_AGENT = GRID `GET /sim/grids/close`.
+
+See [`step-grid.md`](step-grid.md).
 
 ## Files
 
 | Area | Change |
 |---|---|
 | Flyway `V7` | `destination_system.surface`, `report_source_id`; FOBO embed → `/sim/screens/helix` |
+| Flyway `V8` | `kit_destination.grid_endpoint`, `grid_method`, `grid_params_json` |
 | `StitchService.stepView` | Entitled GRID / IFRAME / NONE |
 | Simulator | Embedded Helix stub, no masthead |
 | Console | Click-to-expand fold; GenericGrid; PartnerFrame in-app |
