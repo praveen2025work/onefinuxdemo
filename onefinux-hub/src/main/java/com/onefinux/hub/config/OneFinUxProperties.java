@@ -26,7 +26,7 @@ public record OneFinUxProperties(
         translation = translation == null ? new Translation(null, null) : translation;
         outcomes = outcomes == null ? List.of() : List.copyOf(outcomes);
         actionTargets = actionTargets == null ? Map.of() : Map.copyOf(actionTargets);
-        notifications = notifications == null ? new Notifications(null, true, null) : notifications;
+        notifications = notifications == null ? new Notifications(null, true, null, null) : notifications;
     }
 
     public record Translation(Map<String, String> sourceIdentifiers, List<CrossReference> crossReferences) {
@@ -88,9 +88,15 @@ public record OneFinUxProperties(
     public record ActionTarget(String url) {
     }
 
-    public record Notifications(List<Integer> milestones, boolean logChannelEnabled, String webhookUrl) {
+    public record Notifications(List<Integer> milestones, boolean logChannelEnabled, String webhookUrl,
+                                Boolean windowsToast) {
         public Notifications {
             milestones = milestones == null ? List.of(50, 90) : List.copyOf(milestones);
+            windowsToast = windowsToast == null || windowsToast;
+        }
+
+        public boolean windowsToastEnabled() {
+            return Boolean.TRUE.equals(windowsToast);
         }
     }
 }

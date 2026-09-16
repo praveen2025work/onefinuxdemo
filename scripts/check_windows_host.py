@@ -22,6 +22,7 @@ REQUIRED_SCRIPTS = (
     "install-iis-site.ps1",
     "uninstall-iis-site.ps1",
     "check-host.ps1",
+    "show-toast.ps1",
 )
 
 
@@ -113,10 +114,18 @@ def main() -> int:
         r"scripts\windows\build-demo.cmd",
         r"scripts\windows\install-nssm.ps1",
         r"scripts\windows\install-iis-site.ps1",
+        "Windows system toast",
+        r"scripts\windows\show-toast.ps1",
     ):
         if token not in readme:
             fail(f"README.md must document {token}")
     ok("README.md has numbered Windows local and hosted steps")
+
+    toast = (WINDOWS / "show-toast.ps1").read_text(encoding="utf-8")
+    for token in ("ToastNotificationManager", "schtasks.exe", "OneFinance.Hub"):
+        if token not in toast:
+            fail(f"show-toast.ps1 must contain {token}")
+    ok("show-toast.ps1 raises an Action Center toast")
 
     start = START.read_text(encoding="utf-8")
     if "scripts\\windows\\build-demo.cmd" not in start and "Windows hosted demo" not in start:

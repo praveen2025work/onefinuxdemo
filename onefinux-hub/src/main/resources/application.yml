@@ -103,6 +103,8 @@ onefinux:
     milestones: [50, 90]
     log-channel-enabled: true
     webhook-url: ""        # e.g. a Teams Workflows webhook; empty = disabled
+    # Windows Action Center toast (same corner as Outlook new-mail). Off on Linux/macOS.
+    windows-toast: true
 
   # ---------------------------------------------------------------- Component 3: business outcomes
   # SLA: use "cutoff" + "day-offset" for real cut-offs (e.g. 07:30 on COB+1),

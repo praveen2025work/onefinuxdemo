@@ -265,11 +265,34 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 
 Every notification is persisted once, then fanned out:
 
-- **In-app**: live over SSE to the console inbox on 5173.
-- **Email (simulated)**: written to the `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against the corporate relay.
-- **Teams webhook**: disabled by default. Set `onefinux.notifications.webhook-url` to a Teams Workflows URL to enable it.
+- **Windows system toast**: Action Center popup in the same screen corner as Outlook new-mail. This is **not** the browser bell and **not** Outlook itself. On by default (`onefinux.notifications.windows-toast: true`). The hub calls `scripts\windows\show-toast.ps1`. Linux/macOS skip this channel.
+- **In-app**: live over SSE to the console inbox (browser only).
+- **Email (simulated)**: written to the `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange if you want **Outlook-branded** toasts (Outlook shows those when mail arrives).
+- **Teams webhook**: disabled by default. Set `onefinux.notifications.webhook-url` to a Teams / Power Automate URL.
 
-Milestones default to 50% and 90% (`onefinux.notifications.milestones`). Progress ticks never notify, and a replay never notifies.
+### Windows system toasts (Outlook-style corner popup)
+
+These appear on the **desktop**, even if the browser is in the background. They do not require Outlook.
+
+1. Confirm Windows notifications are allowed: **Settings → System → Notifications** — on for the desktop, and not Focus assist / Do not disturb.
+2. Prove the popup on this PC (no hub required):
+
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File scripts\windows\show-toast.ps1 -Title "FOBO is READY" -Message "Helix can run"
+   ```
+
+   You should see a toast titled **One Finance** at the bottom-right (bottom-center on Windows 11).
+3. Start the hub in your Windows session so toasts can reach the desktop:
+
+   ```bat
+   scripts\run.cmd
+   ```
+
+   Then Drive a scenario. READY / BLOCKED / SLA items raise a system toast. `scripts\run.cmd` runs Java as **you**, which is the session Windows shows toasts in.
+4. **NSSM hosted demo:** the install script runs the hub as a service (Session 0). `show-toast.ps1` hops to the logged-on user via an interactive scheduled task (`schtasks /IT`). Stay logged in on the demo box. If a toast still does not appear, run the hub with `scripts\run.cmd` instead of NSSM for that demo.
+5. Turn the channel off: set `onefinux.notifications.windows-toast: false` in `onefinux-hub/src/main/resources/application.yml` and restart.
+
+Real **Outlook** toasts still need a message in the mailbox (SMTP or the Power Automate webhook in the list above). The Windows channel is the POC way to get the same *kind* of system popup without Exchange.
 
 ## How the code maps to the vision
 

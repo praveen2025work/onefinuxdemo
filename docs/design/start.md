@@ -24,6 +24,7 @@ Two models share one event backbone:
 5. **Onboarding** — submit the Month-end close example. That is `POST /api/outcomes/definitions`. No new Java type.
 6. **Drive** → Reset → one scenario. Watch **Monitoring**. Switch View to **BU head** and open Board; Drive leaves the rail on purpose.
 7. **Helix (real time):** set header COB to **today**, Drive **FOBO / Helix**, watch **Reports**. Stitch recs use COB **2026-09-12**. Write-up: [`helix-walkthrough.md`](helix-walkthrough.md).
+8. **Windows desktop toasts** (Action Center, same corner as Outlook new-mail — not the browser bell): `scripts\windows\show-toast.ps1`, then Drive while `scripts\run.cmd` is running. README *Windows system toasts*.
 
 Views hide nav. They are **not** entitlement. CEES still fail-closes unentitled instances (404).
 
