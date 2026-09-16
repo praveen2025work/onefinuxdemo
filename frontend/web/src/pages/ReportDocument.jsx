@@ -19,6 +19,7 @@ export default function ReportDocument() {
   const [doc, setDoc] = useState(null);
   const [err, setErr] = useState(null);
   const [defs, setDefs] = useState([]);
+  const [gridOpen, setGridOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -60,6 +61,7 @@ export default function ReportDocument() {
   const uri = artifact?.uri;
   const ready = outcome.stage === 'AVAILABLE' || outcome.stage === 'GENERATED';
   const outcomeDef = outcomeForSurface(defs, { outcomeId: outcome.outcomeId || outcomeId });
+  const hasGrids = Array.isArray(outcomeDef?.grids) && outcomeDef.grids.length > 0;
   const gridContext = {
     cobDate: outcome.cobDate,
     region: outcome.region,
@@ -80,6 +82,15 @@ export default function ReportDocument() {
         </div>
         <div className="ph-actions">
           <Link className="btn ghost" to="/reports"><Icon name="report" size={15} /> All reports</Link>
+          {hasGrids && (
+            <button
+              type="button"
+              className={'btn' + (gridOpen ? '' : ' ghost')}
+              onClick={() => setGridOpen((open) => !open)}
+            >
+              <Icon name="grid" size={15} /> Grid view
+            </button>
+          )}
           {isHttp(uri) && (
             <a className="btn" href={uri} target="_blank" rel="noreferrer">
               <Icon name="open" size={15} /> Open source report
@@ -155,7 +166,9 @@ export default function ReportDocument() {
         </div>
       </div>
 
-      <OutcomeGrids definition={outcomeDef} context={gridContext} heading="Lineage grids" />
+      {gridOpen && hasGrids && (
+        <OutcomeGrids definition={outcomeDef} context={gridContext} heading="Lineage grids" />
+      )}
     </>
   );
 }

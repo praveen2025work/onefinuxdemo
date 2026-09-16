@@ -409,6 +409,7 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
 .partner-frame { border: 1px solid var(--stroke); border-radius: var(--r-card); overflow: hidden; background: var(--surface); }
 .partner-frame iframe { display: block; width: 100%; height: 420px; border: 0; }
 .partner-frame.primary iframe { height: min(68vh, 640px); }
+.view-toggles { margin: 16px 0; }
 .lead { font-weight: 600; }
 .sec { font-size: 11.5px; color: var(--muted); }
 

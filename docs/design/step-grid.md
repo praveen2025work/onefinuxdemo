@@ -1,6 +1,6 @@
 # Step grids: MESCIUS Wijmo, configured on the outcome
 
-Controller job: see investigation or close data in a licensed MESCIUS Wijmo FlexGrid on Workspaces, on the instance page, and on the report document. Each **outcome definition** names its own API and request parameters. The console binds those parameters and fetches. The hub does not proxy partner APIs. One Finance does not rebuild Motif, Helix, or SAP screens.
+Controller job: see investigation or close data in a licensed MESCIUS Wijmo FlexGrid on Workspaces. On the instance page and the report document the same grids open after **Grid view**. Each **outcome definition** names its own API and request parameters. The console binds those parameters and fetches. The hub does not proxy partner APIs. One Finance does not rebuild Motif, Helix, or SAP screens.
 
 ## Intent
 
@@ -26,12 +26,12 @@ The console binds those parameters and fetches. Each result renders in **MESCIUS
 
 ## Surface
 
-`GET /api/outcomes/definitions` returns `grids` with the rest of the outcome. The console renders them on `/workspaces`, `/instance/:id`, and `/reports/:outcomeId/:cobDate/:region`.
+`GET /api/outcomes/definitions` returns `grids` with the rest of the outcome. Workspaces render them when the page opens. Instance and report document render them after **Grid view**.
 
 | Source | Result |
 |---|---|
-| Outcome has `grids` | Workspaces, instance, and report document each show FlexGrid tabs |
-| Outcome has no `grids` | Those pages omit the grid panel |
+| Outcome has `grids` | Workspaces shows FlexGrid tabs; instance and report document show them after Grid view |
+| Outcome has no `grids` | Those pages omit the Grid view control |
 | Instance fold / destinations | Unchanged: `GET /api/stitch/instance/step-view` is event-store GRID or IFRAME |
 
 Bound query chips show method, endpoint, and params. Fail-closed stitch instances still return 404. Simulator `/sim/grids/{name}` is a partner JSON stub, not a rebuilt screen.

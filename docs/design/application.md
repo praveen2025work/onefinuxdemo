@@ -85,11 +85,11 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
 | `/reports` | Report lifecycle + predicted ready; Normal / Compact / Table | Controller |
-| `/reports/:outcomeId/:cobDate/:region` | Produced report document | Controller |
+| `/reports/:outcomeId/:cobDate/:region` | Produced report document; Grid view for lineage FlexGrids | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
 | `/workspaces` | MESCIUS Wijmo FlexGrid from `outcome.grids` (endpoint + params) | Controller |
-| `/instance/:id` | Primary kit embed, lineage Wijmo grids, fold, sign-off / post / kit-declared actions | Outcome user |
+| `/instance/:id` | Fold and destinations first; Partner view and Grid view on demand; sign-off / post / kit-declared actions | Outcome user |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
 | `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |
 
