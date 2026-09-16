@@ -4,6 +4,7 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 
 | Document | Audience | What it is |
 |---|---|---|
+| [`specification.md`](specification.md) | Implementers / reviewers | Spec-driven contract: REQ-IDs, 23 Given/When/Then per subsystem, AC mapping |
 | [`as-built.md`](as-built.md) | Everyone | Current product: routes, two models, brand, what not to do |
 | [`start.md`](start.md) | New developers | Plain-language idea, how to run it, first change, how we review PRs |
 | [`architecture-group.md`](architecture-group.md) | Architecture group, CIO, MD | Problem, two models, what executives see |

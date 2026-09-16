@@ -4,6 +4,7 @@ Umbrella for **group units** and their business outcomes. FOBO Helix is one `HEL
 
 Visual truth: `frontend/web` (live React console; solid finance dashboard, MITR indigo `#6366f1` / `#818cf8`, canvas `#090d1c`).  
 Design folder (only one): [`docs/design/`](docs/design/README.md).  
+Spec-driven contract (REQ-IDs + Given/When/Then): [`docs/design/specification.md`](docs/design/specification.md). Gate: `python3 scripts/check_specification.py`.  
 New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and console **`/guide`**. Architecture diagrams: console **`/architecture`**. Product story: **`/product`**.
 
 ## Jobs → skills
