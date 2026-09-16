@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { outcomesApi } from '../api';
+import { useApp } from '../store.jsx';
 import { Loading, Meter, PageTitle, StatusPill } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import OutcomeGrids from '../components/OutcomeGrids.jsx';
+import { outcomeForSurface } from '../lib/outcomeForSurface.js';
 
 function isHttp(uri) {
   return typeof uri === 'string' && /^https?:\/\//i.test(uri);
@@ -11,9 +14,12 @@ function isHttp(uri) {
 
 export default function ReportDocument() {
   const { outcomeId, cobDate, region } = useParams();
+  const { filters } = useApp();
   const [outcome, setOutcome] = useState(null);
   const [doc, setDoc] = useState(null);
   const [err, setErr] = useState(null);
+  const [defs, setDefs] = useState([]);
+  const [gridOpen, setGridOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -35,6 +41,12 @@ export default function ReportDocument() {
     return () => { alive = false; };
   }, [outcomeId, cobDate, region]);
 
+  useEffect(() => {
+    let alive = true;
+    outcomesApi.definitions().then((rows) => { if (alive) setDefs(rows); }).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+
   if (err) {
     return (
       <div className="empty">
@@ -48,6 +60,15 @@ export default function ReportDocument() {
   const artifact = doc || outcome.report;
   const uri = artifact?.uri;
   const ready = outcome.stage === 'AVAILABLE' || outcome.stage === 'GENERATED';
+  const outcomeDef = outcomeForSurface(defs, { outcomeId: outcome.outcomeId || outcomeId });
+  const hasGrids = Array.isArray(outcomeDef?.grids) && outcomeDef.grids.length > 0;
+  const gridContext = {
+    cobDate: outcome.cobDate,
+    region: outcome.region,
+    groupUnitId: filters.groupUnit,
+    status: outcome.status,
+    runId: outcome.actionRunId,
+  };
 
   return (
     <>
@@ -61,6 +82,15 @@ export default function ReportDocument() {
         </div>
         <div className="ph-actions">
           <Link className="btn ghost" to="/reports"><Icon name="report" size={15} /> All reports</Link>
+          {hasGrids && (
+            <button
+              type="button"
+              className={'btn' + (gridOpen ? '' : ' ghost')}
+              onClick={() => setGridOpen((open) => !open)}
+            >
+              <Icon name="grid" size={15} /> Grid view
+            </button>
+          )}
           {isHttp(uri) && (
             <a className="btn" href={uri} target="_blank" rel="noreferrer">
               <Icon name="open" size={15} /> Open source report
@@ -135,6 +165,10 @@ export default function ReportDocument() {
           </div>
         </div>
       </div>
+
+      {gridOpen && hasGrids && (
+        <OutcomeGrids definition={outcomeDef} context={gridContext} heading="Lineage grids" />
+      )}
     </>
   );
 }

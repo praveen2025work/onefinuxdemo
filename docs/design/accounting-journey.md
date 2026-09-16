@@ -74,7 +74,7 @@ The console **Act as** control mints `/api/auth/dev-token` and sends `Authorizat
 
 1. Drive → Reset, then Accounting item.
 2. Board: EMEA FOBO blocked, amount visible.
-3. Open the row: account `410000`, journal `JE-8801`, amount, FS line. Click a feed for history. Open partner screen in this page (iframe).
+3. Open the row: account `410000`, journal `JE-8801`, amount, FS line. Fold and destinations sit at the top. Click Helix partner view for the kit embed. Click Grid view for investigation and close. Click a feed for history.
 4. Adjust — command `runId`, Motif echo, fold READY (instance page follows the echo; no reload).
 5. Act as Alice → Sign off → `SIGNED`.
 6. Act as GLA reviewer → Countersign → `CLEARED`.

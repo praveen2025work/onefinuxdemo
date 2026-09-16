@@ -140,7 +140,7 @@ class StitchServiceTest {
     }
 
     @Test
-    @DisplayName("AC-CONSOLE-22 IFRAME destination returns kit embed url")
+    @DisplayName("REQ-CONSOLE-016 IFRAME destination returns kit embed url")
     void ac_console_22_iframe_destination_returns_embed() {
         when(repo.instance(ID)).thenReturn(inst("READY"));
         when(repo.destinationsForInstance(ID)).thenReturn(List.of(dest("HELIX", "IFRAME", null)));
@@ -155,7 +155,7 @@ class StitchServiceTest {
     }
 
     @Test
-    @DisplayName("AC-CONSOLE-22 GRID destination uses report_source_id events")
+    @DisplayName("REQ-CONSOLE-016 GRID destination uses report_source_id events")
     void ac_console_22_grid_destination_uses_report_source() {
         when(repo.instance(ID)).thenReturn(inst("READY"));
         when(repo.destinationsForInstance(ID)).thenReturn(List.of(dest("FAS_MOTIF", "GRID", "MOTIF")));

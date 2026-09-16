@@ -63,9 +63,10 @@ export const VIEWS = [
     tag: 'act',
     cls: 'ok',
     job: 'Worklist, reports, and the unit board. Sign-off lives on the instance, not on Home.',
-    routes: ['/', '/product', '/architecture', '/guide', '/outcomes', '/reports', '/board'],
+    routes: ['/', '/product', '/architecture', '/guide', '/outcomes', '/workspaces', '/reports', '/board'],
     starts: [
       { to: '/outcomes', title: 'My outcomes', q: 'Doer worklist. Open a ready instance to sign off or post.', tag: 'user', cls: 'ok' },
+      { to: '/workspaces', title: 'Workspaces', q: 'MESCIUS Wijmo grids from outcome.grids — endpoint and params are data.', tag: 'grid', cls: 'info' },
       { to: '/reports', title: 'Reports', q: 'Engine outcomes and the 15C3 five-stage pack.', tag: 'artifact', cls: 'info' },
       { to: '/board', title: 'Outcome board', q: 'Same instances as a supervisor table.', tag: 'Read only', cls: 'plain' },
     ],

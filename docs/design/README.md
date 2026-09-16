@@ -6,6 +6,7 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 |---|---|---|
 | [`specification.md`](specification.md) | Implementers / reviewers | Spec-driven contract: REQ-IDs, 23 Given/When/Then per subsystem, AC mapping |
 | [`instance-surface.md`](instance-surface.md) | Controller | Click-to-expand feed history, in-shell iframe, generic GRID |
+| [`step-grid.md`](step-grid.md) | Controller | Outcome.grids: MESCIUS Wijmo FlexGrid, endpoint and request parameters |
 | [`start.md`](start.md) | New developers | Plain-language idea, how to run it, first change, how we review PRs |
 | [`architecture-group.md`](architecture-group.md) | Architecture group, CIO, MD | Problem, two models, what executives see |
 | [`application.md`](application.md) | Build team | Modules, APIs, screens, capabilities, demo vs later |
@@ -42,4 +43,4 @@ At close of business a group unit answers one question per outcome. One Finance 
 | RTB | `rtb-support-view` |
 | Bind source / destination | `bind-source-destination` |
 | Partner iframe | `embed-partner-screen` |
-| Analyst grid (later) | `wijmo-outcome-grid` |
+| Analyst studio (later) | `wijmo-outcome-grid` |

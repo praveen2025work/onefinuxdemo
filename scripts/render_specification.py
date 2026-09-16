@@ -189,8 +189,8 @@ CONSOLE_REQ = [
     ("REQ-CONSOLE-012", "Dropdown options for group unit, COB, and region come from hub APIs; the console does not invent those ids."),
     ("REQ-CONSOLE-013", "Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields."),
     ("REQ-CONSOLE-014", "Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events."),
-    ("REQ-CONSOLE-015", "Open partner screen renders the kit embed URL as an iframe in the console and does not navigate to a new tab."),
-    ("REQ-CONSOLE-016", "GET /api/stitch/instance/step-view?id=&ref= returns kind GRID with columns and rows, or kind IFRAME with embedUrl, from destination surface data, and 404 when the instance is unentitled."),
+    ("REQ-CONSOLE-015", "The instance page shows the readiness fold and destinations first. Partner view frames the kit embed URL in an iframe after the operator clicks that control. The browser does not navigate to a new tab."),
+    ("REQ-CONSOLE-016", "GET /api/outcomes/definitions returns optional grids on each OutcomeDefinition. Each grid names id, title, endpoint, method, and params with from or value. The console binds those params from the current context and renders each grid with MESCIUS Wijmo FlexGrid on /workspaces. The instance page and the report document render those grids after the operator clicks Grid view. GET /api/stitch/instance/step-view returns kind GRID of event-store rows or kind IFRAME with embedUrl from destination surface data. Unentitled instances return 404."),
     ("REQ-CONSOLE-017", "The Event lifecycle page at /lifecycle shows the received request body, the event_store persist, and the next stitch or engine state for a selected event."),
 ]
 
@@ -215,8 +215,8 @@ CONSOLE_AC = [
     ac("AC-CONSOLE-18", "REQ-CONSOLE-012", "GET /api/stitch/context returns group units and cobDates", "the top-bar Group unit and date controls render", "every option value equals a value from that API"),
     ac("AC-CONSOLE-19", "REQ-CONSOLE-017", "an event is stored in event_store", "the operator opens /lifecycle", "the page shows the request fields, the event_store persist, and the next stitch or engine state"),
     ac("AC-CONSOLE-20", "REQ-CONSOLE-014", "instance R-2031 has CATS and MOTIF facts stored", "the operator opens the instance page", "the Facts for this instance table is not shown until a feed is clicked"),
-    ac("AC-CONSOLE-21", "REQ-CONSOLE-015", "the instance kit has an embed URL", "the operator clicks Open partner screen", "the partner document loads in an iframe on the instance page and the browser does not open a new tab"),
-    ac("AC-CONSOLE-22", "REQ-CONSOLE-016", "HELIX surface is IFRAME and FAS_MOTIF surface is GRID with report_source_id MOTIF", "GET step-view is called for HELIX then FAS_MOTIF on an entitled instance", "HELIX returns kind IFRAME with the kit embedUrl and FAS_MOTIF returns kind GRID of Motif events"),
+    ac("AC-CONSOLE-21", "REQ-CONSOLE-015", "the instance kit has an embed URL", "the operator opens the instance page and clicks Partner view", "the readiness fold and destinations are visible first, the kit embed iframe mounts after that click, and the browser does not open a new tab"),
+    ac("AC-CONSOLE-22", "REQ-CONSOLE-016", "FOBO_HELIX grids include investigation at /sim/grids/investigation and close at /sim/grids/close", "the operator clicks Grid view on the FOBO instance page and on the FOBO_HELIX report document", "both pages render those grids in a MESCIUS Wijmo FlexGrid bound from the current context"),
     ac("AC-CONSOLE-23", "REQ-CONSOLE-013", "instance R-2031 carries amount 12450000 and account 410000", "the operator opens Board and the instance page", "both surfaces show the amount and the instance page shows account, journalId, and fsLine from REQ-ACTION-013"),
 ]
 
@@ -379,7 +379,7 @@ def render() -> str:
     a("| --- | --- |")
     a("| Product | One Finance |")
     a("| Document | Specification |")
-    a("| Version | 1.3.0 |")
+    a("| Version | 1.5.2 |")
     a("| Date | 16 September 2026 |")
     a("| Owner | Praveen Kumar |")
     a("| Audience | Implementers, reviewers, architecture group |")
@@ -387,7 +387,7 @@ def render() -> str:
     a("")
     a("### 1.2 Status")
     a("")
-    a("This specification describes the as-built phase-1 product: `onefinux-hub` on port 7070, `source-simulator` on port 7081, and `frontend/web` on port 7091. Later bus mix, live CEES, live Helix, and Wijmo are listed under Out of scope.")
+    a("This specification describes the as-built phase-1 product: `onefinux-hub` on port 7070, `source-simulator` on port 7081, and `frontend/web` on port 7091. Later bus mix, live CEES, live Helix, and Wijmo analyst studio are listed under Out of scope.")
     a("")
     a("### 1.3 Companion files")
     a("")
@@ -417,7 +417,7 @@ def render() -> str:
     a("")
     a("### 3.1 In scope")
     a("")
-    a("HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.")
+    a("HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, outcome.grids with MESCIUS Wijmo FlexGrid on `/workspaces`, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.")
     a("")
     a("### 3.2 Out of scope")
     a("")
@@ -433,7 +433,7 @@ def render() -> str:
     a("| Term | Meaning |")
     a("| --- | --- |")
     a("| Outcome | One business question for one group unit, COB, and region |")
-    a("| OutcomeDefinition | Engine product data: question, feeds, SLA, on-ready |")
+    a("| OutcomeDefinition | Engine product data: question, feeds, SLA, on-ready, optional grids |")
     a("| Kit | Stitch product data: sources, destinations, embed, userActions |")
     a("| Fold | Deterministic recompute of stitch instance status from readiness keys |")
     a("| Engine stage | Derived report or command lifecycle on the Outcome Engine |")
@@ -444,6 +444,7 @@ def render() -> str:
     a("| Drive | Testing surface at `/drive` that starts simulator scenarios |")
     a("| Feed watch | Inbox folder of JSON files ingested through the same EventHubService as HTTP |")
     a("| Event lifecycle | Console walk of receive, persist, and next state for one fact |")
+    a("| Step grid | MESCIUS Wijmo FlexGrid on `/workspaces`, configured by OutcomeDefinition.grids |")
     a("| SIGNED | Maker has signed off; COUNTERSIGN from a different actor is still open |")
     a("| REQ-ID | Functional requirement identifier |")
     a("| AC-ID | Acceptance criterion identifier with Given/When/Then |")
@@ -459,6 +460,7 @@ def render() -> str:
     a("| `docs/design/start.md` | Run steps and review rules |")
     a("| `docs/design/architecture.md` | Mermaid diagrams |")
     a("| `docs/design/event-lifecycle.md` | API vs feed contracts and the event walk |")
+    a("| `docs/design/step-grid.md` | Outcome.grids and MESCIUS Wijmo FlexGrid |")
     a("| `contracts/openapi.yaml` | Hub HTTP surface |")
     a("| `.cursor/skills/*` | Job-specific review rules |")
     a("| `AGENTS.md` | Agent notes |")
@@ -468,9 +470,9 @@ def render() -> str:
     a("")
     a("| Actor | Uses | Does not |")
     a("| --- | --- | --- |")
-    a("| Outcome user | `/outcomes`, `/instance/:id` | Head roll-ups, RTB replay |")
+    a("| Outcome user | `/outcomes`, `/workspaces`, `/instance/:id` | Head roll-ups, RTB replay |")
     a("| BU head / CIO / MD | `/board` | Sign-off or post |")
-    a("| Controller | `/reports`, document route | Drive buttons |")
+    a("| Controller | `/reports`, `/workspaces`, document route | Drive buttons |")
     a("| Maker | `/onboarding` | Treat Configuration as create |")
     a("| Owner / config | `/configuration` | Create on that page |")
     a("| RTB | `/operations`, `/monitoring` | Business sign-off |")
@@ -660,6 +662,7 @@ def render() -> str:
     a("| GET | `/api/feeds/watch` | INGEST |")
     a("| GET | `/api/stitch/instances` | FOLD |")
     a("| GET | `/api/stitch/instance` | FOLD |")
+    a("| GET | `/api/stitch/instance/step-view` | CONSOLE |")
     a("| POST | `/api/stitch/instance/signoff` | ACTION |")
     a("| POST | `/api/stitch/instance/post` | ACTION |")
     a("| POST | `/api/stitch/instance/escalate` | ACTION |")
@@ -667,6 +670,7 @@ def render() -> str:
     a("| GET | `/api/outcomes` | ENGINE |")
     a("| GET | `/api/outcomes/{outcomeId}/{cobDate}/{region}` | ENGINE |")
     a("| GET | `/api/outcomes/{outcomeId}/{cobDate}/{region}/report` | ENGINE |")
+    a("| GET | `/api/outcomes/definitions` | ENGINE, CONSOLE |")
     a("| POST | `/api/outcomes/definitions` | GOVERN |")
     a("| POST | `/api/stitch/kits` | GOVERN |")
     a("| POST | `/api/stitch/reset` | OPERATE |")
@@ -674,6 +678,7 @@ def render() -> str:
     a("| GET | `/api/stitch/monitor/*` | OPERATE |")
     a("| POST | `/api/stitch/deadletters/{id}/replay` | OPERATE |")
     a("| POST | `/sim/scenarios/{name}` | OPERATE |")
+    a("| GET | `/sim/grids/{name}` | CONSOLE |")
     a("")
     a("### 15.2 Console routes")
     a("")
@@ -682,6 +687,7 @@ def render() -> str:
     a("| `/` | CONSOLE |")
     a("| `/product` `/architecture` `/guide` `/lifecycle` | CONSOLE |")
     a("| `/board` `/outcomes` `/instance/:id` | FOLD, ACTION, OPERATE |")
+    a("| `/workspaces` | CONSOLE |")
     a("| `/reports` `/reports/:outcomeId/:cobDate/:region` | REPORTS |")
     a("| `/onboarding` `/configuration` | GOVERN |")
     a("| `/drive` | OPERATE |")
@@ -757,7 +763,7 @@ def render() -> str:
     a("")
     a("### 19.3 Surfaces")
     a("")
-    a("Home tells today's close. Board is the head table. My outcomes is the doer list. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.")
+    a("Home tells today's close. Board is the head table. My outcomes is the doer list. Workspaces renders outcome.grids in MESCIUS Wijmo FlexGrid. The instance page shows readiness fold and destinations first. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.")
     a("")
     a("### 19.4 Mobile")
     a("")

@@ -1,16 +1,19 @@
 # Instance surface: feed history, partner iframe, step reports
 
-Controller job on one instance: see the fold, open a feed only when they want history, stay in this app for the partner screen, and pull a step report into a generic grid or an iframe.
+Controller job on one instance: see the fold and destinations first, open a feed only when they want history, open Partner view for the kit embed, and open Grid view for configured lineage FlexGrids.
+
+Configured partner **workspaces** (investigation, close) live on the outcome as `grids` and render with MESCIUS Wijmo on `/workspaces`. On the **instance page** and the **report document** they open after **Grid view**. See [`step-grid.md`](step-grid.md).
 
 ## Intent
 
-The instance page is the operating surface. The fold stays sparse. Event history is behind a click on each feed. Partner work stays in-shell as an iframe. After a step, the UI asks the hub for a report payload: **GRID** (plain table) or **IFRAME** (custom screen). No `if (FOBO)`. Destination `surface` is data.
+The instance page is the operating surface. Readiness fold and destinations sit at the top. Partner iframe and outcome `grids` stay closed until the operator asks. Event history is behind a click on each feed. After a step, the UI asks the hub for a report payload: **GRID** (event-store table) or **IFRAME** (custom screen). No `if (FOBO)`. Destination `surface` is data.
 
 ## What this is not
 
 - Not a second facts table always on screen
 - Not `target=_blank` for Helix
-- Not Wijmo
+- Not mounting the kit embed or lineage FlexGrids on page open
+- Not a hub proxy of partner grid APIs
 - Not rebuilding Motif / Helix in `frontend/web`
 - Not Kafka in the browser
 
@@ -22,7 +25,9 @@ The always-on “Facts for this instance” table is removed. Same facts, on dem
 
 ## Partner iframe
 
-**Open partner screen** toggles an iframe in this page. It does not open a tab. URL comes from `kit_embed`. Query: `groupUnitId`, `productId`, `outcomeId`, `cobDate`, `region`, `runId`, `theme`. Demo Helix stub lives on the simulator at `/sim/screens/helix` so the frame is same-origin through the console proxy.
+**Partner view** (label from the kit renderer, e.g. Helix partner view) frames `kit_embed` after a click. Click again to close. It does not open a tab. Query: `groupUnitId`, `productId`, `outcomeId`, `cobDate`, `region`, `runId`, `theme`. Demo Helix stub lives on the simulator at `/sim/screens/helix` so the frame is same-origin through the console proxy.
+
+Destination HELIX still expands its own step-view iframe on click. That is the destination report, not the kit embed.
 
 ## Step report API
 
@@ -33,12 +38,12 @@ Fail-closed: unknown or unentitled instance → 404.
 | `destination_system.surface` | Result |
 |---|---|
 | `IFRAME` | `{ kind: "IFRAME", title, embedUrl, allowedOrigin, ref }` |
-| `GRID` (or a source id) | `{ kind: "GRID", title, columns[], rows[], ref }` |
+| `GRID` (or a source id) | `{ kind: "GRID", title, columns[], rows[], ref }` from `event_store` |
 | no rows | `{ kind: "NONE", ref }` |
 
-GRID columns are derived from the events for that ref (or `report_source_id` on the destination). The console renders them with one **GenericGrid**. IFRAME uses **PartnerFrame**. Destinations on the instance are clickable the same way as feeds.
+GRID columns are derived from the events for that ref (or `report_source_id` on the destination). IFRAME uses **PartnerFrame**. Destinations on the instance are clickable the same way as feeds.
 
-FOBO seed: HELIX = IFRAME; FAS_MOTIF = GRID from MOTIF events; PNL_AGENT = GRID from workflow facts when present.
+FOBO seed: HELIX = IFRAME; FAS_MOTIF and PNL_AGENT = GRID of event-store rows. Investigation and close FlexGrids are outcome.grids; they mount after Grid view on the instance page and the report document, and always on Workspaces.
 
 ## Files
 
@@ -47,5 +52,5 @@ FOBO seed: HELIX = IFRAME; FAS_MOTIF = GRID from MOTIF events; PNL_AGENT = GRID 
 | Flyway `V7` | `destination_system.surface`, `report_source_id`; FOBO embed → `/sim/screens/helix` |
 | `StitchService.stepView` | Entitled GRID / IFRAME / NONE |
 | Simulator | Embedded Helix stub, no masthead |
-| Console | Click-to-expand fold; GenericGrid; PartnerFrame in-app |
+| Console | Fold and destinations first; Partner view and Grid view on demand; GenericGrid for event history |
 | Spec | REQ-CONSOLE-014..016 (remap AC-CONSOLE-20..22) |

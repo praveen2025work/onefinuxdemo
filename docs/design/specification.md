@@ -12,7 +12,7 @@ This section identifies the document, its status, and the files it sits beside.
 | --- | --- |
 | Product | One Finance |
 | Document | Specification |
-| Version | 1.3.0 |
+| Version | 1.5.2 |
 | Date | 16 September 2026 |
 | Owner | Praveen Kumar |
 | Audience | Implementers, reviewers, architecture group |
@@ -20,7 +20,7 @@ This section identifies the document, its status, and the files it sits beside.
 
 ### 1.2 Status
 
-This specification describes the as-built phase-1 product: `onefinux-hub` on port 7070, `source-simulator` on port 7081, and `frontend/web` on port 7091. Later bus mix, live CEES, live Helix, and Wijmo are listed under Out of scope.
+This specification describes the as-built phase-1 product: `onefinux-hub` on port 7070, `source-simulator` on port 7081, and `frontend/web` on port 7091. Later bus mix, live CEES, live Helix, and Wijmo analyst studio are listed under Out of scope.
 
 ### 1.3 Companion files
 
@@ -48,7 +48,7 @@ This section bounds phase 1. Work outside these bounds needs a new REQ-ID before
 
 ### 3.1 In scope
 
-HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.
+HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, outcome.grids with MESCIUS Wijmo FlexGrid on `/workspaces`, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.
 
 ### 3.2 Out of scope
 
@@ -63,7 +63,7 @@ Phase 1 runs on-prem with HTTP ingest and the hub store. An optional later bus i
 | Term | Meaning |
 | --- | --- |
 | Outcome | One business question for one group unit, COB, and region |
-| OutcomeDefinition | Engine product data: question, feeds, SLA, on-ready |
+| OutcomeDefinition | Engine product data: question, feeds, SLA, on-ready, optional grids |
 | Kit | Stitch product data: sources, destinations, embed, userActions |
 | Fold | Deterministic recompute of stitch instance status from readiness keys |
 | Engine stage | Derived report or command lifecycle on the Outcome Engine |
@@ -74,6 +74,7 @@ Phase 1 runs on-prem with HTTP ingest and the hub store. An optional later bus i
 | Drive | Testing surface at `/drive` that starts simulator scenarios |
 | Feed watch | Inbox folder of JSON files ingested through the same EventHubService as HTTP |
 | Event lifecycle | Console walk of receive, persist, and next state for one fact |
+| Step grid | MESCIUS Wijmo FlexGrid on `/workspaces`, configured by OutcomeDefinition.grids |
 | SIGNED | Maker has signed off; COUNTERSIGN from a different actor is still open |
 | REQ-ID | Functional requirement identifier |
 | AC-ID | Acceptance criterion identifier with Given/When/Then |
@@ -88,6 +89,7 @@ Phase 1 runs on-prem with HTTP ingest and the hub store. An optional later bus i
 | `docs/design/start.md` | Run steps and review rules |
 | `docs/design/architecture.md` | Mermaid diagrams |
 | `docs/design/event-lifecycle.md` | API vs feed contracts and the event walk |
+| `docs/design/step-grid.md` | Outcome.grids and MESCIUS Wijmo FlexGrid |
 | `contracts/openapi.yaml` | Hub HTTP surface |
 | `.cursor/skills/*` | Job-specific review rules |
 | `AGENTS.md` | Agent notes |
@@ -96,9 +98,9 @@ Phase 1 runs on-prem with HTTP ingest and the hub store. An optional later bus i
 
 | Actor | Uses | Does not |
 | --- | --- | --- |
-| Outcome user | `/outcomes`, `/instance/:id` | Head roll-ups, RTB replay |
+| Outcome user | `/outcomes`, `/workspaces`, `/instance/:id` | Head roll-ups, RTB replay |
 | BU head / CIO / MD | `/board` | Sign-off or post |
-| Controller | `/reports`, document route | Drive buttons |
+| Controller | `/reports`, `/workspaces`, document route | Drive buttons |
 | Maker | `/onboarding` | Treat Configuration as create |
 | Owner / config | `/configuration` | Create on that page |
 | RTB | `/operations`, `/monitoring` | Business sign-off |
@@ -247,8 +249,8 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-CONSOLE-012` | Dropdown options for group unit, COB, and region come from hub APIs; the console does not invent those ids. |
 | `REQ-CONSOLE-013` | Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields. |
 | `REQ-CONSOLE-014` | Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events. |
-| `REQ-CONSOLE-015` | Open partner screen renders the kit embed URL as an iframe in the console and does not navigate to a new tab. |
-| `REQ-CONSOLE-016` | GET /api/stitch/instance/step-view?id=&ref= returns kind GRID with columns and rows, or kind IFRAME with embedUrl, from destination surface data, and 404 when the instance is unentitled. |
+| `REQ-CONSOLE-015` | The instance page shows the readiness fold and destinations first. Partner view frames the kit embed URL in an iframe after the operator clicks that control. The browser does not navigate to a new tab. |
+| `REQ-CONSOLE-016` | GET /api/outcomes/definitions returns optional grids on each OutcomeDefinition. Each grid names id, title, endpoint, method, and params with from or value. The console binds those params from the current context and renders each grid with MESCIUS Wijmo FlexGrid on /workspaces. The instance page and the report document render those grids after the operator clicks Grid view. GET /api/stitch/instance/step-view returns kind GRID of event-store rows or kind IFRAME with embedUrl from destination surface data. Unentitled instances return 404. |
 | `REQ-CONSOLE-017` | The Event lifecycle page at /lifecycle shows the received request body, the event_store persist, and the next stitch or engine state for a selected event. |
 
 ### 11.6 Reports index and document (REPORTS)
@@ -1121,15 +1123,15 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 
 - Maps to: `REQ-CONSOLE-015`
 - Given the instance kit has an embed URL
-- When the operator clicks Open partner screen
-- Then the partner document loads in an iframe on the instance page and the browser does not open a new tab
+- When the operator opens the instance page and clicks Partner view
+- Then the readiness fold and destinations are visible first, the kit embed iframe mounts after that click, and the browser does not open a new tab
 
 #### AC-CONSOLE-22
 
 - Maps to: `REQ-CONSOLE-016`
-- Given HELIX surface is IFRAME and FAS_MOTIF surface is GRID with report_source_id MOTIF
-- When GET step-view is called for HELIX then FAS_MOTIF on an entitled instance
-- Then HELIX returns kind IFRAME with the kit embedUrl and FAS_MOTIF returns kind GRID of Motif events
+- Given FOBO_HELIX grids include investigation at /sim/grids/investigation and close at /sim/grids/close
+- When the operator clicks Grid view on the FOBO instance page and on the FOBO_HELIX report document
+- Then both pages render those grids in a MESCIUS Wijmo FlexGrid bound from the current context
 
 #### AC-CONSOLE-23
 
@@ -1806,6 +1808,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | GET | `/api/feeds/watch` | INGEST |
 | GET | `/api/stitch/instances` | FOLD |
 | GET | `/api/stitch/instance` | FOLD |
+| GET | `/api/stitch/instance/step-view` | CONSOLE |
 | POST | `/api/stitch/instance/signoff` | ACTION |
 | POST | `/api/stitch/instance/post` | ACTION |
 | POST | `/api/stitch/instance/escalate` | ACTION |
@@ -1813,6 +1816,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | GET | `/api/outcomes` | ENGINE |
 | GET | `/api/outcomes/{outcomeId}/{cobDate}/{region}` | ENGINE |
 | GET | `/api/outcomes/{outcomeId}/{cobDate}/{region}/report` | ENGINE |
+| GET | `/api/outcomes/definitions` | ENGINE, CONSOLE |
 | POST | `/api/outcomes/definitions` | GOVERN |
 | POST | `/api/stitch/kits` | GOVERN |
 | POST | `/api/stitch/reset` | OPERATE |
@@ -1820,6 +1824,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | GET | `/api/stitch/monitor/*` | OPERATE |
 | POST | `/api/stitch/deadletters/{id}/replay` | OPERATE |
 | POST | `/sim/scenarios/{name}` | OPERATE |
+| GET | `/sim/grids/{name}` | CONSOLE |
 
 ### 15.2 Console routes
 
@@ -1828,6 +1833,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | `/` | CONSOLE |
 | `/product` `/architecture` `/guide` `/lifecycle` | CONSOLE |
 | `/board` `/outcomes` `/instance/:id` | FOLD, ACTION, OPERATE |
+| `/workspaces` | CONSOLE |
 | `/reports` `/reports/:outcomeId/:cobDate/:region` | REPORTS |
 | `/onboarding` `/configuration` | GOVERN |
 | `/drive` | OPERATE |
@@ -1899,7 +1905,7 @@ Dark canvas `#090d1c`, light canvas `#f5f6fb`, accent `#818cf8` dark and `#6366f
 
 ### 19.3 Surfaces
 
-Home tells today's close. Board is the head table. My outcomes is the doer list. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.
+Home tells today's close. Board is the head table. My outcomes is the doer list. Workspaces renders outcome.grids in MESCIUS Wijmo FlexGrid. The instance page shows readiness fold and destinations first. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.
 
 ### 19.4 Mobile
 

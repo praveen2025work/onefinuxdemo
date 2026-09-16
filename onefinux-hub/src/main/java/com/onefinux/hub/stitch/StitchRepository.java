@@ -84,7 +84,9 @@ public class StitchRepository {
         return jdbc.queryForList("""
                 SELECT kd.dest_id AS "destId", d.display_name AS "displayName", d.action_type AS "actionType",
                        d.command_url AS "commandUrl", d.surface AS "surface",
-                       d.report_source_id AS "reportSourceId", kd.step_order AS "stepOrder"
+                       d.report_source_id AS "reportSourceId", kd.step_order AS "stepOrder",
+                       kd.grid_endpoint AS "gridEndpoint", kd.grid_method AS "gridMethod",
+                       kd.grid_params_json AS "gridParamsJson"
                 FROM kit_destination kd JOIN destination_system d ON d.dest_id = kd.dest_id
                 WHERE kd.kit_id = :id ORDER BY kd.step_order""", p().addValue("id", kitId));
     }
@@ -163,6 +165,8 @@ public class StitchRepository {
                 SELECT d.dest_id AS "destId", d.display_name AS "displayName", d.action_type AS "actionType",
                        d.surface AS "surface", d.report_source_id AS "reportSourceId",
                        kd.step_order AS "stepOrder",
+                       kd.grid_endpoint AS "gridEndpoint", kd.grid_method AS "gridMethod",
+                       kd.grid_params_json AS "gridParamsJson",
                        (SELECT cr.echo_ok FROM command_run cr WHERE cr.instance_id = :id AND cr.dest_id = d.dest_id
                         ORDER BY cr.commanded_at DESC LIMIT 1) AS "echoOk"
                 FROM outcome_instance i
@@ -403,8 +407,18 @@ public class StitchRepository {
     }
 
     public void insertKitDestination(String kitId, String destId, int stepOrder) {
-        jdbc.update("MERGE INTO kit_destination KEY (kit_id, dest_id) VALUES (:kit, :dest, :step)",
-                p().addValue("kit", kitId).addValue("dest", destId).addValue("step", stepOrder));
+        insertKitDestination(kitId, destId, stepOrder, null, null, null);
+    }
+
+    public void insertKitDestination(String kitId, String destId, int stepOrder,
+                                     String gridEndpoint, String gridMethod, String gridParamsJson) {
+        jdbc.update("""
+                MERGE INTO kit_destination KEY (kit_id, dest_id) VALUES
+                (:kit, :dest, :step, :endpoint, :method, :params)""",
+                p().addValue("kit", kitId).addValue("dest", destId).addValue("step", stepOrder)
+                        .addValue("endpoint", gridEndpoint)
+                        .addValue("method", gridMethod == null || gridMethod.isBlank() ? "GET" : gridMethod)
+                        .addValue("params", gridParamsJson == null || gridParamsJson.isBlank() ? "[]" : gridParamsJson));
     }
 
     public void insertKitEmbed(String kitId, String url, String allowedOrigin, String chrome) {
