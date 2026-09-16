@@ -54,14 +54,23 @@ onefinux:
   public-url: http://localhost:7070
   simulator-url: http://localhost:7081
 
-  # Exact browser origins only — never a star origin, never any local port. The console is same-origin via Vite / IIS / nginx;
-  # this list matches the Origin those proxies forward (dev 7091, hosted/docker 8080).
+  # Exact localhost plus RFC1918 WiFi/Ethernet IPv4 on the console ports only.
+  # Never a star origin and never any-port localhost.
   cors:
     allowed-origins:
       - http://localhost:7091
       - http://127.0.0.1:7091
       - http://localhost:8080
       - http://127.0.0.1:8080
+    allowed-origin-patterns:
+      - http://192.168.*:7091
+      - http://10.*:7091
+      - http://172.*:7091
+      - http://169.254.*:7091
+      - http://192.168.*:8080
+      - http://10.*:8080
+      - http://172.*:8080
+      - http://169.254.*:8080
 
   # ---------------------------------------------------------------- Identity + entitlement (CEES)
   # POC: symmetric JWT so the hub can mint dev tokens and validate them without an IdP. Production:

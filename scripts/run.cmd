@@ -37,8 +37,9 @@ echo   Simulator   http://localhost:%SIM_PORT%/sim/scenarios
 echo.
 echo Starting the product UI in a window titled onefinux-console...
 start "onefinux-console" cmd /k call "%~dp0console.cmd"
-echo When that window prints Local, open http://localhost:7091
-echo Drive: http://localhost:7091/drive
+echo When that window prints Local, open http://127.0.0.1:7091
+echo Drive: http://127.0.0.1:7091/drive
+echo WiFi/Ethernet: use this PC's IPv4 on port 7091 (printed in the console window).
 echo Stop:  close onefinux-hub, source-simulator, and onefinux-console.
 endlocal
 cd /d "%~dp0.."

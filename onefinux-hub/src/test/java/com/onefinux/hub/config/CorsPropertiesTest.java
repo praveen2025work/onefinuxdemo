@@ -11,7 +11,7 @@ class CorsPropertiesTest {
 
     @Test
     void defaultOriginsAreExactConsoleAndHostedUrls() {
-        assertThat(new CorsProperties(null).allowedOrigins()).containsExactly(
+        assertThat(new CorsProperties(null, null).allowedOrigins()).containsExactly(
                 "http://localhost:7091",
                 "http://127.0.0.1:7091",
                 "http://localhost:8080",
@@ -19,21 +19,43 @@ class CorsPropertiesTest {
     }
 
     @Test
-    void rejectsWildcardHost() {
-        assertThatThrownBy(() -> new CorsProperties(List.of("http://localhost:*")))
+    void defaultPatternsCoverPrivateIpv4OnConsolePorts() {
+        assertThat(new CorsProperties(null, null).allowedOriginPatterns())
+                .contains("http://192.168.*:7091", "http://10.*:7091");
+    }
+
+    @Test
+    void rejectsWildcardHostOnExactList() {
+        assertThatThrownBy(() -> new CorsProperties(List.of("http://localhost:*"), List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("wildcard");
     }
 
     @Test
     void rejectsStarOrigin() {
-        assertThatThrownBy(() -> new CorsProperties(List.of("*")))
+        assertThatThrownBy(() -> new CorsProperties(List.of("*"), List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("wildcard");
     }
 
     @Test
+    void rejectsStarPattern() {
+        assertThatThrownBy(() -> new CorsProperties(List.of(), List.of("*")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("every origin");
+    }
+
+    @Test
+    void rejectsAnyPortPattern() {
+        assertThatThrownBy(() -> new CorsProperties(List.of(), List.of("http://192.168.*:*")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("every port");
+    }
+
+    @Test
     void emptyListMeansNoCrossOrigin() {
-        assertThat(new CorsProperties(List.of()).allowedOrigins()).isEmpty();
+        CorsProperties empty = new CorsProperties(List.of(), List.of());
+        assertThat(empty.allowedOrigins()).isEmpty();
+        assertThat(empty.allowedOriginPatterns()).isEmpty();
     }
 }
