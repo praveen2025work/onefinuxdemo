@@ -271,7 +271,7 @@ flowchart LR
 
 **Title:** Yes. That is the cheapest path that works.
 
-**Say:** Phase 1 is the app you can run today: hub `:7070`, console `:5173`, simulator `:7081`. Origins POST JSON. Same JSON Schema in production. No Kafka, no Redis, no AWS account.
+**Say:** Phase 1 is the app you can run today: hub `:7070`, console `:7091`, simulator `:7081`. Origins POST JSON. Same JSON Schema in production. No Kafka, no Redis, no AWS account.
 
 **Draw:**
 
@@ -452,7 +452,7 @@ Full answers live in `build-vs-buy.md` §7.
 
 ```
 Phase 1 (as-is, cheapest path that works)
-  Origin/simulator --HTTP--> hub:7070 --SSE--> console:5173
+  Origin/simulator --HTTP--> hub:7070 --SSE--> console:7091
   Store: H2     Bus: none     Cache: none     Cloud: none
 
 Production (only if the estate already has a bus)

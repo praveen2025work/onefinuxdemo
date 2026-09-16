@@ -22,10 +22,10 @@ echo $! > logs/sim.pid
 printf "Waiting for the hub"
 for _ in $(seq 1 60); do
   if curl -sf http://localhost:$HUB_PORT/api/outcomes > /dev/null; then
-    echo; echo "Hub API:   http://localhost:$HUB_PORT  (REST + SSE — not the product UI)"
+    echo; echo "Hub API:   http://localhost:$HUB_PORT  (REST + SSE - not the product UI)"
     echo "Simulator: http://localhost:$SIM_PORT/sim/scenarios"
     echo "Console:   cd frontend/web && npm install && npm run dev"
-    echo "           then open http://localhost:5173  Drive: /drive"
+    echo "           then open http://localhost:7091  Drive: /drive"
     echo "Stop:      ./scripts/stop.sh"
     exit 0
   fi

@@ -47,14 +47,14 @@ This is the path a lead should demo first: origins publish, the hub folds, Helix
 
 ```bash
 ./scripts/run.sh                          # hub 7070 + simulator 7081 — not the UI
-cd frontend/web && npm install && npm run dev   # console http://localhost:5173
+cd frontend/web && npm install && npm run dev   # console http://localhost:7091
 ```
 
-Do not open `http://localhost:7070` as the product. Vite on **5173** proxies `/api` → hub and `/sim` → simulator.
+Do not open `http://localhost:7070` as the product. Vite on **7091** proxies `/api` → hub and `/sim` → simulator.
 
 ### 1. Console setup (~20 seconds)
 
-1. Open **http://localhost:5173**.
+1. Open **http://localhost:7091**.
 2. Top bar **View** → **All screens** (or **Developer**).
 3. Set **COB** to **today**. The Helix engine scenario stamps `LocalDate.now(America/New_York)`. If the date picker is still `2026-09-12`, Reports will show the stitch day, not the Helix run.
 4. Region can stay **all regions**. Group unit **REV-ACC**.

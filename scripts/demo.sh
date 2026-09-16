@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Scripted walkthrough for a stakeholder demo. Hub APIs on 7070; watch the console on 5173.
+# Scripted walkthrough for a stakeholder demo. Hub APIs on 7070; watch the console on 7091.
 # Start first: ./scripts/run.sh   then   cd frontend/web && npm run dev
 set -euo pipefail
 HUB=${HUB:-http://localhost:7070}; SIM=${SIM:-http://localhost:7081}
 pause() { echo; read -r -p ">> $1  [Enter]" _; }
 
 curl -s -XPOST $HUB/api/admin/reset > /dev/null
-echo "Reset done. Watch http://localhost:5173 (Board / Reports) — not port 7070."
+echo "Reset done. Watch http://localhost:7091 (Board / Reports) — not port 7070."
 
 pause "Act 1 - FOBO/Helix: 300 master books arrive; at 100% the hub triggers Helix itself"
 curl -s -XPOST "$SIM/sim/scenarios/helix?seconds=40"; echo

@@ -5,7 +5,7 @@ CDP_PORT=9567
 USER_DIR=/tmp/ofx-helix-walk-chrome
 RAW=/tmp/helix-narrated-raw.mp4
 OUT=${1:-/tmp/helix-walkthrough.mp4}
-BASE=http://127.0.0.1:5173
+BASE=http://127.0.0.1:7091
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
 python3 "$REPO/scripts/helix-narration-tts.py"

@@ -85,7 +85,7 @@ if ($site) {
     Write-Check (Test-Url "http://localhost:$SitePort/") "IIS console  http://localhost:$SitePort/"
     Write-Check (Test-Url "http://localhost:$SitePort/api/outcomes") "IIS same-origin /api  http://localhost:$SitePort/api/outcomes"
 } else {
-    Write-Host '  SKIP  IIS site OneFinUxConsole is not installed (use Vite on 5173 for local)'
+    Write-Host '  SKIP  IIS site OneFinUxConsole is not installed (use Vite on 7091 for local)'
 }
 
 Write-Host ''

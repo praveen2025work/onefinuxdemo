@@ -20,7 +20,7 @@ This section identifies the document, its status, and the files it sits beside.
 
 ### 1.2 Status
 
-This specification describes the as-built phase-1 product: `onefinux-hub` on port 7070, `source-simulator` on port 7081, and `frontend/web` on port 5173. Later bus mix, live CEES, live Helix, and Wijmo are listed under Out of scope.
+This specification describes the as-built phase-1 product: `onefinux-hub` on port 7070, `source-simulator` on port 7081, and `frontend/web` on port 7091. Later bus mix, live CEES, live Helix, and Wijmo are listed under Out of scope.
 
 ### 1.3 Companion files
 
@@ -132,7 +132,7 @@ This section places the three processes against origins and destinations.
 | --- | --- | --- |
 | `onefinux-hub` | 7070 | Ingest, both folds, REST, SSE, outbox, audit, ActionExecutor |
 | `source-simulator` | 7081 | Origin and destination stubs; Drive scenarios |
-| `frontend/web` | 5173 | Entitled console |
+| `frontend/web` | 7091 | Entitled console |
 
 ### 9.2 Event path
 
@@ -1906,7 +1906,7 @@ Hub: `mvn -B test` and CI `mvn -B verify`. Map engine and fold tests to ENGINE a
 
 ### 21.2 Manual Given/When/Then
 
-Start hub and simulator with `./scripts/run.sh`. Start `frontend/web` on 5173. Execute CONSOLE, REPORTS, GOVERN, and OPERATE AC-IDs in the browser. Record the AC-ID in the pull request.
+Start hub and simulator with `./scripts/run.sh`. Start `frontend/web` on 7091. Execute CONSOLE, REPORTS, GOVERN, and OPERATE AC-IDs in the browser. Record the AC-ID in the pull request.
 
 ### 21.3 Static review
 

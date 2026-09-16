@@ -13,7 +13,7 @@ The requirements and architecture live in [`docs/design/`](docs/design/README.md
 | Module | Port | Role |
 |---|---|---|
 | `onefinux-hub` | 7070 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, REST + SSE |
-| `frontend/web` | 5173 | React console — the product UI |
+| `frontend/web` | 7091 | React console — the product UI |
 | `source-simulator` | 7081 | Stands in for Motif, SAP, GMIS, RAMP, US Castle, Finance Store, Axiom. Also runs mock **Helix** and **Axiom** services that receive commands and publish completions back |
 
 The three outcomes are configured in `onefinux-hub/src/main/resources/application.yml` as metadata, not code:
@@ -26,7 +26,7 @@ The three outcomes are configured in `onefinux-hub/src/main/resources/applicatio
 
 ## Run it
 
-`./scripts/run.sh` starts the **API only** (hub + simulator). The product UI is the React console on **5173**. Do not open `http://localhost:7070` in a browser expecting a board — that port is REST + SSE.
+`./scripts/run.sh` starts the **API only** (hub + simulator). The product UI is the React console on **7091**. Do not open `http://localhost:7070` in a browser expecting a board — that port is REST + SSE.
 
 ### 1. Prerequisites
 
@@ -48,32 +48,39 @@ chmod +x scripts/*.sh    # first clone only
 ```
 
 ```bat
-:: Windows
+:: Windows — Java plus the product UI (Vite on 7091)
 scripts\run.cmd
 ```
 
-Wait until the script prints that the hub is up. Then you have:
+Wait until `run.cmd` prints **Hub is up**. The prompt coming back is success. Java is in two minimised windows. A third window titled `onefinux-console` starts the UI. Then you have:
 
 | Process | URL | What it is |
 |---|---|---|
 | `onefinux-hub` | http://localhost:7070 | API (REST + SSE). Not the UI. |
 | `source-simulator` | http://localhost:7081 | Motif / SAP / Helix / Axiom stand-in |
+| React console | http://localhost:7091 | Product UI (Windows: started by `run.cmd`) |
 
 Skip the Maven rebuild with `./scripts/run.sh --no-build` if the jars already exist.
 
 ### 3. Start the React console (terminal 2)
 
 ```bash
+# macOS / Linux
 cd frontend/web
 npm install
 npm run dev
 ```
 
-Open **http://localhost:5173**. Vite proxies `/api` to 7070 and `/sim` to 7081, so the browser stays on 5173.
+```bat
+:: Windows: run.cmd already opened onefinux-console. To start the UI by itself:
+scripts\console.cmd
+```
+
+Open **http://localhost:7091**. Vite proxies `/api` to 7070 and `/sim` to 7081, so the browser stays on 7091. Do not use 5173.
 
 ### 4. Drive a scenario
 
-1. Go to **http://localhost:5173/drive** (nav: *Drive scenarios*). Product pages stay view-only; this is the only screen that injects facts.
+1. Go to **http://localhost:7091/drive** (nav: *Drive scenarios*). Product pages stay view-only; this is the only screen that injects facts.
 2. Click **Reset** (*Reset platform*) for a clean slate (stitch **and** engine).
 3. Click one scenario button, then watch **Board** (`/board`) and **Reports** (`/reports`).
 
@@ -90,7 +97,7 @@ Helix for a lead or joining engineer (two COBs — do not mix them): [`docs/desi
 | Run all | Run all | Helix + 15C3 + PnL together |
 | Cancel scheduled | Cancel | Stop any drip still queued on the simulator |
 
-Optional CLI walkthrough (same acts, watch the console on 5173): `./scripts/demo.sh` (Windows: `powershell -ExecutionPolicy Bypass -File scripts\demo.ps1`).
+Optional CLI walkthrough (same acts, watch the console on 7091): `./scripts/demo.sh` (Windows: `powershell -ExecutionPolicy Bypass -File scripts\demo.ps1`).
 
 ### 5. Stop
 
@@ -99,7 +106,7 @@ Optional CLI walkthrough (same acts, watch the console on 5173): `./scripts/demo
 # terminal 2: Ctrl+C the Vite process
 ```
 
-On Windows, close the two minimised windows titled `onefinux-hub` and `source-simulator`, then stop Vite.
+On Windows, close the windows titled `onefinux-hub`, `source-simulator`, and `onefinux-console`.
 
 Delete `data/` before a stakeholder demo if you want a fully empty store (the hub re-seeds kits on boot via Flyway).
 
@@ -120,8 +127,8 @@ docker compose up --build
 If 7070 or 7081 is already taken, `run.sh` rewires both sides (hub callback + simulator URL, simulator hub URL):
 
 ```bash
-HUB_PORT=7090 SIM_PORT=7091 ./scripts/run.sh
-HUB=http://localhost:7090 SIM=http://localhost:7091 ./scripts/demo.sh
+HUB_PORT=7090 SIM_PORT=7092 ./scripts/run.sh
+HUB=http://localhost:7090 SIM=http://localhost:7092 ./scripts/demo.sh
 ```
 
 The Vite proxy still targets 7070 / 7081 unless you change `frontend/web/vite.config.js`. Prefer the default ports for the console, or use Docker.
@@ -130,28 +137,24 @@ IDE: run `OneFinUxHubApplication`, then `SourceSimulatorApplication`, then step 
 
 ### 8. Windows local demo (Vite)
 
-Use this at your desk. Two terminals. The console is Vite on **5173**; Java runs in two minimised windows. This path was already in §2–§5; the list below is the full Windows sequence in one place.
+Use this at your desk. One command starts Java **and** the product UI. The console is Vite on **7091** (not 5173). Java runs in two minimised windows. This path was already in §2–§5; the list below is the full Windows sequence in one place.
 
 1. Install **Java 21**, **Maven 3.9+**, and **Node.js 18+**. Confirm with `java -version`, `mvn -version`, `node -v`.
-2. Clone the repo and open **Command Prompt** or **PowerShell** at the repo root (the folder that contains `onefinux-hub` and `frontend`).
-3. Build and start the Java processes:
+2. Clone or unzip the repo and open **Command Prompt** at the repo root (the folder that contains `onefinux-hub` and `frontend`) **or** at `scripts\`. `run.cmd` finds the root itself.
+3. Build Java and start everything:
 
    ```bat
    scripts\run.cmd
    ```
 
-   Wait until it prints that the hub is up. That starts `onefinux-hub` on **7070** and `source-simulator` on **7081**. Skip the Maven rebuild next time with `scripts\run.cmd --no-build`.
-4. In a **second** terminal:
+   Wait until it prints **Hub is up**. The prompt coming back is success. That starts:
+   - `onefinux-hub` on **7070** (minimised)
+   - `source-simulator` on **7081** (minimised)
+   - `onefinux-console` — Vite on **7091** (a new window; first run runs `npm install`)
 
-   ```bat
-   cd frontend\web
-   npm install
-   npm run dev
-   ```
-
-5. Open **http://localhost:5173**. Vite proxies `/api` → 7070 and `/sim` → 7081, so the browser stays on 5173.
-6. Drive a scenario: **http://localhost:5173/drive** → **Reset** → one scenario button. Watch **Board** and **Reports**. Optional scripted walkthrough: `powershell -ExecutionPolicy Bypass -File scripts\demo.ps1`.
-7. Stop: close the two minimised windows titled `onefinux-hub` and `source-simulator`, then Ctrl+C in the Vite terminal. Delete `data\` before a stakeholder run if you want an empty store.
+   `run.cmd` does **not** open the browser. When the console window prints `Local`, open **http://localhost:7091**. Skip the Maven rebuild next time with `scripts\run.cmd --no-build`. If the UI window is missing, run `scripts\console.cmd` yourself (do not `cd frontend\web` from inside `scripts\`).
+4. Drive a scenario: **http://localhost:7091/drive** → **Reset** → one scenario button. Watch **Board** and **Reports**. For desktop alert cards: click **Desktop alerts** in the header, Allow, then Drive. Optional scripted walkthrough: `powershell -ExecutionPolicy Bypass -File scripts\demo.ps1`.
+5. Stop: close the windows titled `onefinux-hub`, `source-simulator`, and `onefinux-console`. Delete `data\` before a stakeholder run if you want an empty store.
 
 This is not an IIS host. Closing the two Java windows stops the API. For a demo box that must stay up after you log off, use §9.
 
@@ -354,7 +357,8 @@ network where SSH to GitHub is blocked, switch the remote to HTTPS instead:
 
 - **`Database may be already in use`**: a previous hub is still shutting down and holding the H2 file lock. Wait a few seconds, or use `scripts/stop.sh`, which waits for exit. On Windows stop the minimised `onefinux-hub` window or `Stop-Service OneFinUxHub`.
 - **`release version 21 not supported`**: Maven is using an older JDK. Point `JAVA_HOME` at JDK 21.
-- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7091 ./scripts/run.sh` (see *Run it*). Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator. The Vite proxy in `frontend/web/vite.config.js` still points at 7070 / 7081 unless you edit it.
+- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7092 ./scripts/run.sh` (see *Run it*). Do not move the simulator onto **7091** — that is the console. Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port`, `sim.hub-url` and `sim.allowed-origin` on the simulator. The Vite proxy in `frontend/web/vite.config.js` still points at 7070 / 7081 unless you edit it.
+- **UI still on 5173 / port already in use**: the console is **7091** (`frontend/web/vite.config.js`, `strictPort`). Close the old Vite window and run `scripts\console.cmd`, or rerun `scripts\run.cmd`.
 - **IIS site loads but Drive / Board stay empty**: ARR proxy is off, or URL Rewrite is missing. The console calls relative `/api` and `/sim`. Enable proxy (README §9) and rerun `scripts\windows\check-host.ps1`.
 - **Live board never updates on IIS**: SSE is `/api/stream`. Confirm ARR **Enable proxy**, that `/api` compression is off in `web.config`, and that the hub service is running (`Get-Service OneFinUxHub`).
 - **NSSM starts then immediately stops**: `logs\nssm-hub.err.log`. Usual causes: Java is not 21, the jar is missing (`build-demo.cmd`), or `AppDirectory` is not the repo root (H2 path `./data/onefinux-hub`).

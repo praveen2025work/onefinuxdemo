@@ -10,7 +10,7 @@ This is the document a developer picks up to make the console a real product. It
 |---|---|---|
 | `onefinux-hub` | 7070 | Event ingest, translation, Outcome Engine fold, Stitch fold, REST + SSE, outbox, audit |
 | `source-simulator` | 7081 | Stubs systems of record and destinations. Drives Drive scenarios. |
-| `frontend/web` | 5173 (dev) | React console. The product UI. |
+| `frontend/web` | 7091 (dev) | React console. The product UI. |
 
 The browser talks only to the hub (and `/sim` via the Vite proxy). Nothing in the browser touches a bus.
 
@@ -151,7 +151,7 @@ Full operator steps: `onboarding.md`.
 Numbered local run (full list in the repo `README.md`):
 
 1. `./scripts/run.sh` — hub **7070** (API) + simulator **7081**. Not the UI.
-2. Separate terminal: `cd frontend/web && npm install && npm run dev` — console **http://localhost:5173**.
+2. Separate terminal: `cd frontend/web && npm install && npm run dev` — console **http://localhost:7091**.
 3. Open `/drive`, click **Reset**, then drive one scenario. Watch Board and Reports.
 
 ```bash

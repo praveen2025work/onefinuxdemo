@@ -56,5 +56,5 @@ echo   powershell -ExecutionPolicy Bypass -File scripts\windows\install-nssm.ps1
 echo   powershell -ExecutionPolicy Bypass -File scripts\windows\install-iis-site.ps1
 echo Then open http://localhost:8080
 echo.
-echo Local Vite demo instead: scripts\run.cmd   then   cd frontend\web ^&^& npm run dev
+echo Local Vite demo instead: scripts\run.cmd   ^(opens Java plus the console on 7091^)
 exit /b 0
