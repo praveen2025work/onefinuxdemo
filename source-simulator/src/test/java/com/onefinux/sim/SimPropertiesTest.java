@@ -11,7 +11,7 @@ class SimPropertiesTest {
 
     @Test
     void defaultOriginsAreExact() {
-        assertThat(new SimProperties(null, null, null, null).allowedOrigins())
+        assertThat(new SimProperties(null, null, null, null, null).allowedOrigins())
                 .containsExactly(
                         "http://localhost:7091",
                         "http://127.0.0.1:7091",
@@ -20,8 +20,14 @@ class SimPropertiesTest {
     }
 
     @Test
+    void defaultPatternsCoverLanIpv4() {
+        assertThat(new SimProperties(null, null, null, null, null).allowedOriginPatterns())
+                .contains("http://192.168.*:7091");
+    }
+
+    @Test
     void rejectsWildcard() {
-        assertThatThrownBy(() -> new SimProperties(null, null, List.of("http://localhost:*"), null))
+        assertThatThrownBy(() -> new SimProperties(null, null, List.of("http://localhost:*"), List.of(), null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("wildcard");
     }

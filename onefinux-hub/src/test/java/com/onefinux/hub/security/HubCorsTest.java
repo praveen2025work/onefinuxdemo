@@ -12,8 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class HubCorsTest {
 
-    private final CorsConfigurationSource source = HubCors.source(
-            new CorsProperties(List.of("http://localhost:7091", "http://localhost:8080")));
+    private final CorsConfigurationSource source = HubCors.source(new CorsProperties(null, null));
 
     @Test
     void allowsListedConsoleOrigin() {
@@ -23,10 +22,25 @@ class HubCorsTest {
     }
 
     @Test
+    void allowsEthernetOrWifiIpv4OnConsolePort() {
+        CorsConfiguration cfg = source.getCorsConfiguration(request("http://192.168.1.24:7091"));
+        assertThat(cfg).isNotNull();
+        assertThat(cfg.checkOrigin("http://192.168.1.24:7091")).isEqualTo("http://192.168.1.24:7091");
+        assertThat(cfg.checkOrigin("http://10.0.0.8:7091")).isEqualTo("http://10.0.0.8:7091");
+    }
+
+    @Test
     void rejectsUnlistedLocalPort() {
         CorsConfiguration cfg = source.getCorsConfiguration(request("http://localhost:9999"));
         assertThat(cfg).isNotNull();
         assertThat(cfg.checkOrigin("http://localhost:9999")).isNull();
+    }
+
+    @Test
+    void rejectsLanIpOnNonConsolePort() {
+        CorsConfiguration cfg = source.getCorsConfiguration(request("http://192.168.1.24:7070"));
+        assertThat(cfg).isNotNull();
+        assertThat(cfg.checkOrigin("http://192.168.1.24:7070")).isNull();
     }
 
     @Test

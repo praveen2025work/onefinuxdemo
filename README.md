@@ -152,7 +152,11 @@ Use this at your desk. One command starts Java **and** the product UI. The conso
    - `source-simulator` on **7081** (minimised)
    - `onefinux-console` — Vite on **7091** (a new window; first run runs `npm install`)
 
-   `run.cmd` does **not** open the browser. When the console window prints `Local`, open **http://localhost:7091**. Skip the Maven rebuild next time with `scripts\run.cmd --no-build`. If the UI window is missing, run `scripts\console.cmd` yourself (do not `cd frontend\web` from inside `scripts\`).
+   `run.cmd` does **not** open the browser. When the console window prints `Local`:
+   - On this PC: **http://127.0.0.1:7091** (or `http://localhost:7091`)
+   - On WiFi / Ethernet: **http://THIS-PC-IPv4:7091** — the console window prints those URLs. `ipconfig` also shows the address.
+
+   Vite listens on **0.0.0.0:7091**, so the IPv4 of Ethernet and WiFi works. Windows Firewall must allow **TCP 7091** on Private networks (a phone or another laptop cannot load the UI until that rule exists). Do not open 7070. Skip the Maven rebuild next time with `scripts\run.cmd --no-build`. If the UI window is missing, run `scripts\console.cmd` yourself (do not `cd frontend\web` from inside `scripts\`).
 4. Drive a scenario: **http://localhost:7091/drive** → **Reset** → one scenario button. Watch **Board** and **Reports**. For desktop alert cards: click **Desktop alerts** in the header, Allow, then Drive. Optional scripted walkthrough: `powershell -ExecutionPolicy Bypass -File scripts\demo.ps1`.
 5. Stop: close the windows titled `onefinux-hub`, `source-simulator`, and `onefinux-console`. Delete `data\` before a stakeholder run if you want an empty store.
 
@@ -174,7 +178,7 @@ Use this to **host** the app on a Windows demo machine: Java as Windows services
 
 **Does Java work as NSSM services?** Yes. Both jars run with `AppDirectory` = the repo root so H2 stays at `.\data\onefinux-hub`. Hub callbacks stay on `http://localhost:7070` (the simulator talks to the hub directly; the browser never does).
 
-Do **not** point the browser at 7070, and do **not** skip ARR and open the IIS site on one origin while calling 7070 on another. The console uses relative `/api` and `/sim`. Hub CORS is an exact allowlist (`http://localhost:7091` and `http://localhost:8080`, plus the `127.0.0.1` forms) — never a star origin and never any local port. Same-origin ARR is the supported host path.
+Do **not** point the browser at 7070, and do **not** skip ARR and open the IIS site on one origin while calling 7070 on another. The console uses relative `/api` and `/sim`. Hub CORS allows exact localhost URLs plus RFC1918 WiFi/Ethernet IPv4 on ports **7091** and **8080** only — never a star origin and never any local port. Same-origin ARR is the supported host path.
 
 #### Prerequisites (hosted)
 
@@ -357,8 +361,9 @@ network where SSH to GitHub is blocked, switch the remote to HTTPS instead:
 
 - **`Database may be already in use`**: a previous hub is still shutting down and holding the H2 file lock. Wait a few seconds, or use `scripts/stop.sh`, which waits for exit. On Windows stop the minimised `onefinux-hub` window or `Stop-Service OneFinUxHub`.
 - **`release version 21 not supported`**: Maven is using an older JDK. Point `JAVA_HOME` at JDK 21.
-- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7092 ./scripts/run.sh` (see *Run it*). Do not move the simulator onto **7091** — that is the console. Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port` and `sim.hub-url` on the simulator. CORS origins stay the exact console list in `application.yml` (`7091` / `8080`). The Vite proxy in `frontend/web/vite.config.js` still points at 7070 / 7081 unless you edit it.
+- **Ports busy**: `HUB_PORT=7090 SIM_PORT=7092 ./scripts/run.sh` (see *Run it*). Do not move the simulator onto **7091** — that is the console. Starting the jars by hand instead means setting `server.port`, `onefinux.public-url` and `onefinux.simulator-url` on the hub, and `server.port` and `sim.hub-url` on the simulator. CORS is localhost plus RFC1918 IPv4 on 7091 / 8080. The Vite proxy in `frontend/web/vite.config.js` still points at 7070 / 7081 unless you edit it.
 - **UI still on 5173 / port already in use**: the console is **7091** (`frontend/web/vite.config.js`, `strictPort`). Close the old Vite window and run `scripts\console.cmd`, or rerun `scripts\run.cmd`.
+- **IPv4 / WiFi / Ethernet URL does not load, localhost does**: Vite must listen on `0.0.0.0:7091` (this repo does). Restart `scripts\console.cmd`. Use this PC's IPv4 on port **7091**, not 7070. On Windows, allow **TCP 7091** in Firewall for Private networks. The console window prints the IPv4 URLs.
 - **IIS site loads but Drive / Board stay empty**: ARR proxy is off, or URL Rewrite is missing. The console calls relative `/api` and `/sim`. Enable proxy (README §9) and rerun `scripts\windows\check-host.ps1`.
 - **Live board never updates on IIS**: SSE is `/api/stream`. Confirm ARR **Enable proxy**, that `/api` compression is off in `web.config`, and that the hub service is running (`Get-Service OneFinUxHub`).
 - **NSSM starts then immediately stops**: `logs\nssm-hub.err.log`. Usual causes: Java is not 21, the jar is missing (`build-demo.cmd`), or `AppDirectory` is not the repo root (H2 path `./data/onefinux-hub`).

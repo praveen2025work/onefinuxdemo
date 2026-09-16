@@ -24,6 +24,7 @@ REQUIRED_SCRIPTS = (
     "install-iis-site.ps1",
     "uninstall-iis-site.ps1",
     "check-host.ps1",
+    "show-lan-ui.cmd",
 )
 
 
@@ -164,6 +165,8 @@ def main() -> int:
         fail("vite.config.js must set strictPort so a busy 7091 fails instead of hopping")
     if "port: 5173" in vite:
         fail("vite.config.js must not bind 5173")
+    if "host: '0.0.0.0'" not in vite and 'host: "0.0.0.0"' not in vite and "host: true" not in vite:
+        fail("vite.config.js must listen on 0.0.0.0 so Ethernet/WiFi IPv4 can load the UI")
     ok("frontend/web/vite.config.js listens on 7091")
 
     print("Windows IIS + NSSM host files are in place.")

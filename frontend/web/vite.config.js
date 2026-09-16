@@ -9,12 +9,14 @@ const diagrams = path.resolve(webRoot, '../../docs/design/diagrams');
 // The console is same-origin with the hub in the bank. In local dev we proxy /api (REST + SSE) to the
 // hub on 7070 so the browser never has to think about CORS and EventSource streams straight through.
 // Port 7091: 5173 is commonly taken by other Vite apps on a demo laptop.
+// host 0.0.0.0: Ethernet / WiFi IPv4 (not only localhost) can load the UI.
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: { '@diagrams': diagrams },
   },
   server: {
+    host: '0.0.0.0',
     port: 7091,
     strictPort: true,
     fs: { allow: [webRoot, diagrams] },
