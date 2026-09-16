@@ -265,9 +265,12 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 
 Every notification is persisted once, then fanned out:
 
-- **In-app**: live over SSE to the console inbox on 5173.
-- **Email (simulated)**: written to the `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against the corporate relay.
-- **Teams webhook**: disabled by default. Set `onefinux.notifications.webhook-url` to a Teams Workflows URL to enable it.
+- **Desktop card (outside the browser):** the same live payload as a Windows / macOS system card — One Finance icon, title, preview, **Open** / **Dismiss**, and **X**. Keep the One Finance tab loaded. Click **Desktop alerts** once if the browser asks. Drive a scenario. Closing the browser cannot deliver a card.
+- **In-app inbox:** the bell still lists history. It is not the toast.
+- **Email (simulated):** `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
+- **Teams webhook:** set `onefinux.notifications.webhook-url`.
+- **Email (simulated)**: `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
+- **Teams webhook**: set `onefinux.notifications.webhook-url`.
 
 Milestones default to 50% and 90% (`onefinux.notifications.milestones`). Progress ticks never notify, and a replay never notifies.
 

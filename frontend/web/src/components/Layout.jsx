@@ -34,7 +34,7 @@ const NAV = [
 ];
 
 export default function Layout({ children }) {
-  const { context, filters, setFilters, instances, notifications, unread, live, toast, markRead, view, setView } = useApp();
+  const { context, filters, setFilters, instances, notifications, unread, live, desktopAlerts, allowDesktopAlerts, markRead, view, setView } = useApp();
   const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
@@ -154,6 +154,17 @@ export default function Layout({ children }) {
               title="Filters the left rail for this session. Not entitlement."
               options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
           </div>
+          {desktopAlerts === 'denied' && (
+            <span className="desk-chip blocked" title="Allow One Finance in the browser site settings to restore desktop cards">
+              Alerts blocked
+            </span>
+          )}
+          {desktopAlerts !== 'granted' && desktopAlerts !== 'unsupported' && desktopAlerts !== 'denied' && (
+            <button className="desk-chip" type="button" onClick={allowDesktopAlerts}
+              title="Show READY and BLOCKED as desktop cards, outside this window">
+              Desktop alerts
+            </button>
+          )}
           <div className="bell-wrap" ref={bellRef}>
             <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications"
               aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={bellOpen}>
@@ -214,13 +225,6 @@ export default function Layout({ children }) {
           </NavLink>
         ))}
       </nav>
-
-      {toast && (
-        <div className={'toast ' + toast.severity}>
-          <div className="ttl">{toast.title}</div>
-          {toast.message && <div className="msg">{toast.message}</div>}
-        </div>
-      )}
     </div>
   );
 }

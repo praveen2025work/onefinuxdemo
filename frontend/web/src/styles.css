@@ -314,7 +314,6 @@ p { text-wrap: pretty; }
   .panel-bd, .panel-bd.tight, .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table.tbl { min-width: 640px; }
   .bell-menu { width: min(360px, calc(100vw - 16px)); right: -8px; }
-  .toast { left: 12px; right: 12px; width: auto; bottom: calc(76px + env(safe-area-inset-bottom)); }
   .live-pill { display: none; }
   .rcard-hd { flex-direction: column; }
   .drive-grid { grid-template-columns: 1fr; }
@@ -443,14 +442,16 @@ button.oc { width: 100%; text-align: left; font: inherit; color: inherit; }
 .noti .msg { font-size: 11.5px; color: var(--muted); }
 .noti .tm { font-size: 10.5px; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
 
-.toast { position: fixed; right: 22px; bottom: 22px; z-index: 100; width: 340px; padding: 13px 15px; border-radius: var(--r-card);
-  background: var(--surface); border: 1px solid var(--stroke-2); box-shadow: var(--shadow); animation: rise 0.25s ease; }
-.toast .ttl { font-weight: 600; font-size: 13.5px; }
-.toast .msg { font-size: 12px; color: var(--muted); margin-top: 3px; }
-.toast.CRITICAL { border-left: 3px solid var(--fail); }
-.toast.SUCCESS, .toast.INFO { border-left: 3px solid var(--ok); }
-.toast.WARN { border-left: 3px solid var(--warn); }
-@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.desk-chip {
+  height: var(--ctl-h); padding: 0 12px; border-radius: var(--r-pill); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px; flex: none;
+  background: var(--raised); border: 1px solid var(--stroke); color: var(--ink);
+  font-size: 12.5px; font-weight: 600; white-space: nowrap;
+}
+.desk-chip:hover { border-color: var(--stroke-2); }
+.desk-chip.blocked {
+  cursor: default; color: var(--muted); background: transparent; border-style: dashed;
+}
 
 .seg { display: inline-flex; background: var(--raised); border: 1px solid var(--stroke); border-radius: var(--r-card); padding: 2px; gap: 2px; }
 .seg button, .seg a { padding: 5px 12px; border-radius: var(--r-ctl); background: transparent; border: none; cursor: pointer; color: var(--muted); font-size: 12.5px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; white-space: nowrap; }

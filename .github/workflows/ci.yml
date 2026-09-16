@@ -50,6 +50,9 @@ jobs:
       - name: BrandMark unique SVG ids
         working-directory: .
         run: python3 scripts/check_brand_mark.py
+      - name: Desktop alerts stay outside the browser
+        working-directory: .
+        run: python3 scripts/check_notify_card.py
       - name: Confirm IIS web.config landed in dist
         run: test -f dist/web.config
 
