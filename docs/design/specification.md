@@ -12,7 +12,7 @@ This section identifies the document, its status, and the files it sits beside.
 | --- | --- |
 | Product | One Finance |
 | Document | Specification |
-| Version | 1.0.0 |
+| Version | 1.1.0 |
 | Date | 16 September 2026 |
 | Owner | Praveen Kumar |
 | Audience | Implementers, reviewers, architecture group |
@@ -48,7 +48,7 @@ This section bounds phase 1. Work outside these bounds needs a new REQ-ID before
 
 ### 3.1 In scope
 
-HTTP ingest, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions`, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, and fail-closed 404 on unentitled stitch instances.
+HTTP ingest, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, and fail-closed 404 on unentitled stitch instances.
 
 ### 3.2 Out of scope
 
@@ -72,6 +72,7 @@ Phase 1 runs on-prem with HTTP ingest and the hub store. An optional later bus i
 | CEES | Entitlement check; unentitled reads fail closed as 404 |
 | View | Rail filter stored in `ofx-view`; not entitlement |
 | Drive | Testing surface at `/drive` that starts simulator scenarios |
+| SIGNED | Maker has signed off; COUNTERSIGN from a different actor is still open |
 | REQ-ID | Functional requirement identifier |
 | AC-ID | Acceptance criterion identifier with Given/When/Then |
 
@@ -80,6 +81,7 @@ Phase 1 runs on-prem with HTTP ingest and the hub store. An optional later bus i
 | Document | Role |
 | --- | --- |
 | `docs/design/as-built.md` | Route map and what not to do |
+| `docs/design/accounting-journey.md` | Controller adjust and dual sign-off |
 | `docs/design/application.md` | Modules, APIs, two models |
 | `docs/design/start.md` | Run steps and review rules |
 | `docs/design/architecture.md` | Mermaid diagrams |
@@ -184,7 +186,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-FOLD-002` | Stitch fold sets instance status NOT_YET when no required key is FAILED and at least one required key is WAITING, and the SLA deadline has not passed. |
 | `REQ-FOLD-003` | Stitch fold sets instance status DELAYED when no required key is FAILED, at least one required key is WAITING, and the SLA deadline has passed. |
 | `REQ-FOLD-004` | Stitch fold sets instance status READY when every required key is COMPLETED and every required source is present. |
-| `REQ-FOLD-005` | Stitch fold sets instance status CLEARED when an entitled user signs off a READY instance. |
+| `REQ-FOLD-005` | When the kit userActions list does not contain COUNTERSIGN, an entitled sign-off of a READY instance sets CLEARED. When it contains COUNTERSIGN, that sign-off sets SIGNED and records signedBy; a later COUNTERSIGN by a different entitled actor sets CLEARED. |
 | `REQ-FOLD-006` | Readiness key states are WAITING, COMPLETED, FAILED, and REVOKED only. |
 | `REQ-FOLD-007` | Fold uses distinct business keys; it does not count duplicate arrivals of the same key as extra progress. |
 | `REQ-FOLD-008` | There is no product-specific branch on kitId FOBO or any other kit id; FOBO is kit data. |
@@ -215,11 +217,14 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-ACTION-003` | A new on-ready type is a new ActionExecutor bean plus definition data; it is not a new product Java type. |
 | `REQ-ACTION-004` | Action dispatch uses a runId and ignores a completion whose runId does not match the in-flight run. |
 | `REQ-ACTION-005` | POST /api/stitch/instance/action is allowed only when the kit userActions list contains that action name. |
-| `REQ-ACTION-006` | SIGN_OFF, POST, and ESCALATE keep their current rich behaviour; any other declared verb writes audit and WORKFLOW_<VERB>. |
+| `REQ-ACTION-006` | SIGN_OFF, POST, ESCALATE, ADJUST, and COUNTERSIGN keep rich behaviour; any other declared verb writes audit and WORKFLOW_<VERB>. |
 | `REQ-ACTION-007` | POST /api/outcomes/{outcomeId}/{cobDate}/{region}/run re-runs the on-ready action for that instance. |
 | `REQ-ACTION-008` | The console instance page renders only kit-declared actions and does not invent extra verbs. |
 | `REQ-ACTION-009` | NOTIFY_ONLY on a READY engine instance does not call HTTP_COMMAND or LOG_COMMAND. |
 | `REQ-ACTION-010` | A disabled action states the fold or kit reason next to the control. |
+| `REQ-ACTION-011` | When ADJUST is declared, POST /api/stitch/instance/action?action=ADJUST on a BLOCKED or READY instance records a pending command_run dest FAS_MOTIF with a runId and publishes ADJUST_REQUESTED. |
+| `REQ-ACTION-012` | When COUNTERSIGN is declared, SIGN_OFF on READY sets SIGNED; COUNTERSIGN by a different entitled actor sets CLEARED; COUNTERSIGN by signedBy is rejected. |
+| `REQ-ACTION-013` | When a stitch event carries account, journalId, amount, or fsLine attributes, the hub copies those values onto the instance and GET instances plus GET instance return them. |
 
 ### 11.5 Console chrome (CONSOLE)
 
@@ -237,6 +242,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-CONSOLE-010` | Below 820px the rail is an overlay drawer, a hamburger opens it, and a labelled bottom nav of five primary destinations is the primary movement control. |
 | `REQ-CONSOLE-011` | Every page under frontend/web/src/pages is routed and has a job listed in this specification. |
 | `REQ-CONSOLE-012` | Dropdown options for group unit, COB, and region come from hub APIs; the console does not invent those ids. |
+| `REQ-CONSOLE-013` | Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields. |
 
 ### 11.6 Reports index and document (REPORTS)
 
@@ -507,9 +513,9 @@ These 23 criteria lock FOLD behaviour. Each Maps-to line names one REQ-ID.
 #### AC-FOLD-06
 
 - Maps to: `REQ-FOLD-005`
-- Given R-1042 is READY and the kit lists SIGN_OFF
+- Given R-1042 is READY and the kit lists SIGN_OFF and COUNTERSIGN
 - When an entitled user posts POST /api/stitch/instance/signoff for R-1042
-- Then the instance status is CLEARED
+- Then the instance status is SIGNED and signedBy is that user
 
 #### AC-FOLD-07
 
@@ -858,7 +864,7 @@ These 23 criteria lock ACTION behaviour. Each Maps-to line names one REQ-ID.
 #### AC-ACTION-09
 
 - Maps to: `REQ-ACTION-006`
-- Given the instance is READY and SIGN_OFF is declared
+- Given the instance is READY, SIGN_OFF is declared, and COUNTERSIGN is not declared
 - When POST /api/stitch/instance/signoff succeeds
 - Then status becomes CLEARED
 
@@ -920,10 +926,10 @@ These 23 criteria lock ACTION behaviour. Each Maps-to line names one REQ-ID.
 
 #### AC-ACTION-18
 
-- Maps to: `REQ-ACTION-001`
-- Given the instance is NOT_YET
-- When the engine evaluates on-ready
-- Then ActionExecutor does not run
+- Maps to: `REQ-ACTION-012`
+- Given the instance is READY and the kit lists SIGN_OFF and COUNTERSIGN
+- When POST /api/stitch/instance/action?action=SIGN_OFF succeeds
+- Then status becomes SIGNED and is not CLEARED
 
 #### AC-ACTION-19
 
@@ -934,10 +940,10 @@ These 23 criteria lock ACTION behaviour. Each Maps-to line names one REQ-ID.
 
 #### AC-ACTION-20
 
-- Maps to: `REQ-ACTION-004`
-- Given two READY transitions fire in sequence
-- When each dispatch allocates a runId
-- Then the second runId replaces the first as the in-flight run
+- Maps to: `REQ-ACTION-012`
+- Given the instance is SIGNED by alice.revacc
+- When alice.revacc posts COUNTERSIGN
+- Then the hub rejects the call and status stays SIGNED
 
 #### AC-ACTION-21
 
@@ -948,17 +954,17 @@ These 23 criteria lock ACTION behaviour. Each Maps-to line names one REQ-ID.
 
 #### AC-ACTION-22
 
-- Maps to: `REQ-ACTION-003`
-- Given Configuration shows onReady.action HTTP_COMMAND
-- When the owner reads the definition
-- Then the value is data on the definition, not a hard-coded product class name
+- Maps to: `REQ-ACTION-011`
+- Given ADJUST is declared and the instance is BLOCKED
+- When POST /api/stitch/instance/action?action=ADJUST succeeds
+- Then the hub records a command runId and dest FAS_MOTIF
 
 #### AC-ACTION-23
 
-- Maps to: `REQ-ACTION-006`
-- Given POST is declared and the instance is BLOCKED
-- When POST /api/stitch/instance/post is called
-- Then the hub does not create a FAS command run
+- Maps to: `REQ-ACTION-012`
+- Given the instance is SIGNED by alice.revacc and gla.reviewer is entitled
+- When gla.reviewer posts COUNTERSIGN
+- Then status becomes CLEARED
 
 ### 12.5 Console chrome (CONSOLE)
 
@@ -1120,10 +1126,10 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 
 #### AC-CONSOLE-23
 
-- Maps to: `REQ-CONSOLE-001`
-- Given the rail is collapsed
-- When the operator reads the top-brand text
-- Then the text is One Finance and Outcome platform
+- Maps to: `REQ-CONSOLE-013`
+- Given instance R-2031 carries amount 12450000 and account 410000
+- When the operator opens Board and the instance page
+- Then both surfaces show the amount and the instance page shows account, journalId, and fsLine from REQ-ACTION-013
 
 ### 12.6 Reports index and document (REPORTS)
 
@@ -1660,17 +1666,20 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ENGINE-008` | `AC-ENGINE-11`, `AC-ENGINE-18` |
 | `REQ-ENGINE-009` | `AC-ENGINE-12` |
 | `REQ-ENGINE-010` | `AC-ENGINE-13`, `AC-ENGINE-19` |
-| `REQ-ACTION-001` | `AC-ACTION-01`, `AC-ACTION-18` |
+| `REQ-ACTION-001` | `AC-ACTION-01` |
 | `REQ-ACTION-002` | `AC-ACTION-02`, `AC-ACTION-03` |
-| `REQ-ACTION-003` | `AC-ACTION-04`, `AC-ACTION-22` |
-| `REQ-ACTION-004` | `AC-ACTION-05`, `AC-ACTION-06`, `AC-ACTION-20` |
+| `REQ-ACTION-003` | `AC-ACTION-04` |
+| `REQ-ACTION-004` | `AC-ACTION-05`, `AC-ACTION-06` |
 | `REQ-ACTION-005` | `AC-ACTION-07`, `AC-ACTION-08`, `AC-ACTION-17` |
-| `REQ-ACTION-006` | `AC-ACTION-09`, `AC-ACTION-10`, `AC-ACTION-11`, `AC-ACTION-12`, `AC-ACTION-23` |
+| `REQ-ACTION-006` | `AC-ACTION-09`, `AC-ACTION-10`, `AC-ACTION-11`, `AC-ACTION-12` |
 | `REQ-ACTION-007` | `AC-ACTION-13`, `AC-ACTION-21` |
 | `REQ-ACTION-008` | `AC-ACTION-14`, `AC-ACTION-19` |
 | `REQ-ACTION-009` | `AC-ACTION-15` |
 | `REQ-ACTION-010` | `AC-ACTION-16` |
-| `REQ-CONSOLE-001` | `AC-CONSOLE-01`, `AC-CONSOLE-02`, `AC-CONSOLE-23` |
+| `REQ-ACTION-011` | `AC-ACTION-22` |
+| `REQ-ACTION-012` | `AC-ACTION-18`, `AC-ACTION-20`, `AC-ACTION-23` |
+| `REQ-ACTION-013` |  |
+| `REQ-CONSOLE-001` | `AC-CONSOLE-01`, `AC-CONSOLE-02` |
 | `REQ-CONSOLE-002` | `AC-CONSOLE-03` |
 | `REQ-CONSOLE-003` | `AC-CONSOLE-04`, `AC-CONSOLE-20` |
 | `REQ-CONSOLE-004` | `AC-CONSOLE-05`, `AC-CONSOLE-06`, `AC-CONSOLE-21` |
@@ -1682,6 +1691,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-CONSOLE-010` | `AC-CONSOLE-15`, `AC-CONSOLE-16` |
 | `REQ-CONSOLE-011` | `AC-CONSOLE-17` |
 | `REQ-CONSOLE-012` | `AC-CONSOLE-18`, `AC-CONSOLE-19` |
+| `REQ-CONSOLE-013` | `AC-CONSOLE-23` |
 | `REQ-REPORTS-001` | `AC-REPORTS-01`, `AC-REPORTS-17` |
 | `REQ-REPORTS-002` | `AC-REPORTS-02`, `AC-REPORTS-18` |
 | `REQ-REPORTS-003` | `AC-REPORTS-03`, `AC-REPORTS-04`, `AC-REPORTS-05` |
@@ -1733,8 +1743,8 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | INGEST | 10 | 23 |
 | FOLD | 10 | 23 |
 | ENGINE | 10 | 23 |
-| ACTION | 10 | 23 |
-| CONSOLE | 12 | 23 |
+| ACTION | 13 | 23 |
+| CONSOLE | 13 | 23 |
 | REPORTS | 10 | 23 |
 | GOVERN | 10 | 23 |
 | OPERATE | 12 | 23 |
@@ -1910,7 +1920,7 @@ Start hub and simulator with `./scripts/run.sh`. Start `frontend/web` on 7091. E
 
 ### 21.3 Static review
 
-AC-FOLD-09, AC-CONSOLE-17, AC-GOVERN-12, and AC-ACTION-22 are repository reviews. They do not need a live scenario.
+AC-FOLD-09, AC-CONSOLE-17, AC-GOVERN-12, and AC-ACTION-04 are repository reviews. They do not need a live scenario.
 
 ### 21.4 Gate
 

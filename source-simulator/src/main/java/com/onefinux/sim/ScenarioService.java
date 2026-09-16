@@ -63,8 +63,33 @@ public class ScenarioService {
 
     private OutboundEvent stitch(String type, String source, String key, LocalDate cob, String region,
                                  String status, String instanceId) {
+        return stitch(type, source, key, cob, region, status, instanceId, Map.of());
+    }
+
+    private OutboundEvent stitch(String type, String source, String key, LocalDate cob, String region,
+                                 String status, String instanceId, Map<String, Object> extra) {
+        Map<String, Object> attributes = new java.util.HashMap<>(extra);
+        attributes.put("instanceId", instanceId);
         return new OutboundEvent(UUID.randomUUID().toString(), type, source, key, cob, region, status,
-                Instant.now(), Map.of("instanceId", instanceId));
+                Instant.now(), attributes);
+    }
+
+    /**
+     * Material blocked item: Motif rejects a journal with account / amount / FS line on R-2031.
+     * Adjust from the instance page commands FAS; Motif then echoes LEDGER_POSTED for MB014.
+     */
+    public ScenarioRun accounting() {
+        LocalDate cob = LocalDate.parse("2026-09-12");
+        Map<String, Object> item = Map.of(
+                "account", "410000",
+                "journalId", "JE-8801",
+                "amount", 12_450_000,
+                "fsLine", "Fee income");
+        at(300,  () -> stitch("TRADE_BOOKED",    "CATS",  "TR-9901", cob, "EMEA", "COMPLETED", INST_BLOCKED, item));
+        at(700,  () -> stitch("BREAK_CLEARED",   "MBR",   "BK-4420", cob, "EMEA", "COMPLETED", INST_BLOCKED, item));
+        at(1100, () -> stitch("LEDGER_REJECTED", "MOTIF", "MB014",   cob, "EMEA", "FAILED",    INST_BLOCKED, item));
+        return new ScenarioRun("accounting", cob, 3, 2,
+                "R-2031 BLOCKED on Motif MB014 with account 410000 / JE-8801 / 12,450,000 fee income. Adjust from the instance, then dual sign-off.");
     }
 
     /** Section 7 of the vision: 300 master books arrive from Motif, then Helix is triggered automatically. */

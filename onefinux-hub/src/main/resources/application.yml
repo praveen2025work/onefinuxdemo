@@ -85,6 +85,7 @@ onefinux:
       # Bracket-quoted keys so dotted usernames bind as literal map keys (not nested paths).
       "[praveen.kumar]": { superuser: true, roles: [ADMIN] }
       "[alice.revacc]":  { roles: [CONTROLLER], groupUnits: [REV-ACC], ceesProducts: ["product:FOBO"] }
+      "[gla.reviewer]":  { roles: [GLA], groupUnits: [REV-ACC], ceesProducts: ["product:FOBO"] }
       "[bob.markets]":   { roles: [CONTROLLER], groupUnits: [MARKETS] }   # entitled to a unit with no instances
       "[auditor]":       { roles: [AUDIT], groupUnits: [REV-ACC] }
 

@@ -16,7 +16,7 @@ Agents / engines **already ran**. The user opens the ready output and **signs of
 
 ## Actions
 
-Buttons come from the kit `userActions`. Call `POST /api/stitch/instance/action`. Do not add a one-off endpoint per verb.
+Buttons come from the kit `userActions`. Call `POST /api/stitch/instance/action`. Do not add a one-off endpoint per verb. Rich verbs today: `SIGN_OFF` (READY → `SIGNED` when `COUNTERSIGN` is declared, else `CLEARED`), `COUNTERSIGN` (different actor, `SIGNED` → `CLEARED`), `ADJUST` (command + `runId` echo into Motif), `POST`, `ESCALATE`.
 
 ## Rules
 

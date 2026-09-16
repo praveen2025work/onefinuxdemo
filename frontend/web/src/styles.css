@@ -90,6 +90,7 @@ p { text-wrap: pretty; }
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 .mono { font-family: var(--mono); }
+.money { font-variant-numeric: tabular-nums; font-family: var(--mono); }
 .muted { color: var(--muted); }
 
 /* ---- app shell ---- */

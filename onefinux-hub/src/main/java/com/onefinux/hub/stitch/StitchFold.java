@@ -58,17 +58,27 @@ public class StitchFold {
             return;
         }
 
+        copyAccounting(instanceId, ev);
+
+        String echoRun = ev.attribute("runId");
+        if (echoRun == null && "HELIX".equalsIgnoreCase(ev.sourceSystem()) && ev.status() == EventStatus.COMPLETED) {
+            echoRun = ev.sourceKey();
+        }
+
         if ("HELIX".equalsIgnoreCase(ev.sourceSystem())) {
             if (ev.status() == EventStatus.COMPLETED) {
-                repo.completeCommandRun(instanceId, ev.sourceKey());
-                recompute(instanceId, ev.sourceKey());
+                repo.completeCommandRun(instanceId, echoRun == null ? ev.sourceKey() : echoRun);
+                recompute(instanceId, echoRun == null ? ev.sourceKey() : echoRun);
             }
             return;
         }
 
         repo.upsertReadinessKey(instanceId, ev.sourceSystem(), ev.sourceKey(),
                 keyStatus(ev.status()), ev.eventId());
-        recompute(instanceId, null);
+        if (echoRun != null && ev.status() == EventStatus.COMPLETED) {
+            repo.completeCommandRun(instanceId, echoRun);
+        }
+        recompute(instanceId, echoRun);
     }
 
     private void recompute(String instanceId, String echoedRunId) {
@@ -86,6 +96,10 @@ public class StitchFold {
                 .map(k -> String.valueOf(k.get("sourceId")))
                 .collect(java.util.stream.Collectors.toSet());
         boolean allRequiredCovered = completedSources.containsAll(required);
+
+        if (("SIGNED".equals(previous) || "CLEARED".equals(previous)) && failed == null) {
+            return;
+        }
 
         String next;
         String blocker = null;
@@ -141,6 +155,11 @@ public class StitchFold {
                 title = kitId + " " + slice + " cleared";
                 message = "Instance " + instanceId + " signed off.";
             }
+            case "SIGNED" -> {
+                severity = "INFO";
+                title = kitId + " " + slice + " signed — countersign open";
+                message = "Owner signed instance " + instanceId + ".";
+            }
             default -> {
                 return; // NOT_YET etc. are not notifiable
             }
@@ -159,6 +178,31 @@ public class StitchFold {
         if (inst != null) {
             stream.broadcast("outcome", inst);
         }
+    }
+
+    private void copyAccounting(String instanceId, BusinessEvent ev) {
+        String account = ev.attribute("account");
+        String journalId = ev.attribute("journalId");
+        String fsLine = ev.attribute("fsLine");
+        String amount = amountText(ev.attributes() == null ? null : ev.attributes().get("amount"));
+        if (account == null && journalId == null && fsLine == null && amount == null) {
+            return;
+        }
+        repo.updateInstanceAccounting(instanceId, account, journalId, amount, fsLine);
+    }
+
+    private static String amountText(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number n) {
+            if (n.doubleValue() == n.longValue()) {
+                return Long.toString(n.longValue());
+            }
+            return n.toString();
+        }
+        String s = String.valueOf(value).trim();
+        return s.isEmpty() ? null : s;
     }
 
     private static String escalationId(String instanceId) {

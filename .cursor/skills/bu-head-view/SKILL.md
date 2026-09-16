@@ -18,7 +18,7 @@ The head **tracks outcomes**. They do not perform the outcome.
 | Region | Chip |
 | Readiness | Meter from the fold |
 | Status | Ready / Blocked / Delayed / Cleared |
-| Blocker | Named key only |
+| Blocker | Named key only. Amount when the instance carries one. |
 | Escalations | Count only |
 
 COB + region + status filters. No FlexGrid of breaks. No Post. No config.

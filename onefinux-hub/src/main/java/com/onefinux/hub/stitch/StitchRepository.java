@@ -111,7 +111,9 @@ public class StitchRepository {
                 SELECT i.instance_id AS "instanceId", i.kit_id AS "kitId", k.question AS "question",
                        i.group_unit_id AS "groupUnitId", i.slice_key AS "sliceKey", i.region AS "region",
                        CAST(i.cob_date AS VARCHAR) AS "cobDate", i.status AS "status", i.run_id AS "runId",
-                       i.named_blocker AS "namedBlocker", k.renderer AS "renderer", k.user_actions AS "userActions",
+                       i.named_blocker AS "namedBlocker", i.account AS "account", i.journal_id AS "journalId",
+                       i.amount AS "amount", i.fs_line AS "fsLine", i.signed_by AS "signedBy",
+                       k.renderer AS "renderer", k.user_actions AS "userActions",
                        (SELECT COUNT(*) FROM readiness_key rk WHERE rk.instance_id = i.instance_id) AS "totalKeys",
                        (SELECT COUNT(*) FROM readiness_key rk WHERE rk.instance_id = i.instance_id AND rk.key_status = 'COMPLETED') AS "completedKeys",
                        (SELECT COUNT(*) FROM escalation e WHERE e.instance_id = i.instance_id AND e.status = 'OPEN') AS "openEscalations"
@@ -131,7 +133,9 @@ public class StitchRepository {
                 SELECT i.instance_id AS "instanceId", i.kit_id AS "kitId", k.question AS "question",
                        i.group_unit_id AS "groupUnitId", i.slice_key AS "sliceKey", i.region AS "region",
                        CAST(i.cob_date AS VARCHAR) AS "cobDate", i.status AS "status", i.run_id AS "runId",
-                       i.named_blocker AS "namedBlocker", k.renderer AS "renderer", k.user_actions AS "userActions",
+                       i.named_blocker AS "namedBlocker", i.account AS "account", i.journal_id AS "journalId",
+                       i.amount AS "amount", i.fs_line AS "fsLine", i.signed_by AS "signedBy",
+                       k.renderer AS "renderer", k.user_actions AS "userActions",
                        ke.embed_url AS "embedUrl", ke.allowed_origin AS "allowedOrigin", ke.chrome AS "chrome"
                 FROM outcome_instance i
                 JOIN product_kit k ON k.kit_id = i.kit_id
@@ -169,7 +173,8 @@ public class StitchRepository {
         return jdbc.queryForList("""
                 SELECT event_id AS "eventId", event_type AS "eventType", source_system AS "sourceSystem",
                        source_key AS "sourceKey", status AS "status", CAST(cob_date AS VARCHAR) AS "cobDate", region AS "region",
-                       CAST(occurred_at AS VARCHAR) AS "occurredAt", ingest_offset AS "ingestOffset"
+                       CAST(occurred_at AS VARCHAR) AS "occurredAt", ingest_offset AS "ingestOffset",
+                       attributes_json AS "attributesJson"
                 FROM event_store WHERE instance_id = :id ORDER BY occurred_at DESC, event_id""",
                 p().addValue("id", instanceId));
     }
@@ -228,10 +233,30 @@ public class StitchRepository {
 
     public void completeCommandRun(String instanceId, String runId) {
         jdbc.update("""
-                MERGE INTO command_run KEY (run_id) VALUES
-                (:run, :id, 'HELIX', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, :loc, 'Y')""",
+                UPDATE command_run SET completed_at = CURRENT_TIMESTAMP, echo_ok = 'Y',
+                       result_locator = COALESCE(result_locator, :loc)
+                 WHERE run_id = :run AND instance_id = :id""",
                 p().addValue("run", runId).addValue("id", instanceId)
-                        .addValue("loc", "helix://analysis/" + runId));
+                        .addValue("loc", "cmd://" + runId));
+    }
+
+    public void setSignedBy(String instanceId, String actor) {
+        jdbc.update("UPDATE outcome_instance SET signed_by = :by, updated_at = CURRENT_TIMESTAMP WHERE instance_id = :id",
+                p().addValue("by", actor).addValue("id", instanceId));
+    }
+
+    public void updateInstanceAccounting(String instanceId, String account, String journalId,
+                                         String amount, String fsLine) {
+        jdbc.update("""
+                UPDATE outcome_instance
+                   SET account = COALESCE(:acc, account),
+                       journal_id = COALESCE(:jid, journal_id),
+                       amount = COALESCE(:amt, amount),
+                       fs_line = COALESCE(:fs, fs_line),
+                       updated_at = CURRENT_TIMESTAMP
+                 WHERE instance_id = :id""",
+                p().addValue("id", instanceId).addValue("acc", account).addValue("jid", journalId)
+                        .addValue("amt", amount).addValue("fs", fsLine));
     }
 
     // ---------------------------------------------------------------- notifications
@@ -392,7 +417,7 @@ public class StitchRepository {
         jdbc.update("UPDATE readiness_key SET key_status = 'WAITING', last_event_id = NULL", p());
         jdbc.update("""
                 UPDATE outcome_instance SET status = 'NOT_YET', named_blocker = NULL, run_id = NULL,
-                    updated_at = CURRENT_TIMESTAMP""", p());
+                    signed_by = NULL, updated_at = CURRENT_TIMESTAMP""", p());
         jdbc.update("UPDATE escalation SET status = 'CLEARED'", p());
         jdbc.update("DELETE FROM event_outbox", p());
         jdbc.update("DELETE FROM event_store WHERE instance_id IS NOT NULL", p());

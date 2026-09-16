@@ -3,11 +3,11 @@ import Icon from './Icon.jsx';
 import InfoHint from './InfoHint.jsx';
 
 const PILL = {
-  READY: 'ok', CLEARED: 'ok', BLOCKED: 'fail', DELAYED: 'warn', NOT_YET: 'plain',
+  READY: 'ok', CLEARED: 'ok', SIGNED: 'bo', BLOCKED: 'fail', DELAYED: 'warn', NOT_YET: 'plain',
   COMPLETED: 'ok', FAILED: 'fail', WAITING: 'plain', REVOKED: 'warn', OPEN: 'fail',
 };
 const PILL_ICON = {
-  READY: 'check', CLEARED: 'check', COMPLETED: 'check',
+  READY: 'check', CLEARED: 'check', COMPLETED: 'check', SIGNED: 'check',
   BLOCKED: 'shield', FAILED: 'alert', OPEN: 'alert',
   DELAYED: 'clock', WAITING: 'clock', REVOKED: 'history',
   NOT_YET: 'inbox',
@@ -74,6 +74,13 @@ export function Stat({ tone, icon, label, value, foot }) {
       {foot && <div className="foot">{foot}</div>}
     </div>
   );
+}
+
+export function formatAmount(value) {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return String(value);
+  return n.toLocaleString('en-GB', { maximumFractionDigits: 0 });
 }
 
 export function Loading({ what = 'Loading…' }) {

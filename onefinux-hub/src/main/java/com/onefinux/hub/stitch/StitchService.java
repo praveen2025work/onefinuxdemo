@@ -1,10 +1,14 @@
 package com.onefinux.hub.stitch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onefinux.hub.config.OneFinUxProperties;
 import com.onefinux.hub.event.EventHubService;
 import com.onefinux.hub.event.EventStatus;
 import com.onefinux.hub.security.CurrentUser;
 import com.onefinux.hub.stream.StreamHub;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +28,8 @@ import java.util.UUID;
 @Service
 public class StitchService {
 
+    private static final Logger log = LoggerFactory.getLogger(StitchService.class);
+
     private final StitchRepository repo;
     private final StitchFold fold;
     private final EventHubService hub;
@@ -31,9 +37,18 @@ public class StitchService {
     private final ObjectMapper mapper;
     private final Clock clock;
     private final CurrentUser currentUser;
+    private final DownstreamPoster poster;
+    private final OneFinUxProperties properties;
 
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
                          StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser) {
+        this(repo, fold, hub, stream, mapper, clock, currentUser, (url, body) -> {}, null);
+    }
+
+    @Autowired
+    public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
+                         StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser,
+                         DownstreamPoster poster, OneFinUxProperties properties) {
         this.repo = repo;
         this.fold = fold;
         this.hub = hub;
@@ -41,6 +56,8 @@ public class StitchService {
         this.mapper = mapper;
         this.clock = clock;
         this.currentUser = currentUser;
+        this.poster = poster == null ? (url, body) -> {} : poster;
+        this.properties = properties;
     }
 
     /**
@@ -90,10 +107,27 @@ public class StitchService {
     public Map<String, Object> signoff(String instanceId) {
         Map<String, Object> inst = requireEntitledInstance(instanceId);
         if (!"READY".equals(inst.get("status"))) {
-            throw new IllegalStateException("Only a READY instance can be signed off (was " + inst.get("status") + ")");
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Only a READY instance can be signed off (was " + inst.get("status") + ")");
+        }
+        String actor = currentUser.actor();
+        Set<String> allowed = allowedActions(repo.kitById(str(inst, "kitId")));
+        if (allowed.contains("COUNTERSIGN")) {
+            repo.updateInstanceStatus(instanceId, "SIGNED", null, null);
+            repo.setSignedBy(instanceId, actor);
+            repo.insertAudit(actor, "SIGN_OFF", instanceId, "OK",
+                    json(Map.of("from", inst.get("status"), "to", "SIGNED")));
+            publishWorkflow("OUTCOME_SIGNED", instanceId, inst, Map.of("by", actor));
+            repo.insertNotification("INFO", "SIGNED", str(inst, "kitId"), str(inst, "question"),
+                    str(inst, "groupUnitId"), inst.get("kitId") + " " + inst.get("sliceKey") + " signed — countersign open",
+                    "Instance " + instanceId + " signed off by " + actor + "; GLA countersign required",
+                    "SSE", instanceId, str(inst, "groupUnitId"));
+            stream.broadcast("notification", Map.of("severity", "INFO", "transition", "SIGNED",
+                    "title", inst.get("kitId") + " " + inst.get("sliceKey") + " signed", "instanceId", instanceId));
+            fold.broadcastOutcome(instanceId);
+            return repo.instance(instanceId);
         }
         repo.updateInstanceStatus(instanceId, "CLEARED", null, null);
-        String actor = currentUser.actor();
         repo.insertAudit(actor, "SIGN_OFF", instanceId, "OK", json(Map.of("from", inst.get("status"), "to", "CLEARED")));
         publishWorkflow("OUTCOME_SIGNED_OFF", instanceId, inst, Map.of("by", actor));
         repo.insertNotification("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
@@ -104,6 +138,49 @@ public class StitchService {
                 "title", inst.get("kitId") + " " + inst.get("sliceKey") + " cleared", "instanceId", instanceId));
         fold.broadcastOutcome(instanceId);
         return repo.instance(instanceId);
+    }
+
+    public Map<String, Object> countersign(String instanceId) {
+        Map<String, Object> inst = requireEntitledInstance(instanceId);
+        if (!"SIGNED".equals(inst.get("status"))) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Only a SIGNED instance can be countersigned (was " + inst.get("status") + ")");
+        }
+        String actor = currentUser.actor();
+        String signedBy = str(inst, "signedBy");
+        if (signedBy != null && signedBy.equals(actor)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Countersign must be a different actor than " + signedBy);
+        }
+        repo.updateInstanceStatus(instanceId, "CLEARED", null, null);
+        repo.insertAudit(actor, "COUNTERSIGN", instanceId, "OK",
+                json(Map.of("from", "SIGNED", "to", "CLEARED", "signedBy", signedBy == null ? "" : signedBy)));
+        publishWorkflow("OUTCOME_COUNTERSIGNED", instanceId, inst, Map.of("by", actor, "signedBy", signedBy == null ? "" : signedBy));
+        repo.insertNotification("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
+                str(inst, "groupUnitId"), inst.get("kitId") + " " + inst.get("sliceKey") + " cleared",
+                "Instance " + instanceId + " countersigned by " + actor,
+                "SSE", instanceId, str(inst, "groupUnitId"));
+        stream.broadcast("notification", Map.of("severity", "INFO", "transition", "CLEARED",
+                "title", inst.get("kitId") + " " + inst.get("sliceKey") + " cleared", "instanceId", instanceId));
+        fold.broadcastOutcome(instanceId);
+        return repo.instance(instanceId);
+    }
+
+    public Map<String, Object> adjust(String instanceId) {
+        Map<String, Object> inst = requireEntitledInstance(instanceId);
+        String status = str(inst, "status");
+        if (!"BLOCKED".equals(status) && !"READY".equals(status)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "ADJUST needs BLOCKED or READY (was " + status + ")");
+        }
+        String runId = "RUN-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
+        repo.insertPendingCommandRun(runId, instanceId, "FAS_MOTIF");
+        repo.insertAudit(currentUser.actor(), "ADJUST", instanceId, "OK",
+                json(Map.of("runId", runId, "dest", "FAS_MOTIF")));
+        publishWorkflow("ADJUST_REQUESTED", instanceId, inst, Map.of("runId", runId, "dest", "FAS_MOTIF"));
+        commandAdjust(runId, inst);
+        fold.broadcastOutcome(instanceId);
+        return Map.of("instanceId", instanceId, "runId", runId, "dest", "FAS_MOTIF", "echoPending", true);
     }
 
     public Map<String, Object> post(String instanceId) {
@@ -151,6 +228,8 @@ public class StitchService {
             case "SIGN_OFF" -> signoff(instanceId);
             case "POST" -> post(instanceId);
             case "ESCALATE" -> escalate(instanceId, reason);
+            case "ADJUST" -> adjust(instanceId);
+            case "COUNTERSIGN" -> countersign(instanceId);
             default -> genericAction(action, instanceId, inst, body);
         };
     }
@@ -237,6 +316,29 @@ public class StitchService {
         LocalDate cob = LocalDate.parse(str(inst, "cobDate"));
         hub.publishInternal(eventType, str(inst, "sliceKey"), cob, str(inst, "region"),
                 EventStatus.COMPLETED, attrs);
+    }
+
+    private void commandAdjust(String runId, Map<String, Object> inst) {
+        String base = properties == null || properties.simulatorUrl() == null
+                ? "http://localhost:7081" : properties.simulatorUrl();
+        Map<String, Object> body = new java.util.HashMap<>();
+        body.put("runId", runId);
+        body.put("instanceId", str(inst, "instanceId"));
+        body.put("cobDate", str(inst, "cobDate"));
+        body.put("region", str(inst, "region"));
+        body.put("account", inst.get("account"));
+        body.put("journalId", inst.get("journalId"));
+        body.put("amount", inst.get("amount"));
+        body.put("fsLine", inst.get("fsLine"));
+        String blocker = str(inst, "namedBlocker");
+        if (blocker != null && blocker.contains(" ")) {
+            String[] parts = blocker.split("\\s+");
+            if (parts.length >= 2) {
+                body.put("sourceKey", parts[1]);
+            }
+        }
+        poster.post(base + "/fas/adjust", body);
+        log.info("ADJUST {} commanded for {}", runId, inst.get("instanceId"));
     }
 
     private String json(Object value) {

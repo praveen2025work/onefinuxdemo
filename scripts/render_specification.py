@@ -58,7 +58,7 @@ FOLD_REQ = [
     ("REQ-FOLD-002", "Stitch fold sets instance status NOT_YET when no required key is FAILED and at least one required key is WAITING, and the SLA deadline has not passed."),
     ("REQ-FOLD-003", "Stitch fold sets instance status DELAYED when no required key is FAILED, at least one required key is WAITING, and the SLA deadline has passed."),
     ("REQ-FOLD-004", "Stitch fold sets instance status READY when every required key is COMPLETED and every required source is present."),
-    ("REQ-FOLD-005", "Stitch fold sets instance status CLEARED when an entitled user signs off a READY instance."),
+    ("REQ-FOLD-005", "When the kit userActions list does not contain COUNTERSIGN, an entitled sign-off of a READY instance sets CLEARED. When it contains COUNTERSIGN, that sign-off sets SIGNED and records signedBy; a later COUNTERSIGN by a different entitled actor sets CLEARED."),
     ("REQ-FOLD-006", "Readiness key states are WAITING, COMPLETED, FAILED, and REVOKED only."),
     ("REQ-FOLD-007", "Fold uses distinct business keys; it does not count duplicate arrivals of the same key as extra progress."),
     ("REQ-FOLD-008", "There is no product-specific branch on kitId FOBO or any other kit id; FOBO is kit data."),
@@ -72,7 +72,7 @@ FOLD_AC = [
     ac("AC-FOLD-03", "REQ-FOLD-002", "instance R-1042 has CATS COMPLETED and Motif WAITING and SLA is in the future", "fold recomputes", "the instance status is NOT_YET"),
     ac("AC-FOLD-04", "REQ-FOLD-003", "instance R-1042 has a required key WAITING and the SLA deadline is in the past", "fold recomputes", "the instance status is DELAYED"),
     ac("AC-FOLD-05", "REQ-FOLD-004", "R-1042 required keys CATS, Motif, and MBR are COMPLETED", "fold recomputes", "the instance status is READY"),
-    ac("AC-FOLD-06", "REQ-FOLD-005", "R-1042 is READY and the kit lists SIGN_OFF", "an entitled user posts POST /api/stitch/instance/signoff for R-1042", "the instance status is CLEARED"),
+    ac("AC-FOLD-06", "REQ-FOLD-005", "R-1042 is READY and the kit lists SIGN_OFF and COUNTERSIGN", "an entitled user posts POST /api/stitch/instance/signoff for R-1042", "the instance status is SIGNED and signedBy is that user"),
     ac("AC-FOLD-07", "REQ-FOLD-006", "a source publishes a fact for a required key", "fold upserts the readiness key", "the key state is one of WAITING, COMPLETED, FAILED, REVOKED"),
     ac("AC-FOLD-08", "REQ-FOLD-007", "key TRADE-1 is already COMPLETED", "the same TRADE-1 fact arrives again", "completed count for that key stays 1 and status does not flip away from the prior derived status unless another key changed"),
     ac("AC-FOLD-09", "REQ-FOLD-008", "the repository contains kit HELIX_RECON for FOBO", "a reviewer searches hub Java for if (product == FOBO) or if (kitId == \"FOBO\")", "no such branch exists"),
@@ -137,11 +137,14 @@ ACTION_REQ = [
     ("REQ-ACTION-003", "A new on-ready type is a new ActionExecutor bean plus definition data; it is not a new product Java type."),
     ("REQ-ACTION-004", "Action dispatch uses a runId and ignores a completion whose runId does not match the in-flight run."),
     ("REQ-ACTION-005", "POST /api/stitch/instance/action is allowed only when the kit userActions list contains that action name."),
-    ("REQ-ACTION-006", "SIGN_OFF, POST, and ESCALATE keep their current rich behaviour; any other declared verb writes audit and WORKFLOW_<VERB>."),
+    ("REQ-ACTION-006", "SIGN_OFF, POST, ESCALATE, ADJUST, and COUNTERSIGN keep rich behaviour; any other declared verb writes audit and WORKFLOW_<VERB>."),
     ("REQ-ACTION-007", "POST /api/outcomes/{outcomeId}/{cobDate}/{region}/run re-runs the on-ready action for that instance."),
     ("REQ-ACTION-008", "The console instance page renders only kit-declared actions and does not invent extra verbs."),
     ("REQ-ACTION-009", "NOTIFY_ONLY on a READY engine instance does not call HTTP_COMMAND or LOG_COMMAND."),
     ("REQ-ACTION-010", "A disabled action states the fold or kit reason next to the control."),
+    ("REQ-ACTION-011", "When ADJUST is declared, POST /api/stitch/instance/action?action=ADJUST on a BLOCKED or READY instance records a pending command_run dest FAS_MOTIF with a runId and publishes ADJUST_REQUESTED."),
+    ("REQ-ACTION-012", "When COUNTERSIGN is declared, SIGN_OFF on READY sets SIGNED; COUNTERSIGN by a different entitled actor sets CLEARED; COUNTERSIGN by signedBy is rejected."),
+    ("REQ-ACTION-013", "When a stitch event carries account, journalId, amount, or fsLine attributes, the hub copies those values onto the instance and GET instances plus GET instance return them."),
 ]
 
 ACTION_AC = [
@@ -153,7 +156,7 @@ ACTION_AC = [
     ac("AC-ACTION-06", "REQ-ACTION-004", "instance actionRunId is RUN-1", "a completion arrives with runId RUN-1 and reportId RPT-1", "the engine applies the completion"),
     ac("AC-ACTION-07", "REQ-ACTION-005", "the kit userActions list contains AMEND and not APPROVE", "POST /api/stitch/instance/action?action=AMEND is called on a entitled READY instance", "the hub accepts the call and writes audit"),
     ac("AC-ACTION-08", "REQ-ACTION-005", "the kit userActions list does not contain APPROVE", "POST /api/stitch/instance/action?action=APPROVE is called", "the hub rejects the call"),
-    ac("AC-ACTION-09", "REQ-ACTION-006", "the instance is READY and SIGN_OFF is declared", "POST /api/stitch/instance/signoff succeeds", "status becomes CLEARED"),
+    ac("AC-ACTION-09", "REQ-ACTION-006", "the instance is READY, SIGN_OFF is declared, and COUNTERSIGN is not declared", "POST /api/stitch/instance/signoff succeeds", "status becomes CLEARED"),
     ac("AC-ACTION-10", "REQ-ACTION-006", "the instance is READY and POST is declared", "POST /api/stitch/instance/post succeeds", "the hub records a command runId and dest FAS_MOTIF"),
     ac("AC-ACTION-11", "REQ-ACTION-006", "ESCALATE is declared", "POST /api/stitch/instance/escalate succeeds", "open escalation count on that instance increases by one"),
     ac("AC-ACTION-12", "REQ-ACTION-006", "AMEND is declared and has no rich handler", "POST /api/stitch/instance/action?action=AMEND succeeds", "audit contains AMEND and an event WORKFLOW_AMEND is published"),
@@ -162,12 +165,12 @@ ACTION_AC = [
     ac("AC-ACTION-15", "REQ-ACTION-009", "onReady.action is NOTIFY_ONLY and the instance is READY", "the engine completes the ready transition", "HTTP_COMMAND and LOG_COMMAND do not run"),
     ac("AC-ACTION-16", "REQ-ACTION-010", "the instance is BLOCKED", "the instance page renders SIGN_OFF", "the control is disabled and the named blocker is visible beside it"),
     ac("AC-ACTION-17", "REQ-ACTION-005", "the caller is not entitled to the instance", "POST /api/stitch/instance/action is called", "the hub responds 404"),
-    ac("AC-ACTION-18", "REQ-ACTION-001", "the instance is NOT_YET", "the engine evaluates on-ready", "ActionExecutor does not run"),
+    ac("AC-ACTION-18", "REQ-ACTION-012", "the instance is READY and the kit lists SIGN_OFF and COUNTERSIGN", "POST /api/stitch/instance/action?action=SIGN_OFF succeeds", "status becomes SIGNED and is not CLEARED"),
     ac("AC-ACTION-19", "REQ-ACTION-008", "the kit userActions list is empty", "the user opens /instance/{id}", "the page shows no invented verbs"),
-    ac("AC-ACTION-20", "REQ-ACTION-004", "two READY transitions fire in sequence", "each dispatch allocates a runId", "the second runId replaces the first as the in-flight run"),
+    ac("AC-ACTION-20", "REQ-ACTION-012", "the instance is SIGNED by alice.revacc", "alice.revacc posts COUNTERSIGN", "the hub rejects the call and status stays SIGNED"),
     ac("AC-ACTION-21", "REQ-ACTION-007", "the outcomeId is unknown", "POST .../run is called", "the hub responds 404"),
-    ac("AC-ACTION-22", "REQ-ACTION-003", "Configuration shows onReady.action HTTP_COMMAND", "the owner reads the definition", "the value is data on the definition, not a hard-coded product class name"),
-    ac("AC-ACTION-23", "REQ-ACTION-006", "POST is declared and the instance is BLOCKED", "POST /api/stitch/instance/post is called", "the hub does not create a FAS command run"),
+    ac("AC-ACTION-22", "REQ-ACTION-011", "ADJUST is declared and the instance is BLOCKED", "POST /api/stitch/instance/action?action=ADJUST succeeds", "the hub records a command runId and dest FAS_MOTIF"),
+    ac("AC-ACTION-23", "REQ-ACTION-012", "the instance is SIGNED by alice.revacc and gla.reviewer is entitled", "gla.reviewer posts COUNTERSIGN", "status becomes CLEARED"),
 ]
 
 CONSOLE_REQ = [
@@ -183,6 +186,7 @@ CONSOLE_REQ = [
     ("REQ-CONSOLE-010", "Below 820px the rail is an overlay drawer, a hamburger opens it, and a labelled bottom nav of five primary destinations is the primary movement control."),
     ("REQ-CONSOLE-011", "Every page under frontend/web/src/pages is routed and has a job listed in this specification."),
     ("REQ-CONSOLE-012", "Dropdown options for group unit, COB, and region come from hub APIs; the console does not invent those ids."),
+    ("REQ-CONSOLE-013", "Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields."),
 ]
 
 CONSOLE_AC = [
@@ -208,7 +212,7 @@ CONSOLE_AC = [
     ac("AC-CONSOLE-20", "REQ-CONSOLE-003", "the rail is expanded", "the operator clicks the rail chevron", "the rail collapses and the wordmark moves to the top header"),
     ac("AC-CONSOLE-21", "REQ-CONSOLE-004", "the rail is collapsed", "the operator clicks the rail expand chevron", "the wordmark returns to the rail and leaves the top header"),
     ac("AC-CONSOLE-22", "REQ-CONSOLE-006", "two instances are READY and zero are BLOCKED", "the ribbon renders", "ready is 2 and blocked is 0"),
-    ac("AC-CONSOLE-23", "REQ-CONSOLE-001", "the rail is collapsed", "the operator reads the top-brand text", "the text is One Finance and Outcome platform"),
+    ac("AC-CONSOLE-23", "REQ-CONSOLE-013", "instance R-2031 carries amount 12450000 and account 410000", "the operator opens Board and the instance page", "both surfaces show the amount and the instance page shows account, journalId, and fsLine from REQ-ACTION-013"),
 ]
 
 REPORTS_REQ = [
@@ -370,7 +374,7 @@ def render() -> str:
     a("| --- | --- |")
     a("| Product | One Finance |")
     a("| Document | Specification |")
-    a("| Version | 1.0.0 |")
+    a("| Version | 1.1.0 |")
     a("| Date | 16 September 2026 |")
     a("| Owner | Praveen Kumar |")
     a("| Audience | Implementers, reviewers, architecture group |")
@@ -408,7 +412,7 @@ def render() -> str:
     a("")
     a("### 3.1 In scope")
     a("")
-    a("HTTP ingest, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions`, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, and fail-closed 404 on unentitled stitch instances.")
+    a("HTTP ingest, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, and fail-closed 404 on unentitled stitch instances.")
     a("")
     a("### 3.2 Out of scope")
     a("")
@@ -433,6 +437,7 @@ def render() -> str:
     a("| CEES | Entitlement check; unentitled reads fail closed as 404 |")
     a("| View | Rail filter stored in `ofx-view`; not entitlement |")
     a("| Drive | Testing surface at `/drive` that starts simulator scenarios |")
+    a("| SIGNED | Maker has signed off; COUNTERSIGN from a different actor is still open |")
     a("| REQ-ID | Functional requirement identifier |")
     a("| AC-ID | Acceptance criterion identifier with Given/When/Then |")
     a("")
@@ -442,6 +447,7 @@ def render() -> str:
     a("| Document | Role |")
     a("| --- | --- |")
     a("| `docs/design/as-built.md` | Route map and what not to do |")
+    a("| `docs/design/accounting-journey.md` | Controller adjust and dual sign-off |")
     a("| `docs/design/application.md` | Modules, APIs, two models |")
     a("| `docs/design/start.md` | Run steps and review rules |")
     a("| `docs/design/architecture.md` | Mermaid diagrams |")
@@ -779,7 +785,7 @@ def render() -> str:
     a("")
     a("### 21.3 Static review")
     a("")
-    a("AC-FOLD-09, AC-CONSOLE-17, AC-GOVERN-12, and AC-ACTION-22 are repository reviews. They do not need a live scenario.")
+    a("AC-FOLD-09, AC-CONSOLE-17, AC-GOVERN-12, and AC-ACTION-04 are repository reviews. They do not need a live scenario.")
     a("")
     a("### 21.4 Gate")
     a("")
