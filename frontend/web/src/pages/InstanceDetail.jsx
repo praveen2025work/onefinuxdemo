@@ -76,10 +76,10 @@ export default function InstanceDetail() {
   const canAdjust = actions.includes('ADJUST') && (isBlocked || isReady);
   const amount = formatAmount(i.amount);
   const hasItem = i.account || i.journalId || amount || i.fsLine;
-  const why = !isReady && actions.includes('SIGN_OFF') && !isSigned
-    ? `Sign off needs READY. This instance is ${i.status}${isBlocked && i.namedBlocker ? ` on ${i.namedBlocker}` : ''}.`
-    : isSigned
-      ? `Owner ${i.signedBy || 'signed'}. Countersign as a different actor (GLA).`
+  const why = isSigned
+    ? `Owner ${i.signedBy || 'signed'}. Countersign as a different actor (GLA).`
+    : (isBlocked || i.status === 'NOT_YET' || i.status === 'DELAYED') && actions.includes('SIGN_OFF')
+      ? `Sign off needs READY. This instance is ${i.status}${isBlocked && i.namedBlocker ? ` on ${i.namedBlocker}` : ''}.`
       : null;
 
   return (
