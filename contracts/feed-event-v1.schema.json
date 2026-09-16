@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://onefinux.internal/contracts/feed-event/v1",
+  "title": "One Finance feed-watch event (v1)",
+  "description": "CloudEvents 1.0 file dropped into the feed inbox. data holds the same business fields as inbound-event-v1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specversion", "id", "source", "type", "time", "datacontenttype", "data"],
+  "properties": {
+    "specversion": { "const": "1.0" },
+    "id": { "type": "string", "maxLength": 128 },
+    "source": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{1,63}$" },
+    "type": { "const": "onefinux.fact.v1" },
+    "time": { "type": "string", "format": "date-time" },
+    "datacontenttype": { "const": "application/json" },
+    "subject": { "type": "string" },
+    "data": { "$ref": "#/$defs/payload" }
+  },
+  "$defs": {
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["eventType", "sourceSystem", "sourceKey", "cobDate", "region", "status"],
+      "properties": {
+        "eventId": { "type": ["string", "null"], "maxLength": 100 },
+        "eventType": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{2,63}$" },
+        "sourceSystem": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]{1,31}$" },
+        "sourceKey": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "cobDate": { "type": "string", "format": "date" },
+        "region": { "type": "string", "enum": ["AMRS", "EMEA", "APAC", "GLOBAL"] },
+        "status": { "type": "string", "enum": ["STARTED", "COMPLETED", "FAILED", "REVOKED"] },
+        "occurredAt": { "type": ["string", "null"], "format": "date-time" },
+        "attributes": { "type": ["object", "null"] }
+      }
+    }
+  }
+}

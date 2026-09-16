@@ -25,6 +25,7 @@ INGEST_REQ = [
     ("REQ-INGEST-008", "GET /api/contracts and GET /api/contracts/{name} return the published JSON Schema documents."),
     ("REQ-INGEST-009", "The browser never opens a Kafka, MQ, SNS, or SQS connection; ingest reaches the hub only over HTTP."),
     ("REQ-INGEST-010", "source-simulator posts facts to the hub HTTP ingest endpoints and does not write hub tables directly."),
+    ("REQ-INGEST-011", "The hub watches the configured feed inbox folder, accepts JSON that matches inbound-event-v1 or feed-event-v1, persists through EventHubService.ingest, moves valid files to processed, and moves invalid files to rejected without writing event_store."),
 ]
 
 INGEST_AC = [
@@ -38,12 +39,12 @@ INGEST_AC = [
     ac("AC-INGEST-08", "REQ-INGEST-006", "a Motif LEDGER_POSTED event carries book MB012", "the hub accepts the event", "the translated identity includes group unit, cobDate, region, and the instance key the stitch fold uses"),
     ac("AC-INGEST-09", "REQ-INGEST-006", "a CATS TRADE_BOOKED event carries a trade key", "the hub accepts the event", "the fold can match that trade key as a readiness key on the target instance"),
     ac("AC-INGEST-10", "REQ-INGEST-007", "three events exist for group unit REV-ACC", "a entitled client calls GET /api/events", "the response lists those stored events and no other tenant's events"),
-    ac("AC-INGEST-11", "REQ-INGEST-008", "the hub is running", "a client calls GET /api/contracts", "the response lists inbound-event-v1 and the generic business event schema names"),
+    ac("AC-INGEST-11", "REQ-INGEST-008", "the hub is running", "a client calls GET /api/contracts", "the response lists inbound-event-v1, feed-event-v1, and the generic business event schema names"),
     ac("AC-INGEST-12", "REQ-INGEST-008", "the hub is running", "a client calls GET /api/contracts/inbound-event-v1", "the response body is the inbound-event-v1 JSON Schema"),
     ac("AC-INGEST-13", "REQ-INGEST-009", "frontend/web is loaded in a browser", "the operator drives a COB scenario", "the browser issues HTTP or SSE calls to the hub or the Vite /sim proxy only"),
     ac("AC-INGEST-14", "REQ-INGEST-010", "source-simulator listens on port 7081", "Drive starts scenario fobo", "the simulator posts facts to POST /api/events on the hub"),
-    ac("AC-INGEST-15", "REQ-INGEST-001", "the hub is running", "a client posts a valid event with sourceSystem MOTIF and eventType LEDGER_POSTED", "the stored event retains sourceSystem MOTIF and eventType LEDGER_POSTED"),
-    ac("AC-INGEST-16", "REQ-INGEST-001", "the hub is running", "a client posts a valid event that includes cobDate 2026-09-12 and region APAC", "the stored event retains cobDate 2026-09-12 and region APAC"),
+    ac("AC-INGEST-15", "REQ-INGEST-011", "a valid inbound-event-v1 JSON file sits in the feed inbox", "the hub feed watcher scans the inbox", "the event is stored via EventHubService.ingest and the file is moved to processed"),
+    ac("AC-INGEST-16", "REQ-INGEST-011", "an invalid JSON file sits in the feed inbox", "the hub feed watcher scans the inbox", "event_store does not gain a row for that file and the file is moved to rejected"),
     ac("AC-INGEST-17", "REQ-INGEST-005", "an OutcomeDefinition depends on eventType LEDGER_POSTED", "that event is accepted", "Outcome Engine fold runs only after the event row exists in the store"),
     ac("AC-INGEST-18", "REQ-INGEST-006", "an event carries a region the definition lists", "the hub translates the event", "the engine instance key uses that region and does not invent a second region"),
     ac("AC-INGEST-19", "REQ-INGEST-003", "the hub is running", "a client posts an empty object to POST /api/events", "the hub responds 4xx"),
@@ -181,7 +182,7 @@ CONSOLE_REQ = [
     ("REQ-CONSOLE-005", "html[data-theme] is dark or light; the choice persists in localStorage ofx-theme and a URL theme= parameter overrides it."),
     ("REQ-CONSOLE-006", "The context ribbon always shows group_unit, cob, region, view, instance counts, ready, blocked, and escalations."),
     ("REQ-CONSOLE-007", "Top-bar View values are all, developer, architect, controller, head, rtb, and maker; a view filters the rail and is not entitlement."),
-    ("REQ-CONSOLE-008", "Guide routes /product, /architecture, and /guide remain on the rail in every view."),
+    ("REQ-CONSOLE-008", "Guide routes /product, /architecture, /guide, and /lifecycle remain on the rail in every view."),
     ("REQ-CONSOLE-009", "Home and Reports do not render Drive or scenario buttons."),
     ("REQ-CONSOLE-010", "Below 820px the rail is an overlay drawer, a hamburger opens it, and a labelled bottom nav of five primary destinations is the primary movement control."),
     ("REQ-CONSOLE-011", "Every page under frontend/web/src/pages is routed and has a job listed in this specification."),
@@ -190,6 +191,7 @@ CONSOLE_REQ = [
     ("REQ-CONSOLE-014", "Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events."),
     ("REQ-CONSOLE-015", "Open partner screen renders the kit embed URL as an iframe in the console and does not navigate to a new tab."),
     ("REQ-CONSOLE-016", "GET /api/stitch/instance/step-view?id=&ref= returns kind GRID with columns and rows, or kind IFRAME with embedUrl, from destination surface data, and 404 when the instance is unentitled."),
+    ("REQ-CONSOLE-017", "The Event lifecycle page at /lifecycle shows the received request body, the event_store persist, and the next stitch or engine state for a selected event."),
 ]
 
 CONSOLE_AC = [
@@ -204,14 +206,14 @@ CONSOLE_AC = [
     ac("AC-CONSOLE-09", "REQ-CONSOLE-006", "any product route is open", "the operator reads the context ribbon", "group_unit, cob, region, view, instances, ready, blocked, and escalations are visible"),
     ac("AC-CONSOLE-10", "REQ-CONSOLE-007", "View is set to head", "the rail renders", "Drive is absent and Board remains"),
     ac("AC-CONSOLE-11", "REQ-CONSOLE-007", "View is controller", "the operator opens an instance they are not entitled to by URL", "the hub still fail-closes that instance with 404"),
-    ac("AC-CONSOLE-12", "REQ-CONSOLE-008", "View is rtb", "the rail renders", "/product, /architecture, and /guide remain listed"),
+    ac("AC-CONSOLE-12", "REQ-CONSOLE-008", "View is rtb", "the rail renders", "/product, /architecture, /guide, and /lifecycle remain listed"),
     ac("AC-CONSOLE-13", "REQ-CONSOLE-009", "the operator is on /", "the operator scans the page for scenario or Drive buttons", "none are present"),
     ac("AC-CONSOLE-14", "REQ-CONSOLE-009", "the operator is on /reports", "the operator scans the page for scenario or Drive buttons", "none are present"),
     ac("AC-CONSOLE-15", "REQ-CONSOLE-010", "the viewport width is 400px", "the console renders", "the rail is off-canvas until the hamburger is used and the bottom nav is visible"),
     ac("AC-CONSOLE-16", "REQ-CONSOLE-010", "the viewport width is 400px and the drawer is closed", "the operator uses bottom nav", "the five labelled destinations change the route"),
     ac("AC-CONSOLE-17", "REQ-CONSOLE-011", "a reviewer lists frontend/web/src/pages", "each file is opened against App.jsx routes", "every page component is routed"),
     ac("AC-CONSOLE-18", "REQ-CONSOLE-012", "GET /api/stitch/context returns group units and cobDates", "the top-bar Group unit and date controls render", "every option value equals a value from that API"),
-    ac("AC-CONSOLE-19", "REQ-CONSOLE-012", "the hub returns no extra group unit NEW-UNIT", "the Group unit control renders", "NEW-UNIT is absent"),
+    ac("AC-CONSOLE-19", "REQ-CONSOLE-017", "an event is stored in event_store", "the operator opens /lifecycle", "the page shows the request fields, the event_store persist, and the next stitch or engine state"),
     ac("AC-CONSOLE-20", "REQ-CONSOLE-014", "instance R-2031 has CATS and MOTIF facts stored", "the operator opens the instance page", "the Facts for this instance table is not shown until a feed is clicked"),
     ac("AC-CONSOLE-21", "REQ-CONSOLE-015", "the instance kit has an embed URL", "the operator clicks Open partner screen", "the partner document loads in an iframe on the instance page and the browser does not open a new tab"),
     ac("AC-CONSOLE-22", "REQ-CONSOLE-016", "HELIX surface is IFRAME and FAS_MOTIF surface is GRID with report_source_id MOTIF", "GET step-view is called for HELIX then FAS_MOTIF on an entitled instance", "HELIX returns kind IFRAME with the kit embedUrl and FAS_MOTIF returns kind GRID of Motif events"),
@@ -297,7 +299,7 @@ GOVERN_AC = [
 ]
 
 OPERATE_REQ = [
-    ("REQ-OPERATE-001", "Drive lives at /drive and exposes Reset plus scenarios fobo, helix, 15c3, pnl, restate, all, and cancel."),
+    ("REQ-OPERATE-001", "Drive lives at /drive and exposes Reset plus scenarios fobo, feed, helix, 15c3, pnl, restate, all, and cancel."),
     ("REQ-OPERATE-002", "Drive scenario buttons do not appear on Home or Reports."),
     ("REQ-OPERATE-003", "POST /api/stitch/reset clears stitch runtime state used by the demo."),
     ("REQ-OPERATE-004", "POST /sim/scenarios/{name} injects facts into the hub ingest."),
@@ -377,7 +379,7 @@ def render() -> str:
     a("| --- | --- |")
     a("| Product | One Finance |")
     a("| Document | Specification |")
-    a("| Version | 1.2.0 |")
+    a("| Version | 1.3.0 |")
     a("| Date | 16 September 2026 |")
     a("| Owner | Praveen Kumar |")
     a("| Audience | Implementers, reviewers, architecture group |")
@@ -415,7 +417,7 @@ def render() -> str:
     a("")
     a("### 3.1 In scope")
     a("")
-    a("HTTP ingest, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, in-shell partner iframe, and fail-closed 404 on unentitled stitch instances.")
+    a("HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.")
     a("")
     a("### 3.2 Out of scope")
     a("")
@@ -440,6 +442,8 @@ def render() -> str:
     a("| CEES | Entitlement check; unentitled reads fail closed as 404 |")
     a("| View | Rail filter stored in `ofx-view`; not entitlement |")
     a("| Drive | Testing surface at `/drive` that starts simulator scenarios |")
+    a("| Feed watch | Inbox folder of JSON files ingested through the same EventHubService as HTTP |")
+    a("| Event lifecycle | Console walk of receive, persist, and next state for one fact |")
     a("| SIGNED | Maker has signed off; COUNTERSIGN from a different actor is still open |")
     a("| REQ-ID | Functional requirement identifier |")
     a("| AC-ID | Acceptance criterion identifier with Given/When/Then |")
@@ -454,7 +458,7 @@ def render() -> str:
     a("| `docs/design/application.md` | Modules, APIs, two models |")
     a("| `docs/design/start.md` | Run steps and review rules |")
     a("| `docs/design/architecture.md` | Mermaid diagrams |")
-    a("| `contracts/inbound-event-v1` via `/api/contracts` | Ingest schema |")
+    a("| `docs/design/event-lifecycle.md` | API vs feed contracts and the event walk |")
     a("| `contracts/openapi.yaml` | Hub HTTP surface |")
     a("| `.cursor/skills/*` | Job-specific review rules |")
     a("| `AGENTS.md` | Agent notes |")
@@ -522,7 +526,7 @@ def render() -> str:
     a("")
     a("| Code | Name | Owns |")
     a("| --- | --- | --- |")
-    a("| INGEST | Event ingest and translation | `/api/events`, contracts, simulator HTTP |")
+    a("| INGEST | Event ingest and translation | `/api/events`, contracts, feed inbox, simulator HTTP |")
     a("| FOLD | Stitch fold | Readiness keys, instance status, 404 contract |")
     a("| ENGINE | Outcome Engine | Definitions, stages, report artifact |")
     a("| ACTION | Actions and executors | ActionExecutor, kit verbs, runId |")
@@ -618,19 +622,23 @@ def render() -> str:
     a("")
     a("POST `/api/events` validates `inbound-event-v1`. Required business fields include event identity, sourceSystem, eventType, and the attributes the translator maps onto group unit, COB, region, and instance. Duplicate `eventId` is idempotent.")
     a("")
-    a("### 14.2 OutcomeDefinition")
+    a("### 14.2 Feed event")
+    a("")
+    a("JSON files in the feed inbox validate `feed-event-v1` (CloudEvents wrapping the inbound fields) or raw `inbound-event-v1`. Valid files persist through the same ingest as HTTP. Invalid files move to rejected and are not stored.")
+    a("")
+    a("### 14.3 OutcomeDefinition")
     a("")
     a("Fields: `id`, `name`, `question`, `regions`, `ownerGroup`, `sla`, `dependencies[]`, `onReady`. Seeded ids: `FOBO_HELIX`, `REPORT_15C3`, `PNL_REPORTING`.")
     a("")
-    a("### 14.3 Kit")
+    a("### 14.4 Kit")
     a("")
     a("Fields: `kitId`, sources, destinations, embed, `userActions`. FOBO is `HELIX_RECON` data.")
     a("")
-    a("### 14.4 Stitch instance")
+    a("### 14.5 Stitch instance")
     a("")
     a("Status: `NOT_YET`, `READY`, `BLOCKED`, `CLEARED`, `DELAYED`. Keys: `WAITING`, `COMPLETED`, `FAILED`, `REVOKED`.")
     a("")
-    a("### 14.5 Engine instance")
+    a("### 14.6 Engine instance")
     a("")
     a("Stage: `NOT_STARTED`, `FEEDS`, `READY`, `PROCESSING`, `GENERATED`, `AVAILABLE`, `BLOCKED`, `FAILED`. A completion with `reportId` attaches `ReportArtifact`.")
     a("")
@@ -646,7 +654,10 @@ def render() -> str:
     a("| POST | `/api/events` | INGEST |")
     a("| POST | `/api/events/batch` | INGEST |")
     a("| GET | `/api/events` | INGEST |")
+    a("| GET | `/api/events/lifecycle` | INGEST |")
     a("| GET | `/api/contracts` | INGEST |")
+    a("| POST | `/api/feeds/drop` | INGEST |")
+    a("| GET | `/api/feeds/watch` | INGEST |")
     a("| GET | `/api/stitch/instances` | FOLD |")
     a("| GET | `/api/stitch/instance` | FOLD |")
     a("| POST | `/api/stitch/instance/signoff` | ACTION |")
@@ -669,7 +680,7 @@ def render() -> str:
     a("| Route | Subsystem |")
     a("| --- | --- |")
     a("| `/` | CONSOLE |")
-    a("| `/product` `/architecture` `/guide` | CONSOLE |")
+    a("| `/product` `/architecture` `/guide` `/lifecycle` | CONSOLE |")
     a("| `/board` `/outcomes` `/instance/:id` | FOLD, ACTION, OPERATE |")
     a("| `/reports` `/reports/:outcomeId/:cobDate/:region` | REPORTS |")
     a("| `/onboarding` `/configuration` | GOVERN |")

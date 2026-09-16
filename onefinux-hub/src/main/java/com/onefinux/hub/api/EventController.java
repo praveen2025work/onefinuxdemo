@@ -1,11 +1,12 @@
 package com.onefinux.hub.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.onefinux.hub.event.BusinessEvent;
+import com.onefinux.hub.event.EventBinder;
 import com.onefinux.hub.event.EventContractException;
 import com.onefinux.hub.event.EventContractValidator;
 import com.onefinux.hub.event.EventHubService;
+import com.onefinux.hub.event.EventLifecycleService;
 import com.onefinux.hub.event.InboundEvent;
 import com.onefinux.hub.event.IngestResult;
 import org.springframework.http.HttpStatus;
@@ -26,13 +27,13 @@ import java.util.List;
 public class EventController {
 
     private final EventHubService hub;
-    private final EventContractValidator contract;
-    private final ObjectMapper mapper;
+    private final EventBinder binder;
+    private final EventLifecycleService walks;
 
-    public EventController(EventHubService hub, EventContractValidator contract, ObjectMapper mapper) {
+    public EventController(EventHubService hub, EventBinder binder, EventLifecycleService walks) {
         this.hub = hub;
-        this.contract = contract;
-        this.mapper = mapper;
+        this.binder = binder;
+        this.walks = walks;
     }
 
     @PostMapping
@@ -57,9 +58,8 @@ public class EventController {
 
     /** Validate against the versioned gateway contract first, then bind to the typed event. */
     private InboundEvent validateAndBind(JsonNode body) {
-        contract.validate(body);
         try {
-            return mapper.convertValue(body, InboundEvent.class);
+            return binder.bindApi(body);
         } catch (IllegalArgumentException e) {
             throw new EventContractException(List.of(rootReason(e)));
         }
@@ -71,6 +71,19 @@ public class EventController {
             cause = cause.getCause();
         }
         return cause.getMessage() == null ? e.toString() : cause.getMessage();
+    }
+
+    @GetMapping("/lifecycle")
+    public java.util.Map<String, Object> lifecycle(@RequestParam(required = false) String id) {
+        if (id == null || id.isBlank()) {
+            return walks.latest();
+        }
+        return walks.of(id);
+    }
+
+    @GetMapping("/lifecycle/tape")
+    public java.util.List<java.util.Map<String, Object>> lifecycleTape(@RequestParam(defaultValue = "40") int limit) {
+        return walks.recent(limit);
     }
 
     @GetMapping

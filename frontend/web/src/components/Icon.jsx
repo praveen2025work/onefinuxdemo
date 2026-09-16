@@ -299,6 +299,7 @@ export const ROUTE_ICON = {
   '/product': 'book',
   '/architecture': 'compass',
   '/guide': 'code',
+  '/lifecycle': 'inbox',
   '/board': 'board',
   '/outcomes': 'cards',
   '/reports': 'report',

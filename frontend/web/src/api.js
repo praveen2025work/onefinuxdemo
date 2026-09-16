@@ -178,3 +178,36 @@ export async function runScenario(name, params) {
 
 // Cancel any scenario events the simulator still has scheduled (the drip of a running scenario).
 export const cancelScenarios = () => runScenario('cancel');
+
+export async function dropFeed(body) {
+  const res = await fetch('/api/feeds/drop', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let detail = `${res.status} on /api/feeds/drop`;
+    try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
+    throw new Error(detail);
+  }
+  return res.json();
+}
+
+export const lifecycleApi = {
+  walk: async (id) => {
+    const qs = id ? '?id=' + encodeURIComponent(id) : '';
+    const res = await fetch('/api/events/lifecycle' + qs, { headers: authHeaders() });
+    if (!res.ok) throw new Error(`${res.status} on /api/events/lifecycle`);
+    return res.json();
+  },
+  tape: async () => {
+    const res = await fetch('/api/events/lifecycle/tape', { headers: authHeaders() });
+    if (!res.ok) throw new Error(`${res.status} on /api/events/lifecycle/tape`);
+    return res.json();
+  },
+  watch: async () => {
+    const res = await fetch('/api/feeds/watch', { headers: authHeaders() });
+    if (!res.ok) throw new Error(`${res.status} on /api/feeds/watch`);
+    return res.json();
+  },
+};

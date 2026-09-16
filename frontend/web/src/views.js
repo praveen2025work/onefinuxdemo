@@ -17,6 +17,7 @@ export const VIEWS = [
       { to: '/product', title: 'Product story', q: 'Why this exists. Two rows a BU head recognises — one ready, one blocked.', tag: 'demo', cls: 'info' },
       { to: '/architecture', title: 'Architecture', q: 'Origins stay origins. The hub folds. Diagrams live in the console.', tag: 'diagrams', cls: 'bo' },
       { to: '/guide', title: 'Developer guide', q: 'Run three processes, add an outcome as data, get a PR reviewed.', tag: 'start here', cls: 'ok' },
+      { to: '/lifecycle', title: 'Event lifecycle', q: 'What we received, how we saved it, what state it moved.', tag: 'walk', cls: 'bo' },
       { to: '/board', title: 'Outcome board', q: 'Ready, blocked, delayed and escalation counts for the whole unit.', tag: 'Read only', cls: 'plain' },
     ],
   },

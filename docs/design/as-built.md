@@ -13,7 +13,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/` Home | Today’s close story + fold. View is the top-bar select | Scenario buttons, role picker, duplicate Guide buttons |
 | `/product` | Product story a BU head recognises | Live outcomes or Drive |
 | `/architecture` | Same diagrams as `docs/design` | Live outcomes or Drive |
-| `/guide` | Developer on-ramp: run it, add data, review a PR | Live outcomes or Drive |
+| `/lifecycle` | Received request, event_store persist, next stitch/engine state | Invent a second fold |
 | `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
 | `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |

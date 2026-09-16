@@ -788,6 +788,63 @@ a.story-row:hover { border-color: var(--stroke-2); }
   .rhint { display: block; }
 }
 
+.life-json {
+  margin: 0;
+  padding: 12px 14px;
+  background: var(--bg);
+  border: 1px solid var(--stroke);
+  border-radius: var(--r-card);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+  overflow: auto;
+  max-height: 280px;
+  color: var(--text);
+}
+.life-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+.life-step {
+  background: var(--surface);
+  border: 1px solid var(--stroke);
+  border-radius: var(--r-panel);
+  padding: 12px 14px;
+  display: flex;
+  gap: 10px;
+  min-width: 0;
+}
+.life-step h3 { margin: 0 0 4px; font-size: 13px; }
+.life-step p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.life-n {
+  flex: 0 0 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.life-dl { margin: 0; display: grid; grid-template-columns: 110px 1fr; gap: 6px 10px; font-size: 13px; }
+.life-dl dt { color: var(--faint); }
+.life-dl dd { margin: 0; }
+.life-tape { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.life-tape th, .life-tape td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--stroke); }
+.life-tape tbody tr { cursor: pointer; }
+.life-tape tbody tr:hover, .life-tape tbody tr.on { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+@media (max-width: 1180px) {
+  .life-steps { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 820px) {
+  .life-steps { grid-template-columns: 1fr 1fr; }
+}
+
 /* Phone: data tables marked .cards-sm become one card per row, label above value, so status stays on screen. */
 @media (max-width: 640px) {
   table.tbl.cards-sm { min-width: 0; }

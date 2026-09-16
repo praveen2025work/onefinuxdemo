@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { runScenario, cancelScenarios, resetPlatform } from '../api';
+import { runScenario, cancelScenarios, resetPlatform, dropFeed } from '../api';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { PageTitle } from '../components/bits.jsx';
@@ -14,6 +14,25 @@ const SCENARIOS = [
   { key: 'fobo', title: 'FOBO stitch', icon: 'board', tone: 'ok', cta: 'Drive',
     desc: 'FOBO does not send. CATS, Motif and MBR publish facts. R-1042 READY; R-2031 BLOCKED on Motif MB014. Helix only echoes a run on the ready row.',
     run: () => runScenario('fobo') },
+  { key: 'feed', title: 'Feed file', icon: 'inbox', tone: 'info', cta: 'Drop file',
+    desc: 'Write a Motif LEDGER_REJECTED CloudEvents file into the feed inbox and ingest it the same way as POST /api/events. Then open Event lifecycle.',
+    run: () => dropFeed({
+      specversion: '1.0',
+      id: 'MOTIF-MB014-FEED',
+      source: 'motif',
+      type: 'onefinux.fact.v1',
+      time: new Date().toISOString(),
+      datacontenttype: 'application/json',
+      data: {
+        eventType: 'LEDGER_REJECTED',
+        sourceSystem: 'MOTIF',
+        sourceKey: 'MB014',
+        cobDate: '2026-09-12',
+        region: 'EMEA',
+        status: 'FAILED',
+        attributes: { instanceId: 'FOBO|2026-09-12|EMEA|R-2031' },
+      },
+    }) },
   { key: 'helix', title: 'FOBO / Helix', icon: 'share', tone: 'ok', cta: 'Drive',
     desc: 'Motif sends 300 MASTERBOOK_READY facts (COB = today, NY). At 300 the hub POSTs Helix. Helix later publishes HELIX_ANALYSIS_COMPLETE. Set the header date to today, then watch Reports.',
     run: () => runScenario('helix') },
@@ -47,6 +66,7 @@ function summarise(data) {
     return `${data.length} scenarios · ${events} events scheduled`;
   }
   if (typeof data.cancelled === 'number') return `Cancelled ${data.cancelled} scheduled event(s)`;
+  if (data.result && data.eventId) return `${data.result} ${data.eventId}`;
   if (data.story) {
     const meta = [];
     if (data.eventsScheduled != null) meta.push(`${data.eventsScheduled} events`);

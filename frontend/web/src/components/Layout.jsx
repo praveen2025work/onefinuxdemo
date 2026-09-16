@@ -18,6 +18,7 @@ const NAV = [
     { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
     { to: '/architecture', label: 'Architecture', short: 'Arch', icon: 'compass' },
     { to: '/guide', label: 'Developer guide', short: 'Guide', icon: 'code' },
+    { to: '/lifecycle', label: 'Event lifecycle', short: 'Lifecycle', icon: 'inbox' },
   ] },
   { grp: 'Operate', items: [
     { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },

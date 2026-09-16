@@ -54,6 +54,14 @@ onefinux:
   public-url: http://localhost:7070
   simulator-url: http://localhost:7081
 
+  # JSON drops (feed-event-v1 or inbound-event-v1) land here and share EventHubService.ingest with POST /api/events.
+  feed-watch:
+    enabled: true
+    inbox: data/feeds/inbox
+    processed: data/feeds/processed
+    rejected: data/feeds/rejected
+    interval-ms: 1000
+
   # Exact localhost plus RFC1918 WiFi/Ethernet IPv4 on the console ports only.
   # Never a star origin and never any-port localhost.
   cors:
