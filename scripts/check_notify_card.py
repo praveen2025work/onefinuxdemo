@@ -25,8 +25,12 @@ def main() -> int:
             fail(f"Layout.jsx must contain {token}")
     if "right: 22px" not in css or "toast-stack" not in css:
         fail("styles.css must pin toast-stack to the bottom-right")
+    if "hidden" not in layout or "visibilitychange" not in layout:
+        fail("ToastCard must hold the card while the tab is in the background")
     if "dismissToast" not in store or "toasts" not in store:
         fail("store.jsx must keep a dismissible toast stack from SSE notifications")
+    if "requestPermission" in (ROOT / "frontend" / "web" / "src" / "notifyDesktop.js").read_text(encoding="utf-8"):
+        fail("do not prompt for OS permission while the user is on the page")
     print("OK    SSE notifications render as bottom-right cards with X")
     return 0
 

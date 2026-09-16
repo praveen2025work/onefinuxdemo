@@ -34,17 +34,23 @@ const NAV = [
 ];
 
 function ToastCard({ toast, onDismiss, onOpen }) {
-  const [paused, setPaused] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [hidden, setHidden] = useState(() => document.hidden);
   useEffect(() => {
-    if (paused) return undefined;
+    const onVis = () => setHidden(document.hidden);
+    document.addEventListener('visibilitychange', onVis);
+    return () => document.removeEventListener('visibilitychange', onVis);
+  }, []);
+  useEffect(() => {
+    if (hover || hidden) return undefined;
     const id = setTimeout(() => onDismiss(toast.at), 8000);
     return () => clearTimeout(id);
-  }, [paused, toast.at, onDismiss]);
+  }, [hover, hidden, toast.at, onDismiss]);
   return (
     <article className={'toast-card ' + (toast.severity || 'INFO')}
       role="status"
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
       onClick={onOpen}
       style={{ cursor: toast.instanceId ? 'pointer' : 'default' }}>
       <button type="button" className="toast-x" aria-label="Dismiss"
