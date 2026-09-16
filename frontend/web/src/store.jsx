@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { api } from './api';
 import { useStream } from './useStream';
 import { persistView, readStoredView, viewById } from './views.js';
-import { pushMonitorNotification } from './notifyDesktop.js';
+import { desktopNotifyPermission, enableDesktopNotifications, pushMonitorNotification } from './notifyDesktop.js';
 
 const Ctx = createContext(null);
 
@@ -19,7 +19,7 @@ export function AppProvider({ children }) {
   const [notifications, setNotifications] = useState([]);
   const [unread, setUnread] = useState(0);
   const [live, setLive] = useState(false);
-  const [toasts, setToasts] = useState([]);
+  const [desktopAlerts, setDesktopAlerts] = useState(desktopNotifyPermission);
   const [viewId, setViewId] = useState(readStoredView);
 
   const loadContext = useCallback(async () => {
@@ -48,6 +48,10 @@ export function AppProvider({ children }) {
   useEffect(() => { loadContext(); refreshNotifications(); }, [loadContext, refreshNotifications]);
   useEffect(() => { if (context) refreshInstances(); }, [filters, context]); // eslint-disable-line
 
+  useEffect(() => {
+    enableDesktopNotifications().then(setDesktopAlerts);
+  }, []);
+
   useStream({
     hello: () => setLive(true),
     outcome: () => { refreshInstances(); },
@@ -57,30 +61,37 @@ export function AppProvider({ children }) {
     notification: (n) => {
       setUnread((u) => u + 1);
       refreshNotifications();
-      const card = { ...n, at: Date.now() };
-      setToasts((rows) => [...rows, card].slice(-4));
-      pushMonitorNotification(card);
+      pushMonitorNotification({ ...n, at: Date.now() });
     },
     error: () => setLive(false),
   });
 
   useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get('toast');
-    if (q !== 'demo') return undefined;
-    setToasts([
-      {
+    if (new URLSearchParams(window.location.search).get('toast') !== 'demo') return undefined;
+    enableDesktopNotifications().then((p) => {
+      setDesktopAlerts(p);
+      pushMonitorNotification({
         title: 'FOBO is READY',
         message: 'Helix can run for GLOBAL / today.',
         severity: 'SUCCESS',
         transition: 'READY',
         at: Date.now(),
-      },
-    ]);
+      });
+    });
     return undefined;
   }, []);
 
-  const dismissToast = useCallback((at) => {
-    setToasts((rows) => rows.filter((t) => t.at !== at));
+  const allowDesktopAlerts = useCallback(async () => {
+    const p = await enableDesktopNotifications();
+    setDesktopAlerts(p);
+    if (p === 'granted') {
+      pushMonitorNotification({
+        title: 'Desktop alerts on',
+        message: 'READY / BLOCKED cards will appear outside the browser.',
+        at: Date.now(),
+      });
+    }
+    return p;
   }, []);
 
   const setFilters = useCallback((patch) => setFiltersState((f) => ({ ...f, ...patch })), []);
@@ -89,9 +100,9 @@ export function AppProvider({ children }) {
   const view = viewById(viewId);
 
   const value = useMemo(() => ({
-    context, filters, setFilters, instances, notifications, unread, live, toasts, dismissToast,
+    context, filters, setFilters, instances, notifications, unread, live, desktopAlerts, allowDesktopAlerts,
     refreshInstances, refreshNotifications, markRead, view, setView,
-  }), [context, filters, setFilters, instances, notifications, unread, live, toasts, dismissToast,
+  }), [context, filters, setFilters, instances, notifications, unread, live, desktopAlerts, allowDesktopAlerts,
     refreshInstances, refreshNotifications, markRead, view, setView]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

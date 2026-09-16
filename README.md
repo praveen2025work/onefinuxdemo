@@ -265,9 +265,10 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 
 Every notification is persisted once, then fanned out:
 
-- **In-app inbox**: bell in the top bar.
-- **On-screen card**: the same live payload as a card on the **open One Finance tab** (bottom-right, **X** to dismiss). You do not open the bell. Keep the tab loaded; Drive a scenario, or preview with `?toast=demo`. If you switch away, the card stays until you come back. Closing the browser cannot show a page card.
-- **Background tab (optional)**: if this tab is still loaded but not in front, and the browser already allowed notifications, Chrome/Edge can show the same card on the desktop.
+- **Desktop card (outside the browser):** the same live payload as a Windows / macOS system card (Outlook / GitLab corner, with **X**). Keep the One Finance tab loaded. Click **Enable desktop alerts** once if the browser asks. Drive a scenario. Closing the browser cannot deliver a card.
+- **In-app inbox:** the bell still lists history. It is not the toast.
+- **Email (simulated):** `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
+- **Teams webhook:** set `onefinux.notifications.webhook-url`.
 - **Email (simulated)**: `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
 - **Teams webhook**: set `onefinux.notifications.webhook-url`.
 

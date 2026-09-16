@@ -33,42 +33,8 @@ const NAV = [
   ] },
 ];
 
-function ToastCard({ toast, onDismiss, onOpen }) {
-  const [hover, setHover] = useState(false);
-  const [hidden, setHidden] = useState(() => document.hidden);
-  useEffect(() => {
-    const onVis = () => setHidden(document.hidden);
-    document.addEventListener('visibilitychange', onVis);
-    return () => document.removeEventListener('visibilitychange', onVis);
-  }, []);
-  useEffect(() => {
-    if (hover || hidden) return undefined;
-    const id = setTimeout(() => onDismiss(toast.at), 8000);
-    return () => clearTimeout(id);
-  }, [hover, hidden, toast.at, onDismiss]);
-  return (
-    <article className={'toast-card ' + (toast.severity || 'INFO')}
-      role="status"
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      onClick={onOpen}
-      style={{ cursor: toast.instanceId ? 'pointer' : 'default' }}>
-      <button type="button" className="toast-x" aria-label="Dismiss"
-        onClick={(e) => { e.stopPropagation(); onDismiss(toast.at); }}>
-        <Icon name="x" size={14} />
-      </button>
-      <div className="toast-app">
-        <BrandMark size={22} />
-        <span>One Finance</span>
-      </div>
-      <div className="ttl">{toast.title}</div>
-      {toast.message && <div className="msg">{toast.message}</div>}
-    </article>
-  );
-}
-
 export default function Layout({ children }) {
-  const { context, filters, setFilters, instances, notifications, unread, live, toasts, dismissToast, markRead, view, setView } = useApp();
+  const { context, filters, setFilters, instances, notifications, unread, live, desktopAlerts, allowDesktopAlerts, markRead, view, setView } = useApp();
   const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
@@ -188,6 +154,12 @@ export default function Layout({ children }) {
               title="Filters the left rail for this session. Not entitlement."
               options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
           </div>
+          {desktopAlerts !== 'granted' && desktopAlerts !== 'unsupported' && (
+            <button className="tb-btn" type="button" onClick={allowDesktopAlerts}
+              title="Allow cards outside the browser (Action Center), like Outlook or GitLab">
+              Enable desktop alerts
+            </button>
+          )}
           <div className="bell-wrap" ref={bellRef}>
             <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications"
               aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={bellOpen}>
@@ -248,20 +220,6 @@ export default function Layout({ children }) {
           </NavLink>
         ))}
       </nav>
-
-      {toasts.length > 0 && (
-        <div className="toast-stack" aria-live="polite">
-          {toasts.map((t) => (
-            <ToastCard key={t.at} toast={t} onDismiss={dismissToast}
-              onOpen={() => {
-                if (t.instanceId) {
-                  navigate('/instance/' + encodeURIComponent(t.instanceId));
-                  dismissToast(t.at);
-                }
-              }} />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
