@@ -1,9 +1,11 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill, Loading, PageTitle, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
+import GenericGrid from '../components/GenericGrid.jsx';
+import PartnerFrame from '../components/PartnerFrame.jsx';
 
 const labelOf = (verb) => verb.split(/[_\s]+/).map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 const RICH = ['SIGN_OFF', 'POST', 'ESCALATE', 'ADJUST', 'COUNTERSIGN'];
@@ -16,6 +18,10 @@ export default function InstanceDetail() {
   const [error, setError] = useState(null);
   const [banner, setBanner] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [openRef, setOpenRef] = useState(null);
+  const [step, setStep] = useState(null);
+  const [stepBusy, setStepBusy] = useState(false);
+  const [partnerOpen, setPartnerOpen] = useState(false);
   const listedStatus = instances.find((row) => row.instanceId === instanceId)?.status;
 
   const load = useCallback(async () => {
@@ -43,6 +49,37 @@ export default function InstanceDetail() {
     return null;
   }
 
+  async function loadStep(ref, { toggle = true } = {}) {
+    if (!ref) return;
+    if (toggle && openRef === ref) {
+      setOpenRef(null);
+      setStep(null);
+      return;
+    }
+    setOpenRef(ref);
+    setStepBusy(true);
+    try { setStep(await api.stepView(instanceId, ref)); }
+    catch (e) { setStep({ kind: 'NONE', ref, title: ref, error: e.message, columns: [], rows: [] }); }
+    finally { setStepBusy(false); }
+  }
+
+  function showStep(payload, ctx) {
+    if (!payload) return null;
+    if (payload.kind === 'IFRAME') {
+      return (
+        <PartnerFrame
+          url={payload.embedUrl}
+          title={payload.title || 'Partner screen'}
+          context={ctx}
+        />
+      );
+    }
+    if (payload.kind === 'GRID') {
+      return <GenericGrid columns={payload.columns} rows={payload.rows} empty="No events for this feed yet." />;
+    }
+    return <p className="muted" style={{ margin: 0 }}>{payload.error || 'No report for this step yet.'}</p>;
+  }
+
   async function act(kind) {
     setBusy(true); setBanner(null);
     try {
@@ -54,6 +91,7 @@ export default function InstanceDetail() {
         setBanner({ cls: 'ok', text: `Adjust commanded to Motif — run ${r.runId}. Waiting for the echo.` });
         const echoed = await waitForStatus(['READY', 'SIGNED', 'CLEARED']);
         if (echoed) setBanner({ cls: 'ok', text: `Adjust commanded to Motif — run ${r.runId}. Fold is ${echoed.instance.status}.` });
+        await loadStep('FAS_MOTIF', { toggle: false });
       }
       if (kind === 'escalate') { const r = await api.escalate(instanceId, 'Manual escalation from console'); setBanner({ cls: 'warn', text: `Escalation ${r.escalationId} raised to RTB.` }); }
       if (kind.startsWith('generic:')) { const verb = kind.slice(8); await api.action(instanceId, verb); setBanner({ cls: 'ok', text: `${labelOf(verb)} recorded — workflow fact WORKFLOW_${verb} published.` }); }
@@ -81,6 +119,15 @@ export default function InstanceDetail() {
     : (isBlocked || i.status === 'NOT_YET' || i.status === 'DELAYED') && actions.includes('SIGN_OFF')
       ? `Sign off needs READY. This instance is ${i.status}${isBlocked && i.namedBlocker ? ` on ${i.namedBlocker}` : ''}.`
       : null;
+  const embedContext = {
+    groupUnitId: i.groupUnitId,
+    productId: i.kitId,
+    outcomeId: i.instanceId,
+    cobDate: i.cobDate,
+    region: i.region,
+    runId: i.runId,
+    theme: document.documentElement.getAttribute('data-theme') || 'dark',
+  };
 
   return (
     <>
@@ -123,42 +170,34 @@ export default function InstanceDetail() {
             </div>
           )}
           <div className="panel">
-            <div className="panel-hd"><h2>Readiness fold</h2><span className="hint">distinct (instance, source, key)</span></div>
+            <div className="panel-hd"><h2>Readiness fold</h2><span className="hint">click a feed for history</span></div>
             <div className="panel-bd tight">
               <table className="tbl">
-                <thead><tr><th>Source</th><th>Key</th><th>Status</th><th>Required</th><th>Last event</th></tr></thead>
+                <thead><tr><th>Source</th><th>Key</th><th>Status</th><th>Required</th><th /></tr></thead>
                 <tbody>
-                  {detail.keys.map((k) => (
-                    <tr key={k.sourceId + k.sourceKey}>
-                      <td><span className="lead mono">{k.sourceId}</span><div className="sec">{k.sourceName}</div></td>
-                      <td className="mono">{k.sourceKey}</td>
-                      <td><StatusPill status={k.keyStatus} /></td>
-                      <td>{k.required === 'Y' ? 'Yes' : 'No'}</td>
-                      <td className="mono sec">{k.lastEventId || '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="panel">
-            <div className="panel-hd"><h2>Facts for this instance</h2><span className="hint">event_store</span></div>
-            <div className="panel-bd tight">
-              <table className="tbl">
-                <thead><tr><th>Time</th><th>Source</th><th>Type</th><th>Key</th><th>Status</th><th>Offset</th></tr></thead>
-                <tbody>
-                  {detail.events.map((e) => (
-                    <tr key={e.eventId}>
-                      <td className="mono sec">{(e.occurredAt || '').slice(11, 19)}</td>
-                      <td className="mono">{e.sourceSystem}</td>
-                      <td className="sec">{e.eventType}</td>
-                      <td className="mono">{e.sourceKey}</td>
-                      <td><StatusPill status={e.status} /></td>
-                      <td className="mono sec">{e.ingestOffset || '—'}</td>
-                    </tr>
-                  ))}
-                  {detail.events.length === 0 && <tr><td colSpan={6} className="empty">No facts yet — drive the simulator.</td></tr>}
+                  {detail.keys.map((k) => {
+                    const open = openRef === k.sourceId;
+                    return (
+                      <Fragment key={k.sourceId + k.sourceKey}>
+                        <tr key={k.sourceId + k.sourceKey} className={'fold-row' + (open ? ' on' : '')}
+                          onClick={() => loadStep(k.sourceId)}>
+                          <td><span className="lead mono">{k.sourceId}</span><div className="sec">{k.sourceName}</div></td>
+                          <td className="mono">{k.sourceKey}</td>
+                          <td><StatusPill status={k.keyStatus} /></td>
+                          <td>{k.required === 'Y' ? 'Yes' : 'No'}</td>
+                          <td className="cell-act"><Icon name="down" size={14} className={'sel2-chev' + (open ? ' flip' : '')} /></td>
+                        </tr>
+                        {open && (
+                          <tr key={k.sourceId + '-hist'}>
+                            <td colSpan={5} className="fold-hist">
+                              <p className="fold-cap">{stepBusy ? 'Loading…' : (step?.title || k.sourceId)}</p>
+                              {stepBusy ? <Loading what="Feed history…" /> : showStep(step, embedContext)}
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -167,25 +206,52 @@ export default function InstanceDetail() {
 
         <div>
           <div className="panel">
-            <div className="panel-hd"><h2>Destinations</h2><span className="hint">kit_destination</span></div>
+            <div className="panel-hd"><h2>Destinations</h2><span className="hint">click a step for its report</span></div>
             <div className="panel-bd stack">
-              {detail.destinations.map((d) => (
-                <div key={d.destId} className="row">
-                  <span className="chip">step {d.stepOrder}</span>
-                  <b>{d.destId}</b>
-                  <span className="muted" style={{ marginLeft: 'auto' }}>{d.echoOk === 'Y' ? '✓ echoed' : d.actionType}</span>
-                </div>
-              ))}
+              {detail.destinations.map((d) => {
+                const open = openRef === d.destId;
+                return (
+                  <div key={d.destId}>
+                    <button type="button" className={'row fold-row' + (open ? ' on' : '')}
+                      onClick={() => loadStep(d.destId)}
+                      style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit' }}>
+                      <span className="chip">step {d.stepOrder}</span>
+                      <b>{d.destId}</b>
+                      <span className="muted" style={{ marginLeft: 'auto' }}>
+                        {d.surface === 'IFRAME' ? 'iframe' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType)}
+                      </span>
+                    </button>
+                    {open && (
+                      <div className="fold-hist" style={{ marginTop: 8, borderRadius: 'var(--r-card)', border: '1px solid var(--stroke)' }}>
+                        <p className="fold-cap">{stepBusy ? 'Loading…' : (step?.title || d.displayName)}</p>
+                        {stepBusy ? <Loading what="Step report…" /> : showStep(step, embedContext)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
           <div className="panel">
-            <div className="panel-hd"><h2>Partner surface</h2><span className="hint">kit_embed</span></div>
+            <div className="panel-hd"><h2>Partner surface</h2><span className="hint">kit_embed · this app only</span></div>
             <div className="panel-bd stack">
               <div className="row"><span className="muted">renderer</span><span className="chip">{i.renderer}</span></div>
               <div className="row"><span className="muted">run</span><span className="mono">{i.runId || 'pending'}</span></div>
               {i.signedBy && <div className="row"><span className="muted">signed by</span><span className="mono">{i.signedBy}</span></div>}
-              <div className="wrapflex"><a className="btn ghost sm" href={i.embedUrl} target="_blank" rel="noreferrer"><Icon name="open" size={13} /> Open partner screen</a><span className="mono sec">{i.embedUrl}</span></div>
-              <p className="muted" style={{ margin: 0, fontSize: 12 }}>Heavy screens stay with the owner and are framed with the shared theme — not cloned here.</p>
+              <div className="wrapflex">
+                <button type="button" className={'btn ghost sm' + (partnerOpen ? ' on' : '')} onClick={() => setPartnerOpen((v) => !v)}>
+                  <Icon name="open" size={13} /> {partnerOpen ? 'Hide partner screen' : 'Open partner screen'}
+                </button>
+                <span className="mono sec">{i.embedUrl}</span>
+              </div>
+              {partnerOpen && (
+                <PartnerFrame
+                  url={i.embedUrl}
+                  title={i.renderer || 'Partner screen'}
+                  context={embedContext}
+                />
+              )}
+              <p className="muted" style={{ margin: 0, fontSize: 12 }}>Heavy screens stay with the owner and are framed here — not cloned, not a new tab.</p>
             </div>
           </div>
         </div>

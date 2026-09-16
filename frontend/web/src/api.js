@@ -76,6 +76,7 @@ export const api = {
   instances: (f) => get('/instances', f),
   instance: (id) => get('/instance', { id }),
   instanceEvents: (id) => get('/instance/events', { id }),
+  stepView: (id, ref) => get('/instance/step-view', { id, ref }),
   signoff: (id, user) => send('POST', '/instance/signoff', { id }, { user }),
   post: (id) => send('POST', '/instance/post', { id }),
   escalate: (id, reason) => send('POST', '/instance/escalate', { id }, { reason }),

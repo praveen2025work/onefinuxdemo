@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Clock;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -119,6 +120,66 @@ class StitchServiceTest {
     }
 
     @Test
+    @DisplayName("AC-CONSOLE-20 step-view for a source is GRID of that feed's events")
+    void ac_console_20_source_step_view_is_grid() {
+        when(repo.instance(ID)).thenReturn(inst("BLOCKED"));
+        when(repo.destinationsForInstance(ID)).thenReturn(List.of());
+        when(repo.eventsForInstance(ID)).thenReturn(List.of(
+                event("CATS", "TR-9901", "TRADE_BOOKED", "COMPLETED", "{\"account\":\"410000\"}"),
+                event("MOTIF", "MB014", "LEDGER_REJECTED", "FAILED", "{}")));
+
+        Map<String, Object> out = service.stepView(ID, "CATS");
+
+        assertThat(out.get("kind")).isEqualTo("GRID");
+        assertThat(out.get("ref")).isEqualTo("CATS");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) out.get("rows");
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).get("sourceKey")).isEqualTo("TR-9901");
+        assertThat(rows.get(0).get("account")).isEqualTo("410000");
+    }
+
+    @Test
+    @DisplayName("AC-CONSOLE-22 IFRAME destination returns kit embed url")
+    void ac_console_22_iframe_destination_returns_embed() {
+        when(repo.instance(ID)).thenReturn(inst("READY"));
+        when(repo.destinationsForInstance(ID)).thenReturn(List.of(dest("HELIX", "IFRAME", null)));
+        when(repo.kitEmbed("FOBO")).thenReturn(Map.of(
+                "embedUrl", "/sim/screens/helix", "allowedOrigin", "http://localhost:7091", "chrome", "HOST"));
+
+        Map<String, Object> out = service.stepView(ID, "HELIX");
+
+        assertThat(out.get("kind")).isEqualTo("IFRAME");
+        assertThat(out.get("embedUrl")).isEqualTo("/sim/screens/helix");
+        assertThat(out.get("allowedOrigin")).isEqualTo("http://localhost:7091");
+    }
+
+    @Test
+    @DisplayName("AC-CONSOLE-22 GRID destination uses report_source_id events")
+    void ac_console_22_grid_destination_uses_report_source() {
+        when(repo.instance(ID)).thenReturn(inst("READY"));
+        when(repo.destinationsForInstance(ID)).thenReturn(List.of(dest("FAS_MOTIF", "GRID", "MOTIF")));
+        when(repo.eventsForInstance(ID)).thenReturn(List.of(
+                event("MOTIF", "MB014", "LEDGER_POSTED", "COMPLETED", "{\"journalId\":\"JE-8801\",\"amount\":12450000}"),
+                event("CATS", "TR-9901", "TRADE_BOOKED", "COMPLETED", "{}")));
+
+        Map<String, Object> out = service.stepView(ID, "FAS_MOTIF");
+
+        assertThat(out.get("kind")).isEqualTo("GRID");
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> rows = (List<Map<String, Object>>) out.get("rows");
+        assertThat(rows).hasSize(1);
+        assertThat(rows.get(0).get("journalId")).isEqualTo("JE-8801");
+    }
+
+    @Test
+    @DisplayName("step-view is 404 when the instance is not entitled")
+    void step_view_fail_closed() {
+        when(repo.instance(ID)).thenReturn(null);
+        assertThat(service.stepView(ID, "CATS")).isNull();
+    }
+
+    @Test
     @DisplayName("AC-ACTION-05 ADJUST is rejected when the kit does not declare it")
     void adjust_rejected_when_not_declared() {
         when(repo.instance(ID)).thenReturn(inst("BLOCKED"));
@@ -144,6 +205,27 @@ class StitchServiceTest {
         m.put("region", "EMEA");
         m.put("question", "Can I execute this rec?");
         m.put("namedBlocker", "MOTIF MB014 FAILED");
+        return m;
+    }
+
+    private static Map<String, Object> dest(String destId, String surface, String reportSourceId) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("destId", destId);
+        m.put("displayName", destId);
+        m.put("surface", surface);
+        m.put("reportSourceId", reportSourceId);
+        return m;
+    }
+
+    private static Map<String, Object> event(String source, String key, String type, String status, String attrs) {
+        Map<String, Object> m = new HashMap<>();
+        m.put("eventId", type + "-" + key);
+        m.put("eventType", type);
+        m.put("sourceSystem", source);
+        m.put("sourceKey", key);
+        m.put("status", status);
+        m.put("occurredAt", "2026-09-12 18:00:00");
+        m.put("attributesJson", attrs);
         return m;
     }
 }
