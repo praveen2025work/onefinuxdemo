@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Partner-shaped grid payloads for kit-configured step views. Not a rebuilt Motif or Helix screen.
+ * Partner-shaped grid payloads for outcome.grids. The console fetches these paths; the hub does not proxy.
  */
 @RestController
 @RequestMapping("/sim/grids")

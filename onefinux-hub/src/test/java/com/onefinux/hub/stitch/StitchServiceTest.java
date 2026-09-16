@@ -140,7 +140,7 @@ class StitchServiceTest {
     }
 
     @Test
-    @DisplayName("AC-CONSOLE-22 IFRAME destination returns kit embed url")
+    @DisplayName("REQ-CONSOLE-016 IFRAME destination returns kit embed url")
     void ac_console_22_iframe_destination_returns_embed() {
         when(repo.instance(ID)).thenReturn(inst("READY"));
         when(repo.destinationsForInstance(ID)).thenReturn(List.of(dest("HELIX", "IFRAME", null)));
@@ -155,7 +155,7 @@ class StitchServiceTest {
     }
 
     @Test
-    @DisplayName("AC-CONSOLE-22 GRID destination uses report_source_id events")
+    @DisplayName("REQ-CONSOLE-016 GRID destination uses report_source_id events")
     void ac_console_22_grid_destination_uses_report_source() {
         when(repo.instance(ID)).thenReturn(inst("READY"));
         when(repo.destinationsForInstance(ID)).thenReturn(List.of(dest("FAS_MOTIF", "GRID", "MOTIF")));
@@ -170,52 +170,6 @@ class StitchServiceTest {
         List<Map<String, Object>> rows = (List<Map<String, Object>>) out.get("rows");
         assertThat(rows).hasSize(1);
         assertThat(rows.get(0).get("journalId")).isEqualTo("JE-8801");
-    }
-
-    @Test
-    @DisplayName("AC-CONSOLE-22 GRID destination with grid_endpoint binds instance params and returns API rows")
-    void ac_console_22_configured_grid_binds_params_and_fetches() {
-        Map<String, Object> blocked = inst("BLOCKED");
-        blocked.put("account", "410000");
-        blocked.put("journalId", "JE-8801");
-        when(repo.instance(ID)).thenReturn(blocked);
-        Map<String, Object> dest = dest("FAS_MOTIF", "GRID", "MOTIF");
-        dest.put("gridEndpoint", "/sim/grids/investigation");
-        dest.put("gridMethod", "GET");
-        dest.put("gridParamsJson",
-                "[{\"name\":\"cobDate\",\"from\":\"cobDate\"},{\"name\":\"account\",\"from\":\"account\"},{\"name\":\"journalId\",\"from\":\"journalId\"}]");
-        when(repo.destinationsForInstance(ID)).thenReturn(List.of(dest));
-
-        StepGridFetcher grids = (endpoint, method, params) -> {
-            assertThat(endpoint).isEqualTo("/sim/grids/investigation");
-            assertThat(method).isEqualTo("GET");
-            assertThat(params).containsEntry("cobDate", "2026-09-12")
-                    .containsEntry("account", "410000")
-                    .containsEntry("journalId", "JE-8801");
-            return Map.of(
-                    "title", "Investigation",
-                    "columns", List.of(
-                            Map.of("key", "kind", "label", "Kind"),
-                            Map.of("key", "id", "label", "Id")),
-                    "rows", List.of(Map.of("kind", "Reconciliation break", "id", "BK-4420")));
-        };
-        service = new StitchService(repo, fold, hub, stream, new ObjectMapper(), Clock.systemUTC(),
-                currentUser, (url, body) -> {}, null, grids);
-
-        Map<String, Object> out = service.stepView(ID, "FAS_MOTIF");
-
-        assertThat(out.get("kind")).isEqualTo("GRID");
-        assertThat(out.get("title")).isEqualTo("Investigation");
-        @SuppressWarnings("unchecked")
-        Map<String, Object> query = (Map<String, Object>) out.get("query");
-        assertThat(query.get("endpoint")).isEqualTo("/sim/grids/investigation");
-        @SuppressWarnings("unchecked")
-        Map<String, String> bound = (Map<String, String>) query.get("params");
-        assertThat(bound).containsEntry("account", "410000");
-        @SuppressWarnings("unchecked")
-        List<Map<String, Object>> rows = (List<Map<String, Object>>) out.get("rows");
-        assertThat(rows).hasSize(1);
-        assertThat(rows.get(0).get("id")).isEqualTo("BK-4420");
     }
 
     @Test
