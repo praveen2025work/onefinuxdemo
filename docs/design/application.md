@@ -36,8 +36,8 @@ Derived stage (generic, not 15C3-specific):
 
 A kit is `product_kit` + sources + destinations + embed + `userActions`. FOBO is the first kit. There is no FOBO code path.
 
-- Status vocabulary: instance `NOT_YET | READY | BLOCKED | CLEARED | DELAYED`; readiness key `WAITING | COMPLETED | FAILED | REVOKED`.
-- Human actions: `POST /api/stitch/instance/action?id=&action=` is gated by the kit's `userActions`. Known verbs (`SIGN_OFF`, `POST`, `ESCALATE`) keep rich behaviour; any other declared verb is handled generically (audit + `WORKFLOW_<VERB>`). Launching a new console capability is adding a verb to the kit.
+- Status vocabulary: instance `NOT_YET | READY | BLOCKED | SIGNED | CLEARED | DELAYED`; readiness key `WAITING | COMPLETED | FAILED | REVOKED`.
+- Human actions: `POST /api/stitch/instance/action?id=&action=` is gated by the kit's `userActions`. Known verbs (`SIGN_OFF`, `POST`, `ESCALATE`, `ADJUST`, `COUNTERSIGN`) keep rich behaviour; any other declared verb is handled generically (audit + `WORKFLOW_<VERB>`). Launching a new console capability is adding a verb to the kit.
 
 The console never invents an id. Every dropdown is filled from an API.
 
@@ -142,7 +142,7 @@ Full operator steps: `onboarding.md`.
 
 ## 8. Demo build vs later
 
-**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`); RTB operations; monitoring + outbox + audit; solid finance-dashboard theme (MITR indigo-lavender); pluggable action registries.
+**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`, `ADJUST`, `COUNTERSIGN`); accounting item on Board; RTB operations; monitoring + outbox + audit; solid finance-dashboard theme (MITR indigo-lavender); pluggable action registries.
 
 **Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; Wijmo analyst studio; native mobile app wrapping the same responsive shell.
 

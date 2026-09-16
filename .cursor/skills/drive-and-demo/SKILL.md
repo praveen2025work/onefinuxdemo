@@ -11,7 +11,7 @@ Drive (`/drive`) is the **only** place scenario buttons live. Home and Reports s
 
 1. Set group unit / COB / region in the header.
 2. Open `/drive`. Reset if the day is dirty.
-3. Run the named scenario (`fobo`, `15c3`, `helix`, `pnl`, `all`).
+3. Run the named scenario (`fobo`, `15c3`, `helix`, `pnl`, `accounting`, `all`).
 4. Watch Board / Reports / Instance update over SSE.
 
 ## Exec narration (2–3 minutes, male voice, normal pace)

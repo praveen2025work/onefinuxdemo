@@ -1,9 +1,52 @@
 // One thin client for the whole stitch API. Every screen reads through here; nothing invents an id.
 const BASE = '/api/stitch';
+const TOKEN_KEY = 'ofx-token';
+const ACTOR_KEY = 'ofx-actor';
+
+export function currentActor() {
+  return sessionStorage.getItem(ACTOR_KEY) || 'praveen.kumar';
+}
+
+export function actorLabel(user) {
+  return ({
+    'praveen.kumar': 'Praveen Kumar',
+    'alice.revacc': 'Alice · owner',
+    'gla.reviewer': 'GLA reviewer',
+    'bob.markets': 'Bob · markets',
+    auditor: 'Auditor',
+  })[user] || user;
+}
+
+function authHeaders(extra) {
+  const token = sessionStorage.getItem(TOKEN_KEY);
+  const headers = extra ? { ...extra } : {};
+  if (token) headers.Authorization = 'Bearer ' + token;
+  return headers;
+}
+
+export async function listActors() {
+  const res = await fetch('/api/auth/users');
+  if (!res.ok) throw new Error(`${res.status} on /api/auth/users`);
+  return res.json();
+}
+
+export async function setActor(user) {
+  if (!user || user === 'praveen.kumar') {
+    sessionStorage.removeItem(TOKEN_KEY);
+    sessionStorage.setItem(ACTOR_KEY, 'praveen.kumar');
+    return { subject: 'praveen.kumar' };
+  }
+  const res = await fetch('/api/auth/dev-token?user=' + encodeURIComponent(user), { method: 'POST' });
+  if (!res.ok) throw new Error(`${res.status} on /api/auth/dev-token`);
+  const data = await res.json();
+  sessionStorage.setItem(TOKEN_KEY, data.access_token);
+  sessionStorage.setItem(ACTOR_KEY, data.subject);
+  return data;
+}
 
 async function get(path, params) {
   const qs = params ? '?' + new URLSearchParams(clean(params)).toString() : '';
-  const res = await fetch(BASE + path + qs);
+  const res = await fetch(BASE + path + qs, { headers: authHeaders() });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} on ${path}`);
   return res.json();
 }
@@ -12,7 +55,7 @@ async function send(method, path, params, body) {
   const qs = params ? '?' + new URLSearchParams(clean(params)).toString() : '';
   const res = await fetch(BASE + path + qs, {
     method,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: authHeaders(body ? { 'Content-Type': 'application/json' } : undefined),
     body: body ? JSON.stringify(body) : undefined,
   });
   if (!res.ok) {
@@ -65,12 +108,12 @@ export async function fetchSink() {
 // from the stitch fold. Reports read the outcome flow and open the generated artifact from here.
 export const outcomesApi = {
   all: async () => {
-    const res = await fetch('/api/outcomes');
+    const res = await fetch('/api/outcomes', { headers: authHeaders() });
     if (!res.ok) throw new Error(`${res.status} on /api/outcomes`);
     return res.json();
   },
   definitions: async () => {
-    const res = await fetch('/api/outcomes/definitions');
+    const res = await fetch('/api/outcomes/definitions', { headers: authHeaders() });
     if (!res.ok) throw new Error(`${res.status} on /api/outcomes/definitions`);
     return res.json();
   },
@@ -78,7 +121,7 @@ export const outcomesApi = {
     const qs = cobDate ? `?cobDate=${cobDate}` : '';
     const res = await fetch(`/api/outcomes/definitions${qs}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
       body: JSON.stringify(definition),
     });
     if (!res.ok) {
@@ -89,7 +132,7 @@ export const outcomesApi = {
     return res.json();
   },
   one: async (outcomeId, cobDate, region) => {
-    const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}`);
+    const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}`, { headers: authHeaders() });
     if (!res.ok) {
       let detail = `${res.status} ${res.statusText}`;
       try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
@@ -98,7 +141,7 @@ export const outcomesApi = {
     return res.json();
   },
   report: async (outcomeId, cobDate, region) => {
-    const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}/report`);
+    const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}/report`, { headers: authHeaders() });
     if (!res.ok) {
       let detail = `${res.status} ${res.statusText}`;
       try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
@@ -107,7 +150,7 @@ export const outcomesApi = {
     return res.json();
   },
   reset: async () => {
-    const res = await fetch('/api/admin/reset', { method: 'POST' });
+    const res = await fetch('/api/admin/reset', { method: 'POST', headers: authHeaders() });
     if (!res.ok) throw new Error(`${res.status} on /api/admin/reset`);
     return res.json();
   },
@@ -127,7 +170,7 @@ export async function resetPlatform() {
 // Kick a simulator scenario (e.g. the 15C3 feeds) through the /sim proxy.
 export async function runScenario(name, params) {
   const qs = params ? '?' + new URLSearchParams(params).toString() : '';
-  const res = await fetch(`/sim/scenarios/${name}${qs}`, { method: 'POST' });
+  const res = await fetch(`/sim/scenarios/${name}${qs}`, { method: 'POST', headers: authHeaders() });
   if (!res.ok) throw new Error(`${res.status} on /sim/scenarios/${name}`);
   return res.json();
 }

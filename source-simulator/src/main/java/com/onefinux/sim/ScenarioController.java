@@ -27,6 +27,7 @@ public class ScenarioController {
                 "POST /sim/scenarios/15c3?failure=false", "15C3 report example",
                 "POST /sim/scenarios/pnl", "PnL reporting with a tight SLA",
                 "POST /sim/scenarios/restate", "SAP trial balance restatement",
+                "POST /sim/scenarios/accounting", "Material blocked item with account / journal / amount",
                 "POST /sim/scenarios/all", "Helix + 15C3 + PnL together",
                 "POST /sim/scenarios/cancel", "Cancel anything still scheduled");
     }
@@ -55,6 +56,11 @@ public class ScenarioController {
     @PostMapping("/restate")
     public ScenarioService.ScenarioRun restate() {
         return scenarios.restateSapTrialBalance();
+    }
+
+    @PostMapping("/accounting")
+    public ScenarioService.ScenarioRun accounting() {
+        return scenarios.accounting();
     }
 
     @PostMapping("/all")

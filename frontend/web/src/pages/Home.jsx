@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { api, outcomesApi } from '../api';
-import { StatusPill, Meter, Prediction, PageTitle, Stat } from '../components/bits.jsx';
+import { StatusPill, Meter, Prediction, PageTitle, Stat, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { viewIncludes } from '../views.js';
@@ -68,7 +68,8 @@ export default function Home() {
             {ready} report{ready === 1 ? '' : 's'} can go.{' '}
             <strong>{namedBlocker.region} {namedBlocker.kitId}</strong>
             {' '}is still blocked on{' '}
-            <strong>{namedBlocker.namedBlocker}</strong>
+            <strong>            {namedBlocker.namedBlocker}</strong>
+            {formatAmount(namedBlocker.amount) ? ` (${formatAmount(namedBlocker.amount)})` : ''}
             {namedBlocker.question ? ` — ${namedBlocker.question}` : ''}
             {namedBlocker.question && /[.!?]$/.test(namedBlocker.question) ? '' : '.'}
             {' '}
@@ -89,7 +90,7 @@ export default function Home() {
         {storyRows.length > 0 && (
           <div className="story-rows">
             {storyRows.map((row) => {
-              const tone = row.status === 'BLOCKED' ? 'fail' : row.status === 'READY' || row.status === 'CLEARED' ? 'ok' : row.status === 'DELAYED' ? 'warn' : '';
+              const tone = row.status === 'BLOCKED' ? 'fail' : row.status === 'READY' || row.status === 'CLEARED' ? 'ok' : row.status === 'DELAYED' || row.status === 'SIGNED' ? 'warn' : '';
               return (
                 <Link
                   key={row.instanceId}
@@ -147,7 +148,7 @@ export default function Home() {
             <div className="panel-bd tight">
               <div className="tbl-wrap">
                 <table className="tbl cards-sm">
-                  <thead><tr><th>Kit / question</th><th>Instance</th><th>Readiness</th><th>Status</th><th>Run</th><th className="num">Esc.</th><th /></tr></thead>
+                  <thead><tr><th>Kit / question</th><th>Instance</th><th>Readiness</th><th>Status</th><th>Amount</th><th>Run</th><th className="num">Esc.</th><th /></tr></thead>
                   <tbody>
                     {instances.map((i) => (
                       <tr key={i.instanceId}>
@@ -155,12 +156,13 @@ export default function Home() {
                         <td data-label="Instance"><span className="mono lead">{i.sliceKey}</span><div className="sec mono nowrap">{i.region} · {i.cobDate}</div></td>
                         <td className="cell-wide" data-label="Readiness"><Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} /></td>
                         <td data-label="Status"><StatusPill status={i.status} /></td>
+                        <td className="mono nowrap" data-label="Amount">{formatAmount(i.amount) || '—'}</td>
                         <td className="mono nowrap" data-label="Run">{i.runId || '—'}</td>
                         <td className="num" data-label="Escalations">{i.openEscalations}</td>
                         <td className="cell-act"><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
                       </tr>
                     ))}
-                    {instances.length === 0 && <tr><td colSpan={7} className="empty">No instances for this COB / region.</td></tr>}
+                    {instances.length === 0 && <tr><td colSpan={8} className="empty">No instances for this COB / region.</td></tr>}
                   </tbody>
                 </table>
               </div>

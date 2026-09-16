@@ -1,6 +1,7 @@
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../store.jsx';
+import { listActors, setActor, currentActor, actorLabel } from '../api';
 import Icon, { BrandMark } from './Icon.jsx';
 import Select from './Select.jsx';
 import DatePicker from './DatePicker.jsx';
@@ -34,12 +35,14 @@ const NAV = [
 ];
 
 export default function Layout({ children }) {
-  const { context, filters, setFilters, instances, notifications, unread, live, desktopAlerts, allowDesktopAlerts, markRead, view, setView } = useApp();
+  const { context, filters, setFilters, instances, notifications, unread, live, desktopAlerts, allowDesktopAlerts, markRead, view, setView, refreshInstances } = useApp();
   const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
   const [drawer, setDrawer] = useState(false);
   const [theme, setTheme] = useState(() => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'));
+  const [actor, setActorState] = useState(() => currentActor());
+  const [actors, setActors] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
   const bellRef = useRef(null);
@@ -60,8 +63,15 @@ export default function Layout({ children }) {
     };
   }, [bellOpen]);
 
-  // Any navigation closes the panel.
+  useEffect(() => { listActors().then(setActors).catch(() => setActors([])); }, []);
+
   useEffect(() => { setBellOpen(false); setDrawer(false); }, [location.pathname]);
+
+  async function onActor(user) {
+    await setActor(user);
+    setActorState(user);
+    refreshInstances();
+  }
 
   function toggleTheme() {
     const next = theme === 'light' ? 'dark' : 'light';
@@ -126,8 +136,8 @@ export default function Layout({ children }) {
           ))}
         </nav>
         <div className="rail-user">
-          <div className="avatar">PK</div>
-          <div className="who txt"><b>Praveen Kumar</b><span>product:FOBO · {filters.region || 'all regions'}</span></div>
+          <div className="avatar">{(actorLabel(actor) || 'PK').slice(0, 2).toUpperCase()}</div>
+          <div className="who txt"><b>{actorLabel(actor)}</b><span>{actor} · {filters.region || 'all regions'}</span></div>
         </div>
       </aside>
 
@@ -153,6 +163,12 @@ export default function Layout({ children }) {
             <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
               title="Filters the left rail for this session. Not entitlement."
               options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
+            <Select variant="header" caption="Act as" icon="cards" value={actor} onChange={onActor}
+              title="Demo identity for dual sign-off. Mints a Bearer token."
+              options={(actors.length ? actors : [{ user: actor }]).map((u) => ({
+                value: u.user || u,
+                label: actorLabel(u.user || u),
+              }))} />
           </div>
           {desktopAlerts === 'denied' && (
             <span className="desk-chip blocked" title="Allow One Finance in the browser site settings to restore desktop cards">

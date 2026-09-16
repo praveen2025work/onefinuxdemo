@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
-import { StatusPill, Meter, PageTitle } from '../components/bits.jsx';
+import { StatusPill, Meter, PageTitle, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 
-const STATUSES = ['', 'READY', 'BLOCKED', 'NOT_YET', 'CLEARED'];
+const STATUSES = ['', 'READY', 'BLOCKED', 'NOT_YET', 'SIGNED', 'CLEARED'];
 
 export default function Board() {
   const { instances, filters, setFilters } = useApp();
@@ -23,7 +23,7 @@ export default function Board() {
           </PageTitle>
           <p className="sub">
             {blocked
-              ? `${ready} ready. ${blocked} blocked — ${named.region} ${named.kitId} on ${named.namedBlocker || named.status}.`
+              ? `${ready} ready. ${blocked} blocked — ${named.region} ${named.kitId} on ${named.namedBlocker || named.status}${formatAmount(named.amount) ? ` · ${formatAmount(named.amount)}` : ''}.`
               : ready
                 ? `${ready} ready across the unit. No named blockers.`
                 : 'No instances match this filter.'}
@@ -44,13 +44,14 @@ export default function Board() {
           <div className="tbl-wrap">
             <p className="swipe-hint muted">On a phone, swipe the table sideways to reach status, blocker, and Open.</p>
             <table className="tbl cards-sm">
-              <thead><tr><th>Kit / question</th><th>Instance</th><th>Region</th><th>Readiness</th><th>Status</th><th>Blocker</th><th className="num">Esc.</th><th /></tr></thead>
-              <tbody>
+                <thead><tr><th>Kit / question</th><th>Instance</th><th>Region</th><th>Amount</th><th>Readiness</th><th>Status</th><th>Blocker</th><th className="num">Esc.</th><th /></tr></thead>
+                <tbody>
                 {instances.map((i) => (
                   <tr key={i.instanceId}>
                     <td className="cell-lead"><span className="lead">{i.kitId}</span><div className="sec">{i.question}</div></td>
                     <td className="mono" data-label="Instance">{i.sliceKey}</td>
                     <td data-label="Region"><span className="chip">{i.region}</span></td>
+                    <td className="mono num" data-label="Amount">{formatAmount(i.amount) || '—'}</td>
                     <td className="cell-wide" data-label="Readiness"><Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} /></td>
                     <td data-label="Status"><StatusPill status={i.status} /></td>
                     <td className="sec cell-wide" data-label="Blocker">{i.namedBlocker || '—'}</td>
@@ -58,7 +59,7 @@ export default function Board() {
                     <td className="cell-act"><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
                   </tr>
                 ))}
-                {instances.length === 0 && <tr><td colSpan={8} className="empty">No instances match this filter.</td></tr>}
+                {instances.length === 0 && <tr><td colSpan={9} className="empty">No instances match this filter.</td></tr>}
               </tbody>
             </table>
           </div>

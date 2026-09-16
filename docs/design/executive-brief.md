@@ -70,7 +70,7 @@ The full, editable diagram set (Mermaid source + SVG/PNG exports) lives in **[`a
 | Phase | Status |
 |---|---|
 | **Now (demonstrable today)** | Working event hub, outcome engine, RTB ops, entitlement-scoped console, **monitoring + outbox propagation + audit log**, FOBO/15C3/PnL worked examples, onboarding-as-data. |
-| **Next** | Real CEES entitlements (fail-closed), maker-checker on commands, effective-dated reference data, Oracle persistence, the enterprise event bus, and NFR hardening (throughput/latency/DR evidence). |
+| **Next** | Real CEES entitlements (fail-closed), effective-dated reference data, Oracle persistence, the enterprise event bus, and NFR hardening (throughput/latency/DR evidence). Dual sign-off is live on stitch kits that declare `COUNTERSIGN`. |
 | **Later** | Analyst explorer at scale, AI assistance (agents read the event store to predict ETAs and explain bottlenecks; the engine stays deterministic). |
 
 Details: `architecture-group.md` (scope line §6, non-functionals §7).

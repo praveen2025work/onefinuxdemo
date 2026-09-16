@@ -24,7 +24,7 @@ New human verb = add it to `userActions`. The console renders a button; `POST /a
 ## FOBO first kit (copy shape, not code)
 
 - Engine outcome `FOBO_HELIX`: feed `MASTERBOOK_READY` / MOTIF; on ready `HTTP_COMMAND` → Helix.
-- Console kit `FOBO`: sources CATS, MOTIF, MBR; actions `SIGN_OFF,POST,AMEND`; embed Helix.
+- Console kit `FOBO`: sources CATS, MOTIF, MBR; actions `SIGN_OFF,POST,AMEND,ADJUST,COUNTERSIGN`; embed Helix.
 
 ## Forbidden
 

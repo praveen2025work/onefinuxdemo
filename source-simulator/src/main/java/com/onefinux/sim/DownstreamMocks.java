@@ -70,6 +70,35 @@ public class DownstreamMocks {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("runId", command.runId(), "status", "ACCEPTED"));
     }
 
+    @PostMapping("/fas/adjust")
+    public ResponseEntity<Map<String, String>> fasAdjust(@RequestBody Map<String, Object> command) {
+        String runId = String.valueOf(command.getOrDefault("runId", "RUN-ADJ"));
+        String instanceId = String.valueOf(command.getOrDefault("instanceId", ""));
+        String sourceKey = String.valueOf(command.getOrDefault("sourceKey", "MB014"));
+        LocalDate cob = LocalDate.parse(String.valueOf(command.getOrDefault("cobDate", LocalDate.now().toString())));
+        String region = String.valueOf(command.getOrDefault("region", "EMEA"));
+        log.info("FAS/Motif received adjust {} for {} key {}", runId, instanceId, sourceKey);
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("instanceId", instanceId);
+        result.put("runId", runId);
+        if (command.get("account") != null) {
+            result.put("account", command.get("account"));
+        }
+        if (command.get("journalId") != null) {
+            result.put("journalId", command.get("journalId"));
+        }
+        if (command.get("amount") != null) {
+            result.put("amount", command.get("amount"));
+        }
+        if (command.get("fsLine") != null) {
+            result.put("fsLine", command.get("fsLine"));
+        }
+        result.put("summary", "Motif posted adjustment " + runId + " for " + sourceKey);
+        scheduler.schedule(() -> hub.publish(new OutboundEvent(UUID.randomUUID().toString(), "LEDGER_POSTED", "MOTIF",
+                sourceKey, cob, region, "COMPLETED", Instant.now(), result)), Math.min(seconds, 3), TimeUnit.SECONDS);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("runId", runId, "status", "ACCEPTED"));
+    }
+
     private void reply(ActionCommand command, String source, Map<String, Object> result) {
         scheduler.schedule(() -> {
             Map<String, Object> attributes = new java.util.HashMap<>(result);
