@@ -265,9 +265,11 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 
 Every notification is persisted once, then fanned out:
 
-- **In-app**: live over SSE to the console inbox on 5173.
-- **Email (simulated)**: written to the `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against the corporate relay.
-- **Teams webhook**: disabled by default. Set `onefinux.notifications.webhook-url` to a Teams Workflows URL to enable it.
+- **In-app inbox**: bell in the top bar.
+- **On-screen card**: the same payload as a bottom-right card (Outlook / GitLab style) with an **X** to dismiss. Drive a scenario, or preview with `?toast=demo`.
+- **OS card (optional)**: if the browser allows notifications, Chrome/Edge also shows that card on the desktop when the window is in the background.
+- **Email (simulated)**: `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
+- **Teams webhook**: set `onefinux.notifications.webhook-url`.
 
 Milestones default to 50% and 90% (`onefinux.notifications.milestones`). Progress ticks never notify, and a replay never notifies.
 

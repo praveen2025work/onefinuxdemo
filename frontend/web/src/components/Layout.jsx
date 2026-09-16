@@ -33,8 +33,36 @@ const NAV = [
   ] },
 ];
 
+function ToastCard({ toast, onDismiss, onOpen }) {
+  const [paused, setPaused] = useState(false);
+  useEffect(() => {
+    if (paused) return undefined;
+    const id = setTimeout(() => onDismiss(toast.at), 8000);
+    return () => clearTimeout(id);
+  }, [paused, toast.at, onDismiss]);
+  return (
+    <article className={'toast-card ' + (toast.severity || 'INFO')}
+      role="status"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onClick={onOpen}
+      style={{ cursor: toast.instanceId ? 'pointer' : 'default' }}>
+      <button type="button" className="toast-x" aria-label="Dismiss"
+        onClick={(e) => { e.stopPropagation(); onDismiss(toast.at); }}>
+        <Icon name="x" size={14} />
+      </button>
+      <div className="toast-app">
+        <BrandMark size={22} />
+        <span>One Finance</span>
+      </div>
+      <div className="ttl">{toast.title}</div>
+      {toast.message && <div className="msg">{toast.message}</div>}
+    </article>
+  );
+}
+
 export default function Layout({ children }) {
-  const { context, filters, setFilters, instances, notifications, unread, live, toast, markRead, view, setView } = useApp();
+  const { context, filters, setFilters, instances, notifications, unread, live, toasts, dismissToast, markRead, view, setView } = useApp();
   const nav = filterNav(NAV, view);
   const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
@@ -215,10 +243,17 @@ export default function Layout({ children }) {
         ))}
       </nav>
 
-      {toast && (
-        <div className={'toast ' + toast.severity}>
-          <div className="ttl">{toast.title}</div>
-          {toast.message && <div className="msg">{toast.message}</div>}
+      {toasts.length > 0 && (
+        <div className="toast-stack" aria-live="polite">
+          {toasts.map((t) => (
+            <ToastCard key={t.at} toast={t} onDismiss={dismissToast}
+              onOpen={() => {
+                if (t.instanceId) {
+                  navigate('/instance/' + encodeURIComponent(t.instanceId));
+                  dismissToast(t.at);
+                }
+              }} />
+          ))}
         </div>
       )}
     </div>
