@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { api } from './api';
 import { useStream } from './useStream';
 import { persistView, readStoredView, viewById } from './views.js';
-import { desktopNotifyPermission, enableDesktopNotifications, pushMonitorNotification } from './notifyDesktop.js';
+import { desktopNotifyPermission, enableDesktopNotifications, pushMonitorNotification, registerNotifyWorker } from './notifyDesktop.js';
 
 const Ctx = createContext(null);
 
@@ -49,7 +49,7 @@ export function AppProvider({ children }) {
   useEffect(() => { if (context) refreshInstances(); }, [filters, context]); // eslint-disable-line
 
   useEffect(() => {
-    enableDesktopNotifications().then(setDesktopAlerts);
+    registerNotifyWorker().then(() => setDesktopAlerts(desktopNotifyPermission()));
   }, []);
 
   useStream({
@@ -86,8 +86,9 @@ export function AppProvider({ children }) {
     setDesktopAlerts(p);
     if (p === 'granted') {
       pushMonitorNotification({
-        title: 'Desktop alerts on',
-        message: 'READY / BLOCKED cards will appear outside the browser.',
+        title: 'Desktop alerts are on',
+        message: 'READY and BLOCKED will appear as cards on your desktop.',
+        severity: 'SUCCESS',
         at: Date.now(),
       });
     }

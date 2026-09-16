@@ -154,10 +154,15 @@ export default function Layout({ children }) {
               title="Filters the left rail for this session. Not entitlement."
               options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
           </div>
-          {desktopAlerts !== 'granted' && desktopAlerts !== 'unsupported' && (
-            <button className="tb-btn" type="button" onClick={allowDesktopAlerts}
-              title="Allow cards outside the browser (Action Center), like Outlook or GitLab">
-              Enable desktop alerts
+          {desktopAlerts === 'denied' && (
+            <span className="desk-chip blocked" title="Allow One Finance in the browser site settings to restore desktop cards">
+              Alerts blocked
+            </span>
+          )}
+          {desktopAlerts !== 'granted' && desktopAlerts !== 'unsupported' && desktopAlerts !== 'denied' && (
+            <button className="desk-chip" type="button" onClick={allowDesktopAlerts}
+              title="Show READY and BLOCKED as desktop cards, outside this window">
+              Desktop alerts
             </button>
           )}
           <div className="bell-wrap" ref={bellRef}>
