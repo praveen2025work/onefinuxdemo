@@ -182,7 +182,7 @@ function OutcomeDetail({ o, live, defs = [], onSaved }) {
     setForm(definitionToForm(o));
     setEditing(false);
     setBanner(null);
-  }, [o]);
+  }, [o.id]);
 
   const knownSources = useMemo(() => {
     const set = new Set();
@@ -212,12 +212,14 @@ function OutcomeDetail({ o, live, defs = [], onSaved }) {
 
   if (editing) {
     return (
-      <>
+      <form onSubmit={save}>
         <div className="panel-hd">
           <h2>Edit outcome</h2>
           <span className="hint">PUT /api/outcomes/definitions/{o.id}</span>
+          <button className="btn ghost sm" type="button" onClick={() => { setForm(definitionToForm(o)); setEditing(false); setBanner(null); }}>Cancel</button>
+          <button className="btn sm" type="submit" disabled={busy}>{busy ? 'Saving…' : <><Icon name="check" size={15} /> Save configuration</>}</button>
         </div>
-        <form className="panel-bd stack" onSubmit={save}>
+        <div className="panel-bd stack">
           {banner && <div className={'banner ' + banner.cls}><div><b>{banner.text}</b></div></div>}
           <div className="ob-row2">
             <div className="field"><label>Outcome id</label>
@@ -281,8 +283,8 @@ function OutcomeDetail({ o, live, defs = [], onSaved }) {
             <button className="btn" type="submit" disabled={busy}>{busy ? 'Saving…' : <><Icon name="check" size={15} /> Save configuration</>}</button>
             <button className="btn ghost" type="button" onClick={() => { setForm(definitionToForm(o)); setEditing(false); setBanner(null); }}>Cancel</button>
           </div>
-        </form>
-      </>
+        </div>
+      </form>
     );
   }
 

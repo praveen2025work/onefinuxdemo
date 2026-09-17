@@ -799,6 +799,8 @@ button.oc { width: 100%; text-align: left; font: inherit; color: inherit; }
 .ob-params { padding: 0 10px 10px; display: flex; flex-direction: column; gap: 6px; }
 .ob-param { display: grid; grid-template-columns: 1fr 1.3fr 1fr 30px; gap: 8px; align-items: center; }
 .ob-param .inp { padding: 6px 9px; font-size: 12.5px; }
+.ob-actions { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+.cfg-detail .panel-hd { flex-wrap: wrap; }
 
 /* ---- Close story (Home + Product) ---- */
 .story {
