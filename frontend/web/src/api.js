@@ -145,6 +145,7 @@ export const outcomesApi = {
     }
     return res.json();
   },
+  one: async (outcomeId, cobDate, region) => {
     const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}`, { headers: authHeaders() });
     if (!res.ok) {
       let detail = `${res.status} ${res.statusText}`;
