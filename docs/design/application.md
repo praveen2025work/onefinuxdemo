@@ -96,7 +96,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 **Onboarding vs Configuration.** Onboarding *creates*. Configuration *inspects and governs* (pick an outcome or kit on the left; anatomy on the right).
 
-**Views.** The top-bar View select persists `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail. It is not CEES and it is not a Home panel. Guide pages (`/product`, `/architecture`, `/guide`) stay on the rail in every view. New-developer write-up: `start.md` and `/guide`.
+**Views.** The top-bar View select persists `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail. It is not CEES and it is not a Home panel. Rail groups are Console, Operate, Observe, Build, Testing, then Guide at the bottom. Guide pages (`/product`, `/architecture`, `/guide`) stay on the rail in every view. New-developer write-up: `start.md` and `/guide`.
 
 **Mobile.** Below 820px the left rail is an overlay drawer (hamburger in the top bar). A labelled bottom nav (five primary destinations) is the primary way to move; the rest stay in the drawer. Grids stack. The top-bar filters and the context ribbon each sit on one swipeable row. Below 640px the Board and Home instance tables become one card per row so status stays on screen; other tables swipe sideways. On a phone the report flow stacks vertically. The management board and My outcomes are the first surfaces intended for a phone between meetings.
 
