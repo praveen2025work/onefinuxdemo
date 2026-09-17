@@ -9,7 +9,7 @@ import { viewIncludes } from '../views.js';
 import { hasPrediction } from '../eta.js';
 
 export default function Home() {
-  const { instances, filters, view, context } = useApp();
+  const { instances, filters, view } = useApp();
   const [events, setEvents] = useState([]);
   const [engineOutcomes, setEngineOutcomes] = useState([]);
   const navigate = useNavigate();
@@ -40,7 +40,6 @@ export default function Home() {
   }, []);
 
   const predicted = engineOutcomes.filter((o) => hasPrediction(o) || o.atRisk || o.breached);
-  const unitName = context?.groupUnits?.find((g) => g.groupUnitId === filters.groupUnit)?.name || filters.groupUnit;
   const namedBlocker = instances.find((i) => i.status === 'BLOCKED');
   const storyRows = [...instances]
     .sort((a, b) => {
@@ -53,11 +52,9 @@ export default function Home() {
     <>
       <div className="ph">
         <div>
-          <div className="eyebrow">{unitName} · close of business {filters.cobDate}</div>
           <PageTitle icon="tower">Today’s close
             <InfoHint title="Outcome control tower">One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them.</InfoHint>
           </PageTitle>
-          <p className="sub">Ready rows, a named blocker, and whether the clock still holds. Product and Architecture sit in the left rail.</p>
         </div>
       </div>
 
