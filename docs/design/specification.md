@@ -12,8 +12,8 @@ This section identifies the document, its status, and the files it sits beside.
 | --- | --- |
 | Product | One Finance |
 | Document | Specification |
-| Version | 1.5.3 |
-| Date | 16 September 2026 |
+| Version | 1.5.4 |
+| Date | 17 September 2026 |
 | Owner | Praveen Kumar |
 | Audience | Implementers, reviewers, architecture group |
 | Rule set | LLM generic coding spec: complete sections, REQ-IDs, Given/When/Then, AC mapping, no banned wording, no H1 to H3 jumps |
@@ -249,7 +249,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-CONSOLE-012` | Dropdown options for group unit, COB, and region come from hub APIs; the console does not invent those ids. |
 | `REQ-CONSOLE-013` | Board and instance detail show account, journalId, amount, and fsLine when the instance carries those fields. |
 | `REQ-CONSOLE-014` | Instance readiness fold hides event history until the operator clicks a feed, then GET /api/stitch/instance/step-view returns that feed's events. |
-| `REQ-CONSOLE-015` | The instance page shows the readiness fold and destinations first. Partner view frames the kit embed URL in an iframe after the operator clicks that control. The browser does not navigate to a new tab. |
+| `REQ-CONSOLE-015` | The instance page shows the readiness fold and destinations first. Opening a destination mounts that step-view as the main stage with a compact readiness strip; Close restores the default split. Partner view frames the kit embed URL in an iframe after the operator clicks that control. The browser does not navigate to a new tab. |
 | `REQ-CONSOLE-016` | GET /api/outcomes/definitions returns optional grids on each OutcomeDefinition. Each grid names id, title, endpoint, method, and params with from or value. The console binds those params from the current context and renders each grid with MESCIUS Wijmo FlexGrid after the operator clicks Grid view on the instance page and on the report document. GET /api/stitch/instance/step-view returns kind GRID of event-store rows or kind IFRAME with embedUrl from destination surface data. Unentitled instances return 404. |
 | `REQ-CONSOLE-017` | The Event lifecycle page at /lifecycle shows the received request body, the event_store persist, and the next stitch or engine state for a selected event. |
 
@@ -1122,9 +1122,9 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 #### AC-CONSOLE-21
 
 - Maps to: `REQ-CONSOLE-015`
-- Given the instance kit has an embed URL
-- When the operator opens the instance page and clicks Partner view
-- Then the readiness fold and destinations are visible first, the kit embed iframe mounts after that click, and the browser does not open a new tab
+- Given the instance kit has destinations and an embed URL
+- When the operator opens the instance page, clicks a destination, clicks Close, then clicks Partner view
+- Then the destination step-view occupies the main stage until Close restores the fold and destinations split, the kit embed iframe mounts after Partner view, and the browser does not open a new tab
 
 #### AC-CONSOLE-22
 
@@ -1904,7 +1904,7 @@ Dark canvas `#090d1c`, light canvas `#f5f6fb`, accent `#818cf8` dark and `#6366f
 
 ### 19.3 Surfaces
 
-Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.
+Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.
 
 ### 19.4 Mobile
 

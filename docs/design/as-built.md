@@ -21,7 +21,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/reports/:outcomeId/:cobDate/:region` | Produced report document; Grid view opens lineage Wijmo grids | Drive / generate |
 | `/board` | Unit traffic lights for CIO / MD / BU head | Sign-off / post |
 | `/outcomes` | Doer's card worklist | Head roll-ups or RTB queues |
-| `/instance/:id` | Fold + destinations first; Partner view and Grid view on demand; accounting item + kit-declared actions | Invent verbs not on the kit; open Helix in a new tab; mount embed or grids on page open |
+| `/instance/:id` | Fold + destinations first; dest click opens full-width stage; Close restores the split; Partner view and Grid view on demand; accounting item + kit-declared actions | Invent verbs not on the kit; open Helix in a new tab; mount embed or grids on page open |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | Sign off a rec or publish a kit |
 | `/monitoring` | Ingest / outbox / audit | Business sign-off |
 

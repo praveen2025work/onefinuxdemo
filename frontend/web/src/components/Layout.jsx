@@ -14,12 +14,6 @@ const NAV = [
     { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
     { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
   ] },
-  { grp: 'Guide', items: [
-    { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
-    { to: '/architecture', label: 'Architecture', short: 'Arch', icon: 'compass' },
-    { to: '/guide', label: 'Developer guide', short: 'Guide', icon: 'code' },
-    { to: '/lifecycle', label: 'Event lifecycle', short: 'Lifecycle', icon: 'inbox' },
-  ] },
   { grp: 'Operate', items: [
     { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },
   ] },
@@ -32,6 +26,12 @@ const NAV = [
   ] },
   { grp: 'Testing', items: [
     { to: '/drive', label: 'Drive scenarios', short: 'Drive', icon: 'bolt' },
+  ] },
+  { grp: 'Guide', items: [
+    { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
+    { to: '/architecture', label: 'Architecture', short: 'Arch', icon: 'compass' },
+    { to: '/guide', label: 'Developer guide', short: 'Guide', icon: 'code' },
+    { to: '/lifecycle', label: 'Event lifecycle', short: 'Lifecycle', icon: 'inbox' },
   ] },
 ];
 
@@ -122,7 +122,7 @@ export default function Layout({ children }) {
         </div>
         <nav className="rail-nav">
           {nav.map((section) => (
-            <div key={section.grp} className="nav-sec">
+            <div key={section.grp} className={'nav-sec' + (section.grp === 'Guide' ? ' nav-guide' : '')}>
               <div className="nav-grp">{section.grp}</div>
               {section.items.map((it) => (
                 <NavLink key={it.to} to={it.to} end={it.end} title={it.label}
