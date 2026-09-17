@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 class OutcomeInstance {
 
-    private final OutcomeDefinition definition;
+    private OutcomeDefinition definition;
     private final LocalDate cobDate;
     private final String region;
     private final ZoneId zone;
@@ -66,6 +66,19 @@ class OutcomeInstance {
     }
 
     OutcomeDefinition definition() { return definition; }
+
+    /** Swap the live contract (grids, SLA, feeds) without dropping this instance's progress. */
+    void rebind(OutcomeDefinition next) {
+        this.definition = next;
+        Map<String, DependencyProgress> kept = new LinkedHashMap<>();
+        for (DependencyDefinition dep : next.dependencies()) {
+            String key = dep.eventType().toUpperCase();
+            DependencyProgress existing = dependencies.get(key);
+            kept.put(key, existing != null ? existing : new DependencyProgress(dep));
+        }
+        dependencies.clear();
+        dependencies.putAll(kept);
+    }
     LocalDate cobDate() { return cobDate; }
     String region() { return region; }
     OutcomeStatus status() { return status; }

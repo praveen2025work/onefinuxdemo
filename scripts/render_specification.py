@@ -260,9 +260,9 @@ REPORTS_AC = [
 ]
 
 GOVERN_REQ = [
-    ("REQ-GOVERN-001", "POST /api/outcomes/definitions creates an OutcomeDefinition from question, regions, owner, SLA, feeds, and on-ready."),
-    ("REQ-GOVERN-002", "/onboarding is the create surface for OutcomeDefinition and is not the govern surface."),
-    ("REQ-GOVERN-003", "/configuration is a master-detail govern surface for outcomes and kits and is not a create form."),
+    ("REQ-GOVERN-001", "POST /api/outcomes/definitions creates an OutcomeDefinition from question, regions, owner, SLA, feeds, on-ready, and optional grids."),
+    ("REQ-GOVERN-002", "/onboarding is the create surface for OutcomeDefinition including optional lineage grids and is not the govern surface."),
+    ("REQ-GOVERN-003", "/configuration is a master-detail govern surface for outcomes and kits. Edit on a selected outcome saves PUT /api/outcomes/definitions/{id} including grids. Configuration is not a create form."),
     ("REQ-GOVERN-004", "POST /api/stitch/kits registers a kit with sources, destinations, embed, and userActions and does not require a new Java type."),
     ("REQ-GOVERN-005", "GET /api/outcomes/definitions and GET /api/stitch/kits populate Configuration lists."),
     ("REQ-GOVERN-006", "Configuration right pane shows anatomy and live state for the selected outcome or kit."),
@@ -273,9 +273,9 @@ GOVERN_REQ = [
 ]
 
 GOVERN_AC = [
-    ac("AC-GOVERN-01", "REQ-GOVERN-001", "the maker is on /onboarding", "the maker submits the Month-end close example", "POST /api/outcomes/definitions succeeds and the id is listed on GET /api/outcomes/definitions"),
+    ac("AC-GOVERN-01", "REQ-GOVERN-001", "the maker is on /onboarding", "the maker submits the Month-end close example with an optional grid", "POST /api/outcomes/definitions succeeds, the id is listed on GET /api/outcomes/definitions, and that grid is stored when present"),
     ac("AC-GOVERN-02", "REQ-GOVERN-002", "the maker is on /onboarding", "the page renders", "the primary action is create, not inspect of every existing outcome"),
-    ac("AC-GOVERN-03", "REQ-GOVERN-003", "the owner is on /configuration", "the page renders", "the left list is pick-an-outcome-or-kit and there is no create form on that page"),
+    ac("AC-GOVERN-03", "REQ-GOVERN-003", "the owner is on /configuration", "the owner selects an outcome and clicks Edit, then Save", "PUT /api/outcomes/definitions/{id} persists the contract including grids and the page is not a create form"),
     ac("AC-GOVERN-04", "REQ-GOVERN-004", "a client posts a kit body with kitId, sources, destinations, embed, and userActions", "POST /api/stitch/kits succeeds", "GET /api/stitch/kit?id= that kitId returns the same userActions"),
     ac("AC-GOVERN-05", "REQ-GOVERN-005", "FOBO_HELIX and HELIX_RECON exist", "the owner opens /configuration", "both names appear in the master list"),
     ac("AC-GOVERN-06", "REQ-GOVERN-006", "the owner selects REPORT_15C3", "the right pane renders", "feeds, SLA, and on-ready are visible"),
@@ -379,7 +379,7 @@ def render() -> str:
     a("| --- | --- |")
     a("| Product | One Finance |")
     a("| Document | Specification |")
-    a("| Version | 1.5.4 |")
+    a("| Version | 1.5.5 |")
     a("| Date | 17 September 2026 |")
     a("| Owner | Praveen Kumar |")
     a("| Audience | Implementers, reviewers, architecture group |")
@@ -672,6 +672,7 @@ def render() -> str:
     a("| GET | `/api/outcomes/{outcomeId}/{cobDate}/{region}/report` | ENGINE |")
     a("| GET | `/api/outcomes/definitions` | ENGINE, CONSOLE |")
     a("| POST | `/api/outcomes/definitions` | GOVERN |")
+    a("| PUT | `/api/outcomes/definitions/{id}` | GOVERN |")
     a("| POST | `/api/stitch/kits` | GOVERN |")
     a("| POST | `/api/stitch/reset` | OPERATE |")
     a("| GET | `/api/stream` | OPERATE |")
@@ -762,7 +763,7 @@ def render() -> str:
     a("")
     a("### 19.3 Surfaces")
     a("")
-    a("Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.")
+    a("Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates an OutcomeDefinition including lineage grids. Configuration governs and edits the selected outcome.")
     a("")
     a("### 19.4 Mobile")
     a("")

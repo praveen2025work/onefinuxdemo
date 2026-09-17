@@ -14,8 +14,8 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/product` | Product story a BU head recognises | Live outcomes or Drive |
 | `/architecture` | Same diagrams as `docs/design` | Live outcomes or Drive |
 | `/lifecycle` | Received request, event_store persist, next stitch/engine state | Invent a second fold |
-| `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready) | Inspect every existing outcome in detail |
-| `/configuration` | Master-detail registry: pick an outcome or kit, see anatomy + live state | Create (link to Onboarding) |
+| `/onboarding` | A live `OutcomeDefinition` (question, feeds, SLA, on-ready, grids) | Inspect every existing outcome in detail |
+| `/configuration` | Master-detail registry; Edit saves PUT including grids | Create (link to Onboarding) |
 | `/drive` | Run / reset COB scenarios | Live on Home or Reports |
 | `/reports` | Engine outcomes + 15C3 five-stage flow + predicted ready; Normal / Compact / Table layouts | Scenario buttons |
 | `/reports/:outcomeId/:cobDate/:region` | Produced report document; Grid view opens lineage Wijmo grids | Drive / generate |

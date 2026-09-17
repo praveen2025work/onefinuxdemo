@@ -27,7 +27,7 @@ The console binds those parameters and fetches. Each result renders in **MESCIUS
 
 ## Surface
 
-`GET /api/outcomes/definitions` returns `grids` with the rest of the outcome. Instance and report document render them after **Grid view**.
+`GET /api/outcomes/definitions` returns `grids` with the rest of the outcome. Instance and report document render them after **Grid view**. **Onboarding** declares grids on create. **Configuration → Edit** saves `PUT /api/outcomes/definitions/{id}`.
 
 | Source | Result |
 |---|---|
@@ -53,6 +53,7 @@ A new grid is a new `/sim/grids/{name}` plus a YAML `grids` entry — no Java ty
 | `OneFinUxProperties.OutcomeDefinition` | Optional `grids` (`GridStep`, `GridParam`) |
 | `application.yml` | FOBO_HELIX investigation and close |
 | Console | `WijmoGrid.jsx`, `bindGridParams.js`, Grid view on instance and report |
-| Configuration | Outcome anatomy lists grids |
+| Onboarding | Lineage grids on the create form |
+| Configuration | Outcome anatomy lists grids; Edit saves PUT including grids |
 | Simulator | `GET /sim/grids/{name}` investigation and close payloads (unchanged stubs) |
 | Spec | REQ-CONSOLE-016 / AC-CONSOLE-22 remap |

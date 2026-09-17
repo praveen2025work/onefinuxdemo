@@ -23,7 +23,7 @@ The platform keeps **two complementary models**. They share one event backbone. 
 A product is an `OutcomeDefinition`: `id`, `name`, `question`, `regions`, `ownerGroup`, `sla`, `dependencies[]` (feeds), `onReady`.
 
 - Seeded in `application.yml`: `FOBO_HELIX`, `REPORT_15C3`, `PNL_REPORTING`.
-- Runtime onboard: `POST /api/outcomes/definitions`.
+- Runtime onboard: `POST /api/outcomes/definitions`. Runtime edit: `PUT /api/outcomes/definitions/{id}`.
 - Fold: `OutcomeEngine` matches events on `eventType` + `sourceSystem`, re-derives status, emits `OutcomeChanged`.
 - On ready: any `onReady.action` other than `NOTIFY_ONLY` is dispatched through the **`ActionExecutor` registry** (`HTTP_COMMAND`, `LOG_COMMAND`, …). Downstream reports back by publishing the completion event. No polling.
 - Report-like vs command-like is data: a completion event with `reportId` attaches a `ReportArtifact` and the derived `stage` becomes `AVAILABLE`; otherwise it is `GENERATED`.
@@ -81,8 +81,8 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/product` | Product story a BU head recognises | Everyone |
 | `/architecture` | How facts become Ready or Blocked — same diagrams as `docs/design` | Everyone |
 | `/guide` | Developer on-ramp: run it, add an outcome as data, review a PR | Engineer |
-| `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready) | Maker |
-| `/configuration` | **Govern**: master-detail registry of outcomes and kits | Owner / config |
+| `/onboarding` | **Create** a live OutcomeDefinition (question, feeds, SLA, on-ready, grids) | Maker |
+| `/configuration` | **Govern**: master-detail; Edit saves PUT including grids | Owner / config |
 | `/drive` | **Testing**: run a COB scenario. Product pages stay view-only. | Demo / QA |
 | `/reports` | Report lifecycle + predicted ready; Normal / Compact / Table | Controller |
 | `/reports/:outcomeId/:cobDate/:region` | Produced report document; Grid view for lineage FlexGrids | Controller |
@@ -94,7 +94,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 
 **Outcome board vs My outcomes.** Same tenant-scoped instance list. Board is the supervisor table (status filter, blockers, escalation counts). My outcomes is the doer's card worklist. Both drill to Instance detail.
 
-**Onboarding vs Configuration.** Onboarding *creates*. Configuration *inspects and governs* (pick an outcome or kit on the left; anatomy on the right).
+**Onboarding vs Configuration.** Onboarding *creates* (including lineage grids). Configuration *inspects and edits* the selected outcome (`PUT /api/outcomes/definitions/{id}`). Kit create remains `POST /api/stitch/kits`.
 
 **Views.** The top-bar View select persists `localStorage['ofx-view']`: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail. It is not CEES and it is not a Home panel. Rail groups are Console, Operate, Observe, Build, Testing, then Guide at the bottom. Guide pages (`/product`, `/architecture`, `/guide`) stay on the rail in every view. New-developer write-up: `start.md` and `/guide`.
 
@@ -116,7 +116,7 @@ Simulator (`/sim/scenarios/{name}`) — `fobo`, `helix`, `15c3`, `pnl`, `restate
 
 ### Outcome (engine)
 
-`POST /api/outcomes/definitions` with id, name, question, regions, owner, SLA, feeds, on-ready. The instance appears on Board, Reports and Configuration for the given COB.
+`POST /api/outcomes/definitions` with id, name, question, regions, owner, SLA, feeds, on-ready, optional grids. `PUT /api/outcomes/definitions/{id}` saves the same contract on an existing id. The instance appears on Board, Reports and Configuration for the given COB.
 
 ### Console kit (stitch)
 

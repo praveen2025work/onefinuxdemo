@@ -12,7 +12,7 @@ This section identifies the document, its status, and the files it sits beside.
 | --- | --- |
 | Product | One Finance |
 | Document | Specification |
-| Version | 1.5.4 |
+| Version | 1.5.5 |
 | Date | 17 September 2026 |
 | Owner | Praveen Kumar |
 | Audience | Implementers, reviewers, architecture group |
@@ -272,9 +272,9 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 
 | REQ-ID | Requirement |
 | --- | --- |
-| `REQ-GOVERN-001` | POST /api/outcomes/definitions creates an OutcomeDefinition from question, regions, owner, SLA, feeds, and on-ready. |
-| `REQ-GOVERN-002` | /onboarding is the create surface for OutcomeDefinition and is not the govern surface. |
-| `REQ-GOVERN-003` | /configuration is a master-detail govern surface for outcomes and kits and is not a create form. |
+| `REQ-GOVERN-001` | POST /api/outcomes/definitions creates an OutcomeDefinition from question, regions, owner, SLA, feeds, on-ready, and optional grids. |
+| `REQ-GOVERN-002` | /onboarding is the create surface for OutcomeDefinition including optional lineage grids and is not the govern surface. |
+| `REQ-GOVERN-003` | /configuration is a master-detail govern surface for outcomes and kits. Edit on a selected outcome saves PUT /api/outcomes/definitions/{id} including grids. Configuration is not a create form. |
 | `REQ-GOVERN-004` | POST /api/stitch/kits registers a kit with sources, destinations, embed, and userActions and does not require a new Java type. |
 | `REQ-GOVERN-005` | GET /api/outcomes/definitions and GET /api/stitch/kits populate Configuration lists. |
 | `REQ-GOVERN-006` | Configuration right pane shows anatomy and live state for the selected outcome or kit. |
@@ -1313,8 +1313,8 @@ These 23 criteria lock GOVERN behaviour. Each Maps-to line names one REQ-ID.
 
 - Maps to: `REQ-GOVERN-001`
 - Given the maker is on /onboarding
-- When the maker submits the Month-end close example
-- Then POST /api/outcomes/definitions succeeds and the id is listed on GET /api/outcomes/definitions
+- When the maker submits the Month-end close example with an optional grid
+- Then POST /api/outcomes/definitions succeeds, the id is listed on GET /api/outcomes/definitions, and that grid is stored when present
 
 #### AC-GOVERN-02
 
@@ -1327,8 +1327,8 @@ These 23 criteria lock GOVERN behaviour. Each Maps-to line names one REQ-ID.
 
 - Maps to: `REQ-GOVERN-003`
 - Given the owner is on /configuration
-- When the page renders
-- Then the left list is pick-an-outcome-or-kit and there is no create form on that page
+- When the owner selects an outcome and clicks Edit, then Save
+- Then PUT /api/outcomes/definitions/{id} persists the contract including grids and the page is not a create form
 
 #### AC-GOVERN-04
 
@@ -1818,6 +1818,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | GET | `/api/outcomes/{outcomeId}/{cobDate}/{region}/report` | ENGINE |
 | GET | `/api/outcomes/definitions` | ENGINE, CONSOLE |
 | POST | `/api/outcomes/definitions` | GOVERN |
+| PUT | `/api/outcomes/definitions/{id}` | GOVERN |
 | POST | `/api/stitch/kits` | GOVERN |
 | POST | `/api/stitch/reset` | OPERATE |
 | GET | `/api/stream` | OPERATE |
@@ -1904,7 +1905,7 @@ Dark canvas `#090d1c`, light canvas `#f5f6fb`, accent `#818cf8` dark and `#6366f
 
 ### 19.3 Surfaces
 
-Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates. Configuration governs.
+Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates an OutcomeDefinition including lineage grids. Configuration governs and edits the selected outcome.
 
 ### 19.4 Mobile
 

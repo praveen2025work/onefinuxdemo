@@ -11,9 +11,11 @@ A product is **data**. Two registration paths, matching the two models.
 
 Use **Onboarding** (`/onboarding`) or `POST /api/outcomes/definitions`.
 
-Required: `id`, `name`, `question`, at least one feed (`eventType`, `sourceSystem`, `expectedCount`, `label`). Optional: regions, ownerGroup, SLA (`withinMinutes` or `cutoff` + `dayOffset`), `onReady` (`NOTIFY_ONLY` or a registered `ActionExecutor` type such as `HTTP_COMMAND` / `LOG_COMMAND`).
+Required: `id`, `name`, `question`, at least one feed (`eventType`, `sourceSystem`, `expectedCount`, `label`). Optional: regions, ownerGroup, SLA (`withinMinutes` or `cutoff` + `dayOffset`), `onReady` (`NOTIFY_ONLY` or a registered `ActionExecutor` type such as `HTTP_COMMAND` / `LOG_COMMAND`), `grids` (`id`, `title`, `endpoint`, `method`, `params` with `from` or `value`).
 
 The instance appears on Board, Reports and Configuration for the given COB. No new Java type.
+
+To change a live definition (including grids): **Configuration → Edit**, which calls `PUT /api/outcomes/definitions/{id}`.
 
 ## Stitch console kit (human work)
 
