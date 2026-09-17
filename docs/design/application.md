@@ -88,7 +88,7 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/reports/:outcomeId/:cobDate/:region` | Produced report document; Grid view for lineage FlexGrids | Controller |
 | `/board` | **Management**: traffic lights for the unit (CIO / MD / BU head) | Head — read only |
 | `/outcomes` | **My outcomes**: card worklist; open to act | Outcome user |
-| `/instance/:id` | Fold and destinations first; Partner view and Grid view on demand; sign-off / post / kit-declared actions | Outcome user |
+| `/instance/:id` | Fold and destinations first; dest click opens full-width stage; Close restores the split; Partner view and Grid view on demand; sign-off / post / kit-declared actions | Outcome user |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
 | `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |
 

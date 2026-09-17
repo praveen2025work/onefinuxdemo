@@ -73,12 +73,18 @@ export default function InstanceDetail() {
     }
     setOpenRef(ref);
     setStepBusy(true);
+    if ((detail?.destinations || []).some((d) => d.destId === ref)) setPartnerOpen(false);
     try { setStep(await api.stepView(instanceId, ref)); }
     catch (e) { setStep({ kind: 'NONE', ref, title: ref, error: e.message, columns: [], rows: [] }); }
     finally { setStepBusy(false); }
   }
 
-  function showStep(payload, ctx) {
+  function closeStage() {
+    setOpenRef(null);
+    setStep(null);
+  }
+
+  function showStep(payload, ctx, { large = false } = {}) {
     if (!payload) return null;
     if (payload.kind === 'IFRAME') {
       return (
@@ -86,6 +92,7 @@ export default function InstanceDetail() {
           url={payload.embedUrl}
           title={payload.title || 'Partner screen'}
           context={ctx}
+          variant={large ? 'primary' : undefined}
         />
       );
     }
@@ -155,6 +162,9 @@ export default function InstanceDetail() {
   };
   const outcomeDef = outcomeForSurface(defs, { kitId: i.kitId });
   const hasGrids = Array.isArray(outcomeDef?.grids) && outcomeDef.grids.length > 0;
+  const openDest = (detail.destinations || []).find((d) => d.destId === openRef);
+  const destOpen = Boolean(openDest);
+  const destSurface = (d) => (d.surface === 'IFRAME' ? 'iframe' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType));
   const gridContext = {
     cobDate: i.cobDate,
     region: i.region,
@@ -198,6 +208,52 @@ export default function InstanceDetail() {
       {isBlocked && <div className="banner fail" style={{ marginBottom: 16 }}><div><b>Blocked — {i.namedBlocker}</b><span className="mono-sm">A FAILED required key holds the fold. Adjust or revoke it to proceed.</span></div></div>}
       {dual && isSigned && <div className="banner info" style={{ marginBottom: 16 }}><div><b>Awaiting GLA countersign</b><span className="mono-sm">Act as a different user than {i.signedBy}.</span></div></div>}
 
+      {destOpen ? (
+        <>
+          <div className="fold-glance">
+            <span className="fold-glance-label">Readiness</span>
+            {detail.keys.map((k) => (
+              <span key={k.sourceId + k.sourceKey} className="fold-chip">
+                <span className="mono">{k.sourceId}</span>
+                <StatusPill status={k.keyStatus} />
+              </span>
+            ))}
+            <button type="button" className="btn ghost sm fold-glance-close" onClick={closeStage}>
+              <Icon name="x" size={14} /> Close
+            </button>
+          </div>
+          <div className="panel stage-panel">
+            <div className="panel-hd">
+              <h2>{openDest.displayName || openDest.destId}</h2>
+              <span className="hint">{(step?.kind || openDest.surface || 'step').toLowerCase()} · {openDest.destId}</span>
+              <button type="button" className="btn ghost sm" onClick={closeStage}>
+                <Icon name="x" size={14} /> Close
+              </button>
+            </div>
+            <div className="panel-bd stack">
+              <div className="dest-tabs" role="tablist" aria-label="Destinations">
+                {detail.destinations.map((d) => {
+                  const on = openRef === d.destId;
+                  return (
+                    <button
+                      key={d.destId}
+                      type="button"
+                      role="tab"
+                      aria-selected={on}
+                      className={'dest-tab' + (on ? ' on' : '')}
+                      onClick={() => loadStep(d.destId, { toggle: false })}
+                    >
+                      <span className="chip">step {d.stepOrder}</span>
+                      {d.displayName || d.destId}
+                    </button>
+                  );
+                })}
+              </div>
+              {stepBusy ? <Loading what="Step report…" /> : showStep(step, embedContext, { large: true })}
+            </div>
+          </div>
+        </>
+      ) : (
       <div className="split">
         <div>
           {hasItem && (
@@ -250,37 +306,29 @@ export default function InstanceDetail() {
           <div className="panel">
             <div className="panel-hd"><h2>Destinations</h2><span className="hint">step surface</span></div>
             <div className="panel-bd stack">
-              {detail.destinations.map((d) => {
-                const open = openRef === d.destId;
-                return (
-                  <div key={d.destId}>
-                    <button type="button" className={'row fold-row' + (open ? ' on' : '')}
-                      onClick={() => loadStep(d.destId)}
-                      style={{ width: '100%', textAlign: 'left', background: 'transparent', border: 0, padding: 0, cursor: 'pointer', color: 'inherit' }}>
-                      <span className="chip">step {d.stepOrder}</span>
-                      <b>{d.displayName || d.destId}</b>
-                      <span className="mono sec">{d.destId}</span>
-                      <span className="muted" style={{ marginLeft: 'auto' }}>
-                        {d.surface === 'IFRAME' ? 'iframe' : (d.echoOk === 'Y' ? '✓ echoed' : d.actionType)}
-                      </span>
-                    </button>
-                    {open && (
-                      <div className="fold-hist" style={{ marginTop: 8, borderRadius: 'var(--r-card)', border: '1px solid var(--stroke)' }}>
-                        <p className="fold-cap">{stepBusy ? 'Loading…' : (step?.title || d.displayName)}</p>
-                        {stepBusy ? <Loading what="Step report…" /> : showStep(step, embedContext)}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+              {detail.destinations.map((d) => (
+                <button
+                  key={d.destId}
+                  type="button"
+                  className="row fold-row dest-open"
+                  onClick={() => loadStep(d.destId, { toggle: false })}
+                >
+                  <span className="chip">step {d.stepOrder}</span>
+                  <b>{d.displayName || d.destId}</b>
+                  <span className="mono sec">{d.destId}</span>
+                  <span className="muted" style={{ marginLeft: 'auto' }}>{destSurface(d)}</span>
+                  <Icon name="open" size={14} />
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </div>
+      )}
 
       {(i.embedUrl || hasGrids) && (
         <div className="view-toggles wrapflex">
-          {i.embedUrl && (
+          {i.embedUrl && !destOpen && (
             <button
               type="button"
               className={'btn' + (partnerOpen ? '' : ' ghost')}
