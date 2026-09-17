@@ -1,0 +1,34 @@
+{
+  "eventId": "CATS-TR-8812-20260912",
+  "eventType": "TRADE_BOOKED",
+  "sourceSystem": "CATS",
+  "sourceKey": "TR-8812",
+  "cobDate": "2026-09-12",
+  "region": "APAC",
+  "status": "COMPLETED",
+  "occurredAt": "2026-09-12T20:14:03Z",
+  "attributes": {
+    "instanceId": "FOBO|2026-09-12|APAC|R-1042"
+  }
+}
+
+
+{
+  "specversion": "1.0",
+  "id": "MOTIF-MB014-20260912",
+  "source": "motif",
+  "type": "onefinux.fact.v1",
+  "time": "2026-09-12T20:14:03Z",
+  "datacontenttype": "application/json",
+  "data": {
+    "eventType": "LEDGER_REJECTED",
+    "sourceSystem": "MOTIF",
+    "sourceKey": "MB014",
+    "cobDate": "2026-09-12",
+    "region": "EMEA",
+    "status": "FAILED",
+    "attributes": {
+      "instanceId": "FOBO|2026-09-12|EMEA|R-2031"
+    }
+  }
+}
