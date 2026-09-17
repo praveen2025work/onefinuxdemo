@@ -132,7 +132,19 @@ export const outcomesApi = {
     }
     return res.json();
   },
-  one: async (outcomeId, cobDate, region) => {
+  update: async (definition) => {
+    const res = await fetch(`/api/outcomes/definitions/${encodeURIComponent(definition.id)}`, {
+      method: 'PUT',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify(definition),
+    });
+    if (!res.ok) {
+      let detail = `${res.status} ${res.statusText}`;
+      try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
+      throw new Error(detail);
+    }
+    return res.json();
+  },
     const res = await fetch(`/api/outcomes/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}`, { headers: authHeaders() });
     if (!res.ok) {
       let detail = `${res.status} ${res.statusText}`;

@@ -4,32 +4,9 @@ import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
 import { Loading, PageTitle } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
-import Select from '../components/Select.jsx';
 import InfoHint from '../components/InfoHint.jsx';
-
-const BLANK_FEED = { label: '', eventType: '', sourceSystem: '', expectedCount: 1 };
-
-// A worked example that is deliberately NOT one of the seeded three, to show a new product is a
-// kit of data (question + feeds + SLA + action), not a new app.
-const EXAMPLE = {
-  id: 'MEC_CLOSE',
-  name: 'Month-end close',
-  question: 'Can I close the books?',
-  ownerGroup: 'Financial Control',
-  regions: 'GLOBAL',
-  slaMode: 'within',
-  withinMinutes: 5,
-  cutoff: '07:30',
-  dayOffset: 1,
-  feeds: [
-    { label: 'SAP journals', eventType: 'SAP_JOURNAL_POSTED', sourceSystem: 'SAP', expectedCount: 12 },
-    { label: 'Cost-centre sign-off', eventType: 'COSTCENTRE_SIGNED', sourceSystem: 'SAP', expectedCount: 8 },
-  ],
-  actionMode: 'notify',
-  target: '',
-  completionEvent: '',
-  actionLabel: '',
-};
+import GridConfigFields from '../components/GridConfigFields.jsx';
+import { EXAMPLE, BLANK_FEED, formToDefinition } from '../lib/outcomeForm.js';
 
 export default function Onboarding() {
   const { filters } = useApp();
@@ -70,32 +47,7 @@ export default function Onboarding() {
     e.preventDefault();
     setBusy(true); setBanner(null);
     try {
-      const definition = {
-        id: form.id.trim(),
-        name: form.name.trim(),
-        question: form.question.trim(),
-        ownerGroup: form.ownerGroup.trim() || 'Unassigned',
-        regions: form.regions.split(',').map((r) => r.trim().toUpperCase()).filter(Boolean),
-        sla: form.slaMode === 'within'
-          ? { withinMinutes: Number(form.withinMinutes) || 5 }
-          : { cutoff: form.cutoff, dayOffset: Number(form.dayOffset) || 0 },
-        dependencies: form.feeds
-          .filter((fd) => fd.eventType.trim())
-          .map((fd) => ({
-            label: fd.label.trim() || fd.eventType.trim(),
-            eventType: fd.eventType.trim().toUpperCase(),
-            sourceSystem: fd.sourceSystem.trim().toUpperCase() || null,
-            expectedCount: Number(fd.expectedCount) || 1,
-          })),
-        onReady: form.actionMode === 'command'
-          ? {
-            action: 'HTTP_COMMAND',
-            target: form.target.trim(),
-            completionEvent: form.completionEvent.trim().toUpperCase(),
-            actionLabel: form.actionLabel.trim() || 'Downstream action',
-          }
-          : null,
-      };
+      const definition = formToDefinition(form);
       if (!definition.dependencies.length) {
         throw new Error('Add at least one input feed with an event type.');
       }
@@ -122,7 +74,7 @@ export default function Onboarding() {
           <PageTitle icon="build">Onboard a business outcome
             <InfoHint title="Onboarding vs Configuration" width={360}>
               <b>Onboarding creates.</b> Define a new business outcome here — its question, the feeds it depends on, its SLA and what to do when ready — and it goes live immediately.<br /><br />
-              <b>Configuration governs.</b> Once live, inspect and manage it on the Configuration screen. New products are a kit of data, not a new app.
+              <b>Configuration governs.</b> Once live, inspect or edit it on the Configuration screen — including lineage grids. New products are a kit of data, not a new app.
             </InfoHint>
           </PageTitle>
         </div>
@@ -133,8 +85,8 @@ export default function Onboarding() {
 
       <div className="banner plain" style={{ marginBottom: 16 }}>
         <Icon name="info" size={16} />
-        <div><b>Onboarding creates a new outcome; Configuration inspects and governs it.</b>
-          <span className="mono-sm">Define the question, feeds, SLA and on-ready action below — no code, no new screen.</span></div>
+        <div><b>Onboarding creates a new outcome; Configuration inspects and edits it.</b>
+          <span className="mono-sm">Define the question, feeds, SLA, on-ready action, and optional lineage grids — no code, no new screen.</span></div>
       </div>
 
       <div className="split">
@@ -200,6 +152,8 @@ export default function Onboarding() {
                 <button type="button" className="btn ghost sm" onClick={addFeed}><Icon name="plus" size={13} /> Add feed</button>
               </div>
 
+              <GridConfigFields grids={form.grids || []} onChange={(grids) => set({ grids })} />
+
               <div className="field">
                 <label>When every feed is complete <InfoHint title="On-ready action" width={300}>Notify-only signals the milestone. A command has the hub call a downstream engine (with a run id) and wait for its completion event.</InfoHint></label>
                 <div className="seg">
@@ -228,13 +182,14 @@ export default function Onboarding() {
             <div className="panel-hd"><h2>Live business outcomes</h2><span className="hint">{defs.length}</span></div>
             <div className="panel-bd tight">
               <table className="tbl">
-                <thead><tr><th>Outcome</th><th>Question</th><th className="num">Feeds</th></tr></thead>
+                <thead><tr><th>Outcome</th><th>Question</th><th className="num">Feeds</th><th className="num">Grids</th></tr></thead>
                 <tbody>
                   {defs.map((o) => (
                     <tr key={o.id}>
                       <td><span className="mono lead">{o.id}</span><div className="sec">{o.name}</div></td>
                       <td className="sec">{o.question}</td>
                       <td className="num mono">{(o.dependencies || []).length}</td>
+                      <td className="num mono">{(o.grids || []).length}</td>
                     </tr>
                   ))}
                 </tbody>

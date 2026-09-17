@@ -393,6 +393,30 @@ public class OutcomeEngine {
         return seed == null ? null : seed.view();
     }
 
+    /**
+     * Replaces an existing definition in place (grids, SLA, feeds, on-ready). Same id. Live instances
+     * rebind so Grid view and Configuration pick up the new contract without a reset.
+     */
+    public synchronized OutcomeDefinition replace(OutcomeDefinition next) {
+        int idx = -1;
+        for (int i = 0; i < definitions.size(); i++) {
+            if (definitions.get(i).id().equalsIgnoreCase(next.id())) {
+                idx = i;
+                break;
+            }
+        }
+        if (idx < 0) {
+            throw new IllegalArgumentException("No outcome with id " + next.id());
+        }
+        definitions.set(idx, next);
+        for (OutcomeInstance instance : instances.values()) {
+            if (instance.definition().id().equalsIgnoreCase(next.id())) {
+                instance.rebind(next);
+            }
+        }
+        return next;
+    }
+
     private OutcomeInstance getOrCreate(OutcomeDefinition definition, LocalDate cobDate, String region) {
         return instances.computeIfAbsent(OutcomeInstance.key(definition.id(), cobDate, region),
                 k -> new OutcomeInstance(definition, cobDate, region, zone));

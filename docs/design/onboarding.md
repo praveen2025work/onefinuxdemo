@@ -6,7 +6,8 @@ business question), and **register a stitch console kit** (the human work). Inde
 ## A. Create a live business outcome (preferred)
 
 On the console: **Onboarding** (`/onboarding`). The form is a business-outcome builder — question,
-feeds, SLA, on-ready action. Submit calls `POST /api/outcomes/definitions`. The outcome appears
+feeds, SLA, on-ready action, and optional lineage grids (`id`, `title`, `endpoint`, `method`, `params`
+with `from` or `value`). Submit calls `POST /api/outcomes/definitions`. The outcome appears
 immediately on Configuration, Board and Reports for the selected COB.
 
 ```bash
@@ -22,12 +23,25 @@ curl -s -XPOST 'http://localhost:7070/api/outcomes/definitions?cobDate=2026-09-1
       {"eventType": "SAP_JOURNAL_POSTED", "sourceSystem": "SAP", "expectedCount": 12, "label": "SAP journals"},
       {"eventType": "COSTCENTRE_SIGNED", "sourceSystem": "SAP", "expectedCount": 8, "label": "Cost-centre sign-off"}
     ],
-    "onReady": {"action": "NOTIFY_ONLY"}
+    "onReady": {"action": "NOTIFY_ONLY"},
+    "grids": [
+      {
+        "id": "investigation",
+        "title": "Investigation",
+        "endpoint": "/sim/grids/investigation",
+        "method": "GET",
+        "params": [
+          {"name": "cobDate", "from": "cobDate"},
+          {"name": "region", "from": "region"}
+        ]
+      }
+    ]
   }'
 ```
 
-Inspect it on **Configuration** (`/configuration`) — pick the outcome on the left. Drive the day
-from **Drive** (`/drive`), not from Home or Reports.
+Inspect or **edit** it on **Configuration** (`/configuration`) — pick the outcome on the left, then
+**Edit**. Save calls `PUT /api/outcomes/definitions/{id}`. Drive the day from **Drive** (`/drive`),
+not from Home or Reports.
 
 ## B. Register a stitch console kit
 

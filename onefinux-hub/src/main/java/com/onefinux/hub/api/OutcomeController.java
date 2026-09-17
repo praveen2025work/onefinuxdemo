@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -79,6 +80,29 @@ public class OutcomeController {
             return engine.register(definition, cob);
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
+    }
+
+    /**
+     * Govern an existing definition: question, feeds, SLA, on-ready, and grids. Id in the path is the
+     * identity; the body id must match. 404 when the outcome is unknown.
+     */
+    @PutMapping("/definitions/{outcomeId}")
+    public OutcomeDefinition replace(@PathVariable String outcomeId,
+                                     @RequestBody OutcomeDefinition definition) {
+        if (isBlank(definition.id()) || isBlank(definition.name()) || isBlank(definition.question())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "id, name and question are required");
+        }
+        if (definition.dependencies().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "An outcome needs at least one input feed");
+        }
+        if (!outcomeId.equalsIgnoreCase(definition.id())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body id must match the path");
+        }
+        try {
+            return engine.replace(definition);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
         }
     }
 

@@ -5,6 +5,8 @@ import { useApp } from '../store.jsx';
 import { StatusPill, Loading, PageTitle } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import GridConfigFields from '../components/GridConfigFields.jsx';
+import { BLANK_FEED, definitionToForm, formToDefinition } from '../lib/outcomeForm.js';
 
 function slaText(sla) {
   if (!sla) return '—';
@@ -85,7 +87,7 @@ export default function Configuration() {
         <div>
           <div className="eyebrow">Configuration · live registry</div>
           <PageTitle icon="config">Configuration
-            <InfoHint title="Configuration governs; Onboarding creates" width={360}>Pick a business outcome (or a console kit) on the left to inspect its full anatomy on the right — question, entitlement, SLA, input feeds and on-ready contract. To <b>create</b> a new outcome, use <b>Onboarding</b>.</InfoHint>
+            <InfoHint title="Configuration governs; Onboarding creates" width={360}>Pick a business outcome (or a console kit) on the left. <b>Edit</b> saves the live contract — question, feeds, SLA, on-ready, and lineage grids. To <b>create</b> a new outcome, use <b>Onboarding</b>.</InfoHint>
           </PageTitle>
         </div>
         <div className="ph-actions">
@@ -97,7 +99,7 @@ export default function Configuration() {
       <div className="cfg-steps">
         <span className="cfg-step"><span className="n">1</span> Pick an outcome or kit</span>
         <Icon name="chevron" size={14} className="flip" />
-        <span className="cfg-step"><span className="n">2</span> Inspect its configuration &amp; live state</span>
+        <span className="cfg-step"><span className="n">2</span> Inspect or edit its configuration</span>
         <Icon name="chevron" size={14} className="flip" />
         <span className="cfg-step muted"><span className="n">+</span> Need a new one? <Link to="/onboarding">Onboard</Link></span>
       </div>
@@ -159,7 +161,7 @@ export default function Configuration() {
 
         {/* ---- detail pane ---- */}
         <section className="panel cfg-detail">
-          {selOutcome ? <OutcomeDetail o={selOutcome} live={viewsByOutcome[selOutcome.id] || []} />
+          {selOutcome ? <OutcomeDetail o={selOutcome} live={viewsByOutcome[selOutcome.id] || []} defs={defs} onSaved={loadOutcomes} />
             : sel?.type === 'kit' ? <KitDetail loading={loadingKit} kit={kit} detail={kitDetail} embed={embed} />
               : <div className="panel-bd"><div className="empty">Select an outcome or kit to inspect.</div></div>}
         </section>
@@ -168,16 +170,131 @@ export default function Configuration() {
   );
 }
 
-function OutcomeDetail({ o, live }) {
+function OutcomeDetail({ o, live, defs = [], onSaved }) {
   const total = (o.dependencies || []).reduce((n, d) => n + (d.expectedCount || 0), 0);
   const command = o.onReady && o.onReady.action;
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState(() => definitionToForm(o));
+  const [busy, setBusy] = useState(false);
+  const [banner, setBanner] = useState(null);
+
+  useEffect(() => {
+    setForm(definitionToForm(o));
+    setEditing(false);
+    setBanner(null);
+  }, [o]);
+
+  const knownSources = useMemo(() => {
+    const set = new Set();
+    defs.forEach((row) => (row.dependencies || []).forEach((dep) => dep.sourceSystem && set.add(dep.sourceSystem)));
+    return [...set].sort();
+  }, [defs]);
+
+  function patch(p) { setForm((f) => ({ ...f, ...p })); }
+  function setFeed(i, p) {
+    setForm((f) => ({ ...f, feeds: f.feeds.map((fd, idx) => (idx === i ? { ...fd, ...p } : fd)) }));
+  }
+
+  async function save(e) {
+    e.preventDefault();
+    setBusy(true); setBanner(null);
+    try {
+      const definition = formToDefinition({ ...form, id: o.id });
+      if (!definition.dependencies.length) throw new Error('Add at least one input feed with an event type.');
+      await outcomesApi.update(definition);
+      setBanner({ cls: 'ok', text: `${definition.name} saved — ${definition.grids.length} grid(s).` });
+      setEditing(false);
+      if (onSaved) await onSaved();
+    } catch (err) {
+      setBanner({ cls: 'fail', text: err.message });
+    } finally { setBusy(false); }
+  }
+
+  if (editing) {
+    return (
+      <>
+        <div className="panel-hd">
+          <h2>Edit outcome</h2>
+          <span className="hint">PUT /api/outcomes/definitions/{o.id}</span>
+        </div>
+        <form className="panel-bd stack" onSubmit={save}>
+          {banner && <div className={'banner ' + banner.cls}><div><b>{banner.text}</b></div></div>}
+          <div className="ob-row2">
+            <div className="field"><label>Outcome id</label>
+              <input className="inp mono" value={o.id} disabled /></div>
+            <div className="field"><label>Name</label>
+              <input className="inp" value={form.name} onChange={(e) => patch({ name: e.target.value })} required /></div>
+          </div>
+          <div className="field"><label>Business question</label>
+            <input className="inp" value={form.question} onChange={(e) => patch({ question: e.target.value })} required /></div>
+          <div className="ob-row2">
+            <div className="field"><label>Owner group</label>
+              <input className="inp" value={form.ownerGroup} onChange={(e) => patch({ ownerGroup: e.target.value })} /></div>
+            <div className="field"><label>Regions</label>
+              <input className="inp mono" value={form.regions} onChange={(e) => patch({ regions: e.target.value })} /></div>
+          </div>
+          <div className="field">
+            <label>SLA</label>
+            <div className="seg">
+              <button type="button" className={form.slaMode === 'within' ? 'on' : ''} onClick={() => patch({ slaMode: 'within' })}>Window from first event</button>
+              <button type="button" className={form.slaMode === 'cutoff' ? 'on' : ''} onClick={() => patch({ slaMode: 'cutoff' })}>Business cut-off</button>
+            </div>
+            {form.slaMode === 'within'
+              ? <div className="ob-inline"><span>Ready within</span><input className="inp mono sm" type="number" min="1" value={form.withinMinutes} onChange={(e) => patch({ withinMinutes: e.target.value })} /><span>minutes</span></div>
+              : <div className="ob-inline"><input className="inp mono sm" value={form.cutoff} onChange={(e) => patch({ cutoff: e.target.value })} /><span>on COB +</span><input className="inp mono sm" type="number" min="0" value={form.dayOffset} onChange={(e) => patch({ dayOffset: e.target.value })} /><span>day(s)</span></div>}
+          </div>
+          <div className="field">
+            <label>Input feeds</label>
+            <div className="ob-feeds">
+              <div className="ob-feed ob-feed-hd">
+                <span>Label</span><span>Event type</span><span>Source system</span><span>Expected</span><span />
+              </div>
+              {form.feeds.map((fd, i) => (
+                <div className="ob-feed" key={i}>
+                  <input className="inp" value={fd.label} onChange={(e) => setFeed(i, { label: e.target.value })} />
+                  <input className="inp mono" value={fd.eventType} onChange={(e) => setFeed(i, { eventType: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} />
+                  <input className="inp mono" value={fd.sourceSystem} onChange={(e) => setFeed(i, { sourceSystem: e.target.value.toUpperCase() })} list="cfg-known-sources" />
+                  <input className="inp mono sm" type="number" min="1" value={fd.expectedCount} onChange={(e) => setFeed(i, { expectedCount: e.target.value })} />
+                  <button type="button" className="ob-x" onClick={() => setForm((f) => ({ ...f, feeds: f.feeds.filter((_, idx) => idx !== i) }))} disabled={form.feeds.length === 1}><Icon name="x" size={13} /></button>
+                </div>
+              ))}
+              <datalist id="cfg-known-sources">{knownSources.map((s) => <option key={s} value={s} />)}</datalist>
+            </div>
+            <button type="button" className="btn ghost sm" onClick={() => setForm((f) => ({ ...f, feeds: [...f.feeds, { ...BLANK_FEED }] }))}><Icon name="plus" size={13} /> Add feed</button>
+          </div>
+          <GridConfigFields grids={form.grids || []} onChange={(grids) => patch({ grids })} />
+          <div className="field">
+            <label>When every feed is complete</label>
+            <div className="seg">
+              <button type="button" className={form.actionMode === 'notify' ? 'on' : ''} onClick={() => patch({ actionMode: 'notify' })}>Notify only</button>
+              <button type="button" className={form.actionMode === 'command' ? 'on' : ''} onClick={() => patch({ actionMode: 'command' })}>Command an engine</button>
+            </div>
+            {form.actionMode === 'command' && (
+              <div className="ob-row3" style={{ marginTop: 8 }}>
+                <div className="field"><label>Target</label><input className="inp mono" value={form.target} onChange={(e) => patch({ target: e.target.value })} /></div>
+                <div className="field"><label>Completion event</label><input className="inp mono" value={form.completionEvent} onChange={(e) => patch({ completionEvent: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} /></div>
+                <div className="field"><label>Action label</label><input className="inp" value={form.actionLabel} onChange={(e) => patch({ actionLabel: e.target.value })} /></div>
+              </div>
+            )}
+          </div>
+          <div className="ob-actions">
+            <button className="btn" type="submit" disabled={busy}>{busy ? 'Saving…' : <><Icon name="check" size={15} /> Save configuration</>}</button>
+            <button className="btn ghost" type="button" onClick={() => { setForm(definitionToForm(o)); setEditing(false); setBanner(null); }}>Cancel</button>
+          </div>
+        </form>
+      </>
+    );
+  }
+
   return (
     <>
       <div className="panel-hd">
         <h2>Business outcome</h2>
         <span className="hint">outcome_definition</span>
+        <button type="button" className="btn ghost sm" onClick={() => setEditing(true)}><Icon name="config" size={14} /> Edit</button>
       </div>
       <div className="panel-bd">
+        {banner && <div className={'banner ' + banner.cls} style={{ marginBottom: 12 }}><div><b>{banner.text}</b></div></div>}
         <div className="det-head">
           <div>
             <span className="mono lead">{o.id}</span>
@@ -236,7 +353,7 @@ function OutcomeDetail({ o, live }) {
                 <td className="sec">{(g.params || []).map((p) => p.name + (p.from ? '←' + p.from : (p.value != null ? '=' + p.value : ''))).join(' · ') || '—'}</td>
               </tr>
             ))}
-            {(o.grids || []).length === 0 && <tr><td colSpan={4} className="empty">No grids on this outcome. Grid view on the instance and report stays hidden for this id.</td></tr>}
+            {(o.grids || []).length === 0 && <tr><td colSpan={4} className="empty">No grids on this outcome. Grid view on the instance and report stays hidden for this id. Edit to add one.</td></tr>}
           </tbody>
         </table>
       </div>

@@ -2,6 +2,8 @@ package com.onefinux.hub.outcome;
 
 import com.onefinux.hub.config.OneFinUxProperties;
 import com.onefinux.hub.config.OneFinUxProperties.DependencyDefinition;
+import com.onefinux.hub.config.OneFinUxProperties.GridParam;
+import com.onefinux.hub.config.OneFinUxProperties.GridStep;
 import com.onefinux.hub.config.OneFinUxProperties.OnReady;
 import com.onefinux.hub.config.OneFinUxProperties.OutcomeDefinition;
 import com.onefinux.hub.config.OneFinUxProperties.Sla;
@@ -9,6 +11,7 @@ import com.onefinux.hub.event.BusinessEvent;
 import com.onefinux.hub.event.EventStatus;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
@@ -155,6 +158,23 @@ class OutcomeEngineTest {
         assertThat(nextView.historicSamples()).isEqualTo(1);
         assertThat(nextView.eta()).isNotNull();
         assertThat(nextView.historicP50()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("AC-GOVERN-03 replace updates grids on the live definition")
+    void replaceUpdatesGridsOnLiveDefinition() {
+        OutcomeDefinition current = engine.definition("REPORT_15C3").orElseThrow();
+        GridStep investigation = new GridStep("investigation", "Investigation",
+                "/sim/grids/investigation", "GET",
+                List.of(new GridParam("cobDate", "cobDate", null)));
+        OutcomeDefinition next = new OutcomeDefinition(current.id(), current.name(), current.question(),
+                current.regions(), current.ownerGroup(), current.sla(), current.dependencies(),
+                current.onReady(), List.of(investigation));
+        engine.replace(next);
+        assertThat(engine.definition("REPORT_15C3").orElseThrow().grids()).hasSize(1);
+        assertThat(engine.definition("REPORT_15C3").orElseThrow().grids().get(0).endpoint())
+                .isEqualTo("/sim/grids/investigation");
+        assertThat(engine.view("REPORT_15C3", COB, "AMRS").orElseThrow().outcomeId()).isEqualTo("REPORT_15C3");
     }
 
     // ---------------------------------------------------------------- helpers
