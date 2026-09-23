@@ -8,6 +8,7 @@ import GenericGrid from '../components/GenericGrid.jsx';
 import PartnerFrame from '../components/PartnerFrame.jsx';
 import OutcomeGrids from '../components/OutcomeGrids.jsx';
 import { outcomeForSurface } from '../lib/outcomeForSurface.js';
+import { destsPublishSurface, stepViewFromDetail } from '../lib/stepViewFromDetail.js';
 
 const labelOf = (verb) => verb.split(/[_\s]+/).map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 const RICH = ['SIGN_OFF', 'POST', 'ESCALATE', 'ADJUST', 'COUNTERSIGN'];
@@ -74,9 +75,19 @@ export default function InstanceDetail() {
     setOpenRef(ref);
     setStepBusy(true);
     if ((detail?.destinations || []).some((d) => d.destId === ref)) setPartnerOpen(false);
-    try { setStep(await api.stepView(instanceId, ref)); }
-    catch (e) { setStep({ kind: 'NONE', ref, title: ref, error: e.message, columns: [], rows: [] }); }
-    finally { setStepBusy(false); }
+    try {
+      // Stale hub JARs omit destination.surface and have no GET /instance/step-view.
+      // Compose from the detail body we already have so the stage does not 404.
+      if (!destsPublishSurface(detail)) {
+        setStep(stepViewFromDetail(detail, ref));
+        return;
+      }
+      setStep(await api.stepView(instanceId, ref));
+    } catch (e) {
+      const fallback = stepViewFromDetail(detail, ref);
+      if (fallback.kind !== 'NONE') setStep(fallback);
+      else setStep({ ...fallback, error: e.message });
+    } finally { setStepBusy(false); }
   }
 
   function closeStage() {
@@ -305,18 +316,25 @@ export default function InstanceDetail() {
         <div>
           <div className="panel">
             <div className="panel-hd"><h2>Destinations</h2><span className="hint">step surface</span></div>
-            <div className="panel-bd stack">
+            <div className="panel-bd dest-list">
+              <div className="dest-open dest-head">
+                <span>Step</span>
+                <span>Title</span>
+                <span>System</span>
+                <span>Status</span>
+                <span />
+              </div>
               {detail.destinations.map((d) => (
                 <button
                   key={d.destId}
                   type="button"
-                  className="row fold-row dest-open"
+                  className="dest-open"
                   onClick={() => loadStep(d.destId, { toggle: false })}
                 >
                   <span className="chip">step {d.stepOrder}</span>
-                  <b>{d.displayName || d.destId}</b>
-                  <span className="mono sec">{d.destId}</span>
-                  <span className="muted" style={{ marginLeft: 'auto' }}>{destSurface(d)}</span>
+                  <b className="dest-name">{d.displayName || d.destId}</b>
+                  <span className="mono dest-sys">{d.destId}</span>
+                  <span className="muted dest-stat">{destSurface(d)}</span>
                   <Icon name="open" size={14} />
                 </button>
               ))}

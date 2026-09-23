@@ -44,9 +44,10 @@ export async function setActor(user) {
   return data;
 }
 
-async function get(path, params) {
+async function get(path, params, opts = {}) {
   const qs = params ? '?' + new URLSearchParams(clean(params)).toString() : '';
-  const res = await fetch(BASE + path + qs, { headers: authHeaders() });
+  const ctrl = opts.timeoutMs ? AbortSignal.timeout(opts.timeoutMs) : undefined;
+  const res = await fetch(BASE + path + qs, { headers: authHeaders(), signal: ctrl });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} on ${path}`);
   return res.json();
 }
@@ -76,7 +77,7 @@ export const api = {
   instances: (f) => get('/instances', f),
   instance: (id) => get('/instance', { id }),
   instanceEvents: (id) => get('/instance/events', { id }),
-  stepView: (id, ref) => get('/instance/step-view', { id, ref }),
+  stepView: (id, ref) => get('/instance/step-view', { id, ref }, { timeoutMs: 8000 }),
   signoff: (id, user) => send('POST', '/instance/signoff', { id }, { user }),
   post: (id) => send('POST', '/instance/post', { id }),
   escalate: (id, reason) => send('POST', '/instance/escalate', { id }, { reason }),

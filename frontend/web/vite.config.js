@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { javaDevProxies } from './dev-proxy.js';
+import { helixStubPlugin } from './helix-stub.js';
 
 const webRoot = path.dirname(fileURLToPath(import.meta.url));
 const diagrams = path.resolve(webRoot, '../../docs/design/diagrams');
@@ -12,7 +13,7 @@ const diagrams = path.resolve(webRoot, '../../docs/design/diagrams');
 // Port 7091: 5173 is commonly taken by other Vite apps on a demo laptop.
 // host 0.0.0.0: Ethernet / WiFi IPv4 (not only localhost) can load the UI.
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), helixStubPlugin()],
   resolve: {
     alias: { '@diagrams': diagrams },
   },
