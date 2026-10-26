@@ -5,6 +5,8 @@ export function stripForwardedOrigin(proxyReq) {
 
 export function configureSameOriginProxy(proxy) {
   proxy.on('proxyReq', stripForwardedOrigin);
+  // The /api/ws upgrade is a separate hop; Spring's handshake would see the Vite port as a foreign origin.
+  proxy.on('proxyReqWs', stripForwardedOrigin);
 }
 
 export function javaDevProxies(hub = 'http://localhost:7070', sim = 'http://localhost:7081') {
@@ -12,6 +14,7 @@ export function javaDevProxies(hub = 'http://localhost:7070', sim = 'http://loca
     '/api': {
       target: hub,
       changeOrigin: true,
+      ws: true,
       configure: configureSameOriginProxy,
     },
     '/sim': {

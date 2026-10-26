@@ -1,6 +1,7 @@
 package com.onefinux.hub.notification;
 
 import com.onefinux.hub.outcome.OutcomeChanged;
+import com.onefinux.hub.outcome.Severity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -19,6 +20,8 @@ import java.util.stream.Collectors;
 public class NotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
+    public static final String ANNOUNCEMENT = "ANNOUNCEMENT";
+    static final String PLATFORM_KEY = "PLATFORM";
 
     private final NotificationRepository repository;
     private final List<NotificationChannel> channels;
@@ -35,7 +38,7 @@ public class NotificationService {
         if (!change.transition().notifiable()) {
             return;
         }
-        List<NotificationChannel> active = channels.stream().filter(NotificationChannel::enabled).toList();
+        List<NotificationChannel> active = activeChannels();
         Notification saved = repository.save(new Notification(
                 clock.instant(),
                 change.transition().severity(),
@@ -45,13 +48,45 @@ public class NotificationService {
                 change.view().ownerGroup(),
                 change.title(),
                 change.message(),
-                active.stream().map(NotificationChannel::name).collect(Collectors.joining(", "))));
+                channelNames(active)));
+        deliver(NotificationView.from(saved), active);
+    }
+
+    /**
+     * A platform announcement (RTB broadcast, Drive test card). Not an outcome transition: it is persisted
+     * to the same inbox under {@link #ANNOUNCEMENT} so every console and the audit trail see one record.
+     */
+    public NotificationView announce(Severity severity, String title, String message, String audience) {
+        List<NotificationChannel> active = activeChannels();
+        Notification saved = repository.save(new Notification(
+                clock.instant(),
+                severity == null ? Severity.INFO : severity,
+                ANNOUNCEMENT,
+                PLATFORM_KEY,
+                "One Finance",
+                audience == null || audience.isBlank() ? "all" : audience,
+                title,
+                message,
+                channelNames(active)));
         NotificationView view = NotificationView.from(saved);
+        deliver(view, active);
+        return view;
+    }
+
+    private List<NotificationChannel> activeChannels() {
+        return channels.stream().filter(NotificationChannel::enabled).toList();
+    }
+
+    private static String channelNames(List<NotificationChannel> active) {
+        return active.stream().map(NotificationChannel::name).collect(Collectors.joining(", "));
+    }
+
+    private void deliver(NotificationView view, List<NotificationChannel> active) {
         for (NotificationChannel channel : active) {
             try {
                 channel.deliver(view);
             } catch (RuntimeException e) {
-                log.warn("Channel {} failed for notification {}: {}", channel.name(), saved.getId(), e.getMessage());
+                log.warn("Channel {} failed for notification {}: {}", channel.name(), view.id(), e.getMessage());
             }
         }
     }

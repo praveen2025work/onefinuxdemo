@@ -63,6 +63,17 @@ $($_.Exception.Message)
 "@
 }
 
+# WebSocket Protocol lets ARR carry /api/ws (live notifications). Without it the
+# console still works: it falls back to SSE on /api/stream.
+try {
+    $wsFeature = Get-WindowsOptionalFeature -Online -FeatureName IIS-WebSockets -ErrorAction Stop
+    if ($wsFeature.State -ne 'Enabled') {
+        Enable-WindowsOptionalFeature -Online -FeatureName IIS-WebSockets -NoRestart -ErrorAction Stop | Out-Null
+    }
+} catch {
+    Write-Warning "Could not enable IIS WebSocket Protocol; the console will use SSE. $($_.Exception.Message)"
+}
+
 # Keep SSE (/api/stream) from being buffered into one giant response.
 $appcmd = Join-Path $env:windir 'System32\inetsrv\appcmd.exe'
 if (Test-Path -LiteralPath $appcmd) {
