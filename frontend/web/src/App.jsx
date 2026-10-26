@@ -1,5 +1,5 @@
-import { Suspense, lazy } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import Layout from './components/Layout.jsx';
 import Home from './pages/Home.jsx';
 import Board from './pages/Board.jsx';
@@ -17,15 +17,24 @@ import Lifecycle from './pages/Lifecycle.jsx';
 import Notifications from './pages/Notifications.jsx';
 import Product, { ArchitecturePage, GuidePage } from './pages/Product.jsx';
 import { Loading } from './components/bits.jsx';
+import { setFdc3Navigator } from './workspace/fdc3.js';
 
 // Heavier screens (Wijmo FlexChart / pivot, the multi-view container) load on first visit.
 const Finance = lazy(() => import('./pages/Finance.jsx'));
 const Workspace = lazy(() => import('./pages/Workspace.jsx'));
 const WidgetPage = lazy(() => import('./pages/WidgetPage.jsx'));
 
+/** Lets window.fdc3 open a route for a built-in intent (ViewInstance, ViewReport) in this document. */
+function Fdc3Bridge() {
+  const navigate = useNavigate();
+  useEffect(() => { setFdc3Navigator(navigate); return () => setFdc3Navigator(null); }, [navigate]);
+  return null;
+}
+
 export default function App() {
   return (
     <Layout>
+      <Fdc3Bridge />
       <Suspense fallback={<Loading what="Loading…" />}>
         <Routes>
           <Route path="/" element={<Home />} />

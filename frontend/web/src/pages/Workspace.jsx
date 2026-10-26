@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../store.jsx';
 import { PageTitle } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
@@ -10,15 +10,20 @@ import { WIDGETS } from '../workspace/widgets.jsx';
 import { Control } from '@mescius/wijmo';
 import { BUILTIN_APPS, appById, appForPath, appOrigin, makeCustomApp, viewSrc } from '../workspace/apps.js';
 import { channelById, isValidContext, routeForContext } from '../workspace/channels.js';
+import { BUILTIN_INTENTS, setWorkspaceHost } from '../workspace/fdc3.js';
+import { subscribeLive } from '../live/liveLink.js';
 import {
   LAYOUTS, WS_KEY, addView, createWorkspace, currentWorkspace, deleteWorkspace, loadState, moveView, newId,
-  patchView, removeView, renameWorkspace, setActive, setLayout, switchWorkspace, toggleMaximized,
+  patchView, removeView, renameWorkspace, resizePair, setActive, setLayout, splitShares, switchWorkspace, toggleMaximized,
 } from '../workspace/layout.js';
 import { broadcastContext, onAnyContext, onSystem, postSystem } from '../workspace/interop.js';
 import { partnerThemeParams } from '../lib/themes.js';
 import { useInstallPrompt } from '../pwa.js';
 
 const APPS_KEY = 'ofx-ws-apps';
+// Live (WebSocket) events a partner frame may subscribe to through ofx-interop.js.
+const PARTNER_LIVE_EVENTS = ['notification', 'outcome', 'event', 'context'];
+const APP_CHANNEL = /^app:[a-z0-9:_-]{1,48}$/;
 const SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads';
 
 function loadCustomApps() {
@@ -48,7 +53,10 @@ export default function Workspace() {
   const [flash, setFlash] = useState({});
   const [dragId, setDragId] = useState(null);
   const [reloadTick, setReloadTick] = useState({});
+  const [splits, setSplits] = useState([]);
+  const [resizing, setResizing] = useState(false);
   const areaRef = useRef(null);
+  const sectionRefs = useRef(new Map()); // viewId -> section element (splitter geometry)
   const { canInstall, standalone, install } = useInstallPrompt();
 
   const apps = useMemo(() => [...BUILTIN_APPS, ...customApps], [customApps]);
@@ -96,18 +104,95 @@ export default function Workspace() {
     try { frame.contentWindow.postMessage(message, origin); } catch { /* frame navigated elsewhere */ }
   }, [pageOrigin]);
 
-  // Relay every channel context to the cross-origin (web) views on that channel; light up receivers.
+  // Registries the host keeps for the FDC3 standard: who handles which intent (fdc3.addIntentListener in a view,
+  // or ofx-interop.js in a partner frame), which partner frames asked for which live events / app channels, and
+  // who raised each intent still in flight.
+  const intentListeners = useRef(new Map()); // intent -> Set(viewId)
+  const liveSubs = useRef(new Map()); // viewId -> Set(live event name)   (partner frames)
+  const appSubs = useRef(new Map()); // viewId -> Set('app:<name>')      (partner frames)
+  const raisers = useRef(new Map()); // raiseId -> { viewId, web, partnerRaiseId }
+
+  const findView = (id) => wsRef.current.views.find((v) => v.id === id);
+  const isWeb = useCallback((id) => {
+    const v = wsRef.current.views.find((x) => x.id === id);
+    return appById(appsRef.current, v?.appId)?.kind === 'web';
+  }, []);
+
+  // Relay every context to the partner frames on that channel (a colour, or an app channel they subscribed to);
+  // light up the views that received it.
   useEffect(() => onAnyContext((msg) => {
     lastContext.current[msg.channel] = msg.context;
-    const receivers = wsRef.current.views.filter((v) => v.channel === msg.channel && v.id !== msg.source);
+    const receivers = wsRef.current.views.filter((v) => v.id !== msg.source
+      && (v.channel === msg.channel || appSubs.current.get(v.id)?.has(msg.channel)));
     receivers.forEach((v) => {
-      const app = appById(appsRef.current, v.appId);
-      if (app?.kind === 'web') postToWeb(v, { type: 'ofx.context', channel: msg.channel, context: msg.context, source: msg.source });
+      if (appById(appsRef.current, v.appId)?.kind === 'web') postToWeb(v, { type: 'ofx.context', channel: msg.channel, context: msg.context, source: msg.source });
     });
     pulse(receivers.map((v) => v.id));
   }), [postToWeb, pulse]);
 
-  // Same-origin views announce themselves and torn-out windows ask to dock.
+  function replyToRaiser(raiseId, payload) {
+    if (!raiseId) return;
+    const raiser = raisers.current.get(raiseId);
+    raisers.current.delete(raiseId);
+    if (raiser?.web) {
+      const v = findView(raiser.viewId);
+      if (v) postToWeb(v, { type: 'ofx.intent.result', raiseId: raiser.partnerRaiseId, ...payload });
+    } else {
+      postSystem({ kind: 'intent-result', raiseId, ...payload });
+    }
+  }
+
+  // The intent resolver: a view that listens for the intent (same colour first), else the built-in viewer for
+  // ViewInstance / ViewReport, else NoAppsFound. The hub can raise intents too, over the WebSocket.
+  function handleIntent(msg) {
+    const { intent, context, source, raiseId } = msg;
+    if (typeof intent !== 'string' || !isValidContext(context)) {
+      replyToRaiser(raiseId, { error: 'MalformedContext' });
+      return;
+    }
+    const current = wsRef.current;
+    const sourceView = current.views.find((v) => v.id === source);
+    const handlers = [...(intentListeners.current.get(intent) || [])].filter((id) => id !== source && current.views.some((v) => v.id === id));
+    if (handlers.length) {
+      const target = handlers.find((id) => sourceView?.channel && findView(id)?.channel === sourceView.channel) || handlers[0];
+      if (isWeb(target)) postToWeb(findView(target), { type: 'ofx.intent.deliver', intent, context, raiseId, source });
+      else postSystem({ kind: 'intent-deliver', viewId: target, intent, context, raiseId, source });
+      setState((s) => setActive(s, target));
+      pulse([target]);
+      return;
+    }
+    const route = BUILTIN_INTENTS[intent] ? routeForContext(context) : null;
+    if (route) {
+      const viewerApp = intent === 'ViewReport' ? 'reports' : 'instance';
+      const viewer = current.views.find((v) => v.appId === viewerApp);
+      if (viewer) {
+        postSystem({ kind: 'navigate', viewId: viewer.id, path: route });
+        setState((s) => setActive(s, viewer.id));
+        pulse([viewer.id]);
+        replyToRaiser(raiseId, { target: { appId: viewerApp, instanceId: viewer.id } });
+      } else {
+        const id = newId();
+        setState((s) => addView(s, { id, appId: viewerApp, title: viewerApp === 'reports' ? 'Report' : 'Instance detail',
+          channel: sourceView?.channel || null, path: route }));
+        replyToRaiser(raiseId, { target: { appId: viewerApp, instanceId: id } });
+      }
+      return;
+    }
+    replyToRaiser(raiseId, { error: 'NoAppsFound' });
+  }
+
+  function openApp(appId, context, sourceId) {
+    const app = appById(appsRef.current, appId);
+    if (!app) return;
+    const route = app.kind === 'route' && isValidContext(context) ? routeForContext(context) : null;
+    const path = route && route.startsWith(app.path + '/') ? route : undefined;
+    setState((s) => addView(s, { id: newId(), appId: app.appId, title: app.title, channel: app.linkable ? (findView(sourceId)?.channel || null) : null, path }));
+  }
+
+  // The Workspace is the intent resolver while it is open (window.fdc3.raiseIntent in this document routes here).
+  useEffect(() => { setWorkspaceHost(true); return () => setWorkspaceHost(false); }, []);
+
+  // Same-origin views: hello, dock, intents, intent handlers and results, channel changes, fdc3.open.
   useEffect(() => onSystem((msg) => {
     const current = wsRef.current;
     if (msg.kind === 'view-hello') {
@@ -119,24 +204,36 @@ export default function Workspace() {
       setState((s) => addView(s, { id: msg.viewId, appId: app.appId, title: msg.title || app.title, channel: msg.channel || null,
         ...(app.kind === 'route' && msg.path ? { path: msg.path } : {}) }));
     } else if (msg.kind === 'intent') {
+      if (msg.raiseId) raisers.current.set(msg.raiseId, { viewId: msg.source, web: false });
       handleIntent(msg);
+    } else if (msg.kind === 'intent-listener' && typeof msg.intent === 'string' && typeof msg.viewId === 'string') {
+      if (!intentListeners.current.has(msg.intent)) intentListeners.current.set(msg.intent, new Set());
+      intentListeners.current.get(msg.intent).add(msg.viewId);
+    } else if (msg.kind === 'intent-result' && raisers.current.has(msg.raiseId)) {
+      const raiser = raisers.current.get(msg.raiseId);
+      raisers.current.delete(msg.raiseId);
+      if (raiser.web) {
+        const v = findView(raiser.viewId);
+        if (v) postToWeb(v, { type: 'ofx.intent.result', raiseId: raiser.partnerRaiseId, target: msg.target, result: msg.result, error: msg.error });
+      }
+    } else if (msg.kind === 'channel-changed' && current.views.some((v) => v.id === msg.viewId)) {
+      setState((s) => patchView(s, msg.viewId, { channel: msg.channel || null }));
+    } else if (msg.kind === 'open' && typeof msg.appId === 'string') {
+      openApp(msg.appId, msg.context, msg.source);
     }
   }), []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  function handleIntent(msg) {
-    if (msg.intent !== 'ViewInstance' || !isValidContext(msg.context)) return;
-    const route = routeForContext(msg.context);
-    if (!route) return;
-    const current = wsRef.current;
-    const viewer = current.views.find((v) => v.appId === 'instance');
-    if (viewer) {
-      postSystem({ kind: 'navigate', viewId: viewer.id, path: route });
-      setState((s) => setActive(s, viewer.id));
-    } else {
-      const source = current.views.find((v) => v.id === msg.source);
-      setState((s) => addView(s, { id: newId(), appId: 'instance', title: 'Instance detail', channel: source?.channel || null, path: route }));
+  // WebSocket: the hub raised an intent; and partner frames that subscribed get live events relayed.
+  useEffect(() => subscribeLive((name, data) => {
+    if (name === 'intent' && data && typeof data === 'object') {
+      handleIntent({ intent: data.intent, context: data.context, source: data.source || 'hub' });
+      return;
     }
-  }
+    if (!PARTNER_LIVE_EVENTS.includes(name)) return;
+    wsRef.current.views.forEach((v) => {
+      if (liveSubs.current.get(v.id)?.has(name) && isWeb(v.id)) postToWeb(v, { type: 'ofx.live', name, data });
+    });
+  }), [postToWeb, isWeb]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cross-origin partner frames: only messages from a frame we host, from the origin we framed.
   useEffect(() => {
@@ -151,14 +248,47 @@ export default function Workspace() {
         postToWeb(view, { type: 'ofx.channel', channel: view.channel, context: view.channel ? lastContext.current[view.channel] ?? null : null,
           scope: { groupUnit: filters.groupUnit, cobDate: filters.cobDate, region: filters.region } });
       } else if (data.type === 'ofx.context.broadcast' && isValidContext(data.context)) {
-        broadcastContext(data.context, { channel: view.channel, source: view.id });
+        const channel = typeof data.channel === 'string' && APP_CHANNEL.test(data.channel) ? data.channel : view.channel;
+        if (channel) broadcastContext(data.context, { channel, source: view.id });
       } else if (data.type === 'ofx.intent' && typeof data.intent === 'string') {
-        handleIntent({ intent: data.intent, context: data.context, source: view.id });
+        const raiseId = typeof data.raiseId === 'string' ? `${view.id}:${data.raiseId}` : undefined;
+        if (raiseId) raisers.current.set(raiseId, { viewId: view.id, web: true, partnerRaiseId: data.raiseId });
+        handleIntent({ intent: data.intent, context: data.context, source: view.id, raiseId });
+      } else if (data.type === 'ofx.intent.listen' && typeof data.intent === 'string') {
+        if (!intentListeners.current.has(data.intent)) intentListeners.current.set(data.intent, new Set());
+        intentListeners.current.get(data.intent).add(view.id);
+      } else if (data.type === 'ofx.intent.result' && typeof data.raiseId === 'string' && raisers.current.has(data.raiseId)) {
+        const raiser = raisers.current.get(data.raiseId);
+        raisers.current.delete(data.raiseId);
+        const payload = { target: { appId: app.appId, instanceId: view.id }, result: data.result ?? null, error: data.error };
+        if (raiser.web) {
+          const rv = findView(raiser.viewId);
+          if (rv) postToWeb(rv, { type: 'ofx.intent.result', raiseId: raiser.partnerRaiseId, ...payload });
+        } else {
+          postSystem({ kind: 'intent-result', raiseId: data.raiseId, ...payload });
+        }
+      } else if (data.type === 'ofx.join') {
+        const next = data.channel == null ? null : channelById(data.channel)?.id;
+        if (data.channel == null || next) setChannel(view, next ?? null);
+      } else if (data.type === 'ofx.subscribe' && typeof data.channel === 'string' && APP_CHANNEL.test(data.channel)) {
+        if (!appSubs.current.has(view.id)) appSubs.current.set(view.id, new Set());
+        appSubs.current.get(view.id).add(data.channel);
+        const ctx = lastContext.current[data.channel];
+        if (ctx) postToWeb(view, { type: 'ofx.context', channel: data.channel, context: ctx, source: 'replay' });
+      } else if (data.type === 'ofx.live.subscribe' && Array.isArray(data.names)) {
+        liveSubs.current.set(view.id, new Set(data.names.filter((n) => PARTNER_LIVE_EVENTS.includes(n))));
       }
     }
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
   }, [pageOrigin, postToWeb, filters.groupUnit, filters.cobDate, filters.region]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Theme changes reach partner frames (console views follow through the storage event): same look everywhere.
+  useEffect(() => {
+    wsRef.current.views.forEach((v) => {
+      if (appById(appsRef.current, v.appId)?.kind === 'web') postToWeb(v, { type: 'ofx.theme', ...partnerThemeParams(themeId) });
+    });
+  }, [themeId, postToWeb]);
 
   // Scope changes reach partner frames too (console views follow it through the store).
   useEffect(() => {
@@ -171,7 +301,7 @@ export default function Workspace() {
 
   function setChannel(view, channel) {
     setState((s) => patchView(s, view.id, { channel }));
-    const app = appById(apps, view.appId);
+    const app = appById(appsRef.current, view.appId);
     const context = channel ? lastContext.current[channel] : undefined;
     if (app?.kind === 'route') postSystem({ kind: 'join', viewId: view.id, channel, context });
     if (app?.kind === 'web') postToWeb(view, { type: 'ofx.channel', channel, context: context ?? null });
@@ -200,6 +330,67 @@ export default function Workspace() {
     if (win) setState((s) => removeView(s, view.id));
   }
 
+  // Splitters (OpenFin-style layouts): one handle between neighbours in columns / rows; dragging moves their shares.
+  const measureSplits = useCallback(() => {
+    const area = areaRef.current;
+    const w = wsRef.current;
+    if (!area || !['columns', 'rows'].includes(w.layout) || w.maximized || w.views.length < 2) { setSplits([]); return; }
+    const box = area.getBoundingClientRect();
+    const horizontal = w.layout === 'columns';
+    const out = [];
+    for (let i = 0; i < w.views.length - 1; i += 1) {
+      const a = sectionRefs.current.get(w.views[i].id);
+      const b = sectionRefs.current.get(w.views[i + 1].id);
+      if (!a || !b) continue;
+      const ra = a.getBoundingClientRect();
+      const rb = b.getBoundingClientRect();
+      out.push({
+        a: w.views[i].id,
+        b: w.views[i + 1].id,
+        pos: horizontal ? (ra.right + rb.left) / 2 - box.left + area.scrollLeft : (ra.bottom + rb.top) / 2 - box.top + area.scrollTop,
+      });
+    }
+    setSplits(out);
+  }, []);
+
+  useLayoutEffect(() => { measureSplits(); }, [measureSplits, ws.layout, ws.maximized, ws.views]);
+  useEffect(() => {
+    window.addEventListener('resize', measureSplits);
+    return () => window.removeEventListener('resize', measureSplits);
+  }, [measureSplits]);
+
+  function startResize(e, split) {
+    const a = sectionRefs.current.get(split.a);
+    const b = sectionRefs.current.get(split.b);
+    const va = findView(split.a);
+    const vb = findView(split.b);
+    if (!a || !b || !va || !vb) return;
+    e.preventDefault();
+    const horizontal = wsRef.current.layout === 'columns';
+    const ra = a.getBoundingClientRect();
+    const rb = b.getBoundingClientRect();
+    const aPx = horizontal ? ra.width : ra.height;
+    const bPx = horizontal ? rb.width : rb.height;
+    const start = horizontal ? e.clientX : e.clientY;
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+    setResizing(true);
+    const move = (ev) => {
+      const [na, nb] = splitShares(va.size || 1, vb.size || 1, aPx, bPx, (horizontal ? ev.clientX : ev.clientY) - start, horizontal ? 240 : 160);
+      setState((st) => resizePair(st, split.a, na, split.b, nb));
+    };
+    const up = () => {
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', up);
+      handle.removeEventListener('pointercancel', up);
+      setResizing(false);
+      requestAnimationFrame(measureSplits);
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', up);
+    handle.addEventListener('pointercancel', up);
+  }
+
   function reload(view) {
     setReloadTick((t) => ({ ...t, [view.id]: (t[view.id] || 0) + 1 }));
   }
@@ -218,6 +409,9 @@ export default function Workspace() {
   const position = Object.fromEntries(ws.views.map((v, i) => [v.id, i]));
   const activeId = ws.active && ws.views.some((v) => v.id === ws.active) ? ws.active : ws.views[0]?.id;
   const usedChannels = [...new Set(ws.views.map((v) => v.channel).filter(Boolean))];
+  const sized = ['columns', 'rows'].includes(ws.layout) && !ws.maximized;
+  const tracks = ws.views.map((v) => `minmax(${ws.layout === 'columns' ? 240 : 160}px, ${v.size || 1}fr)`).join(' ');
+  const sizedTracks = sized ? (ws.layout === 'columns' ? { gridTemplateColumns: tracks } : { gridTemplateRows: tracks }) : undefined;
 
   return (
     <>
@@ -282,13 +476,14 @@ export default function Workspace() {
           <button className="btn" onClick={() => setLauncher(true)}><Icon name="plus" size={15} /> Launch app</button>
         </div></div>
       ) : (
-        <div ref={areaRef} className={'ws-area ' + ws.layout + (ws.maximized ? ' has-max' : '')}>
+        <div ref={areaRef} className={'ws-area ' + ws.layout + (ws.maximized ? ' has-max' : '') + (resizing ? ' resizing' : '')}
+          style={sizedTracks}>
           {ordered.map((v) => {
             const app = appById(apps, v.appId);
             const chan = channelById(v.channel);
             const hidden = (ws.layout === 'tabs' && v.id !== activeId) || (ws.maximized && ws.maximized !== v.id);
             return (
-              <section key={v.id} className={'wsv' + (v.wide ? ' wide' : '') + (ws.maximized === v.id ? ' max' : '') + (hidden ? ' hidden' : '') + (flash[v.id] ? ' flash' : '') + (dragId === v.id ? ' dragging' : '')}
+              <section key={v.id} ref={(el) => { if (el) sectionRefs.current.set(v.id, el); else sectionRefs.current.delete(v.id); }} className={'wsv' + (v.wide ? ' wide' : '') + (ws.maximized === v.id ? ' max' : '') + (hidden ? ' hidden' : '') + (flash[v.id] ? ' flash' : '') + (dragId === v.id ? ' dragging' : '')}
                 style={{ order: position[v.id], '--chan': chan?.color || 'transparent' }}
                 onDragOver={(e) => { if (dragId && dragId !== v.id) e.preventDefault(); }}
                 onDrop={(e) => { e.preventDefault(); if (dragId) setState((s) => moveView(s, dragId, v.id)); setDragId(null); }}
@@ -333,6 +528,12 @@ export default function Workspace() {
               </section>
             );
           })}
+          {splits.map((sp) => (
+            <div key={sp.a + '|' + sp.b} className={'ws-split ' + (ws.layout === 'columns' ? 'col' : 'row')} role="separator"
+              aria-orientation={ws.layout === 'columns' ? 'vertical' : 'horizontal'} title="Drag to resize"
+              style={ws.layout === 'columns' ? { left: sp.pos } : { top: sp.pos }}
+              onPointerDown={(e) => startResize(e, sp)} />
+          ))}
         </div>
       )}
 

@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
-import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
+import { useEffect, useMemo, useState } from 'react';
+import DataView from './DataView.jsx';
 import { bindGridParams, gridRequestUrl } from '../lib/bindGridParams.js';
-import '../wijmo.js';
 
 const TOKEN_KEY = 'ofx-token';
 
@@ -52,6 +51,8 @@ export default function WijmoGrid({ grid, context }) {
     return () => { alive = false; };
   }, [grid?.endpoint, grid?.method, req.url, req.method, JSON.stringify(params)]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const cols = useMemo(() => columns.map((c) => ({ binding: c.key, header: c.label || c.key, pill: /status|state/i.test(c.key) })), [columns]);
+
   return (
     <div className="wijmo-grid">
       <div className="grid-query">
@@ -65,21 +66,8 @@ export default function WijmoGrid({ grid, context }) {
       </div>
       {error && <p className="muted" style={{ margin: '0 0 8px' }}>{error}</p>}
       {busy && <p className="muted" style={{ margin: '0 0 8px' }}>Loading grid…</p>}
-      {!busy && !error && rows.length === 0 && (
-        <p className="muted" style={{ margin: '0 0 8px' }}>No rows for this query.</p>
-      )}
-      <div className="wijmo-host">
-        <FlexGrid itemsSource={rows} isReadOnly autoGenerateColumns={columns.length === 0} headersVisibility="Column">
-          {columns.map((c) => (
-            <FlexGridColumn
-              key={c.key}
-              binding={c.key}
-              header={c.label || c.key}
-              width="*"
-            />
-          ))}
-        </FlexGrid>
-      </div>
+      <DataView rows={rows} columns={cols.length ? cols : null} height={380} exportName={grid?.id || 'grid'}
+        empty={busy ? 'Loading…' : 'No rows for this query.'} />
     </div>
   );
 }

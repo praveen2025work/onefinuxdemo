@@ -9,6 +9,7 @@ import PartnerFrame from '../components/PartnerFrame.jsx';
 import OutcomeGrids from '../components/OutcomeGrids.jsx';
 import { outcomeForSurface } from '../lib/outcomeForSurface.js';
 import { destsPublishSurface, stepViewFromDetail } from '../lib/stepViewFromDetail.js';
+import { partnerThemeParams } from '../lib/themes.js';
 
 const labelOf = (verb) => verb.split(/[_\s]+/).map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 const RICH = ['SIGN_OFF', 'POST', 'ESCALATE', 'ADJUST', 'COUNTERSIGN'];
@@ -21,7 +22,7 @@ function partnerViewLabel(renderer) {
 export default function InstanceDetail() {
   const { id } = useParams();
   const instanceId = decodeURIComponent(id);
-  const { refreshInstances, instances } = useApp();
+  const { refreshInstances, instances, themeId } = useApp();
   const [detail, setDetail] = useState(null);
   const [error, setError] = useState(null);
   const [banner, setBanner] = useState(null);
@@ -169,7 +170,7 @@ export default function InstanceDetail() {
     cobDate: i.cobDate,
     region: i.region,
     runId: i.runId,
-    theme: document.documentElement.getAttribute('data-theme') || 'dark',
+    ...partnerThemeParams(themeId),
   };
   const outcomeDef = outcomeForSurface(defs, { kitId: i.kitId });
   const hasGrids = Array.isArray(outcomeDef?.grids) && outcomeDef.grids.length > 0;

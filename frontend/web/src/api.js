@@ -225,3 +225,27 @@ export const lifecycleApi = {
     return res.json();
   },
 };
+
+async function postJson(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let detail = `${res.status} on ${path}`;
+    try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
+    throw new Error(detail);
+  }
+  return res.json();
+}
+
+// Server-side screen links and notifications, pushed to every open console over the WebSocket.
+export const interopApi = {
+  /** Share an FDC3 context on a link channel (colour or app:<name>) from the hub. */
+  context: (channel, context, source = 'drive') => postJson('/api/interop/context', { channel, context, source }),
+  /** Raise an intent (ViewInstance, ViewBreak, …) for the Workspace resolver on every console. */
+  intent: (intent, context, source = 'drive') => postJson('/api/interop/intent', { intent, context, source }),
+  /** A platform announcement into the inbox, the notification panel and desktop cards. */
+  announce: (title, message, severity = 'INFO') => postJson('/api/admin/announce', { title, message, severity }),
+};

@@ -1,9 +1,7 @@
-import { Suspense, lazy, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import FinanceTile from './FinanceTile.jsx';
-import DataGrid from '../components/DataGrid.jsx';
+import DataView from '../components/DataView.jsx';
 import { CHART } from './transform.js';
-
-const PivotView = lazy(() => import('./PivotView.jsx'));
 
 /** Rows behind a tile for the detail grid: its grid slide if it has one, else the richest slide. */
 export function detailRows(tile) {
@@ -17,21 +15,12 @@ export function detailRows(tile) {
 }
 
 function DetailPanel({ tile }) {
-  const [tab, setTab] = useState('grid');
   const { rows, columns, title } = useMemo(() => detailRows(tile), [tile]);
   return (
     <div className="panel fin-detail">
-      <div className="panel-hd">
-        <h2>Detailed data · {tile.title}</h2>
-        <div className="seg sm">
-          <button className={tab === 'grid' ? 'on' : ''} onClick={() => setTab('grid')}>Grid view</button>
-          <button className={tab === 'pivot' ? 'on' : ''} onClick={() => setTab('pivot')}>Pivot view</button>
-        </div>
-      </div>
+      <div className="panel-hd"><h2>Detailed data · {tile.title}</h2><span className="hint">Wijmo grid · pivot · chart</span></div>
       <div className="panel-bd">
-        {tab === 'grid'
-          ? <DataGrid rows={rows} columns={columns} height={320} title={title} exportName={tile.id} />
-          : <Suspense fallback={<p className="muted">Loading pivot…</p>}><PivotView rows={rows} /></Suspense>}
+        <DataView rows={rows} columns={columns} height={320} title={title} exportName={tile.id} />
       </div>
     </div>
   );

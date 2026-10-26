@@ -4,6 +4,7 @@ import { useStream } from '../useStream';
 import { Loading, PageTitle, Stat } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import DataGrid from '../components/DataGrid.jsx';
 
 const OUTBOX_FILTERS = [
   { value: '', label: 'All' },
@@ -13,10 +14,6 @@ const OUTBOX_FILTERS = [
 ];
 
 const OUTBOX_TONE = { DISPATCHED: 'ok', PENDING: 'warn', FAILED: 'fail' };
-
-function Pill({ status, tone }) {
-  return <span className={'pill ' + (tone || 'plain')}><span className="dot" />{status}</span>;
-}
 
 function clock(ts) {
   if (!ts) return '—';
@@ -81,6 +78,53 @@ export default function Monitoring() {
   const byStatus = ev.byStatus || [];
   const bySource = ev.bySource || [];
   const subscribers = overview.subscribers || [];
+  const routeRows = routes.map((r) => ({ ...r, matches: `${r.eventType || '*'} · ${r.sourceId || '*'}` }));
+
+  // The standard grid for every list on this screen: filter, sort, search and CSV come with it.
+  const outboxColumns = [
+    { binding: 'eventId', header: 'Event', minWidth: 170, mono: true },
+    { binding: 'eventType', header: 'Type', minWidth: 140 },
+    { binding: 'subscriber', header: 'Subscriber', width: 140, chip: true },
+    { binding: 'routeId', header: 'Route', width: 130, mono: true },
+    { binding: 'attempts', header: 'Try', width: 60, align: 'right' },
+    { binding: 'status', header: 'Status', width: 120, pill: true, tone: (v) => OUTBOX_TONE[v] },
+    { binding: 'lastError', header: 'Last error', minWidth: 140 },
+    { binding: null, header: '', width: 84, sortable: false, template: (o) => (o.status === 'FAILED'
+      ? <button className="btn ghost sm" disabled={busy === o.outboxId} onClick={() => retry(o.outboxId)}>Retry</button>
+      : null) },
+  ];
+  const tapeColumns = [
+    { binding: 'receivedAt', header: 'Received', width: 170, mono: true, template: (e) => <span className="mono sec">{clock(e.receivedAt)}</span> },
+    { binding: 'sourceSystem', header: 'Source', width: 120, chip: true },
+    { binding: 'eventType', header: 'Event', minWidth: 160 },
+    { binding: 'sourceKey', header: 'Key', minWidth: 120, mono: true },
+    { binding: 'status', header: 'Status', width: 120, pill: true, tone: eventTone },
+  ];
+  const routeColumns = [
+    { binding: 'subscriber', header: 'Subscriber', minWidth: 140, template: (r) => (
+      <div className="cell-2l"><span className="lead">{r.subscriber}</span><span className="sec">{r.description}</span></div>) },
+    { binding: 'matches', header: 'Matches', minWidth: 140, mono: true },
+    { binding: 'delivered', header: 'Delivered', width: 92, align: 'right' },
+  ];
+  const sinkColumns = [
+    { binding: 'receivedAt', header: 'Received', width: 160, template: (r) => <span className="mono sec">{clock(r.receivedAt)}</span> },
+    { binding: 'subscriber', header: 'System', width: 120, chip: true },
+    { binding: 'eventType', header: 'Event', minWidth: 140 },
+    { binding: 'sourceKey', header: 'Key', minWidth: 100, mono: true },
+  ];
+  const sourceColumns = [
+    { binding: 'sourceSystem', header: 'Source', minWidth: 120, chip: true },
+    { binding: 'n', header: 'Events', width: 80, align: 'right' },
+    { binding: 'lastReceivedAt', header: 'Last', minWidth: 150, template: (x) => <span className="mono sec">{clock(x.lastReceivedAt)}</span> },
+  ];
+  const auditColumns = [
+    { binding: 'at', header: 'When', width: 170, template: (a) => <span className="mono sec">{clock(a.at)}</span> },
+    { binding: 'actor', header: 'Actor', width: 140, mono: true },
+    { binding: 'action', header: 'Action', width: 150, chip: true },
+    { binding: 'resource', header: 'Resource', minWidth: 160, mono: true },
+    { binding: 'decision', header: 'Decision', width: 100, pill: true, tone: (v) => (v === 'OK' ? 'ok' : v === 'DENY' ? 'fail' : 'plain') },
+    { binding: 'detailJson', header: 'Detail', minWidth: 200, mono: true },
+  ];
 
   return (
     <>
@@ -122,23 +166,9 @@ export default function Monitoring() {
                 ))}
               </div>
             </div>
-            <div className="panel-bd tight">
-              <table className="tbl">
-                <thead><tr><th>Event</th><th>Subscriber</th><th>Route</th><th className="num">Try</th><th>Status</th><th /></tr></thead>
-                <tbody>
-                  {outbox.map((o) => (
-                    <tr key={o.outboxId}>
-                      <td><div className="mono lead">{o.eventId}</div><div className="sec mono">{o.eventType}{o.sourceId ? ' · ' + o.sourceId : ''}</div></td>
-                      <td><span className="chip">{o.subscriber}</span></td>
-                      <td className="sec mono">{o.routeId}</td>
-                      <td className="num">{o.attempts}</td>
-                      <td><Pill status={o.status} tone={OUTBOX_TONE[o.status]} />{o.lastError && <div className="sec" style={{ color: 'var(--fail)' }}>{o.lastError}</div>}</td>
-                      <td>{o.status === 'FAILED' && <button className="btn ghost sm" disabled={busy === o.outboxId} onClick={() => retry(o.outboxId)}>Retry</button>}</td>
-                    </tr>
-                  ))}
-                  {outbox.length === 0 && <tr><td colSpan={6} className="empty">No propagation yet. Drive the FOBO demo to fan out facts.</td></tr>}
-                </tbody>
-              </table>
+            <div className="panel-bd">
+              <DataGrid rows={outbox} columns={outboxColumns} height="auto" maxHeight={400} exportName="outbox"
+                empty="No propagation yet. Drive the FOBO demo to fan out facts." />
             </div>
           </div>
 
@@ -149,22 +179,8 @@ export default function Monitoring() {
               </h2>
               <span className="hint">event_store</span>
             </div>
-            <div className="panel-bd tight">
-              <table className="tbl">
-                <thead><tr><th>Received</th><th>Source</th><th>Event</th><th>Key</th><th>Status</th></tr></thead>
-                <tbody>
-                  {tape.map((e) => (
-                    <tr key={e.eventId}>
-                      <td className="sec mono">{clock(e.receivedAt)}</td>
-                      <td><span className="chip">{e.sourceSystem}</span></td>
-                      <td className="sec">{e.eventType}</td>
-                      <td className="mono sec">{e.sourceKey}</td>
-                      <td><Pill status={e.status} tone={eventTone(e.status)} /></td>
-                    </tr>
-                  ))}
-                  {tape.length === 0 && <tr><td colSpan={5} className="empty">No events received yet.</td></tr>}
-                </tbody>
-              </table>
+            <div className="panel-bd">
+              <DataGrid rows={tape} columns={tapeColumns} height="auto" maxHeight={420} exportName="event-tape" empty="No events received yet." />
             </div>
           </div>
         </div>
@@ -177,19 +193,8 @@ export default function Monitoring() {
               </h2>
               <span className="hint">{routes.length} · {subscribers.length} systems</span>
             </div>
-            <div className="panel-bd tight">
-              <table className="tbl">
-                <thead><tr><th>Subscriber</th><th>Matches</th><th className="num">Delivered</th></tr></thead>
-                <tbody>
-                  {routes.map((r) => (
-                    <tr key={r.routeId}>
-                      <td><div className="lead">{r.subscriber}</div><div className="sec">{r.description}</div></td>
-                      <td className="sec mono">{(r.eventType || '*')}{r.sourceId ? ' · ' + r.sourceId : ' · *'}</td>
-                      <td className="num">{r.delivered}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="panel-bd">
+              <DataGrid rows={routeRows} columns={routeColumns} height="auto" maxHeight={320} rowHeight={50} toolbar={false} empty="No routes." />
             </div>
           </div>
 
@@ -200,20 +205,8 @@ export default function Monitoring() {
               </h2>
               <span className="hint">{sink.count} received</span>
             </div>
-            <div className="panel-bd tight">
-              <table className="tbl">
-                <thead><tr><th>Received</th><th>System</th><th>Event</th></tr></thead>
-                <tbody>
-                  {(sink.received || []).slice(0, 12).map((r) => (
-                    <tr key={r.subscriber + r.id}>
-                      <td className="sec mono">{clock(r.receivedAt)}</td>
-                      <td><span className="chip">{r.subscriber}</span></td>
-                      <td className="sec">{r.eventType}<div className="sec mono">{r.sourceKey}</div></td>
-                    </tr>
-                  ))}
-                  {(sink.received || []).length === 0 && <tr><td colSpan={3} className="empty">No downstream deliveries yet.</td></tr>}
-                </tbody>
-              </table>
+            <div className="panel-bd">
+              <DataGrid rows={sink.received || []} columns={sinkColumns} height="auto" maxHeight={320} toolbar={false} empty="No downstream deliveries yet." />
             </div>
           </div>
 
@@ -223,20 +216,8 @@ export default function Monitoring() {
                 <InfoHint title="Ingest by origin">Volume received per source system, with the most recent arrival.</InfoHint>
               </h2>
             </div>
-            <div className="panel-bd tight">
-              <table className="tbl">
-                <thead><tr><th>Source</th><th className="num">Events</th><th>Last</th></tr></thead>
-                <tbody>
-                  {bySource.map((s) => (
-                    <tr key={s.sourceSystem}>
-                      <td><span className="chip">{s.sourceSystem}</span></td>
-                      <td className="num">{s.n}</td>
-                      <td className="sec mono">{clock(s.lastReceivedAt)}</td>
-                    </tr>
-                  ))}
-                  {bySource.length === 0 && <tr><td colSpan={3} className="empty">No events yet.</td></tr>}
-                </tbody>
-              </table>
+            <div className="panel-bd">
+              <DataGrid rows={bySource} columns={sourceColumns} height="auto" maxHeight={280} toolbar={false} empty="No events yet." />
             </div>
           </div>
         </div>
@@ -249,23 +230,9 @@ export default function Monitoring() {
           </h2>
           <span className="hint">audit_log</span>
         </div>
-        <div className="panel-bd tight">
-          <table className="tbl">
-            <thead><tr><th>When</th><th>Actor</th><th>Action</th><th>Resource</th><th>Decision</th><th>Detail</th></tr></thead>
-            <tbody>
-              {audit.map((a) => (
-                <tr key={a.id}>
-                  <td className="sec mono">{clock(a.at)}</td>
-                  <td className="mono">{a.actor}</td>
-                  <td><span className="chip">{a.action}</span></td>
-                  <td className="mono sec">{a.resource || '—'}</td>
-                  <td>{a.decision ? <Pill status={a.decision} tone={a.decision === 'OK' ? 'ok' : a.decision === 'DENY' ? 'fail' : 'plain'} /> : '—'}</td>
-                  <td className="sec mono" style={{ maxWidth: 260, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.detailJson || ''}</td>
-                </tr>
-              ))}
-              {audit.length === 0 && <tr><td colSpan={6} className="empty">No commands recorded yet. Sign off or escalate an outcome to populate the trail.</td></tr>}
-            </tbody>
-          </table>
+        <div className="panel-bd">
+          <DataGrid rows={audit} columns={auditColumns} height="auto" maxHeight={460} exportName="audit-log"
+            empty="No commands recorded yet. Sign off or escalate an outcome to populate the trail." />
         </div>
       </div>
     </>

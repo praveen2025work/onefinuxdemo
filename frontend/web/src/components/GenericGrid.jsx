@@ -1,4 +1,14 @@
+import DataGrid from './DataGrid.jsx';
+
+/** Step grid for a feed or a query result, on the standard Wijmo grid. */
 export default function GenericGrid({ columns = [], rows = [], empty = 'No rows.', query }) {
+  const cols = columns.map((c) => ({
+    binding: c.key,
+    header: c.label || c.key,
+    pill: statusy(c.key),
+    mono: !statusy(c.key),
+    format: 'n0',
+  }));
   return (
     <div className="generic-grid">
       {query && (
@@ -12,43 +22,13 @@ export default function GenericGrid({ columns = [], rows = [], empty = 'No rows.
           </div>
         </div>
       )}
-      {!columns.length ? (
-        <p className="muted" style={{ margin: 0 }}>{empty}</p>
-      ) : (
-        <div className="tbl-wrap">
-          <table className="tbl">
-            <thead>
-              <tr>{columns.map((c) => <th key={c.key}>{c.label || c.key}</th>)}</tr>
-            </thead>
-            <tbody>
-              {rows.length === 0 && (
-                <tr><td colSpan={columns.length} className="empty">{empty}</td></tr>
-              )}
-              {rows.map((row, i) => (
-                <tr key={row.eventId || row.sourceKey || row.id || String(i)}>
-                  {columns.map((c) => (
-                    <td key={c.key} className={statusy(c.key) ? 'sec' : 'mono'}>
-                      {fmt(row[c.key])}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+      {!columns.length
+        ? <p className="muted" style={{ margin: 0 }}>{empty}</p>
+        : <DataGrid rows={rows} columns={cols} height="auto" maxHeight={460} empty={empty} exportName={query?.endpoint?.split('/').pop() || 'step-grid'} />}
     </div>
   );
 }
 
 function statusy(key) {
   return key === 'eventType' || key === 'status' || key === 'kind';
-}
-
-function fmt(value) {
-  if (value == null || value === '') return '—';
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return value.toLocaleString('en-GB', { maximumFractionDigits: 0 });
-  }
-  return String(value);
 }

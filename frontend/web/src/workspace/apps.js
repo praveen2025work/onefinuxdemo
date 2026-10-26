@@ -5,6 +5,11 @@
 //   widget — a light native view drawn by the host itself (live feed, Wijmo instance grid, context inspector)
 //   web    — any web app in a sandboxed iframe; a partner joins link channels via postMessage (ofx-interop.js)
 
+// STEPS framed in embedded mode (?ofx-embed=1: no masthead, theme from the host, FDC3 links). Point
+// VITE_STEPS_URL at the deployed STEPS for a real host.
+const ENV = (typeof import.meta !== 'undefined' && import.meta.env) || {};
+export const STEPS_URL = ENV.VITE_STEPS_URL || 'http://localhost:3000/finance?ofx-embed=1';
+
 export const BUILTIN_APPS = [
   { appId: 'board', title: 'Outcome board', icon: 'board', kind: 'route', path: '/board', linkable: true,
     desc: 'Unit traffic lights. Click a row to share that instance on the link channel.' },
@@ -32,6 +37,8 @@ export const BUILTIN_APPS = [
     desc: 'Partner screen framed, not rebuilt. Context arrives on the query.' },
   { appId: 'partner-demo', title: 'Partner interop demo', icon: 'globe', kind: 'web', url: '/partner-demo.html', linkable: true,
     desc: 'A partner page that joins link channels with ofx-interop.js (postMessage).' },
+  { appId: 'steps', title: 'STEPS (workflow & finance)', icon: 'layers', kind: 'web', url: STEPS_URL, linkable: true,
+    desc: 'The STEPS app in embedded mode: same theme, FDC3 links to the other views.' },
 ];
 
 const BLOCKED_SCHEMES = /^(javascript|data|vbscript|file|blob|about):/i;

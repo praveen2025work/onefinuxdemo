@@ -1,8 +1,6 @@
-import { FlexChart, FlexChartAxis, FlexChartLegend, FlexChartSeries, FlexPie, FlexPieDataLabel } from '@mescius/wijmo.react.chart';
+import Chart from '../components/Chart.jsx';
 import { CHART } from './transform.js';
-import '../wijmo.js';
 
-const PIE_PALETTE = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9'];
 const SEVERITY_COLOR = { CRITICAL: '#ef4444', WARN: '#f59e0b', SUCCESS: '#10b981', INFO: '#3b82f6' };
 const STATUS_TONE = { success: 'ok', warning: 'warn', error: 'fail', info: 'info' };
 
@@ -14,7 +12,7 @@ function fmt(value) {
   return String(value);
 }
 
-/** One slide of a tile. Charts are Wijmo FlexChart / FlexPie; progress, status and grid are plain markup. */
+/** One slide of a tile. Charts use the standard Chart (Wijmo FlexChart / FlexPie); progress, status and grid are plain markup. */
 export default function TileContent({ slide, compact = false, full = false }) {
   const height = compact ? 140 : full ? 360 : 210;
   const data = slide?.data || [];
@@ -23,33 +21,16 @@ export default function TileContent({ slide, compact = false, full = false }) {
   switch (slide.chartType) {
     case CHART.bar:
     case CHART.line:
-    case CHART.area: {
-      const type = slide.chartType === CHART.bar ? 'Column' : slide.chartType === CHART.area ? 'Area' : 'LineSymbols';
-      const palette = (slide.series || []).map((s, i) => s.color || PIE_PALETTE[i % PIE_PALETTE.length]);
+    case CHART.area:
       return (
-        <div className="tile-chart" style={{ height }}>
-          <FlexChart itemsSource={data} bindingX="name" chartType={type} palette={palette} legendToggle
-            style={{ height }} initialized={(c) => { c.tooltip.content = '<b>{seriesName}</b><br/>{x}: {y:n0}'; }}>
-            <FlexChartLegend position={compact ? 'None' : 'Bottom'} />
-            <FlexChartAxis wjProperty="axisY" format="n0" majorGrid />
-            <FlexChartAxis wjProperty="axisX" labelAngle={data.length > 8 ? -35 : 0} />
-            {(slide.series || []).map((s) => <FlexChartSeries key={s.key} binding={s.key} name={s.name || s.key} />)}
-          </FlexChart>
-        </div>
+        <Chart data={data} x="name" type={slide.chartType === CHART.bar ? 'column' : slide.chartType}
+          series={(slide.series || []).map((s) => ({ key: s.key, name: s.name || s.key, color: s.color }))}
+          height={height} legend={compact ? 'None' : 'Bottom'} />
       );
-    }
     case CHART.pie: {
       const key = slide.series?.[0]?.key || 'value';
-      const palette = data.map((d, i) => SEVERITY_COLOR[d.name] || PIE_PALETTE[i % PIE_PALETTE.length]);
-      return (
-        <div className="tile-chart" style={{ height }}>
-          <FlexPie itemsSource={data} binding={key} bindingName="name" innerRadius={0.55} palette={palette}
-            style={{ height }} initialized={(c) => { c.tooltip.content = '<b>{name}</b>: {value}'; }}>
-            <FlexChartLegend position={compact ? 'None' : 'Right'} />
-            <FlexPieDataLabel content="{value}" position="Inside" />
-          </FlexPie>
-        </div>
-      );
+      const colored = data.map((d) => (SEVERITY_COLOR[d.name] ? { ...d, _color: SEVERITY_COLOR[d.name] } : d));
+      return <Chart data={colored} x="name" type="donut" series={[{ key }]} height={height} legend={compact ? 'None' : 'Right'} />;
     }
     case CHART.progress:
       return (

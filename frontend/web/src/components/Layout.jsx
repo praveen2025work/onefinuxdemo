@@ -68,21 +68,18 @@ function Shell({ children }) {
   const { context, filters, setFilters, instances, unread, live, liveStatus, desktopAlerts, allowDesktopAlerts, view, setView,
     notifPanelOpen, toggleNotifPanel, setNotifPanelOpen, refreshAll } = useApp();
   const nav = filterNav(NAV, view);
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
-  const [drawer, setDrawer] = useState(false);
+  // STEPS left panel: hidden by default so the page gets the full width; a tab on the left edge opens it
+  // over the content, and an outside click, Escape or a navigation closes it again.
+  const [railOpen, setRailOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const location = useLocation();
   const { canInstall, standalone, install } = useInstallPrompt();
 
-  useEffect(() => { setDrawer(false); }, [location.pathname]);
+  useEffect(() => { setRailOpen(false); }, [location.pathname]);
   useEffect(() => { if (location.pathname === '/notifications') setNotifPanelOpen(false); }, [location.pathname, setNotifPanelOpen]);
 
   function toggleRail() {
-    if (window.matchMedia('(max-width: 820px)').matches) {
-      setDrawer((d) => !d);
-      return;
-    }
-    setCollapsed((c) => { localStorage.setItem('ofx-rail', c ? '0' : '1'); return !c; });
+    setRailOpen((o) => !o);
   }
 
   async function onRefresh() {
@@ -91,11 +88,11 @@ function Shell({ children }) {
   }
 
   useEffect(() => {
-    if (!drawer) return undefined;
-    function onKey(e) { if (e.key === 'Escape') setDrawer(false); }
+    if (!railOpen) return undefined;
+    function onKey(e) { if (e.key === 'Escape') setRailOpen(false); }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [drawer]);
+  }, [railOpen]);
 
   const ready = instances.filter((i) => i.status === 'READY').length;
   const blocked = instances.filter((i) => i.status === 'BLOCKED').length;
@@ -109,16 +106,21 @@ function Shell({ children }) {
   const bottomItems = bottomPicked.length >= 3 ? bottomPicked.slice(0, 5) : railItems.slice(0, 5);
 
   return (
-    <div className={'app' + (collapsed ? ' collapsed' : '') + (drawer ? ' drawer-open' : '') + (notifPanelOpen ? ' notif-open' : '')}>
-      <div className="rail-scrim" onClick={() => setDrawer(false)} aria-hidden={!drawer} />
-      <aside className="rail">
+    <div className={'app' + (railOpen ? ' rail-open' : '') + (notifPanelOpen ? ' notif-open' : '')}>
+      <div className="rail-scrim" onClick={() => setRailOpen(false)} aria-hidden={!railOpen} />
+      {!railOpen && (
+        <button type="button" className="rail-tab" onClick={() => setRailOpen(true)} title="Open menu" aria-label="Open menu">
+          <Icon name="right" size={15} />
+        </button>
+      )}
+      <aside className="rail" aria-hidden={!railOpen}>
         <div className="rail-top">
           <div className="brand">
-            <BrandMark size={collapsed ? 30 : 32} />
+            <BrandMark size={32} />
             <div className="txt"><b>One Finance</b><span>Outcome platform</span></div>
           </div>
-          <button className="rail-toggle" onClick={toggleRail} title={collapsed ? 'Expand menu' : 'Collapse menu'}>
-            <Icon name="chevron" size={16} className={collapsed ? 'flip' : ''} />
+          <button className="rail-toggle" onClick={() => setRailOpen(false)} title="Close menu" aria-label="Close menu">
+            <Icon name="chevron" size={16} />
           </button>
         </div>
         <nav className="rail-nav">

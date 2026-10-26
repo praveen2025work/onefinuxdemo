@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from '../components/Icon.jsx';
-import DataGrid from '../components/DataGrid.jsx';
+import DataView from '../components/DataView.jsx';
 import { useApp } from '../store.jsx';
 import { recentLive, subscribeLive } from '../live/liveLink.js';
 import { useLiveStatus } from '../useStream.js';
@@ -98,8 +98,11 @@ export function InstanceGrid({ view }) {
           ? <>Select a row to share it on <i className="chan-dot" style={{ background: chan.color }} /> <b>{chan.label}</b>{shared ? <> · last shared <span className="mono">{shared}</span></> : null}</>
           : 'Not linked — pick a colour in the view header to drive other views.'}
       </div>
-      <DataGrid rows={rows} columns={INSTANCE_COLUMNS} height="100%" onSelect={onSelect}
-        title={`${filters.groupUnit} · ${filters.cobDate || '—'}`} exportName={`instances-${filters.cobDate || 'cob'}`} dense />
+      <div className="wg-grid">
+        <DataView rows={rows} columns={INSTANCE_COLUMNS} height="100%" onSelect={onSelect}
+          title={`${filters.groupUnit} · ${filters.cobDate || '—'}`} exportName={`instances-${filters.cobDate || 'cob'}`}
+          pivot={{ rowFields: ['region'], columnFields: ['status'], valueFields: ['amount'] }} chart={{ x: 'status', y: 'amount' }} />
+      </div>
     </div>
   );
 }

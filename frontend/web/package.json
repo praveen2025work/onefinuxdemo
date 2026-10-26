@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test dev-proxy.test.js helix-stub.test.js src/lib/bindGridParams.test.js src/lib/outcomeForSurface.test.js src/lib/outcomeForm.test.js src/lib/stepViewFromDetail.test.js src/lib/partnerEmbed.test.js"
+    "test": "node --test dev-proxy.test.js helix-stub.test.js theme-files.test.js src/lib/bindGridParams.test.js src/lib/outcomeForSurface.test.js src/lib/outcomeForm.test.js src/lib/stepViewFromDetail.test.js src/lib/partnerEmbed.test.js src/lib/themes.test.js src/lib/notifyState.test.js src/lib/aggregate.test.js src/lib/csv.test.js src/live/normalize.test.js src/workspace/layout.test.js src/workspace/channels.test.js src/workspace/apps.test.js src/finance/finance.test.js"
   },
   "dependencies": {
     "@mescius/wijmo": "^5.20261.52",

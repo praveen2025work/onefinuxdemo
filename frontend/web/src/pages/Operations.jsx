@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { api } from '../api';
 import { StatusPill, Loading, PageTitle } from '../components/bits.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import DataGrid from '../components/DataGrid.jsx';
 
 export default function Operations() {
   const [rtb, setRtb] = useState(null);
@@ -17,6 +18,32 @@ export default function Operations() {
 
   if (!rtb) return <Loading what="Loading operations…" />;
 
+  // The standard grid for every RTB list; Replay stays a dual-control action cell.
+  const escalationColumns = [
+    { binding: 'escalationId', header: 'Escalation', minWidth: 140, mono: true },
+    { binding: 'sliceKey', header: 'Instance', width: 120, mono: true },
+    { binding: 'region', header: 'Region', width: 90, chip: true },
+    { binding: 'kind', header: 'Kind', minWidth: 130, chip: true },
+    { binding: 'openedAt', header: 'Opened', width: 170, template: (e) => <span className="mono sec">{(e.openedAt || '').slice(0, 19)}</span> },
+    { binding: 'status', header: 'Status', width: 120, template: (e) => <StatusPill status={e.status} /> },
+  ];
+  const deadLetterColumns = [
+    { binding: 'deadLetterId', header: 'Id', minWidth: 120, mono: true },
+    { binding: 'sourceId', header: 'Source', width: 120, chip: true },
+    { binding: 'ingestOffset', header: 'Offset', width: 110, mono: true },
+    { binding: 'reason', header: 'Reason', minWidth: 180, wrap: true },
+    { binding: 'status', header: 'Status', width: 110, template: (d) => <StatusPill status={d.status} /> },
+    { binding: null, header: '', width: 92, sortable: false, template: (d) => (d.status === 'HOLD'
+      ? <button className="btn ghost sm" disabled={busy === d.deadLetterId} onClick={() => replay(d.deadLetterId)}>Replay</button>
+      : null) },
+  ];
+  const watermarkColumns = [
+    { binding: 'sourceId', header: 'Source', minWidth: 110, mono: true },
+    { binding: 'partitionId', header: 'Partition', width: 100, mono: true },
+    { binding: 'lastOffset', header: 'Offset', minWidth: 110, mono: true },
+    { binding: 'lagSeconds', header: 'Lag (s)', width: 90, align: 'right' },
+  ];
+
   return (
     <>
       <div className="ph">
@@ -30,63 +57,23 @@ export default function Operations() {
 
       <div className="panel">
         <div className="panel-hd"><h2>Escalations</h2><span className="hint">escalation</span></div>
-        <div className="panel-bd tight">
-          <table className="tbl">
-            <thead><tr><th>Escalation</th><th>Instance</th><th>Kind</th><th>Opened</th><th>Status</th></tr></thead>
-            <tbody>
-              {rtb.escalations.map((e) => (
-                <tr key={e.escalationId}>
-                  <td className="mono lead">{e.escalationId}</td>
-                  <td className="mono sec">{e.sliceKey} · {e.region}</td>
-                  <td><span className="chip">{e.kind}</span></td>
-                  <td className="sec mono">{(e.openedAt || '').slice(0, 19)}</td>
-                  <td><StatusPill status={e.status} /></td>
-                </tr>
-              ))}
-              {rtb.escalations.length === 0 && <tr><td colSpan={5} className="empty">No escalations.</td></tr>}
-            </tbody>
-          </table>
+        <div className="panel-bd">
+          <DataGrid rows={rtb.escalations} columns={escalationColumns} height="auto" maxHeight={360} exportName="escalations" empty="No escalations." />
         </div>
       </div>
 
       <div className="split">
         <div className="panel">
           <div className="panel-hd"><h2>Dead letters</h2><span className="hint">dead_letter</span></div>
-          <div className="panel-bd tight">
-            <table className="tbl">
-              <thead><tr><th>Id</th><th>Source</th><th>Reason</th><th>Status</th><th /></tr></thead>
-              <tbody>
-                {rtb.deadLetters.map((d) => (
-                  <tr key={d.deadLetterId}>
-                    <td className="mono lead">{d.deadLetterId}</td>
-                    <td><span className="chip">{d.sourceId}</span><div className="sec mono">{d.ingestOffset}</div></td>
-                    <td className="sec">{d.reason}</td>
-                    <td><StatusPill status={d.status} /></td>
-                    <td>{d.status === 'HOLD' && <button className="btn ghost sm" disabled={busy === d.deadLetterId} onClick={() => replay(d.deadLetterId)}>Replay</button>}</td>
-                  </tr>
-                ))}
-                {rtb.deadLetters.length === 0 && <tr><td colSpan={5} className="empty">No dead letters.</td></tr>}
-              </tbody>
-            </table>
+          <div className="panel-bd">
+            <DataGrid rows={rtb.deadLetters} columns={deadLetterColumns} height="auto" maxHeight={360} exportName="dead-letters" empty="No dead letters." />
           </div>
         </div>
 
         <div className="panel">
           <div className="panel-hd"><h2>Feed watermarks</h2><span className="hint">feed_watermark</span></div>
-          <div className="panel-bd tight">
-            <table className="tbl">
-              <thead><tr><th>Source</th><th>Partition</th><th>Offset</th><th className="num">Lag (s)</th></tr></thead>
-              <tbody>
-                {rtb.watermarks.map((w) => (
-                  <tr key={w.sourceId + w.partitionId}>
-                    <td className="mono lead">{w.sourceId}</td>
-                    <td className="mono">{w.partitionId}</td>
-                    <td className="mono sec">{w.lastOffset}</td>
-                    <td className="num">{w.lagSeconds}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="panel-bd">
+            <DataGrid rows={rtb.watermarks} columns={watermarkColumns} height="auto" maxHeight={360} exportName="watermarks" empty="No watermarks." />
           </div>
         </div>
       </div>

@@ -12,8 +12,9 @@ The requirements and architecture live in [`docs/design/`](docs/design/README.md
 
 | Module | Port | Role |
 |---|---|---|
-| `onefinux-hub` | 7070 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, REST + SSE |
-| `frontend/web` | 7091 | React console — the product UI |
+| `onefinux-hub` | 7070 | Event Hub, Translation Layer, Business Outcome Engine, Workflow, Notifications, REST + SSE + WebSocket |
+| `frontend/web` | 7091 | React console — the product UI, installable as an app (PWA) |
+| `frontend/theme` | — | The design standard every screen paints from (served by the console at `/theme/*`) |
 | `source-simulator` | 7081 | Stands in for Motif, SAP, GMIS, RAMP, US Castle, Finance Store, Axiom. Also runs mock **Helix** and **Axiom** services that receive commands and publish completions back |
 
 The three outcomes are configured in `onefinux-hub/src/main/resources/application.yml` as metadata, not code:
@@ -172,7 +173,7 @@ Use this to **host** the app on a Windows demo machine: Java as Windows services
 | `onefinux-hub` (Java) | NSSM service `OneFinUxHub` | Yes — `scripts\windows\install-nssm.ps1` |
 | `source-simulator` (Java) | NSSM service `OneFinUxSimulator` | Yes — same script |
 | Same-origin `/api` and `/sim` | IIS URL Rewrite + ARR reverse proxy to `127.0.0.1:7070` / `:7081` | Yes — `web.config` (same layout as Vite and Docker nginx) |
-| Live board (SSE `/api/stream`) | ARR proxy enabled, `/api` compression off, 20-minute ARR timeout | Yes — `web.config` + the IIS install script |
+| Live board (WebSocket `/api/ws`, SSE `/api/stream` fallback) | IIS WebSocket Protocol feature, ARR proxy enabled, `/api` compression off, 20-minute ARR timeout | Yes — `web.config` + the IIS install script |
 
 **Does React work as a No Managed Code IIS application?** Yes. The console is static files after `npm run build`. There is no ASP.NET assembly. The app pool CLR version is the empty string (`No Managed Code`). IIS only needs Static Content, Default Document, URL Rewrite, and ARR.
 
@@ -263,7 +264,11 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 | POST | `/api/outcomes/{id}/{cobDate}/{region}/override` | Manual override `{dependency, reason, requestedBy}` |
 | POST | `/api/outcomes/{id}/{cobDate}/{region}/run` | Re-run the downstream action `{requestedBy}` |
 | GET | `/api/notifications?limit=` | Notification inbox |
-| GET | `/api/stream` | Server-Sent Events: `outcome`, `notification`, `event` |
+| GET | `/api/stream` | Server-Sent Events: `outcome`, `notification`, `event`, `context`, `intent` |
+| GET (upgrade) | `/api/ws` | WebSocket with the same events as `{"type", "data"}` frames (the console's first choice) |
+| POST | `/api/interop/context` | Push an FDC3 context to every screen on a channel `{channel, context, source}` |
+| POST | `/api/interop/intent` | Raise an FDC3 intent in every open Workspace `{intent, context, source}` |
+| POST | `/api/admin/announce` | Demo / RTB: a platform announcement to every console and the inbox |
 | GET | `/api/config` | Loaded outcomes, mappings, targets |
 | POST | `/api/admin/reset` | Clear everything (demo only) |
 | POST | `:7081/sim/scenarios/{helix,15c3,pnl,restate,all,cancel}` | Drive the simulator |
@@ -276,10 +281,24 @@ Every notification is persisted once, then fanned out:
 - **In-app inbox:** the bell still lists history. It is not the toast.
 - **Email (simulated):** `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
 - **Teams webhook:** set `onefinux.notifications.webhook-url`.
-- **Email (simulated)**: `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
-- **Teams webhook**: set `onefinux.notifications.webhook-url`.
+- **On screen, live:** every console gets the notification over the WebSocket `/api/ws` (SSE fallback). One tab per browser holds the socket and shares it with the other tabs, so the bell, the notifications panel and `/notifications` update without a refresh. `VITE_NOTIF_WS_URL` adds an external socket that sends STEPS-shaped payloads.
 
 Milestones default to 50% and 90% (`onefinux.notifications.milestones`). Progress ticks never notify, and a replay never notifies.
+
+## One console: design standard, Workspace, FDC3 links
+
+Every accounting-space UI comes into One Finance, so it uses one look and one interop model.
+
+- **Design standard.** `frontend/theme/onefinux-tokens.css` (palette) and `onefinux-wijmo.css` (grid, pivot, chart skin) are the only colour source. The default is STEPS Banking Blue, with STEPS dark beside it; the MITR indigo themes stay in the theme menu. Framed apps link the same files from `/theme/*`, so STEPS and partner screens repaint with the console.
+- **Shell.** STEPS-style top header and notifications panel. The left rail floats over the page and opens from a small tab on the left edge, so content uses the full width.
+- **Data.** Wijmo is the standard: `DataGrid`, `DataView` (grid, pivot and chart over the same rows) and `Chart`. Set `VITE_WIJMO_LICENSE` at build time; without it Wijmo shows an evaluation banner.
+- **Workspace (`/workspace`).** Many screens in one page: console routes, native widgets, STEPS and partner iframes. Grid, columns, rows or tabs layout with drag-to-resize, tear-out windows that dock back, and named workspaces.
+- **Screen-to-screen links.** Every screen gets `window.fdc3` (FDC3 2.0, the API OpenFin and io.Connect implement). Views on the same colour share context, `raiseIntent('ViewInstance', …)` lets the Workspace pick the screen, and the hub can push a context or an intent over the WebSocket (`/api/interop/*`). Partner frames use `/ofx-interop.js`. See `.cursor/skills/workspace-interop`.
+- **Finance dashboard (`/finance`).** STEPS-style blueprint tiles: live readiness from the hub plus seeded finance datasets, and an analysis tab.
+- **STEPS inside One Finance.** The `STEPS` Workspace app frames STEPS in embedded mode (no STEPS masthead, the console's theme and business date, FDC3 tile links). Point `VITE_STEPS_URL` at it (default `http://localhost:3000/finance?ofx-embed=1`). On the STEPS side, list the console origin in `NEXT_PUBLIC_OFX_HOST_ORIGINS` and allow it to frame STEPS (`OFX_HOST_ORIGINS` for Docker, `-OfxHostOrigins` for IIS); see the STEPS README.
+- **Installable.** Chrome / Edge offer **Install**; the installed app opens in its own window with an unread badge.
+
+Try it: open `/workspace`, then on `/drive` use the WebSocket cards to push a notification, a context on Blue, a `ViewInstance` intent, or a `ViewBreak` that the Helix partner frame handles.
 
 ## How the code maps to the vision
 
@@ -303,6 +322,7 @@ Design rules the code keeps:
 
 ```bash
 mvn test
+cd frontend/web && npm test   # workspace model, FDC3 channels, app directory, themes, finance blueprint, live link
 ```
 
 `OutcomeEngineTest` covers these cases:

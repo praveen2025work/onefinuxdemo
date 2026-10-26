@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Thin partner stubs so the console can iframe a screen in-app. Not a rebuilt Helix product.
+ * The stub paints from the shared design standard (/theme/onefinux-tokens.css on the console origin) and follows
+ * its link channel through /ofx-interop.js (FDC3), like any partner screen.
  */
 @RestController
 @RequestMapping("/sim/screens")
@@ -20,45 +22,59 @@ public class PartnerScreenController {
                                         @RequestParam(defaultValue = "") String cobDate,
                                         @RequestParam(defaultValue = "") String region,
                                         @RequestParam(defaultValue = "") String runId,
-                                        @RequestParam(defaultValue = "ofx") String theme) {
+                                        @RequestParam(defaultValue = "light") String theme,
+                                        @RequestParam(defaultValue = "steps") String skin) {
         String html = """
                 <!doctype html>
-                <html lang="en" data-ofx-embedded="1" data-theme="%s">
+                <html lang="en" data-ofx-embedded="1" data-theme="%s" data-skin="%s">
                 <head>
                   <meta charset="utf-8"/>
                   <title>Helix FOBO</title>
+                  <link rel="stylesheet" href="/theme/onefinux-tokens.css"/>
                   <style>
-                    :root { color-scheme: light; font-family: Inter, system-ui, sans-serif;
-                      --ink:#0f172a; --muted:#64748b; --stroke:#e2e8f0; --ok:#059669; --fail:#dc2626;
-                      --raised:#f8fafc; --accent:#4f46e5; }
-                    html[data-theme="dark"] { color-scheme: dark; --ink:#e6e8ee; --muted:#9aa3c2;
-                      --stroke:#2e3958; --raised:#161d33; --accent:#818cf8; }
-                    body { margin: 0; padding: 16px; color: var(--ink); background: transparent; }
-                    .k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-                    h1 { font-size: 16px; margin: 4px 0 12px; font-weight: 650; }
-                    table { width: 100%%; border-collapse: collapse; font-size: 13px; }
-                    th, td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--stroke); }
-                    .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: var(--raised); }
-                    .ok { color: var(--ok); } .fail { color: var(--fail); }
-                    .mono { font-family: ui-monospace, monospace; font-size: 12px; }
+                  body { margin: 0; padding: 14px 16px; background: transparent; color: var(--ofx-ink, #0f172a);
+                  font-family: var(--ofx-font, system-ui, sans-serif); font-size: 13px; }
+                  .k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ofx-ink-2, #64748b); }
+                  h1 { font-size: 16px; margin: 4px 0 10px; font-weight: 650; }
+                  table { width: 100%%; border-collapse: collapse; }
+                  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ofx-ink-2, #64748b);
+                  background: var(--ofx-surface-2, #f1f5f9); padding: 8px; border-bottom: 1px solid var(--ofx-line, #e2e8f0); }
+                  td { padding: 8px; border-bottom: 1px solid var(--ofx-line, #e2e8f0); }
+                  tr.on td { background: var(--ofx-info-bg, #eff6ff); }
+                  .ok { color: var(--ofx-ok, #059669); } .fail { color: var(--ofx-fail, #dc2626); }
+                  .mono { font-family: var(--ofx-mono, ui-monospace, monospace); font-size: 12px; }
                   </style>
                 </head>
                 <body>
-                  <div class="k">Helix · embedded</div>
+                  <div class="k">Helix · embedded <span id="link"></span></div>
                   <h1>FOBO recon</h1>
                   <p class="mono">%s · %s · COB %s · %s · run %s</p>
                   <table>
                     <thead><tr><th>Break</th><th>Book</th><th>Amount</th><th>Status</th></tr></thead>
                     <tbody>
-                      <tr><td class="mono">BK-4410</td><td>MB012</td><td>8,420</td><td class="ok">cleared</td></tr>
-                      <tr><td class="mono">BK-4420</td><td>MB014</td><td>12,450,000</td><td class="fail">material</td></tr>
+                      <tr data-instance="R-1042"><td class="mono">BK-4410</td><td>MB012</td><td>8,420</td><td class="ok">cleared</td></tr>
+                      <tr data-instance="R-2031"><td class="mono">BK-4420</td><td>MB014</td><td>12,450,000</td><td class="fail">material</td></tr>
                     </tbody>
                   </table>
-                  <p class="k" style="margin-top:16px">Partner screen. No second masthead.</p>
+                  <p class="k" style="margin-top:14px">Partner screen. No second masthead. Follows its link channel (FDC3).</p>
+                  <script src="/ofx-interop.js"></script>
+                  <script>
+                    window.addEventListener('fdc3Ready', function () {
+                      var link = document.getElementById('link');
+                      function mark(ctx) {
+                        var id = String(ctx.id || '');
+                        document.querySelectorAll('tbody tr').forEach(function (tr) { tr.classList.toggle('on', id.indexOf(tr.dataset.instance) >= 0); });
+                      }
+                      fdc3.addContextListener('ofx.instance', mark);
+                      fdc3.getCurrentChannel().then(function (c) { link.textContent = c ? '· linked ' + c.displayMetadata.name : ''; });
+                      ofx.onChannelChanged(function (ch) { link.textContent = ch ? '· linked ' + ch : ''; });
+                    });
+                  </script>
                 </body>
                 </html>
                 """.formatted(
-                esc(theme.contains("light") ? "light" : "dark"),
+                esc(theme.contains("dark") ? "dark" : "light"),
+                esc("ofx".equals(skin) ? "ofx" : "steps"),
                 esc(empty(groupUnitId, "REV-ACC")),
                 esc(empty(outcomeId, "FOBO")),
                 esc(empty(cobDate, "—")),

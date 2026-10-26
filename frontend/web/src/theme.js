@@ -15,8 +15,7 @@ export function applyTheme(id, { persist = true } = {}) {
   const t = themeById(id);
   const html = document.documentElement;
   html.setAttribute('data-theme', t.mode);
-  if (t.skin === 'ofx') html.removeAttribute('data-skin');
-  else html.setAttribute('data-skin', t.skin);
+  html.setAttribute('data-skin', t.skin);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', t.chrome);
   if (persist) store(t.id);

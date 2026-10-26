@@ -3,7 +3,8 @@
 //
 // state     = { current: workspaceId, workspaces: [workspace] }
 // workspace = { id, name, layout: 'grid'|'columns'|'rows'|'tabs', views: [view], active, maximized }
-// view      = { id, appId, title, channel, wide?, path? }   — `path` overrides a route app's start page
+// view      = { id, appId, title, channel, wide?, size?, path? }
+//             `path` overrides a route app's start page; `size` is the view's share (fr) in columns / rows layouts
 
 export const WS_KEY = 'ofx-workspaces';
 export const LAYOUTS = [
@@ -15,6 +16,15 @@ export const LAYOUTS = [
 const LAYOUT_IDS = new Set(LAYOUTS.map((l) => l.id));
 const MAX_VIEWS = 12;
 
+const MIN_SIZE = 0.15;
+const MAX_SIZE = 20;
+
+/** A view's share of a columns / rows layout, in fr. */
+export function clampSize(size) {
+  const n = Number(size);
+  return Number.isFinite(n) && n > 0 ? Math.min(MAX_SIZE, Math.max(MIN_SIZE, Math.round(n * 1000) / 1000)) : 1;
+}
+
 let seq = 0;
 export function newId(prefix = 'v') {
   seq += 1;
@@ -22,7 +32,7 @@ export function newId(prefix = 'v') {
 }
 
 function view(appId, title, channel = null, extra = {}) {
-  return { id: newId(), appId, title, channel, ...extra };
+  return { id: newId(), appId, title, channel, wide: false, size: 1, ...extra };
 }
 
 export function seedState() {
@@ -63,6 +73,7 @@ function cleanView(v) {
     title: String(v.title || v.appId).slice(0, 80),
     channel: typeof v.channel === 'string' ? v.channel : null,
     wide: Boolean(v.wide),
+    size: clampSize(v.size),
     ...(typeof v.path === 'string' && v.path.startsWith('/') && !v.path.startsWith('//') ? { path: v.path } : {}),
   };
 }
@@ -143,6 +154,29 @@ export function patchView(state, viewId, patch) {
     ...w,
     views: w.views.map((v) => (v.id === viewId ? cleanView({ ...v, ...patch }) || v : v)),
   }));
+}
+
+/** A splitter moved between two neighbours: set both shares at once (their sum is preserved by the caller). */
+export function resizePair(state, aId, aSize, bId, bSize) {
+  return updateCurrent(state, (w) => ({
+    ...w,
+    views: w.views.map((v) => {
+      if (v.id === aId) return { ...v, size: clampSize(aSize) };
+      if (v.id === bId) return { ...v, size: clampSize(bSize) };
+      return v;
+    }),
+  }));
+}
+
+/** New shares for a splitter drag: `deltaPx` moves the boundary between views of `aPx` and `bPx` pixels. */
+export function splitShares(aSize, bSize, aPx, bPx, deltaPx, minPx = 160) {
+  const totalPx = aPx + bPx;
+  const totalFr = aSize + bSize;
+  if (totalPx <= 0 || totalFr <= 0) return [aSize, bSize];
+  const lo = Math.min(minPx, totalPx / 2);
+  const nextA = Math.min(totalPx - lo, Math.max(lo, aPx + deltaPx));
+  const a = (totalFr * nextA) / totalPx;
+  return [a, totalFr - a];
 }
 
 export function setLayout(state, layout) {

@@ -1,0 +1,145 @@
+/**
+ * One Finance standard skin for Wijmo (MESCIUS) — grids, column filters, pivots and charts.
+ * Reads the --ofx-* tokens from onefinux-tokens.css, so every screen that loads both files (the console,
+ * framed partner screens, STEPS) draws the same grid, pivot and chart in light and dark.
+ *
+ *   <link rel="stylesheet" href="https://<one-finance-host>/theme/onefinux-tokens.css">
+ *   <link rel="stylesheet" href="https://<one-finance-host>/theme/onefinux-wijmo.css">   (after wijmo.css)
+ *
+ * Selectors match Wijmo's own specificity (e.g. .wj-cells .wj-cell.wj-state-selected) and must load after
+ * @mescius/wijmo.styles/wijmo.css.
+ */
+
+/* ---------------------------------------------------------------- FlexGrid */
+.wj-control { font-family: var(--ofx-font); }
+.wj-flexgrid {
+  background: var(--ofx-card);
+  color: var(--ofx-ink);
+  border: 1px solid var(--ofx-line);
+  border-radius: var(--ofx-r);
+  font-size: 13px;
+}
+.wj-flexgrid .wj-cell {
+  background: var(--ofx-card);
+  color: var(--ofx-ink);
+  border-right: 0;
+  border-bottom: 1px solid var(--ofx-line);
+  padding: 6px 10px;
+}
+.wj-flexgrid .wj-cell.wj-header,
+.wj-flexgrid .wj-topleft .wj-cell.wj-header {
+  background: var(--ofx-surface-2);
+  color: var(--ofx-ink-2);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-right: 0;
+  border-bottom: 1px solid var(--ofx-line);
+}
+.wj-flexgrid .wj-cells .wj-cell.wj-alt:not(.wj-state-selected):not(.wj-state-multi-selected) {
+  background: color-mix(in srgb, var(--ofx-surface-2) 45%, var(--ofx-card));
+}
+.wj-flexgrid .wj-cells .wj-row:hover .wj-cell:not(.wj-state-selected):not(.wj-state-multi-selected):not(.wj-header) {
+  background: var(--ofx-surface-2);
+}
+/* Row selection reads as one band: the cursor cell gets the same tint as the rest of the row. */
+.wj-flexgrid .wj-cells .wj-cell.wj-state-multi-selected,
+.wj-flexgrid .wj-cells .wj-cell.wj-state-selected {
+  background: color-mix(in srgb, var(--ofx-accent) 13%, var(--ofx-card));
+  color: var(--ofx-ink);
+}
+.wj-flexgrid .wj-colheaders .wj-header.wj-state-multi-selected { border-bottom: 2px solid var(--ofx-accent); }
+.wj-flexgrid .wj-cell.wj-header.wj-state-multi-selected { background: var(--ofx-surface-2); color: var(--ofx-ink); }
+.wj-flexgrid .wj-cell.wj-group:not(.wj-state-selected):not(.wj-state-multi-selected) {
+  background: var(--ofx-surface-3);
+  color: var(--ofx-ink);
+  font-weight: 600;
+}
+.wj-flexgrid .wj-marquee { border-color: var(--ofx-accent); }
+.wj-flexgrid .wj-cell.wj-header .wj-elem-filter { opacity: 0.5; color: var(--ofx-ink-2); }
+.wj-flexgrid .wj-cell.wj-header.wj-filter-on .wj-elem-filter { opacity: 1; color: var(--ofx-accent); }
+.wj-cell.wj-header .wj-sort-index { color: var(--ofx-accent); }
+.wj-flexgrid .wj-cell.wj-align-right { font-family: var(--ofx-mono); font-size: 12px; }
+.wj-flexgrid .wj-cell.wj-header.wj-align-right { font-family: var(--ofx-font); font-size: 11px; }
+
+/* ---------------------------------------------------------------- popups: column filter, drop-downs, list boxes */
+.wj-dropdown-panel,
+.wj-columnfiltereditor,
+.wj-content.wj-dropdown-panel {
+  background: var(--ofx-card);
+  color: var(--ofx-ink);
+  border: 1px solid var(--ofx-line-2);
+  border-radius: var(--ofx-r);
+  box-shadow: var(--ofx-sh-2);
+}
+.wj-columnfiltereditor { padding: 10px; }
+.wj-columnfiltereditor .wj-control,
+.wj-columnfiltereditor input,
+.wj-columnfiltereditor select,
+.wj-columnfiltereditor .wj-listbox {
+  background: var(--ofx-surface-2);
+  color: var(--ofx-ink);
+  border-color: var(--ofx-line);
+}
+.wj-columnfiltereditor .wj-btn,
+.wj-dropdown-panel .wj-btn {
+  background: var(--ofx-card);
+  color: var(--ofx-ink);
+  border: 1px solid var(--ofx-line-2);
+  border-radius: var(--ofx-r-ctl);
+}
+.wj-columnfiltereditor .wj-btn:hover,
+.wj-dropdown-panel .wj-btn:hover { border-color: var(--ofx-accent); }
+.wj-columnfiltereditor a { color: var(--ofx-accent); }
+.wj-listbox { background: var(--ofx-card); color: var(--ofx-ink); }
+.wj-listbox .wj-listbox-item.wj-state-selected { background: var(--ofx-accent); color: var(--ofx-on-accent); }
+.wj-listbox .wj-listbox-item:not(.wj-state-selected):not(.wj-state-disabled):not(.wj-separator):hover { background: var(--ofx-surface-2); }
+
+/* ---------------------------------------------------------------- pivot (wijmo.olap) */
+.wj-pivotpanel {
+  background: var(--ofx-card);
+  color: var(--ofx-ink);
+  border: 1px solid var(--ofx-line);
+  border-radius: var(--ofx-r);
+}
+.wj-pivotpanel .wj-flexgrid { border: 0; }
+.wj-pivotpanel label, .wj-pivotpanel .wj-label { color: var(--ofx-ink-2); font-weight: 600; }
+.wj-pivotgrid .wj-cell.wj-aggregate:not(.wj-header):not(.wj-group):not(.wj-state-selected):not(.wj-state-multi-selected) {
+  background: color-mix(in srgb, var(--ofx-accent) 8%, var(--ofx-card));
+  font-weight: 600;
+}
+.wj-pivotgrid .wj-colheaders .wj-cell.wj-header { text-align: center; }
+
+/* ---------------------------------------------------------------- charts (FlexChart / FlexPie / PivotChart) */
+.wj-flexchart,
+.wj-flexpie {
+  background: transparent;
+  border: 0;
+  padding: 4px 2px;
+  margin: 0;
+  font-family: var(--ofx-font);
+  font-size: 11.5px;
+}
+.wj-flexchart .wj-label,
+.wj-flexchart .wj-data-label { fill: var(--ofx-ink-2); }
+.wj-flexchart .wj-legend .wj-label { fill: var(--ofx-ink); }
+.wj-flexchart .wj-header .wj-title,
+.wj-flexchart .wj-footer .wj-title { fill: var(--ofx-ink); font-size: 13px; font-weight: 600; }
+.wj-flexchart .wj-axis-x .wj-line,
+.wj-flexchart .wj-axis-y .wj-line { stroke: var(--ofx-line-2); }
+.wj-flexchart .wj-gridline { stroke: var(--ofx-line); opacity: 1; }
+.wj-flexchart .wj-gridline-minor { stroke: var(--ofx-line); opacity: 0.5; }
+.wj-flexchart .wj-tick,
+.wj-flexchart .wj-tick-minor { stroke: var(--ofx-line-2); }
+.wj-flexchart .wj-data-label-border { stroke: var(--ofx-line-2); }
+.wj-flexchart .wj-data-label-line { stroke: var(--ofx-ink-3); }
+.wj-tooltip {
+  background: var(--ofx-card);
+  color: var(--ofx-ink);
+  border: 1px solid var(--ofx-line-2);
+  border-radius: var(--ofx-r-ctl);
+  box-shadow: var(--ofx-sh-2);
+  padding: 6px 9px;
+  font-size: 12px;
+}

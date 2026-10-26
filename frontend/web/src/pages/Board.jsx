@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
+import DataView from '../components/DataView.jsx';
 import { StatusPill, Meter, PageTitle, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
@@ -16,6 +18,23 @@ export default function Board() {
   const ready = instances.filter((i) => i.status === 'READY').length;
   const blocked = instances.filter((i) => i.status === 'BLOCKED').length;
   const named = instances.find((i) => i.status === 'BLOCKED');
+  const rows = useMemo(() => instances.map((i) => ({ ...i, amount: i.amount == null || i.amount === '' ? null : Number(i.amount) })), [instances]);
+  const open = (i) => navigate('/instance/' + encodeURIComponent(i.instanceId));
+  // The standard grid: filter, sort, CSV, pivot and chart for free; status, readiness and Open stay as cells.
+  const columns = [
+    { binding: 'kitId', header: 'Kit / question', minWidth: 190, width: '1.4*', template: (i) => (
+      <div className="cell-2l"><span className="lead">{i.kitId}</span><span className="sec">{i.question}</span></div>) },
+    { binding: 'sliceKey', header: 'Instance', width: 110, mono: true },
+    { binding: 'region', header: 'Region', width: 90, chip: true },
+    { binding: 'amount', header: 'Amount', width: 130, format: 'n0', align: 'right' },
+    { binding: 'completedKeys', header: 'Readiness', minWidth: 160, template: (i) => (
+      <Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} />) },
+    { binding: 'status', header: 'Status', width: 130, template: (i) => <StatusPill status={i.status} /> },
+    { binding: 'namedBlocker', header: 'Blocker', minWidth: 150, wrap: true },
+    { binding: 'openEscalations', header: 'Esc.', width: 64, align: 'right' },
+    { binding: null, header: '', width: 92, sortable: false, template: (i) => (
+      <button className="btn ghost sm" onClick={() => open(i)}><Icon name="open" size={13} /> Open</button>) },
+  ];
 
   return (
     <>
@@ -45,33 +64,13 @@ export default function Board() {
       <div className="panel">
         <div className="panel-hd"><h2>{filters.groupUnit} · COB {filters.cobDate} · {filters.region || 'all regions'}</h2>
           {channel
-            ? <span className="hint link-hint"><i className="chan-dot" style={{ background: channel.color }} /> click a row to share it</span>
+            ? <span className="hint link-hint"><i className="chan-dot" style={{ background: channel.color }} /> select a row to share it{picked ? ' · shared' : ''}</span>
             : <span className="hint">v_head_board</span>}
         </div>
-        <div className="panel-bd tight">
-          <div className="tbl-wrap">
-            <p className="swipe-hint muted">On a phone, swipe the table sideways to reach status, blocker, and Open.</p>
-            <table className="tbl cards-sm">
-                <thead><tr><th>Kit / question</th><th>Instance</th><th>Region</th><th>Amount</th><th>Readiness</th><th>Status</th><th>Blocker</th><th className="num">Esc.</th><th /></tr></thead>
-                <tbody>
-                {instances.map((i) => (
-                  <tr key={i.instanceId} className={channel ? 'fold-row' + (picked === i.instanceId ? ' on' : '') : undefined}
-                    onClick={channel ? () => share(i) : undefined}>
-                    <td className="cell-lead"><span className="lead">{i.kitId}</span><div className="sec">{i.question}</div></td>
-                    <td className="mono" data-label="Instance">{i.sliceKey}</td>
-                    <td data-label="Region"><span className="chip">{i.region}</span></td>
-                    <td className="mono num" data-label="Amount">{formatAmount(i.amount) || '—'}</td>
-                    <td className="cell-wide" data-label="Readiness"><Meter completed={i.completedKeys} total={i.totalKeys} blocked={i.status === 'BLOCKED'} /></td>
-                    <td data-label="Status"><StatusPill status={i.status} /></td>
-                    <td className="sec cell-wide" data-label="Blocker">{i.namedBlocker || '—'}</td>
-                    <td className="num" data-label="Escalations">{i.openEscalations}</td>
-                    <td className="cell-act"><button className="btn ghost sm" onClick={(e) => { e.stopPropagation(); navigate('/instance/' + encodeURIComponent(i.instanceId)); }}><Icon name="open" size={13} /> Open</button></td>
-                  </tr>
-                ))}
-                {instances.length === 0 && <tr><td colSpan={9} className="empty">No instances match this filter.</td></tr>}
-              </tbody>
-            </table>
-          </div>
+        <div className="panel-bd">
+          <DataView rows={rows} columns={columns} height="auto" rowHeight={56} exportName={`board-${filters.cobDate || 'cob'}`}
+            empty="No instances match this filter." onSelect={channel ? share : undefined}
+            pivot={{ rowFields: ['region'], columnFields: ['status'], valueFields: ['amount'] }} chart={{ x: 'status', y: 'amount' }} />
         </div>
       </div>
     </>

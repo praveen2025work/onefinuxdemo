@@ -14,7 +14,15 @@ import { isValidContext } from './channels.js';
  *   { kind: 'navigate', viewId, path }               — host asks one view to open a route
  *   { kind: 'view-hello', viewId }                   — a view booted; host answers with join + scope
  *   { kind: 'dock', viewId, appId, url, title, channel } — a torn-out window asks to come back into the grid
- *   { kind: 'intent', intent, context, source }      — raise an intent (e.g. ViewInstance) for the host
+ *   { kind: 'intent', intent, context, source, raiseId } — raise an intent; the host resolves it
+ *   { kind: 'intent-listener', viewId, intent }      — a view handles an intent (fdc3.addIntentListener)
+ *   { kind: 'intent-deliver', viewId, intent, context, raiseId } — host hands an intent to its handler
+ *   { kind: 'intent-result', raiseId, target, result, error }    — the outcome, back to the raiser
+ *   { kind: 'channel-changed', viewId, channel }     — a view joined / left a channel itself (fdc3.joinUserChannel)
+ *
+ * Contexts the hub pushes over the WebSocket (event `context`) reach every document through its own live link
+ * and are delivered locally with deliverRemoteContext — never re-posted, so each document sees them once.
+ * Channel ids: user (colour) channels by name; app channels as 'app:<name>' (fdc3.getOrCreateChannel).
  */
 
 const BUS = 'ofx-interop';
@@ -27,6 +35,7 @@ const self = {
 const contextListeners = new Set();
 const systemListeners = new Set();
 const channelListeners = new Set();
+const lastContext = new Map(); // channel -> last context seen by this document
 let bus = null;
 
 function ensureBus() {
@@ -39,7 +48,8 @@ function ensureBus() {
 function receive(msg, local) {
   if (!msg || typeof msg !== 'object') return;
   if (msg.kind === 'context') {
-    if (!isValidContext(msg.context)) return;
+    if (!isValidContext(msg.context) || typeof msg.channel !== 'string') return;
+    lastContext.set(msg.channel, msg.context);
     contextListeners.forEach((fn) => fn(msg, local));
     return;
   }
@@ -91,9 +101,25 @@ export function onLinkedContext(fn) {
   });
 }
 
+/** A system message to every other document, and to this document's own listeners. */
 export function postSystem(msg) {
   if (!msg || typeof msg !== 'object' || msg.kind === 'context') return;
   ensureBus()?.postMessage(msg);
+  receive(msg, true);
+}
+
+/** The last context this document saw on a channel (FDC3 Channel.getCurrentContext). */
+export function lastContextOn(channel, type = null) {
+  const ctx = lastContext.get(channel);
+  if (!ctx) return null;
+  return !type || ctx.type === type ? ctx : null;
+}
+
+/** A context the hub pushed over the WebSocket. Delivered to this document only (each document gets the push). */
+export function deliverRemoteContext({ channel, context, source = 'hub', at = Date.now() }) {
+  if (!channel || !isValidContext(context)) return false;
+  receive({ kind: 'context', channel, context, source, at, remote: true }, false);
+  return true;
 }
 
 export function onSystem(fn) {

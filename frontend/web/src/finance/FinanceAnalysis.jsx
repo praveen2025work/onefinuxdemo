@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
-import { FlexChart, FlexChartLegend, FlexChartSeries } from '@mescius/wijmo.react.chart';
 import Select from '../components/Select.jsx';
 import { Stat } from '../components/bits.jsx';
-import DataGrid from '../components/DataGrid.jsx';
+import Chart from '../components/Chart.jsx';
+import DataView from '../components/DataView.jsx';
 import { CHART, linearForecast } from './transform.js';
 import { detailRows } from './TileGrid.jsx';
-import '../wijmo.js';
 
 /** The first time series a tile has (bar / line / area slide), for the trend + projection. */
 function seriesOf(tile) {
@@ -70,20 +69,15 @@ export default function FinanceAnalysis({ tiles, selectedId, onSelect }) {
                 <Stat tone={stats.forecast.slope >= 0 ? 'ok' : 'warn'} icon="spark" label="Trend per step" value={n(stats.forecast.slope)}
                   foot="Least-squares, advisory only" />
               </div>
-              <div className="tile-chart" style={{ height: 300 }}>
-                <FlexChart itemsSource={chartData} bindingX="name" chartType="LineSymbols" palette={['#2563eb', '#f59e0b']} style={{ height: 300 }}>
-                  <FlexChartLegend position="Bottom" />
-                  <FlexChartSeries binding="actual" name={s.label} />
-                  <FlexChartSeries binding="projected" name="Projection" />
-                </FlexChart>
-              </div>
+              <Chart data={chartData} x="name" type="line" height={300}
+                series={[{ key: 'actual', name: s.label }, { key: 'projected', name: 'Projection', color: '#f59e0b' }]} />
             </>
           ) : <p className="muted">This tile has no time series. Pick P&amp;L Analysis, Liquidity or Risk Metrics for a trend.</p>}
         </div>
       </div>
       <div className="panel">
-        <div className="panel-hd"><h2>Rows behind the tile</h2><span className="hint">Wijmo FlexGrid · filter, sort, CSV</span></div>
-        <div className="panel-bd"><DataGrid rows={rows} columns={columns} height={300} exportName={`${tile?.id}-analysis`} /></div>
+        <div className="panel-hd"><h2>Rows behind the tile</h2><span className="hint">Wijmo grid · pivot · chart</span></div>
+        <div className="panel-bd"><DataView rows={rows} columns={columns} height={300} exportName={`${tile?.id}-analysis`} defaultView="pivot" /></div>
       </div>
     </div>
   );
