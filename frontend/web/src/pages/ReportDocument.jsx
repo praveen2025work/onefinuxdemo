@@ -2,9 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { Loading, Meter, PageTitle, StatusPill } from '../components/bits.jsx';
+import { Loading, Meter, PageHeader, StatusPill } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
 import OutcomeGrids from '../components/OutcomeGrids.jsx';
 import { outcomeForSurface } from '../lib/outcomeForSurface.js';
 
@@ -72,32 +71,26 @@ export default function ReportDocument() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Report · {outcome.region} · COB {outcome.cobDate}</div>
-          <PageTitle icon="report">{outcome.name}
-            <InfoHint title="The produced report">This is the artifact the destination published — Axiom pack, Helix analysis, or the engine result. Reports is the index; this page is the document.</InfoHint>
-          </PageTitle>
-          <p className="sub">{outcome.question}</p>
-        </div>
-        <div className="ph-actions">
-          <Link className="btn ghost" to="/reports"><Icon name="report" size={15} /> All reports</Link>
-          {hasGrids && (
-            <button
-              type="button"
-              className={'btn' + (gridOpen ? '' : ' ghost')}
-              onClick={() => setGridOpen((open) => !open)}
-            >
-              <Icon name="grid" size={15} /> Grid view
-            </button>
-          )}
-          {isHttp(uri) && (
-            <a className="btn" href={uri} target="_blank" rel="noreferrer">
-              <Icon name="open" size={15} /> Open source report
-            </a>
-          )}
-        </div>
-      </div>
+      <PageHeader keepTitle icon="report" title={outcome.name} infoTitle="The produced report"
+        context={`Report · ${outcome.region} · COB ${outcome.cobDate}`}
+        info="This is the artifact the destination published — Axiom pack, Helix analysis, or the engine result. Reports is the index; this page is the document."
+        summary={outcome.question}>
+        <Link className="btn ghost" to="/reports"><Icon name="report" size={15} /> All reports</Link>
+        {hasGrids && (
+          <button
+            type="button"
+            className={'btn' + (gridOpen ? '' : ' ghost')}
+            onClick={() => setGridOpen((open) => !open)}
+          >
+            <Icon name="grid" size={15} /> Grid view
+          </button>
+        )}
+        {isHttp(uri) && (
+          <a className="btn" href={uri} target="_blank" rel="noreferrer">
+            <Icon name="open" size={15} /> Open source report
+          </a>
+        )}
+      </PageHeader>
 
       {!ready && (
         <div className="banner warn">

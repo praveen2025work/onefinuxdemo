@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useApp } from '../store.jsx';
-import { PageTitle, Stat } from '../components/bits.jsx';
+import { PageHeader, Stat } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
 import { KIND_ICON } from '../components/NotificationsPanel.jsx';
 import { KIND_LABEL, filterNotifications, idOf, notificationKind, relativeTime } from '../lib/notifyState.js';
 
@@ -28,23 +27,16 @@ export default function Notifications() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Inbox · pushed live over {liveStatus.transport === 'sse' ? 'SSE' : 'WebSocket'}</div>
-          <PageTitle icon="bell">Notifications
-            <InfoHint title="One inbox, many channels">
-              The hub persists each notifiable outcome transition once, then fans it out: this inbox (pushed over
-              <span className="mono"> /api/ws</span>), desktop cards, e-mail and webhooks. Read and dismissed state is
-              kept in this browser — the hub record never changes.
-            </InfoHint>
-          </PageTitle>
-          <p className="sub">{unread ? `${unread} unread of ${notifications.length}.` : `All ${notifications.length} read.`}</p>
-        </div>
-        <div className="ph-actions">
-          <button className="btn ghost" onClick={() => refreshNotifications().catch(() => {})}><Icon name="refresh" size={15} /> Refresh</button>
-          <button className="btn" onClick={markAllRead} disabled={!unread}><Icon name="checks" size={15} /> Mark all read</button>
-        </div>
-      </div>
+      <PageHeader icon="bell" title="Notifications" infoTitle="One inbox, many channels"
+        context={`Inbox · pushed live over ${liveStatus.transport === 'sse' ? 'SSE' : 'WebSocket'}`}
+        info={<>
+          The hub persists each notifiable outcome transition once, then fans it out: this inbox (pushed over
+          <span className="mono"> /api/ws</span>), desktop cards, e-mail and webhooks. Read and dismissed state is
+          kept in this browser — the hub record never changes.
+        </>}>
+        <button className="btn ghost" onClick={() => refreshNotifications().catch(() => {})}><Icon name="refresh" size={15} /> Refresh</button>
+        <button className="btn" onClick={markAllRead} disabled={!unread}><Icon name="checks" size={15} /> Mark all read</button>
+      </PageHeader>
 
       <div className="stats">
         <Stat tone="info" icon="bell" label="Unread" value={unread} />

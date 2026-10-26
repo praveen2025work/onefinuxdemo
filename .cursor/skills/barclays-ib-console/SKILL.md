@@ -51,8 +51,8 @@ Never use `backdrop-filter`, translucent fills, or radial washes on the page.
 ## Layout rules
 
 - **Floating rail.** The left nav is an overlay, closed by default, so content uses the full width. A small edge tab (`.rail-tab`) on the left opens it; the scrim, Escape or a navigation closes it. Do not bring back a docked icon strip.
-- The top header holds the business date, group unit, region, view, theme, notifications (bell with a STEPS-style panel), live status and profile.
-- Every screen keeps the **context ribbon** (`.ctxbar`) so the stitch keys stay visible.
+- **Compact chrome.** The top header is one 48px row: business date, group unit and region (values only, captions in tooltips) and the ready / blocked / escalation counts, which open the board or Operations; then icons for view, install, desktop alerts, theme, notifications, refresh and profile, with live status as a dot in the env chip. There is no separate ribbon row. Do not add captions, text chips or a second row.
+- **One-row page header.** Every screen starts with `PageHeader` (`components/bits.jsx`): icon + title, an info icon holding the context line and the explanation, an optional one-line live summary, and the screen's tools on the right. Put a screen's toolbar in it rather than in a panel underneath. Descriptive paragraphs go behind the info icon, never on the page. In a Workspace view the title is omitted (the view title bar names it) unless the title changes, like an instance id.
 - Content sits in `.panel` blocks with a `.panel-hd` that names the table or view behind it.
 - KPI tiles use `.stat` plus `.ok` / `.fail` / `.warn` / `.info`.
 - Detail screens use `.split`: content plus a 340px right rail for facts, event trail and rules.
@@ -73,5 +73,6 @@ The theme is persisted in `localStorage['ofx-theme']`. A review link can force i
 - Restoring frosted glass / blur
 - Centring content in a narrow column: this is a console, use the width
 - A docked rail that eats the content width
+- Eyebrows, subtitles or description paragraphs above the content: use `PageHeader`'s info hint
 - Hard-coding "FOBO Control Tower" as the platform title: the title is the current product
 - A hand-built table or another chart library where `DataGrid` / `DataView` / `Chart` fits

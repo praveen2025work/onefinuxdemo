@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { api } from '../api';
-import { StatusPill, Loading, PageTitle } from '../components/bits.jsx';
-import InfoHint from '../components/InfoHint.jsx';
+import { StatusPill, Loading, PageHeader } from '../components/bits.jsx';
 import DataGrid from '../components/DataGrid.jsx';
 
 export default function Operations() {
@@ -46,14 +45,8 @@ export default function Operations() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Run-the-bank support</div>
-          <PageTitle icon="ops">Operations console
-            <InfoHint title="Operations console">Escalations, feed watermarks and dead letters. Replay is dual-control. RTB never signs off a break or publishes a kit.</InfoHint>
-          </PageTitle>
-        </div>
-      </div>
+      <PageHeader icon="ops" title="Operations console" context="Run-the-bank support"
+        info="Escalations, feed watermarks and dead letters. Replay is dual-control. RTB never signs off a break or publishes a kit." />
 
       <div className="panel">
         <div className="panel-hd"><h2>Escalations</h2><span className="hint">escalation</span></div>

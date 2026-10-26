@@ -10,6 +10,8 @@ import Icon from './Icon.jsx';
  * The open menu is rendered in a portal with fixed positioning anchored to the trigger, so it is never
  * clipped by a parent `.panel { overflow: hidden }`. Because it is fixed, it closes on scroll / resize /
  * window blur as well as outside click, so it can never get "stuck open" behind other content.
+ *
+ * variant="icon" draws only the icon (the value is in the tooltip) and opens the menu right-aligned, for the header.
  */
 export default function Select({ value, onChange, options, placeholder = 'Select…', caption, icon,
   variant = 'default', minWidth, title }) {
@@ -57,7 +59,7 @@ export default function Select({ value, onChange, options, placeholder = 'Select
   return (
     <div className={'sel2 ' + variant + (open ? ' open' : '')} style={minWidth ? { minWidth } : undefined} title={title}>
       <button ref={trigRef} type="button" className="sel2-trig"
-        title={title}
+        title={title} aria-label={variant === 'icon' ? title : undefined}
         onClick={() => { setOpen((o) => !o); setActive(options.findIndex((o) => o.value === value)); }}>
         {icon && <Icon name={icon} size={15} className="sel2-ic" />}
         <span className="sel2-txt">
@@ -68,7 +70,9 @@ export default function Select({ value, onChange, options, placeholder = 'Select
       </button>
       {open && rect && createPortal(
         <div ref={menuRef} className="sel2-menu" role="listbox"
-          style={{ position: 'fixed', top: rect.bottom + 6, left: rect.left, minWidth: rect.width }}>
+          style={variant === 'icon'
+            ? { position: 'fixed', top: rect.bottom + 6, left: 'auto', right: Math.max(8, window.innerWidth - rect.right), minWidth: 200 }
+            : { position: 'fixed', top: rect.bottom + 6, left: rect.left, minWidth: rect.width }}>
           {options.map((o, idx) => (
             <button type="button" key={o.value} role="option" aria-selected={o.value === value}
               className={'sel2-opt' + (o.value === value ? ' on' : '') + (idx === active ? ' active' : '')}

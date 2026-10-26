@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../store.jsx';
-import { PageTitle } from '../components/bits.jsx';
+import { PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
 import Menu from '../components/Menu.jsx';
 import { financeBlueprint } from '../finance/blueprint.js';
 import { useDashboardTiles } from '../finance/useDashboardTiles.js';
@@ -73,21 +72,13 @@ export default function Finance() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">{filters.groupUnit} · COB {filters.cobDate || '—'} · {filters.region || 'all regions'}</div>
-          <PageTitle icon="dollar">Finance dashboard
-            <InfoHint title="A dashboard is data" width={330}>
-              Ported from STEPS: one blueprint lists data sources, tiles and tabs. <b>Live</b> tiles read the hub and refresh
-              on every WebSocket push; the other tiles use seeded demo data (<span className="mono">mock:</span>) until the finance
-              system is bound — swap the endpoint, keep the tile. Charts and grids are Wijmo.
-            </InfoHint>
-          </PageTitle>
-          <p className="sub">Monitor finance workflows and tile performance at a glance.</p>
-        </div>
-      </div>
-
-      <div className="panel fin-bar">
+      <PageHeader icon="dollar" title="Finance dashboard" infoTitle="A dashboard is data" infoWidth={330}
+        context={`${filters.groupUnit} · COB ${filters.cobDate || '—'} · ${filters.region || 'all regions'}`}
+        info={<>
+          Ported from STEPS: one blueprint lists data sources, tiles and tabs. <b>Live</b> tiles read the hub and refresh
+          on every WebSocket push; the other tiles use seeded demo data (<span className="mono">mock:</span>) until the finance
+          system is bound — swap the endpoint, keep the tile. Charts and grids are Wijmo.
+        </>}>
         <div className="seg" role="group" aria-label="View mode">
           {VIEW_MODES.map((m) => (
             <button key={m.id} className={viewMode === m.id ? 'on' : ''} title={m.label}
@@ -103,10 +94,11 @@ export default function Finance() {
             </button>
           ))}
         </div>
-        <div className="spacer" />
         {failing.length > 0 && <span className="chip warn-chip" title={failing.map((k) => `${k}: ${errors[k]}`).join('\n')}><Icon name="alert" size={11} /> {failing.length} source{failing.length > 1 ? 's' : ''} failed</span>}
-        <span className="live-pill"><span className={'live-dot' + (liveStatus.live ? '' : ' off')} />{liveStatus.live ? `live tiles · ${liveStatus.transport}` : 'live tiles paused'}</span>
-        <span className="sec mono">{lastRefreshed ? `Refreshed ${lastRefreshed.toLocaleTimeString('en-GB')}` : 'Loading…'}</span>
+        <span className="fin-live" title={liveStatus.live ? `Live tiles refresh on every ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} push` : 'Live tiles paused'}>
+          <span className={'live-dot' + (liveStatus.live ? '' : ' off')} />
+          {lastRefreshed ? lastRefreshed.toLocaleTimeString('en-GB') : 'Loading…'}
+        </span>
         <Menu width={260} trigger={(open, toggle) => (
           <button className={'btn ghost sm' + (open ? ' on' : '')} onClick={toggle} title="Show or hide tiles"><Icon name="config" size={13} /> Tiles</button>
         )}>
@@ -126,7 +118,7 @@ export default function Finance() {
           </div>
         </Menu>
         <button className="btn ghost sm" onClick={() => refresh()} title="Refresh"><Icon name="refresh" size={13} className={loading ? 'spin-ic' : ''} /></button>
-      </div>
+      </PageHeader>
 
       <div className="tabs-bar" role="tablist">
         {blueprint.tabs.map((t) => (

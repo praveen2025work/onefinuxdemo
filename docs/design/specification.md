@@ -236,11 +236,11 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | REQ-ID | Requirement |
 | --- | --- |
 | `REQ-CONSOLE-001` | The product wordmark is One Finance with no UX suffix on the rail, the document title, and the collapsed top header. |
-| `REQ-CONSOLE-002` | The brand mark is a briefcase on the MITR indigo-lavender tile. |
-| `REQ-CONSOLE-003` | When the rail is expanded the brand mark and wordmark appear on the rail and do not appear in the top header. |
-| `REQ-CONSOLE-004` | When the rail is collapsed the brand mark and wordmark appear once in the top header beside Group unit, and the rail brand slot shows only the expand control. |
+| `REQ-CONSOLE-002` | The brand mark is a briefcase on a tile in the current skin's brand colours (STEPS blue, or MITR indigo-lavender). |
+| `REQ-CONSOLE-003` | The rail is an overlay that is closed when a page loads; a tab on the left edge opens it over the page, and the scrim, Escape, or a navigation closes it. |
+| `REQ-CONSOLE-004` | The top header is one row: the brand mark and wordmark appear once at its left, beside the business date, group unit, and region controls; the open rail shows the brand and one close control in its brand slot. |
 | `REQ-CONSOLE-005` | html[data-theme] is dark or light; the choice persists in localStorage ofx-theme and a URL theme= parameter overrides it. |
-| `REQ-CONSOLE-006` | The context ribbon always shows group_unit, cob, region, view, instance counts, ready, blocked, and escalations. |
+| `REQ-CONSOLE-006` | The top header always shows the business date, group unit, region, and the ready, blocked, and escalation counts; no separate context ribbon row is drawn. Each screen has a one-row page header whose explanation sits behind an info icon. |
 | `REQ-CONSOLE-007` | Top-bar View values are all, developer, architect, controller, head, rtb, and maker; a view filters the rail and is not entitlement. |
 | `REQ-CONSOLE-008` | Guide routes /product, /architecture, /guide, and /lifecycle remain on the rail in every view. |
 | `REQ-CONSOLE-009` | Home and Reports do not render Drive or scenario buttons. |
@@ -998,28 +998,28 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 - Maps to: `REQ-CONSOLE-002`
 - Given the rail is expanded
 - When the operator inspects the rail brand mark
-- Then the mark is a briefcase on the MITR tile
+- Then the mark is a briefcase on the brand tile of the current skin
 
 #### AC-CONSOLE-04
 
 - Maps to: `REQ-CONSOLE-003`
-- Given ofx-rail is 0
-- When the home page renders
-- Then the top header does not display the top-brand block and the rail displays the brand
+- Given any product route is open
+- When the operator clicks the tab on the left edge
+- Then the rail opens over the page, and Escape closes it
 
 #### AC-CONSOLE-05
 
 - Maps to: `REQ-CONSOLE-004`
-- Given ofx-rail is 1
+- Given the viewport is 1280 pixels wide
 - When the home page renders
-- Then the top header displays One Finance and Outcome platform beside Group unit and the rail brand is hidden
+- Then the top header is one row of at most 48 pixels and displays the brand mark and One Finance beside the business date control
 
 #### AC-CONSOLE-06
 
 - Maps to: `REQ-CONSOLE-004`
-- Given ofx-rail is 1
+- Given the rail is open
 - When the operator inspects the rail top
-- Then the only control in the brand slot is the expand chevron
+- Then the brand slot shows the brand and one close control
 
 #### AC-CONSOLE-07
 
@@ -1039,8 +1039,8 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 
 - Maps to: `REQ-CONSOLE-006`
 - Given any product route is open
-- When the operator reads the context ribbon
-- Then group_unit, cob, region, view, instances, ready, blocked, and escalations are visible
+- When the operator reads the top header
+- Then business date, group unit, region, ready, blocked, and escalations are visible, the View icon tooltip names the current view, and clicking the blocked count opens Board filtered to BLOCKED
 
 #### AC-CONSOLE-10
 
@@ -1897,17 +1897,21 @@ This section locks brand, theme, surfaces, and mobile behaviour.
 
 ### 19.1 Brand
 
-Wordmark: One Finance. Mark: briefcase on the MITR tile. Collapsed rail: one mark in the top header; expand control in the rail brand slot.
+Wordmark: One Finance. Mark: briefcase on the accent tile. The rail is a closed overlay; the top header carries one mark and the wordmark.
 
 ### 19.2 Theme
 
-Dark canvas `#090d1c`, light canvas `#f5f6fb`, accent `#818cf8` dark and `#6366f1` light. Opaque cards. No `backdrop-filter`. Lucide stroke icons. Inter, Sora, JetBrains Mono.
+The palette is `frontend/theme/onefinux-tokens.css`. Default: STEPS Banking Blue (page `#f8fafc`, accent `#2563eb`); STEPS dark is its peer; the MITR indigo themes stay selectable. Opaque cards. No `backdrop-filter`. Lucide stroke icons. System UI type with JetBrains Mono for ids and numbers.
 
 ### 19.3 Surfaces
 
 Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates an OutcomeDefinition including lineage grids. Configuration governs and edits the selected outcome.
 
-### 19.4 Mobile
+### 19.4 Header and page header
+
+The top header is one 48-pixel row. Scope controls show values only; their captions are tooltips. Install, desktop alerts, view, theme, notifications, refresh, and profile are icons. Live status is a dot in the environment chip. Each screen has one page-header row: icon, title, an info icon holding the context line and explanation, an optional one-line live summary, and the screen's tools. In a Workspace view the page title is omitted because the view title bar names it.
+
+### 19.5 Mobile
 
 Below 820px: drawer rail, hamburger, bottom nav. Below 640px: Board and Home instance tables become one card per row. Report flow stacks on a phone. Predicted-ready clocks use 24-hour time.
 

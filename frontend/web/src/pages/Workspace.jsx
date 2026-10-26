@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../store.jsx';
-import { PageTitle } from '../components/bits.jsx';
+import { PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
 import Select from '../components/Select.jsx';
 import Modal from '../components/Modal.jsx';
 import ChannelPicker from '../workspace/ChannelPicker.jsx';
@@ -18,7 +17,6 @@ import {
 } from '../workspace/layout.js';
 import { broadcastContext, onAnyContext, onSystem, postSystem } from '../workspace/interop.js';
 import { partnerThemeParams } from '../lib/themes.js';
-import { useInstallPrompt } from '../pwa.js';
 
 const APPS_KEY = 'ofx-ws-apps';
 // Live (WebSocket) events a partner frame may subscribe to through ofx-interop.js.
@@ -43,7 +41,7 @@ function loadCustomApps() {
  * All views share the shell's single live link (WebSocket), so a hub notification reaches every screen once.
  */
 export default function Workspace() {
-  const { filters, themeId, liveStatus } = useApp();
+  const { filters, themeId } = useApp();
   const [state, setState] = useState(() => {
     try { return loadState(localStorage.getItem(WS_KEY)); } catch { return loadState(null); }
   });
@@ -57,7 +55,6 @@ export default function Workspace() {
   const [resizing, setResizing] = useState(false);
   const areaRef = useRef(null);
   const sectionRefs = useRef(new Map()); // viewId -> section element (splitter geometry)
-  const { canInstall, standalone, install } = useInstallPrompt();
 
   const apps = useMemo(() => [...BUILTIN_APPS, ...customApps], [customApps]);
   const ws = currentWorkspace(state);
@@ -415,43 +412,37 @@ export default function Workspace() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Multi-screen container · installable app</div>
-          <PageTitle icon="window">Workspace
-            <InfoHint title="One UI, many screens" width={340}>
-              Launch console screens, widgets and partner web apps side by side. Give views the same <b>link colour</b> and they
-              share context: pick a row in the board and the instance viewer, grid and partner frame follow. Tear a view out into
-              its own window and <b>Dock</b> it back. Every view rides the shell’s one WebSocket.
-            </InfoHint>
-          </PageTitle>
-          <p className="sub">{ws.views.length} view{ws.views.length === 1 ? '' : 's'} · {usedChannels.length ? `linked on ${usedChannels.map((c) => channelById(c)?.label).join(', ')}` : 'no links yet'} · live over {liveStatus.live ? liveStatus.transport : '—'}</p>
-        </div>
-        <div className="ph-actions">
-          {canInstall && !standalone && <button className="btn ghost" onClick={install}><Icon name="install" size={15} /> Install app</button>}
-          <button className="btn" onClick={() => setLauncher(true)}><Icon name="plus" size={15} /> Launch app</button>
-        </div>
-      </div>
-
-      <div className="ws-bar panel">
-        <Select variant="header" caption="Workspace" icon="window" value={ws.id} minWidth={200}
+      <PageHeader icon="window" title="Workspace" context="Multi-screen container · installable app"
+        infoTitle="One UI, many screens" infoWidth={340}
+        info={<>
+          Launch console screens, widgets and partner web apps side by side. Give views the same <b>link colour</b> and they
+          share context: pick a row in the board and the instance viewer, grid and partner frame follow. Tear a view out into
+          its own window and <b>Dock</b> it back. Every view rides the shell’s one WebSocket.
+        </>}
+        summary={`${ws.views.length} view${ws.views.length === 1 ? '' : 's'}${usedChannels.length ? ` · linked on ${usedChannels.map((c) => channelById(c)?.label).join(', ')}` : ''}`}>
+        <Select variant="header" icon="window" value={ws.id} minWidth={170} title="Switch workspace"
           onChange={(id) => setState((s) => switchWorkspace(s, id))}
           options={state.workspaces.map((w) => ({ value: w.id, label: w.name }))} />
         <div className="ws-btns">
-          <button className="btn ghost sm" onClick={() => setNaming({ mode: 'new', value: '' })}><Icon name="plus" size={13} /> New</button>
-          <button className="btn ghost sm" onClick={() => setNaming({ mode: 'copy', value: ws.name + ' copy' })}><Icon name="save" size={13} /> Save as</button>
-          <button className="btn ghost sm" onClick={() => setNaming({ mode: 'rename', value: ws.name })}><Icon name="config" size={13} /> Rename</button>
-          <button className="btn ghost sm" onClick={() => setState((s) => deleteWorkspace(s))} disabled={state.workspaces.length <= 1}><Icon name="trash" size={13} /> Delete</button>
+          <button className="tb-icon" title="New workspace" aria-label="New workspace"
+            onClick={() => setNaming({ mode: 'new', value: '' })}><Icon name="plus" size={15} /></button>
+          <button className="tb-icon" title="Save as a new workspace" aria-label="Save workspace as"
+            onClick={() => setNaming({ mode: 'copy', value: ws.name + ' copy' })}><Icon name="save" size={15} /></button>
+          <button className="tb-icon" title="Rename workspace" aria-label="Rename workspace"
+            onClick={() => setNaming({ mode: 'rename', value: ws.name })}><Icon name="config" size={15} /></button>
+          <button className="tb-icon" title="Delete workspace" aria-label="Delete workspace"
+            onClick={() => setState((s) => deleteWorkspace(s))} disabled={state.workspaces.length <= 1}><Icon name="trash" size={15} /></button>
         </div>
-        <div className="spacer" />
-        <div className="seg">
+        <div className="seg" role="group" aria-label="Layout">
           {LAYOUTS.map((l) => (
-            <button key={l.id} className={ws.layout === l.id ? 'on' : ''} onClick={() => setState((s) => setLayout(s, l.id))} title={l.label + ' layout'}>
-              <Icon name={l.icon} size={13} /> {l.label}
+            <button key={l.id} className={ws.layout === l.id ? 'on' : ''} onClick={() => setState((s) => setLayout(s, l.id))}
+              title={l.label + ' layout'} aria-label={l.label + ' layout'}>
+              <Icon name={l.icon} size={13} /> <span className="ws-lbl">{l.label}</span>
             </button>
           ))}
         </div>
-      </div>
+        <button className="btn" onClick={() => setLauncher(true)}><Icon name="plus" size={15} /> Launch app</button>
+      </PageHeader>
 
       {ws.layout === 'tabs' && ws.views.length > 0 && (
         <div className="ws-tabs" role="tablist">

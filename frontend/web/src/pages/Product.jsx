@@ -1,7 +1,6 @@
 import { Link, Navigate, useSearchParams } from 'react-router-dom';
-import InfoHint from '../components/InfoHint.jsx';
 import Icon from '../components/Icon.jsx';
-import { PageTitle } from '../components/bits.jsx';
+import { PageHeader } from '../components/bits.jsx';
 import GuideNav from '../components/GuideNav.jsx';
 import MermaidFig from '../components/MermaidFig.jsx';
 import dEnterprise from '@diagrams/01-enterprise-context.mmd?raw';
@@ -47,16 +46,10 @@ export default function Product() {
 export function ArchitecturePage() {
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">How facts become an answer</div>
-          <PageTitle icon="compass">Architecture
-            <InfoHint title="Architecture">Same diagrams as docs/design/architecture.md. Origins stay origins. The hub folds. This console is the only UX.</InfoHint>
-          </PageTitle>
-          <p className="sub">Three processes. The browser never sees Kafka. Motif, SAP, Helix and Axiom keep their screens — we stitch their facts.</p>
-        </div>
+      <PageHeader icon="compass" title="Architecture" context="How facts become an answer"
+        info="Same diagrams as docs/design/architecture.md. Origins stay origins. The hub folds. This console is the only UX. Three processes. The browser never sees Kafka. Motif, SAP, Helix and Axiom keep their screens — we stitch their facts.">
         <GuideNav />
-      </div>
+      </PageHeader>
 
       <FoboHow />
 
@@ -89,16 +82,10 @@ export function ArchitecturePage() {
 export function GuidePage() {
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Join the repo · about 15 minutes</div>
-          <PageTitle icon="code">Developer guide
-            <InfoHint title="Developer guide">How to run the three processes, add an outcome as data, and get a PR reviewed. Same write-up as docs/design/start.md.</InfoHint>
-          </PageTitle>
-          <p className="sub">Your first change is a row of data, not a Java product type. FOBO is a kit. There is no FOBO code path.</p>
-        </div>
+      <PageHeader icon="code" title="Developer guide" context="Join the repo · about 15 minutes"
+        info="How to run the three processes, add an outcome as data, and get a PR reviewed. Same write-up as docs/design/start.md. Your first change is a row of data, not a Java product type. FOBO is a kit. There is no FOBO code path.">
         <GuideNav />
-      </div>
+      </PageHeader>
       <StartTab />
       <div id="how-it-works"><WorksTab /></div>
       <div id="screens"><ScreensTab /></div>
@@ -157,16 +144,10 @@ function FoboHow() {
 function ProductStory() {
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Why this exists</div>
-          <PageTitle icon="book">One answer at close of business
-            <InfoHint title="Product">A thin outcome layer. Origins stay origins. Destinations stay destinations. We stitch their facts into Ready / Blocked / Delayed and act when ready.</InfoHint>
-          </PageTitle>
-          <p className="sub">Revenue Accounting is not asking “is Motif done?”. It is asking: can I run this rec, produce this report, post this book — for this COB, in this region?</p>
-        </div>
+      <PageHeader icon="book" title="One answer at close of business" context="Why this exists" infoTitle="Product"
+        info="A thin outcome layer. Origins stay origins. Destinations stay destinations. We stitch their facts into Ready / Blocked / Delayed and act when ready. Revenue Accounting is not asking “is Motif done?”. It is asking: can I run this rec, produce this report, post this book — for this COB, in this region?">
         <GuideNav />
-      </div>
+      </PageHeader>
 
       <div className="story" style={{ marginBottom: 16 }}>
         <div className="story-kicker">A morning a BU head recognises</div>

@@ -2,9 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { StatusPill, Meter, Loading, Prediction, PageTitle } from '../components/bits.jsx';
+import { StatusPill, Meter, Loading, Prediction, PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
 import { viewIncludes } from '../views.js';
 
 const STEPS = [
@@ -198,27 +197,18 @@ export default function Reports() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Regulatory reporting</div>
-          <PageTitle icon="report">Reports
-            <InfoHint title="Report flow">Each report is a business outcome: its feeds fold to ready, the hub asks the generator to run, and the finished report becomes a document you can open. Switch Normal, Compact, or Table — the index stays the same.</InfoHint>
-          </PageTitle>
+      <PageHeader icon="report" title="Reports" context="Regulatory reporting" infoTitle="Report flow"
+        info="Each report is a business outcome: its feeds fold to ready, the hub asks the generator to run, and the finished report becomes a document you can open. Switch Normal, Compact, or Table — the index stays the same.">
+        <div className="seg" role="tablist" aria-label="Reports layout">
+          {DENSITY.map((d) => (
+            <button key={d.id} type="button" role="tab" aria-selected={density === d.id}
+              className={density === d.id ? 'on' : ''} onClick={() => choose(d.id)}>
+              <Icon name={d.icon} size={14} /> {d.label}
+            </button>
+          ))}
         </div>
-        <div className="ph-side">
-          <div className="seg" role="tablist" aria-label="Reports layout">
-            {DENSITY.map((d) => (
-              <button key={d.id} type="button" role="tab" aria-selected={density === d.id}
-                className={density === d.id ? 'on' : ''} onClick={() => choose(d.id)}>
-                <Icon name={d.icon} size={14} /> {d.label}
-              </button>
-            ))}
-          </div>
-          <div className="ph-actions">
-            <Link className="btn ghost" to="/board"><Icon name="board" size={15} /> Open Board</Link>
-          </div>
-        </div>
-      </div>
+        <Link className="btn ghost" to="/board"><Icon name="board" size={15} /> Open Board</Link>
+      </PageHeader>
 
       {density === 'table' ? (
         outcomes.length > 0

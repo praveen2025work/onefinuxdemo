@@ -1,6 +1,7 @@
 import { formatClock, etaCaption, hasPrediction } from '../eta.js';
 import Icon from './Icon.jsx';
 import InfoHint from './InfoHint.jsx';
+import { EMBED } from '../embed.js';
 
 const PILL = {
   READY: 'ok', CLEARED: 'ok', SIGNED: 'bo', BLOCKED: 'fail', DELAYED: 'warn', NOT_YET: 'plain',
@@ -28,6 +29,32 @@ export function PageTitle({ icon, children }) {
       {icon && <span className="ph-ico" aria-hidden><Icon name={icon} size={18} /></span>}
       <span className="ph-label">{children}</span>
     </h1>
+  );
+}
+
+/**
+ * The one-row header every screen uses: icon + title, an info hint holding the context line and the explanation
+ * (off screen until asked for), an optional one-line live summary, and the screen's tools on the right.
+ * In a Workspace view the view's title bar already names the screen, so the title is dropped (unless `keepTitle`,
+ * for titles that change, like an instance id) and a header with nothing else to show is not drawn at all.
+ */
+export function PageHeader({ icon, title, context, info, infoTitle, infoWidth = 320, summary, keepTitle = false, children }) {
+  const showTitle = !EMBED || keepTitle;
+  if (!showTitle && !summary && !children) return null;
+  return (
+    <div className={'ph' + (EMBED ? ' in-view' : '')}>
+      <div className="ph-main">
+        {showTitle && <PageTitle icon={icon}>{title}</PageTitle>}
+        {(context || info) && (
+          <InfoHint title={infoTitle || (typeof title === 'string' ? title : undefined)} width={infoWidth}>
+            {context && <span className="infohint-ctx">{context}</span>}
+            {info}
+          </InfoHint>
+        )}
+        {summary && <p className="ph-sum" title={typeof summary === 'string' ? summary : undefined}>{summary}</p>}
+      </div>
+      {children && <div className="ph-tools">{children}</div>}
+    </div>
   );
 }
 

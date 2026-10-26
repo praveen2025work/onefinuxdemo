@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { runScenario, cancelScenarios, resetPlatform, dropFeed, interopApi } from '../api';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
-import { PageTitle } from '../components/bits.jsx';
+import { PageHeader } from '../components/bits.jsx';
 
 // A dedicated testing surface. The product pages (Home, Board, Reports) stay clean and view-only;
 // every scenario that drives the demo lives here so it is obvious what is real vs. what is a trigger.
@@ -105,18 +104,11 @@ export default function Drive() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Testing · scenario driver</div>
-          <PageTitle icon="bolt">Drive scenarios
-            <InfoHint title="Why a separate screen">Product pages stay view-only so a demo reads like the real thing. This screen is the only place that injects facts — reset first, drive a scenario, then watch it land on the Board and Reports.</InfoHint>
-          </PageTitle>
-        </div>
-        <div className="ph-actions">
-          <Link className="btn ghost" to="/board"><Icon name="board" size={15} /> Open Board</Link>
-          <Link className="btn ghost" to="/reports"><Icon name="report" size={15} /> Open Reports</Link>
-        </div>
-      </div>
+      <PageHeader icon="bolt" title="Drive scenarios" context="Testing · scenario driver" infoTitle="Why a separate screen"
+        info="Product pages stay view-only so a demo reads like the real thing. This screen is the only place that injects facts — reset first, drive a scenario, then watch it land on the Board and Reports.">
+        <Link className="btn ghost" to="/board"><Icon name="board" size={15} /> Open Board</Link>
+        <Link className="btn ghost" to="/reports"><Icon name="report" size={15} /> Open Reports</Link>
+      </PageHeader>
 
       <div className="banner info" style={{ marginBottom: 16 }}>
         <Icon name="info" size={16} />

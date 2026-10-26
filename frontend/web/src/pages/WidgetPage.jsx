@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { WIDGETS } from '../workspace/widgets.jsx';
 import { interopSelf, onOwnChannel } from '../workspace/interop.js';
 import { BUILTIN_APPS, appById } from '../workspace/apps.js';
-import { PageTitle } from '../components/bits.jsx';
+import { PageHeader } from '../components/bits.jsx';
 
 /** /widget/:appId — a Workspace widget in its own document (torn-out window or an iframe view). */
 export default function WidgetPage() {
@@ -16,9 +16,7 @@ export default function WidgetPage() {
   if (!Widget) return <div className="empty">Unknown widget “{appId}”.</div>;
   return (
     <>
-      <div className="ph">
-        <div><PageTitle icon={app?.icon || 'grid'}>{app?.title || appId}</PageTitle><p className="sub">{app?.desc}</p></div>
-      </div>
+      <PageHeader icon={app?.icon || 'grid'} title={app?.title || appId} info={app?.desc} />
       <div className="panel wg-page"><Widget view={{ id: interopSelf().viewId, channel }} /></div>
     </>
   );

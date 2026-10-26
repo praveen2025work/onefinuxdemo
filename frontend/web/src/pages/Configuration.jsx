@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { StatusPill, Loading, PageTitle } from '../components/bits.jsx';
+import { StatusPill, Loading, PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import GridConfigFields from '../components/GridConfigFields.jsx';
@@ -83,18 +83,12 @@ export default function Configuration() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Configuration · live registry</div>
-          <PageTitle icon="config">Configuration
-            <InfoHint title="Configuration governs; Onboarding creates" width={360}>Pick a business outcome (or a console kit) on the left. <b>Edit</b> saves the live contract — question, feeds, SLA, on-ready, and lineage grids. To <b>create</b> a new outcome, use <b>Onboarding</b>.</InfoHint>
-          </PageTitle>
-        </div>
-        <div className="ph-actions">
-          <Link className="btn ghost" to="/onboarding"><Icon name="build" size={15} /> Onboard new</Link>
-          <button className="btn ghost" onClick={refresh}><Icon name="refresh" size={15} /> Refresh</button>
-        </div>
-      </div>
+      <PageHeader icon="config" title="Configuration" context="Configuration · live registry"
+        infoTitle="Configuration governs; Onboarding creates" infoWidth={360}
+        info={<>Pick a business outcome (or a console kit) on the left. <b>Edit</b> saves the live contract — question, feeds, SLA, on-ready, and lineage grids. To <b>create</b> a new outcome, use <b>Onboarding</b>.</>}>
+        <Link className="btn ghost" to="/onboarding"><Icon name="build" size={15} /> Onboard new</Link>
+        <button className="btn ghost" onClick={refresh}><Icon name="refresh" size={15} /> Refresh</button>
+      </PageHeader>
 
       <div className="cfg-steps">
         <span className="cfg-step"><span className="n">1</span> Pick an outcome or kit</span>

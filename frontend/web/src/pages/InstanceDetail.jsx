@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { StatusPill, Loading, PageTitle, formatAmount } from '../components/bits.jsx';
+import { StatusPill, Loading, PageHeader, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import GenericGrid from '../components/GenericGrid.jsx';
 import PartnerFrame from '../components/PartnerFrame.jsx';
@@ -195,12 +195,9 @@ export default function InstanceDetail() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">{i.groupUnitId} · {i.kitId} · COB {i.cobDate} · {i.region}</div>
-          <PageTitle icon="cards">{i.sliceKey} <StatusPill status={i.status} /></PageTitle>
-          <p className="sub">{i.question}</p>
-        </div>
+      <PageHeader keepTitle icon="cards" title={<>{i.sliceKey} <StatusPill status={i.status} /></>} infoTitle="Instance"
+        context={`${i.groupUnitId} · ${i.kitId} · COB ${i.cobDate} · ${i.region}`}
+        summary={`${i.kitId} · ${i.region} — ${i.question}`}>
         <div className="ph-side">
         <div className="ph-actions">
           {actions.includes('ADJUST') && <button className="btn" disabled={busy || !canAdjust} onClick={() => act('adjust')}><Icon name="refresh" size={15} /> Adjust</button>}
@@ -214,7 +211,7 @@ export default function InstanceDetail() {
         </div>
         {why && <p className="act-why"><Icon name="info" size={13} /> {why}</p>}
         </div>
-      </div>
+      </PageHeader>
 
       {banner && <div className={'banner ' + banner.cls} style={{ marginBottom: 16 }}><div><b>{banner.text}</b></div></div>}
       {isBlocked && <div className="banner fail" style={{ marginBottom: 16 }}><div><b>Blocked — {i.namedBlocker}</b><span className="mono-sm">A FAILED required key holds the fold. Adjust or revoke it to proceed.</span></div></div>}

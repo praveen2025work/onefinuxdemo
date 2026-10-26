@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { api, fetchSink } from '../api';
 import { useStream } from '../useStream';
-import { Loading, PageTitle, Stat } from '../components/bits.jsx';
+import { Loading, PageHeader, Stat } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import DataGrid from '../components/DataGrid.jsx';
@@ -128,22 +128,11 @@ export default function Monitoring() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Observability</div>
-          <PageTitle icon="activity">Monitoring &amp; propagation
-            <InfoHint title="Received · persisted · propagated · audited">
-              Every fact the hub receives is stored append-only in the event store, then fanned out to other
-              systems through a transactional outbox (at-least-once, subscribers de-dupe on event id). This
-              screen shows what arrived, how it persisted, where it was propagated, and the audit trail of
-              human commands.
-            </InfoHint>
-          </PageTitle>
-        </div>
-        <div className="ph-actions">
-          <button className="btn ghost" onClick={() => load()}><Icon name="refresh" size={15} /> Refresh</button>
-        </div>
-      </div>
+      <PageHeader icon="activity" title="Monitoring & propagation" context="Observability"
+        infoTitle="Received · persisted · propagated · audited"
+        info="Every fact the hub receives is stored append-only in the event store, then fanned out to other systems through a transactional outbox (at-least-once, subscribers de-dupe on event id). This screen shows what arrived, how it persisted, where it was propagated, and the audit trail of human commands.">
+        <button className="btn ghost" onClick={() => load()}><Icon name="refresh" size={15} /> Refresh</button>
+      </PageHeader>
 
       <div className="stats">
         <Stat tone="info" icon="inbox" label="Events received" value={ev.total ?? 0} foot="persisted to event store" />

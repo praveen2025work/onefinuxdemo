@@ -2,9 +2,8 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import DataView from '../components/DataView.jsx';
-import { StatusPill, Meter, PageTitle, formatAmount } from '../components/bits.jsx';
+import { StatusPill, Meter, PageHeader, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
 import { useLinkChannel, useShareInstance } from '../workspace/useLink.js';
 import { channelById } from '../workspace/channels.js';
 
@@ -38,20 +37,13 @@ export default function Board() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Business-unit head · read only</div>
-          <PageTitle icon="board">Outcome board
-            <InfoHint title="Outcome board">Traffic lights for the whole unit. A head sees Ready / Blocked / escalations — no book grid, no engine internals.</InfoHint>
-          </PageTitle>
-          <p className="sub">
-            {blocked
-              ? `${ready} ready. ${blocked} blocked — ${named.region} ${named.kitId} on ${named.namedBlocker || named.status}${formatAmount(named.amount) ? ` · ${formatAmount(named.amount)}` : ''}.`
-              : ready
-                ? `${ready} ready across the unit. No named blockers.`
-                : 'No instances match this filter.'}
-          </p>
-        </div>
+      <PageHeader icon="board" title="Outcome board" context="Business-unit head · read only"
+        info="Traffic lights for the whole unit. A head sees Ready / Blocked / escalations — no book grid, no engine internals."
+        summary={blocked
+          ? `${ready} ready. ${blocked} blocked — ${named.region} ${named.kitId} on ${named.namedBlocker || named.status}${formatAmount(named.amount) ? ` · ${formatAmount(named.amount)}` : ''}.`
+          : ready
+            ? `${ready} ready across the unit. No named blockers.`
+            : 'No instances match this filter.'}>
         <div className="seg">
           {STATUSES.map((s) => (
             <button key={s || 'all'} className={filters.status === s ? 'on' : ''} onClick={() => setFilters({ status: s })}>
@@ -59,7 +51,7 @@ export default function Board() {
             </button>
           ))}
         </div>
-      </div>
+      </PageHeader>
 
       <div className="panel">
         <div className="panel-hd"><h2>{filters.groupUnit} · COB {filters.cobDate} · {filters.region || 'all regions'}</h2>

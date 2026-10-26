@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { api, outcomesApi } from '../api';
-import { StatusPill, Meter, Prediction, PageTitle, Stat, formatAmount } from '../components/bits.jsx';
+import { StatusPill, Meter, Prediction, PageHeader, Stat, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { viewIncludes } from '../views.js';
@@ -50,13 +50,8 @@ export default function Home() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <PageTitle icon="tower">Today’s close
-            <InfoHint title="Outcome control tower">One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them.</InfoHint>
-          </PageTitle>
-        </div>
-      </div>
+      <PageHeader icon="tower" title="Today’s close" infoTitle="Outcome control tower"
+        info="One shell for every group unit. Events are facts, outcomes are the stitch, and heavy screens stay with the teams that own them — we frame them." />
 
       <section className="story" aria-label="Close of business">
         <p className="story-kicker">What the team is looking at</p>

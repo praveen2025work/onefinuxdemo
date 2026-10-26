@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api, outcomesApi } from '../api';
 import { useApp } from '../store.jsx';
-import { Loading, PageTitle } from '../components/bits.jsx';
+import { Loading, PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import GridConfigFields from '../components/GridConfigFields.jsx';
@@ -68,20 +68,14 @@ export default function Onboarding() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Build · onboard a new outcome</div>
-          <PageTitle icon="build">Onboard a business outcome
-            <InfoHint title="Onboarding vs Configuration" width={360}>
-              <b>Onboarding creates.</b> Define a new business outcome here — its question, the feeds it depends on, its SLA and what to do when ready — and it goes live immediately.<br /><br />
-              <b>Configuration governs.</b> Once live, inspect or edit it on the Configuration screen — including lineage grids. New products are a kit of data, not a new app.
-            </InfoHint>
-          </PageTitle>
-        </div>
-        <div className="ph-actions">
-          <Link className="btn ghost" to="/configuration"><Icon name="config" size={15} /> Configuration (govern)</Link>
-        </div>
-      </div>
+      <PageHeader icon="build" title="Onboard a business outcome" context="Build · onboard a new outcome"
+        infoTitle="Onboarding vs Configuration" infoWidth={360}
+        info={<>
+          <b>Onboarding creates.</b> Define a new business outcome here — its question, the feeds it depends on, its SLA and what to do when ready — and it goes live immediately.<br /><br />
+          <b>Configuration governs.</b> Once live, inspect or edit it on the Configuration screen — including lineage grids. New products are a kit of data, not a new app.
+        </>}>
+        <Link className="btn ghost" to="/configuration"><Icon name="config" size={15} /> Configuration (govern)</Link>
+      </PageHeader>
 
       <div className="banner plain" style={{ marginBottom: 16 }}>
         <Icon name="info" size={16} />

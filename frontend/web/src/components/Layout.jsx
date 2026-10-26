@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useApp } from '../store.jsx';
 import Icon, { BrandMark } from './Icon.jsx';
@@ -45,20 +45,6 @@ const NAV = [
   ] },
 ];
 
-const EXTRA_TITLES = [
-  ['/instance/', 'Instance detail'],
-  ['/reports/', 'Report'],
-];
-
-function pageTitle(pathname) {
-  for (const section of NAV) {
-    const hit = section.items.find((it) => (it.end ? pathname === it.to : pathname === it.to || pathname.startsWith(it.to + '/')));
-    if (hit) return hit.label;
-  }
-  const extra = EXTRA_TITLES.find(([prefix]) => pathname.startsWith(prefix));
-  return extra ? extra[1] : 'One Finance';
-}
-
 export default function Layout({ children }) {
   if (EMBED) return <EmbedShell>{children}</EmbedShell>;
   return <Shell>{children}</Shell>;
@@ -73,6 +59,7 @@ function Shell({ children }) {
   const [railOpen, setRailOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const { canInstall, standalone, install } = useInstallPrompt();
 
   useEffect(() => { setRailOpen(false); }, [location.pathname]);
@@ -80,6 +67,11 @@ function Shell({ children }) {
 
   function toggleRail() {
     setRailOpen((o) => !o);
+  }
+
+  function openBoard(status) {
+    setFilters({ status });
+    navigate('/board');
   }
 
   async function onRefresh() {
@@ -143,76 +135,76 @@ function Shell({ children }) {
       </aside>
 
       <div className="main">
+        {/* One compact row: scope (the stitch keys) and fold counts on the left, icons on the right. Details live in
+            tooltips and menus, so the page keeps its height for content. */}
         <header className="topbar">
           <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
             <Icon name="menu" size={16} />
           </button>
-          <div className="brand top-brand">
-            <BrandMark size={28} />
-            <div className="txt"><b>One Finance</b><span>Outcome platform</span></div>
+          <div className="brand top-brand" title="One Finance · Outcome platform">
+            <BrandMark size={26} />
+            <b className="txt">One Finance</b>
           </div>
-          <h1 className="tb-title">{pageTitle(location.pathname)}</h1>
-          <DatePicker caption="Business date" value={filters.cobDate} cobDates={context?.cobDates}
-            onChange={(v) => setFilters({ cobDate: v })} />
-          <Select variant="header" caption="Group unit" value={filters.groupUnit}
-            onChange={(v) => setFilters({ groupUnit: v })}
-            options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
-              : [{ value: filters.groupUnit, label: filters.groupUnit }]} />
-          <div className="spacer" />
-          <div className="tb-filters">
-            <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
+          <div className="tb-scope" aria-label="Current scope">
+            <DatePicker value={filters.cobDate} cobDates={context?.cobDates} onChange={(v) => setFilters({ cobDate: v })} />
+            <Select variant="header" icon="tower" title="Group unit" value={filters.groupUnit}
+              onChange={(v) => setFilters({ groupUnit: v })}
+              options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
+                : [{ value: filters.groupUnit, label: filters.groupUnit }]} />
+            <Select variant="header" icon="globe" title="Region" value={filters.region} onChange={(v) => setFilters({ region: v })}
               options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
-            <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
-              title="Filters the left rail for this session. Not entitlement."
+            <div className="tb-counts" role="group" aria-label={`${instances.length} instances`}>
+              <button type="button" className={'tb-count' + (ready ? ' ok' : '')} onClick={() => openBoard('READY')}
+                title={`${ready} ready of ${instances.length} instances — open on the board`}>
+                <i className="ctx-dot" />{ready}<span className="tb-count-k">ready</span>
+              </button>
+              <button type="button" className={'tb-count' + (blocked ? ' fail' : '')} onClick={() => openBoard('BLOCKED')}
+                title={`${blocked} blocked — open on the board`}>
+                <i className="ctx-dot" />{blocked}<span className="tb-count-k">blocked</span>
+              </button>
+              <button type="button" className={'tb-count' + (esc ? ' warn' : '')} onClick={() => navigate('/operations')}
+                title={`${esc} open escalations — open Operations`}>
+                <i className="ctx-dot" />{esc}<span className="tb-count-k">esc</span>
+              </button>
+            </div>
+          </div>
+          <div className="spacer" />
+          <div className="tb-icons">
+            <Select variant="icon" icon={view.icon || 'grid'} value={view.id} onChange={setView}
+              title={`View: ${view.label} — filters the menu for this session. Not entitlement.`}
               options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
-          </div>
-          {canInstall && !standalone && (
-            <button className="desk-chip" type="button" onClick={install} title="Install One Finance as a desktop app (PWA)">
-              <Icon name="install" size={13} /> Install app
+            {canInstall && !standalone && (
+              <button className="tb-icon" type="button" onClick={install} title="Install One Finance as a desktop app (PWA)" aria-label="Install app">
+                <Icon name="install" size={16} />
+              </button>
+            )}
+            {desktopAlerts === 'denied' && (
+              <span className="tb-icon muted-ic" role="img" title="Desktop alerts blocked — allow One Finance in the browser site settings to restore desktop cards"
+                aria-label="Desktop alerts blocked">
+                <Icon name="bell" size={16} /><i className="tb-slash" aria-hidden />
+              </span>
+            )}
+            {desktopAlerts !== 'granted' && desktopAlerts !== 'unsupported' && desktopAlerts !== 'denied' && (
+              <button className="tb-icon" type="button" onClick={allowDesktopAlerts} aria-label="Desktop alerts"
+                title="Desktop alerts: show READY and BLOCKED as desktop cards, outside this window">
+                <Icon name="message" size={16} />
+              </button>
+            )}
+            <ThemeMenu />
+            <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={toggleNotifPanel} title="Notifications"
+              aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={notifPanelOpen}>
+              <Icon name="bell" size={17} />
+              {unread > 0 && <span className="dot-n">{unread > 99 ? '99+' : unread}</span>}
             </button>
-          )}
-          {desktopAlerts === 'denied' && (
-            <span className="desk-chip blocked" title="Allow One Finance in the browser site settings to restore desktop cards">
-              Alerts blocked
+            <button className="tb-icon" onClick={onRefresh} title="Refresh data" aria-label="Refresh data">
+              <Icon name="refresh" size={16} className={spinning ? 'spin-ic' : ''} />
+            </button>
+            <ProfileMenu />
+            <span className="env" title={`UAT · ${live ? `live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'reconnecting…'}`}>
+              <span className={'live-dot' + (live ? '' : ' off')} />UAT
             </span>
-          )}
-          {desktopAlerts !== 'granted' && desktopAlerts !== 'unsupported' && desktopAlerts !== 'denied' && (
-            <button className="desk-chip" type="button" onClick={allowDesktopAlerts}
-              title="Show READY and BLOCKED as desktop cards, outside this window">
-              Desktop alerts
-            </button>
-          )}
-          <ThemeMenu />
-          <span className="tb-sep" aria-hidden />
-          <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={toggleNotifPanel} title="Notifications"
-            aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={notifPanelOpen}>
-            <Icon name="bell" size={18} />
-            {unread > 0 && <span className="dot-n">{unread > 99 ? '99+' : unread}</span>}
-          </button>
-          <button className="tb-icon" onClick={onRefresh} title="Refresh data" aria-label="Refresh data">
-            <Icon name="refresh" size={16} className={spinning ? 'spin-ic' : ''} />
-          </button>
-          <ProfileMenu />
-          <span className="live-pill" title={live ? `Live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'Reconnecting…'}>
-            <span className={'live-dot' + (live ? '' : ' off')} />{live ? `live · ${liveStatus.transport}` : 'offline'}
-          </span>
-          <span className="env">UAT</span>
+          </div>
         </header>
-
-        <div className="ctxbar" aria-label="Current scope">
-          <div className="ctx-grp">
-            <span className="ctx"><span className="k">group_unit</span><span className="v">{filters.groupUnit}</span></span>
-            <span className="ctx"><span className="k">cob</span><span className="v">{filters.cobDate || '—'}</span></span>
-            <span className="ctx"><span className="k">region</span><span className="v">{filters.region || 'ALL'}</span></span>
-            <span className="ctx"><span className="k">view</span><span className="v">{view.label}</span></span>
-          </div>
-          <div className="ctx-grp">
-            <span className="ctx"><span className="k">instances</span><span className="v">{instances.length}</span></span>
-            <span className="ctx"><i className={'ctx-dot' + (ready ? ' ok' : '')} /><span className="k">ready</span><span className="v">{ready}</span></span>
-            <span className="ctx"><i className={'ctx-dot' + (blocked ? ' fail' : '')} /><span className="k">blocked</span><span className="v">{blocked}</span></span>
-            <span className="ctx"><i className={'ctx-dot' + (esc ? ' warn' : '')} /><span className="k">escalations</span><span className="v">{esc}</span></span>
-          </div>
-        </div>
 
         <div className="main-row">
           <main className="body"><div className="wrap">{children}</div></main>

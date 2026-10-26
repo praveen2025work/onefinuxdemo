@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { dropFeed, lifecycleApi } from '../api';
-import { PageTitle } from '../components/bits.jsx';
+import { PageHeader } from '../components/bits.jsx';
 import GuideNav from '../components/GuideNav.jsx';
 import Icon from '../components/Icon.jsx';
-import InfoHint from '../components/InfoHint.jsx';
 
 const API_EXAMPLE = {
   eventId: 'CATS-TR-8812-20260912',
@@ -80,16 +79,15 @@ export default function Lifecycle() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Event start to end</div>
-          <PageTitle icon="inbox">Event lifecycle
-            <InfoHint title="Why this page">Questions land here: what request did we receive, how did we save it, and what state did it move. API POST and feed-folder files share one ingest.</InfoHint>
-          </PageTitle>
-          <p className="sub">Two contracts, one fold. POST /api/events uses inbound-event-v1. A JSON file in the inbox uses feed-event-v1 (or the same inbound body). Both append event_store then recompute stitch / engine state.</p>
-        </div>
+      <PageHeader icon="inbox" title="Event lifecycle" context="Event start to end" infoTitle="Why this page" infoWidth={360}
+        info={<>
+          Questions land here: what request did we receive, how did we save it, and what state did it move. API POST and
+          feed-folder files share one ingest.<br /><br />
+          Two contracts, one fold. POST /api/events uses inbound-event-v1. A JSON file in the inbox uses feed-event-v1 (or
+          the same inbound body). Both append event_store then recompute stitch / engine state.
+        </>}>
         <GuideNav />
-      </div>
+      </PageHeader>
 
       <div className="grid g2" style={{ marginBottom: 16 }}>
         <div className="panel">

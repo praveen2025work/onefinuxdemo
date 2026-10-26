@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
-import { StatusPill, Meter, PageTitle } from '../components/bits.jsx';
-import InfoHint from '../components/InfoHint.jsx';
+import { StatusPill, Meter, PageHeader } from '../components/bits.jsx';
 import { useLinkChannel, useShareInstance } from '../workspace/useLink.js';
 
 export default function Outcomes() {
@@ -14,14 +13,8 @@ export default function Outcomes() {
 
   return (
     <>
-      <div className="ph">
-        <div>
-          <div className="eyebrow">Outcome user · {filters.groupUnit}</div>
-          <PageTitle icon="cards">My outcomes
-            <InfoHint title="My outcomes">Agents already ran against the stitched facts. Open a ready outcome to sign off or post; open a blocked one to see the named key.</InfoHint>
-          </PageTitle>
-        </div>
-      </div>
+      <PageHeader icon="cards" title="My outcomes" context={`Outcome user · ${filters.groupUnit}`}
+        info="Agents already ran against the stitched facts. Open a ready outcome to sign off or post; open a blocked one to see the named key." />
 
       <div className="grid g2">
         {instances.map((i) => (

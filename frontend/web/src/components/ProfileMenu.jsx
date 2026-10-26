@@ -12,7 +12,7 @@ function initials(label) {
 }
 
 /**
- * STEPS profile menu: avatar, name and "Last updated", with the identity details in the dropdown.
+ * STEPS profile menu: the avatar in the header; name, "Last updated", live link and identity in the dropdown.
  * "Act as" (demo identity for dual sign-off) lives here so the header stays one clean row.
  */
 export default function ProfileMenu() {
@@ -35,12 +35,9 @@ export default function ProfileMenu() {
 
   return (
     <Menu width={300} trigger={(open, toggle) => (
-      <button type="button" className={'profile-trig' + (open ? ' on' : '')} onClick={toggle} aria-label="Profile" aria-expanded={open}>
+      <button type="button" className={'profile-trig' + (open ? ' on' : '')} onClick={toggle} aria-label={`Profile: ${label}`}
+        aria-expanded={open} title={`${label} · last updated ${lastUpdated.toLocaleTimeString()}`}>
         <span className="avatar">{initials(label)}</span>
-        <span className="profile-txt">
-          <b>{label}</b>
-          <span>Last updated: {lastUpdated.toLocaleTimeString()}</span>
-        </span>
       </button>
     )}>
       {(close) => (
