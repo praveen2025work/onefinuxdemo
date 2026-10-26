@@ -1,18 +1,28 @@
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useApp } from '../store.jsx';
-import { listActors, setActor, currentActor, actorLabel } from '../api';
 import Icon, { BrandMark } from './Icon.jsx';
 import Select from './Select.jsx';
 import DatePicker from './DatePicker.jsx';
+import ThemeMenu from './ThemeMenu.jsx';
+import ProfileMenu from './ProfileMenu.jsx';
+import NotificationsPanel from './NotificationsPanel.jsx';
+import EmbedShell from '../workspace/EmbedShell.jsx';
 import { VIEWS, filterNav } from '../views.js';
+import { EMBED } from '../embed.js';
+import { useInstallPrompt } from '../pwa.js';
 
 const NAV = [
   { grp: 'Console', items: [
     { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
     { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
     { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
+    { to: '/finance', label: 'Finance dashboard', short: 'Finance', icon: 'dollar' },
     { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
+  ] },
+  { grp: 'Workspace', items: [
+    { to: '/workspace', label: 'Workspace', short: 'Workspace', icon: 'window' },
+    { to: '/notifications', label: 'Notifications', short: 'Alerts', icon: 'bell', badge: 'unread' },
   ] },
   { grp: 'Operate', items: [
     { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },
@@ -35,51 +45,37 @@ const NAV = [
   ] },
 ];
 
+const EXTRA_TITLES = [
+  ['/instance/', 'Instance detail'],
+  ['/reports/', 'Report'],
+];
+
+function pageTitle(pathname) {
+  for (const section of NAV) {
+    const hit = section.items.find((it) => (it.end ? pathname === it.to : pathname === it.to || pathname.startsWith(it.to + '/')));
+    if (hit) return hit.label;
+  }
+  const extra = EXTRA_TITLES.find(([prefix]) => pathname.startsWith(prefix));
+  return extra ? extra[1] : 'One Finance';
+}
+
 export default function Layout({ children }) {
-  const { context, filters, setFilters, instances, notifications, unread, live, desktopAlerts, allowDesktopAlerts, markRead, view, setView, refreshInstances } = useApp();
+  if (EMBED) return <EmbedShell>{children}</EmbedShell>;
+  return <Shell>{children}</Shell>;
+}
+
+function Shell({ children }) {
+  const { context, filters, setFilters, instances, unread, live, liveStatus, desktopAlerts, allowDesktopAlerts, view, setView,
+    notifPanelOpen, toggleNotifPanel, setNotifPanelOpen, refreshAll } = useApp();
   const nav = filterNav(NAV, view);
-  const [bellOpen, setBellOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('ofx-rail') === '1');
   const [drawer, setDrawer] = useState(false);
-  const [theme, setTheme] = useState(() => (document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'));
-  const [actor, setActorState] = useState(() => currentActor());
-  const [actors, setActors] = useState([]);
-  const navigate = useNavigate();
+  const [spinning, setSpinning] = useState(false);
   const location = useLocation();
-  const bellRef = useRef(null);
+  const { canInstall, standalone, install } = useInstallPrompt();
 
-  // Close the notifications panel on outside click, Escape, or window blur so it never stays stuck open.
-  useEffect(() => {
-    if (!bellOpen) return undefined;
-    function onDoc(e) { if (bellRef.current && !bellRef.current.contains(e.target)) setBellOpen(false); }
-    function onKey(e) { if (e.key === 'Escape') setBellOpen(false); }
-    const close = () => setBellOpen(false);
-    document.addEventListener('mousedown', onDoc);
-    document.addEventListener('keydown', onKey);
-    window.addEventListener('blur', close);
-    return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('keydown', onKey);
-      window.removeEventListener('blur', close);
-    };
-  }, [bellOpen]);
-
-  useEffect(() => { listActors().then(setActors).catch(() => setActors([])); }, []);
-
-  useEffect(() => { setBellOpen(false); setDrawer(false); }, [location.pathname]);
-
-  async function onActor(user) {
-    await setActor(user);
-    setActorState(user);
-    refreshInstances();
-  }
-
-  function toggleTheme() {
-    const next = theme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('ofx-theme', next);
-    setTheme(next);
-  }
+  useEffect(() => { setDrawer(false); }, [location.pathname]);
+  useEffect(() => { if (location.pathname === '/notifications') setNotifPanelOpen(false); }, [location.pathname, setNotifPanelOpen]);
 
   function toggleRail() {
     if (window.matchMedia('(max-width: 820px)').matches) {
@@ -87,6 +83,11 @@ export default function Layout({ children }) {
       return;
     }
     setCollapsed((c) => { localStorage.setItem('ofx-rail', c ? '0' : '1'); return !c; });
+  }
+
+  async function onRefresh() {
+    setSpinning(true);
+    try { await refreshAll(); } finally { setSpinning(false); }
   }
 
   useEffect(() => {
@@ -103,12 +104,12 @@ export default function Layout({ children }) {
   const groupUnits = context?.groupUnits || [];
 
   const railItems = nav.flatMap((section) => section.items);
-  const bottomPref = ['/', '/board', '/reports', '/product', '/guide'];
+  const bottomPref = ['/', '/board', '/finance', '/workspace', '/reports'];
   const bottomPicked = bottomPref.map((to) => railItems.find((it) => it.to === to)).filter(Boolean);
   const bottomItems = bottomPicked.length >= 3 ? bottomPicked.slice(0, 5) : railItems.slice(0, 5);
 
   return (
-    <div className={'app' + (collapsed ? ' collapsed' : '') + (drawer ? ' drawer-open' : '')}>
+    <div className={'app' + (collapsed ? ' collapsed' : '') + (drawer ? ' drawer-open' : '') + (notifPanelOpen ? ' notif-open' : '')}>
       <div className="rail-scrim" onClick={() => setDrawer(false)} aria-hidden={!drawer} />
       <aside className="rail">
         <div className="rail-top">
@@ -131,15 +132,12 @@ export default function Layout({ children }) {
                   <span className="txt">{it.label}</span>
                   {it.badge === 'assigned' && instances.length > 0 && <span className="tag">{instances.length}</span>}
                   {it.badge === 'esc' && esc > 0 && <span className="tag fail">{esc}</span>}
+                  {it.badge === 'unread' && unread > 0 && <span className="tag fail">{unread}</span>}
                 </NavLink>
               ))}
             </div>
           ))}
         </nav>
-        <div className="rail-user">
-          <div className="avatar">{(actorLabel(actor) || 'PK').slice(0, 2).toUpperCase()}</div>
-          <div className="who txt"><b>{actorLabel(actor)}</b><span>{actor} · {filters.region || 'all regions'}</span></div>
-        </div>
       </aside>
 
       <div className="main">
@@ -151,26 +149,26 @@ export default function Layout({ children }) {
             <BrandMark size={28} />
             <div className="txt"><b>One Finance</b><span>Outcome platform</span></div>
           </div>
+          <h1 className="tb-title">{pageTitle(location.pathname)}</h1>
+          <DatePicker caption="Business date" value={filters.cobDate} cobDates={context?.cobDates}
+            onChange={(v) => setFilters({ cobDate: v })} />
           <Select variant="header" caption="Group unit" value={filters.groupUnit}
             onChange={(v) => setFilters({ groupUnit: v })}
             options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
               : [{ value: filters.groupUnit, label: filters.groupUnit }]} />
           <div className="spacer" />
           <div className="tb-filters">
-            <DatePicker value={filters.cobDate} cobDates={context?.cobDates}
-              onChange={(v) => setFilters({ cobDate: v })} />
             <Select variant="plain" value={filters.region} onChange={(v) => setFilters({ region: v })}
               options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
             <Select variant="header" caption="View" icon={view.icon || 'grid'} value={view.id} onChange={setView}
               title="Filters the left rail for this session. Not entitlement."
               options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
-            <Select variant="header" caption="Act as" icon="cards" value={actor} onChange={onActor}
-              title="Demo identity for dual sign-off. Mints a Bearer token."
-              options={(actors.length ? actors : [{ user: actor }]).map((u) => ({
-                value: u.user || u,
-                label: actorLabel(u.user || u),
-              }))} />
           </div>
+          {canInstall && !standalone && (
+            <button className="desk-chip" type="button" onClick={install} title="Install One Finance as a desktop app (PWA)">
+              <Icon name="install" size={13} /> Install app
+            </button>
+          )}
           {desktopAlerts === 'denied' && (
             <span className="desk-chip blocked" title="Allow One Finance in the browser site settings to restore desktop cards">
               Alerts blocked
@@ -182,37 +180,20 @@ export default function Layout({ children }) {
               Desktop alerts
             </button>
           )}
-          <div className="bell-wrap" ref={bellRef}>
-            <button className="tb-icon" onClick={() => { setBellOpen((o) => !o); markRead(); }} title="Notifications"
-              aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={bellOpen}>
-              <Icon name="bell" size={18} />
-              {unread > 0 && <span className="dot-n">{unread}</span>}
-            </button>
-            {bellOpen && (
-              <div className="bell-menu">
-                <div className="hd">Notifications <span className="muted">{notifications.length}</span></div>
-                {notifications.length === 0 && <div className="empty">No notifications yet</div>}
-                {notifications.map((n) => (
-                  <div key={n.id} className={'noti ' + n.severity}
-                    onClick={() => { if (n.instanceId) { navigate('/instance/' + encodeURIComponent(n.instanceId)); setBellOpen(false); } }}
-                    style={{ cursor: n.instanceId ? 'pointer' : 'default' }}>
-                    <div className="bar" />
-                    <div>
-                      <div className="ttl">{n.title}</div>
-                      <div className="msg">{n.message}</div>
-                      <div className="tm">{n.transition} · {n.createdAt}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <button className="tb-icon" onClick={toggleTheme}
-            title={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}
-            aria-label={theme === 'light' ? 'Switch to dark theme' : 'Switch to light theme'}>
-            <Icon name={theme === 'light' ? 'moon' : 'sun'} size={17} />
+          <ThemeMenu />
+          <span className="tb-sep" aria-hidden />
+          <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={toggleNotifPanel} title="Notifications"
+            aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={notifPanelOpen}>
+            <Icon name="bell" size={18} />
+            {unread > 0 && <span className="dot-n">{unread > 99 ? '99+' : unread}</span>}
           </button>
-          <span className="live-pill"><span className={'live-dot' + (live ? '' : ' off')} />{live ? 'live' : 'offline'}</span>
+          <button className="tb-icon" onClick={onRefresh} title="Refresh data" aria-label="Refresh data">
+            <Icon name="refresh" size={16} className={spinning ? 'spin-ic' : ''} />
+          </button>
+          <ProfileMenu />
+          <span className="live-pill" title={live ? `Live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'Reconnecting…'}>
+            <span className={'live-dot' + (live ? '' : ' off')} />{live ? `live · ${liveStatus.transport}` : 'offline'}
+          </span>
           <span className="env">UAT</span>
         </header>
 
@@ -231,7 +212,10 @@ export default function Layout({ children }) {
           </div>
         </div>
 
-        <main className="body"><div className="wrap">{children}</div></main>
+        <div className="main-row">
+          <main className="body"><div className="wrap">{children}</div></main>
+          <NotificationsPanel />
+        </div>
       </div>
 
       <nav className="bottom-nav" aria-label="Primary">

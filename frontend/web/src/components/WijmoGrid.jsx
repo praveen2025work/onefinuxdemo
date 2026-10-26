@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FlexGrid, FlexGridColumn } from '@mescius/wijmo.react.grid';
 import { bindGridParams, gridRequestUrl } from '../lib/bindGridParams.js';
+import '../wijmo.js';
 
 const TOKEN_KEY = 'ofx-token';
 

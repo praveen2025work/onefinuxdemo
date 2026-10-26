@@ -2,10 +2,15 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { StatusPill, Meter, PageTitle } from '../components/bits.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import { useLinkChannel, useShareInstance } from '../workspace/useLink.js';
 
 export default function Outcomes() {
   const { instances, filters } = useApp();
   const navigate = useNavigate();
+  const linked = Boolean(useLinkChannel());
+  const { picked, share } = useShareInstance();
+  // In a linked Workspace view a card shares the instance (the linked viewer opens it); elsewhere it opens here.
+  const open = (i) => (linked ? share(i) : navigate('/instance/' + encodeURIComponent(i.instanceId)));
 
   return (
     <>
@@ -20,7 +25,7 @@ export default function Outcomes() {
 
       <div className="grid g2">
         {instances.map((i) => (
-          <div key={i.instanceId} className="oc" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}>
+          <div key={i.instanceId} className={'oc' + (picked === i.instanceId ? ' on' : '')} onClick={() => open(i)}>
             <div className="oc-hd">
               <StatusPill status={i.status} />
               <span className="chip" style={{ marginLeft: 'auto' }}>{i.region}</span>

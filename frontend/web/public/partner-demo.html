@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en" data-ofx-embedded="1">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Partner interop demo</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      --ink:#e6e8ee; --muted:#9aa3c2; --stroke:#2e3958; --raised:#161d33; --accent:#818cf8; --ok:#34d399; --fail:#f87171; }
+    html[data-theme="light"] { color-scheme: light; --ink:#0f172a; --muted:#64748b; --stroke:#e2e8f0; --raised:#f8fafc; --accent:#4f46e5; --ok:#059669; --fail:#dc2626; }
+    html[data-skin="steps"] { --accent:#2563eb; font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif; }
+    body { margin: 0; padding: 14px 16px; color: var(--ink); background: transparent; font-size: 13px; }
+    .k { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+    h1 { font-size: 15px; margin: 2px 0 10px; }
+    .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--stroke); display: inline-block; }
+    .chip { font: 600 11px ui-monospace, monospace; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--stroke); background: var(--raised); }
+    table { width: 100%; border-collapse: collapse; margin: 8px 0 12px; }
+    th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--stroke); }
+    th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    tr.pick { cursor: pointer; } tr.pick:hover td { background: var(--raised); }
+    tr.on td { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+    button { font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 7px; border: 1px solid var(--stroke); background: var(--raised); color: var(--ink); cursor: pointer; }
+    button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .log { font: 12px ui-monospace, monospace; border: 1px solid var(--stroke); border-radius: 8px; padding: 8px; max-height: 180px; overflow: auto; background: var(--raised); }
+    .log div { padding: 3px 0; border-bottom: 1px dashed var(--stroke); }
+    .ok { color: var(--ok); } .fail { color: var(--fail); } .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="k">Partner screen · ofx-interop.js</div>
+  <h1>Recon breaks (partner-owned)</h1>
+  <div class="row">
+    <span class="dot" id="dot"></span><span id="chan" class="muted">connecting…</span>
+    <span class="chip" id="scope">scope —</span>
+  </div>
+  <table>
+    <thead><tr><th>Break</th><th>Instance</th><th>Region</th><th>Amount</th><th>State</th></tr></thead>
+    <tbody>
+      <tr class="pick" data-id="FOBO|2026-09-12|EMEA|R-2031" data-region="EMEA" data-status="BLOCKED"><td class="chip">BK-4420</td><td>R-2031</td><td>EMEA</td><td>12,450,000</td><td class="fail">material</td></tr>
+      <tr class="pick" data-id="FOBO|2026-09-12|APAC|R-1042" data-region="APAC" data-status="READY"><td class="chip">BK-4410</td><td>R-1042</td><td>APAC</td><td>8,420</td><td class="ok">cleared</td></tr>
+    </tbody>
+  </table>
+  <div class="row" style="margin-bottom:10px">
+    <button class="primary" id="intent">Raise ViewInstance</button>
+    <button id="instrument">Share fdc3.instrument BARC.L</button>
+  </div>
+  <div class="k" style="margin-bottom:4px">Received on my channel</div>
+  <div class="log" id="log"><div class="muted">Nothing yet — click a row in a view on the same colour.</div></div>
+
+  <script src="/ofx-interop.js"></script>
+  <script>
+    (function () {
+      var q = new URLSearchParams(location.search);
+      if (q.get('theme')) document.documentElement.setAttribute('data-theme', q.get('theme'));
+      if (q.get('skin')) document.documentElement.setAttribute('data-skin', q.get('skin'));
+      var COLORS = { red: '#ef4444', orange: '#f97316', yellow: '#eab308', green: '#22c55e', blue: '#3b82f6', purple: '#a855f7' };
+      var picked = null;
+
+      function text(el, value) { el.textContent = value; }
+      function showChannel(ch) {
+        document.getElementById('dot').style.background = ch ? COLORS[ch] || '#888' : 'var(--stroke)';
+        text(document.getElementById('chan'), ch ? 'linked: ' + ch : 'not linked — pick a colour in the view header');
+      }
+      function showScope(s) {
+        if (s) text(document.getElementById('scope'), [s.groupUnit, s.cobDate, s.region || 'ALL'].filter(Boolean).join(' · '));
+      }
+      function log(ctx) {
+        var box = document.getElementById('log');
+        if (box.firstChild && box.firstChild.className === 'muted') box.innerHTML = '';
+        var row = document.createElement('div');
+        text(row, new Date().toLocaleTimeString() + '  ' + ctx.type + '  ' + (ctx.id || ctx.title || ctx.tileId || ctx.outcomeId || JSON.stringify(ctx).slice(0, 80)));
+        box.insertBefore(row, box.firstChild);
+        if (ctx.type === 'ofx.instance') {
+          document.querySelectorAll('tr.pick').forEach(function (tr) { tr.classList.toggle('on', tr.dataset.id === ctx.id); });
+        }
+      }
+      function rowContext(tr) {
+        return { type: 'ofx.instance', id: tr.dataset.id, kitId: 'FOBO', region: tr.dataset.region, status: tr.dataset.status };
+      }
+
+      ofx.connect().then(function (hello) {
+        showChannel(hello.channel);
+        showScope(hello.scope);
+        if (hello.context) log(hello.context);
+      }).catch(function (err) { text(document.getElementById('chan'), err.message); });
+      ofx.onChannelChanged(showChannel);
+      ofx.onScope(showScope);
+      ofx.addContextListener(null, log);
+
+      document.querySelectorAll('tr.pick').forEach(function (tr) {
+        tr.addEventListener('click', function () {
+          picked = tr;
+          document.querySelectorAll('tr.pick').forEach(function (x) { x.classList.toggle('on', x === tr); });
+          ofx.broadcast(rowContext(tr));
+        });
+      });
+      document.getElementById('intent').addEventListener('click', function () {
+        var tr = picked || document.querySelector('tr.pick');
+        ofx.raiseIntent('ViewInstance', rowContext(tr));
+      });
+      document.getElementById('instrument').addEventListener('click', function () {
+        ofx.broadcast({ type: 'fdc3.instrument', id: { ticker: 'BARC.L' }, name: 'Barclays PLC' });
+      });
+    })();
+  </script>
+</body>
+</html>

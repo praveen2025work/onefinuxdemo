@@ -3,12 +3,16 @@ import { useApp } from '../store.jsx';
 import { StatusPill, Meter, PageTitle, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
+import { useLinkChannel, useShareInstance } from '../workspace/useLink.js';
+import { channelById } from '../workspace/channels.js';
 
 const STATUSES = ['', 'READY', 'BLOCKED', 'NOT_YET', 'SIGNED', 'CLEARED'];
 
 export default function Board() {
   const { instances, filters, setFilters } = useApp();
   const navigate = useNavigate();
+  const channel = channelById(useLinkChannel());
+  const { picked, share } = useShareInstance();
   const ready = instances.filter((i) => i.status === 'READY').length;
   const blocked = instances.filter((i) => i.status === 'BLOCKED').length;
   const named = instances.find((i) => i.status === 'BLOCKED');
@@ -39,7 +43,11 @@ export default function Board() {
       </div>
 
       <div className="panel">
-        <div className="panel-hd"><h2>{filters.groupUnit} · COB {filters.cobDate} · {filters.region || 'all regions'}</h2><span className="hint">v_head_board</span></div>
+        <div className="panel-hd"><h2>{filters.groupUnit} · COB {filters.cobDate} · {filters.region || 'all regions'}</h2>
+          {channel
+            ? <span className="hint link-hint"><i className="chan-dot" style={{ background: channel.color }} /> click a row to share it</span>
+            : <span className="hint">v_head_board</span>}
+        </div>
         <div className="panel-bd tight">
           <div className="tbl-wrap">
             <p className="swipe-hint muted">On a phone, swipe the table sideways to reach status, blocker, and Open.</p>
@@ -47,7 +55,8 @@ export default function Board() {
                 <thead><tr><th>Kit / question</th><th>Instance</th><th>Region</th><th>Amount</th><th>Readiness</th><th>Status</th><th>Blocker</th><th className="num">Esc.</th><th /></tr></thead>
                 <tbody>
                 {instances.map((i) => (
-                  <tr key={i.instanceId}>
+                  <tr key={i.instanceId} className={channel ? 'fold-row' + (picked === i.instanceId ? ' on' : '') : undefined}
+                    onClick={channel ? () => share(i) : undefined}>
                     <td className="cell-lead"><span className="lead">{i.kitId}</span><div className="sec">{i.question}</div></td>
                     <td className="mono" data-label="Instance">{i.sliceKey}</td>
                     <td data-label="Region"><span className="chip">{i.region}</span></td>
@@ -56,7 +65,7 @@ export default function Board() {
                     <td data-label="Status"><StatusPill status={i.status} /></td>
                     <td className="sec cell-wide" data-label="Blocker">{i.namedBlocker || '—'}</td>
                     <td className="num" data-label="Escalations">{i.openEscalations}</td>
-                    <td className="cell-act"><button className="btn ghost sm" onClick={() => navigate('/instance/' + encodeURIComponent(i.instanceId))}><Icon name="open" size={13} /> Open</button></td>
+                    <td className="cell-act"><button className="btn ghost sm" onClick={(e) => { e.stopPropagation(); navigate('/instance/' + encodeURIComponent(i.instanceId)); }}><Icon name="open" size={13} /> Open</button></td>
                   </tr>
                 ))}
                 {instances.length === 0 && <tr><td colSpan={9} className="empty">No instances match this filter.</td></tr>}

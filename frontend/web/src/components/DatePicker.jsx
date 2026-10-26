@@ -30,7 +30,7 @@ function sameDay(a, b) {
  * actually has data for. Rendered in a portal (fixed) so it is never clipped, and closes on Escape,
  * outside click, scroll, resize or window blur.
  */
-export default function DatePicker({ value, cobDates = [], onChange }) {
+export default function DatePicker({ value, cobDates = [], onChange, caption }) {
   const selected = parse(value);
   const today = new Date();
   const [open, setOpen] = useState(false);
@@ -81,6 +81,7 @@ export default function DatePicker({ value, cobDates = [], onChange }) {
       <button ref={trigRef} type="button" className="tb-btn cal" title="Business date (COB)"
         onClick={() => setOpen((o) => !o)}>
         <Icon name="calendar" size={15} />
+        {caption && <span className="dp-cap">{caption}</span>}
         <span className="dp-val">{selected ? label(selected) : 'Pick COB'}</span>
         <Icon name="down" size={13} className={'sel2-chev' + (open ? ' flip' : '')} />
       </button>

@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "One Finance",
+  "short_name": "One Finance",
+  "description": "Business-outcome console: live readiness, finance dashboard and a multi-screen workspace.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#090d1c",
+  "theme_color": "#090d1c",
+  "categories": ["finance", "business", "productivity"],
+  "icons": [
+    { "src": "/app-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/app-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Workspace", "short_name": "Workspace", "url": "/workspace?source=pwa", "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Finance dashboard", "short_name": "Finance", "url": "/finance?source=pwa", "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Outcome board", "short_name": "Board", "url": "/board?source=pwa", "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }] },
+    { "name": "Notifications", "short_name": "Alerts", "url": "/notifications?source=pwa", "icons": [{ "src": "/app-icon-192.png", "sizes": "192x192" }] }
+  ]
+}

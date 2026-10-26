@@ -1,0 +1,95 @@
+import { Suspense, lazy, useMemo, useState } from 'react';
+import FinanceTile from './FinanceTile.jsx';
+import DataGrid from '../components/DataGrid.jsx';
+import { CHART } from './transform.js';
+
+const PivotView = lazy(() => import('./PivotView.jsx'));
+
+/** Rows behind a tile for the detail grid: its grid slide if it has one, else the richest slide. */
+export function detailRows(tile) {
+  if (!tile?.slides?.length) return { rows: [], columns: null, title: tile?.title };
+  const grid = tile.slides.find((s) => s.chartType === CHART.grid && s.data?.length);
+  const slide = grid || tile.slides.slice().sort((a, b) => (b.data?.length || 0) - (a.data?.length || 0))[0];
+  const columns = slide.columns?.length
+    ? slide.columns.map((c) => ({ binding: c.key, header: c.label, pill: /status|severity/i.test(c.key) }))
+    : null;
+  return { rows: slide.data || [], columns, title: slide.title || tile.title };
+}
+
+function DetailPanel({ tile }) {
+  const [tab, setTab] = useState('grid');
+  const { rows, columns, title } = useMemo(() => detailRows(tile), [tile]);
+  return (
+    <div className="panel fin-detail">
+      <div className="panel-hd">
+        <h2>Detailed data · {tile.title}</h2>
+        <div className="seg sm">
+          <button className={tab === 'grid' ? 'on' : ''} onClick={() => setTab('grid')}>Grid view</button>
+          <button className={tab === 'pivot' ? 'on' : ''} onClick={() => setTab('pivot')}>Pivot view</button>
+        </div>
+      </div>
+      <div className="panel-bd">
+        {tab === 'grid'
+          ? <DataGrid rows={rows} columns={columns} height={320} title={title} exportName={tile.id} />
+          : <Suspense fallback={<p className="muted">Loading pivot…</p>}><PivotView rows={rows} /></Suspense>}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * STEPS TileGrid: tile view (2–5 columns), split view (60/40 with compact tiles on the right) and full view
+ * (tile selector + one tile), with the Wijmo detail grid / pivot under the focused tile.
+ */
+export default function TileGrid({ tiles, columns, viewMode, focusedId, onFocus, loading, liveIds, flashIds }) {
+  const byId = useMemo(() => new Map(tiles.map((t) => [t.id, t])), [tiles]);
+
+  if (loading && tiles.length === 0) {
+    return <div className="fin-grid" style={{ '--cols': columns }}>{Array.from({ length: 6 }, (_, i) => <div key={i} className="ftile skeleton" />)}</div>;
+  }
+  if (!tiles.length) return <div className="empty">No tiles on this tab.</div>;
+
+  const focused = (focusedId && byId.get(focusedId)) || tiles[0];
+
+  if (viewMode === 'full') {
+    return (
+      <div className="fin-full">
+        <div className="fin-picker">
+          {tiles.map((t) => (
+            <button key={t.id} className={'btn ghost sm' + (t.id === focused.id ? ' on' : '')} onClick={() => onFocus(t.id, 'full')}>
+              <i className={'ftile-dot ' + ({ success: 'ok', warning: 'warn', error: 'fail' }[t.status] || 'info')} /> {t.title}
+            </button>
+          ))}
+        </div>
+        <FinanceTile key={focused.id} tile={focused} focused full live={liveIds.has(focused.id)} flash={flashIds.has(focused.id)}
+          onFocus={() => onFocus(focused.id, 'tile')} />
+        <DetailPanel tile={focused} />
+      </div>
+    );
+  }
+
+  if (viewMode === 'split') {
+    return (
+      <div className="fin-split">
+        <div className="fin-split-main">
+          <FinanceTile key={focused.id} tile={focused} focused live={liveIds.has(focused.id)} flash={flashIds.has(focused.id)}
+            onFocus={() => onFocus(focused.id, 'full')} />
+          <DetailPanel tile={focused} />
+        </div>
+        <div className="fin-split-side">
+          {tiles.filter((t) => t.id !== focused.id).map((t) => (
+            <FinanceTile key={t.id} tile={t} compact live={liveIds.has(t.id)} flash={flashIds.has(t.id)} onFocus={() => onFocus(t.id, 'split')} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fin-grid" style={{ '--cols': columns }}>
+      {tiles.map((t) => (
+        <FinanceTile key={t.id} tile={t} live={liveIds.has(t.id)} flash={flashIds.has(t.id)} onFocus={() => onFocus(t.id, 'split')} />
+      ))}
+    </div>
+  );
+}

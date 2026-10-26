@@ -291,7 +291,197 @@ const P = {
   ),
   wrench: (
       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.106-3.105c.32-.322.863-.22.983.218a6 6 0 0 1-8.259 7.057l-7.91 7.91a1 1 0 0 1-2.999-3l7.91-7.91a6 6 0 0 1 7.057-8.259c.438.12.54.662.219.984z" />
-  )
+  ),
+  palette: (
+    <>
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z" />
+    </>
+  ),
+  pin: (
+    <>
+      <path d="M12 17v5" />
+      <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
+    </>
+  ),
+  pinoff: (
+    <>
+      <path d="M12 17v5" />
+      <path d="M15 9.34V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H7.89" />
+      <path d="m2 2 20 20" />
+      <path d="M9 9v1.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h11" />
+    </>
+  ),
+  maximize: (
+    <>
+      <path d="M15 3h6v6" />
+      <path d="M9 21H3v-6" />
+      <path d="M21 3l-7 7" />
+      <path d="M3 21l7-7" />
+    </>
+  ),
+  minimize: (
+    <>
+      <path d="M4 14h6v6" />
+      <path d="M20 10h-6V4" />
+      <path d="M14 10l7-7" />
+      <path d="M3 21l7-7" />
+    </>
+  ),
+  external: (
+    <>
+      <path d="M15 3h6v6" />
+      <path d="M10 14 21 3" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+    </>
+  ),
+  link: (
+    <>
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </>
+  ),
+  columns: (
+    <>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M9 3v18" />
+      <path d="M15 3v18" />
+    </>
+  ),
+  rows: (
+    <>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 12h18" />
+    </>
+  ),
+  tabs: (
+    <>
+      <rect width="18" height="18" x="3" y="3" rx="2" />
+      <path d="M3 9h18" />
+      <path d="M9 3v6" />
+    </>
+  ),
+  split: (
+    <>
+      <path d="M5 8V5c0-1 1-2 2-2h10c1 0 2 1 2 2v3" />
+      <path d="M19 16v3c0 1-1 2-2 2H7c-1 0-2-1-2-2v-3" />
+      <path d="M4 12h16" />
+    </>
+  ),
+  trash: (
+    <>
+      <path d="M3 6h18" />
+      <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+      <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+    </>
+  ),
+  save: (
+    <>
+      <path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
+      <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" />
+      <path d="M7 3v4a1 1 0 0 0 1 1h7" />
+    </>
+  ),
+  download: (
+    <>
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+      <path d="M7 10l5 5 5-5" />
+      <path d="M12 15V3" />
+    </>
+  ),
+  search: (
+    <>
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </>
+  ),
+  dollar: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8" />
+      <path d="M12 18V6" />
+    </>
+  ),
+  trend: (
+    <>
+      <path d="M22 7l-8.5 8.5-5-5L2 17" />
+      <path d="M16 7h6v6" />
+    </>
+  ),
+  pie: (
+    <>
+      <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z" />
+      <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+    </>
+  ),
+  window: (
+    <>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="M10 4v4" />
+      <path d="M2 8h20" />
+      <path d="M6 4v4" />
+    </>
+  ),
+  install: (
+    <>
+      <path d="M12 13V7" />
+      <path d="m15 10-3 3-3-3" />
+      <rect width="20" height="14" x="2" y="3" rx="2" />
+      <path d="M12 17v4" />
+      <path d="M8 21h8" />
+    </>
+  ),
+  checks: (
+    <>
+      <path d="M18 6 7 17l-5-5" />
+      <path d="m22 10-7.5 7.5L13 16" />
+    </>
+  ),
+  message: (
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  ),
+  okcircle: (
+    <>
+      <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+      <path d="m9 11 3 3L22 4" />
+    </>
+  ),
+  failcircle: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 8v4" />
+      <path d="M12 16h.01" />
+    </>
+  ),
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+      <path d="M2 12h20" />
+    </>
+  ),
+  send: (
+    <>
+      <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
+      <path d="m21.854 2.147-10.94 10.939" />
+    </>
+  ),
+  grip: (
+    <>
+      <circle cx="9" cy="12" r="1" />
+      <circle cx="9" cy="5" r="1" />
+      <circle cx="9" cy="19" r="1" />
+      <circle cx="15" cy="12" r="1" />
+      <circle cx="15" cy="5" r="1" />
+      <circle cx="15" cy="19" r="1" />
+    </>
+  ),
+  right: (
+      <path d="m9 18 6-6-6-6" />
+  ),
 };
 
 export const ROUTE_ICON = {
@@ -308,6 +498,9 @@ export const ROUTE_ICON = {
   '/onboarding': 'build',
   '/configuration': 'config',
   '/drive': 'bolt',
+  '/workspace': 'window',
+  '/finance': 'dollar',
+  '/notifications': 'bell',
 };
 
 export function iconForRoute(to = '/') {
@@ -333,8 +526,8 @@ export function BrandMark({ size = 34 }) {
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
       <defs>
         <linearGradient id={gid} x1="8" y1="4" x2="34" y2="36">
-          <stop offset="0" stopColor="#6366f1" />
-          <stop offset="1" stopColor="#8b5cf6" />
+          <stop offset="0" style={{ stopColor: 'var(--brand-a, #6366f1)' }} />
+          <stop offset="1" style={{ stopColor: 'var(--brand-b, #8b5cf6)' }} />
         </linearGradient>
       </defs>
       <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill={`url(#${gid})`} />

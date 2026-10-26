@@ -1,59 +1,30 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { onLiveStatus, subscribeLive } from './live/liveLink.js';
 
 /**
- * Subscribe to the hub's Server-Sent Events. The hub emits named events: hello, event, outcome,
- * notification, reset, kit. The browser never touches a bus — this is the only live channel.
- * Reconnects if the tab was backgrounded and the socket dropped, so cards still arrive
- * once the One Finance tab is active again.
+ * Subscribe to the hub's live events: hello, event, outcome, notification, reset, kit, propagation.
+ * Every hook shares one connection (WebSocket /api/ws, SSE fallback) — see live/liveLink.js.
+ * `error` fires when the link drops; the link reconnects on its own and says `hello` again.
  */
 export function useStream(handlers) {
   const ref = useRef(handlers);
   ref.current = handlers;
   useEffect(() => {
-    let es;
-    let retry;
-    const names = ['hello', 'event', 'outcome', 'notification', 'reset', 'kit', 'propagation'];
-
-    function bind(socket) {
-      return names.map((name) => {
-        const fn = (e) => {
-          let data = null;
-          try { data = JSON.parse(e.data); } catch { data = e.data; }
-          ref.current[name]?.(data);
-        };
-        socket.addEventListener(name, fn);
-        return [name, fn];
-      });
-    }
-
-    function connect() {
-      if (es && es.readyState !== EventSource.CLOSED) return;
-      es = new EventSource('/api/stream');
-      const listeners = bind(es);
-      es.__listeners = listeners;
-      es.onerror = () => {
-        ref.current.error?.();
-        listeners.forEach(([name, fn]) => es.removeEventListener(name, fn));
-        es.close();
-        es = null;
-        clearTimeout(retry);
-        retry = setTimeout(connect, 2000);
-      };
-    }
-
-    function onVisible() {
-      if (!document.hidden) connect();
-    }
-
-    connect();
-    document.addEventListener('visibilitychange', onVisible);
-    return () => {
-      document.removeEventListener('visibilitychange', onVisible);
-      clearTimeout(retry);
-      if (es) {
-        (es.__listeners || []).forEach(([name, fn]) => es.removeEventListener(name, fn));
-        es.close();
-      }
-    };
+    const off = subscribeLive((name, data) => ref.current[name]?.(data));
+    let wasLive = null;
+    const offStatus = onLiveStatus((s) => {
+      if (s.live === wasLive) return;
+      const dropped = wasLive === true && !s.live;
+      wasLive = s.live;
+      if (dropped) ref.current.error?.();
+    });
+    return () => { off(); offStatus(); };
   }, []);
+}
+
+/** { live, transport: 'ws'|'sse'|null, role: 'leader'|'follower', since, lastAt } */
+export function useLiveStatus() {
+  const [status, setStatus] = useState(null);
+  useEffect(() => onLiveStatus((s) => setStatus({ ...s })), []);
+  return status || { live: false, transport: null, role: 'starting' };
 }
