@@ -327,6 +327,9 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-ONEUX-020` | The console is served with a Content-Security-Policy that frames partner screens, connects only to its own origin, and allows ancestors only on /widget/. |
 | `REQ-ONEUX-021` | A grid framed by another site shows no edit or approve controls. |
 | `REQ-ONEUX-022` | CI runs browser journeys and WCAG 2.1 AA checks; a critical or serious accessibility finding fails the build. |
+| `REQ-ONEUX-023` | A chatbot set in onefinux.ux.chatbot is framed in the assistant panel and as a desk widget; the console sends it ofx.theme and ofx.context, and acts only on ofx.chat.ready, ofx.chat.open with a same-origin route, and ofx.chat.share, from the configured origin and that frame. |
+| `REQ-ONEUX-024` | The console's built-in assistant and every framed chatbot style conversations with the .ofx-chat classes in frontend/theme/onefinux-tokens.css. |
+| `REQ-ONEUX-025` | Under the STEPS skin the console uses white cards with a 1px border and no tinted tile fills, ghost header icons, counts as coloured text, and rounded filter chips. |
 
 ### 11.9 Quality attributes (NFR)
 
@@ -1953,6 +1956,9 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ONEUX-020` |  |
 | `REQ-ONEUX-021` |  |
 | `REQ-ONEUX-022` | `AC-ONEUX-23` |
+| `REQ-ONEUX-023` |  |
+| `REQ-ONEUX-024` |  |
+| `REQ-ONEUX-025` |  |
 
 ### 13.2 Quality-attribute coverage
 
@@ -1977,7 +1983,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | REPORTS | 10 | 23 |
 | GOVERN | 10 | 23 |
 | OPERATE | 12 | 23 |
-| ONEUX | 22 | 23 |
+| ONEUX | 25 | 23 |
 
 ## 14. Data contracts
 
@@ -2126,17 +2132,15 @@ Home tells today's close. Board is the head table. My outcomes is the doer list.
 
 ### 19.4 Header and page header
 
-The top header is one 48-pixel row. It carries the product mark, the page label (icon, title, and info hint), fold counts, and search on the left; the business date and quiet icon actions sit on the right. Scope controls show values only; their captions are tooltips. Live status is a dot in the environment chip. PageHeader publishes the page label and info icon into the top bar and keeps only an optional one-line live summary and the screen's tools on the page. On a desk view the lift is omitted because the view title bar names it. Page content uses the full main column (no centred max-width); only the floating rail overlays it.
+The top header is one 48-pixel row. Scope controls show values only; their captions are tooltips. Install, desktop alerts, view, theme, notifications, refresh, and profile are icons. Live status is a dot in the environment chip. Each screen has one page-header row: icon, title, an info icon holding the context line and explanation, an optional one-line live summary, and the screen's tools. On a desk view the page title is omitted because the view title bar names it.
 
 ### 19.5 Desks and shared outcome channels
 
 A desk at /desks hosts several screens in one page: console screens, widgets, STEPS, and partner frames. A desk is bound to one business outcome (an engine outcome or a stitch kit) or it is blank. New desk lists every outcome and builds its views from one template; each report card opens its outcome's desk. Views on an outcome desk link on the channel outcome:<id>: the hub relays a pick to that outcome's views in every tab and every browser, and each browser drops its own echo by its browser id. Every human action on the outcome is pushed as a live activity event with the authenticated actor; the desk's Activity view lists actions, notifications, and shared picks, and a note posted there reaches every desk on the outcome. A desk that is not open counts the activity it missed.
 
-### 19.6 Grid library and finance dashboards
+### 19.6 Grid library
 
-Read-only data is a GridSpec: JSON naming the source (an endpoint with parameters bound to the business date, group unit, and region, or inline rows), the columns and their types, a filter, the lenses, the hub events that refetch it, and the context a row pick shares. /grids catalogues three shelves: Platform (built-in and outcome definition grids), My unit (team templates of kind grid, entitled via canSeeGroupUnit), and Mine (saved at /api/prefs/grids). The library edits a spec with a live preview, proposes one from a bound source sample that never leaves the browser, shares it with the unit, adds it to a desk, and copies the embed snippet. Other applications embed the same grid as an iframe at /widget/grid or as the ofx-grid web component served at /lib. GET /api/grids?groupUnit= returns the unit shelf and the caller's saved grids; an unentitled unit returns empty lists.
-
-Finance dashboards are blueprints (dataSources, tiles, tabs). /finance lists Platform and unit-shared dashboards (team templates of kind finance); /finance/:id runs the shared shell. A tile may set gridSpecId so the detail and analysis panes open that GridSpec instead of a one-off slide grid.
+Read-only data is a GridSpec: JSON naming the source (an endpoint with parameters bound to the business date, group unit, and region, or inline rows), the columns and their types, a filter, the lenses, the hub events that refetch it, and the context a row pick shares. /grids lists the built-in specs and each outcome definition's grids, edits a spec with a live preview, saves it in the browser, and adds it to a desk. Other applications embed the same grid as an iframe at /widget/grid or as the ofx-grid web component served at /lib.
 
 ### 19.7 Mobile
 

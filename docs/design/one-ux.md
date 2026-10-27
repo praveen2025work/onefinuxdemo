@@ -39,7 +39,7 @@ to a bank platform the console connects to.
 | Evergreening through automated testing | Have | Unit tests (node, JUnit), Playwright journeys in CI (`frontend/web/e2e`) |
 | Responsive and adaptive | Have | Mobile shell, desks collapse to one column |
 | Accessibility | Have | WCAG 2.1 AA axe checks in CI on the main screens; contrast-safe tokens; closed panels are `inert` |
-| Consistency and design standards | Have | `frontend/theme` tokens, one control scale, `barclays-ib-console` skill, CI guards |
+| Consistency and design standards | Have | STEPS light skin by default (white cards, ghost header icons, filter chips); `frontend/theme` tokens and `.ofx-chat` classes shared with STEPS, partners and chatbots; one control scale, `barclays-ib-console` skill, CI guards |
 
 ### Micro front end
 
@@ -70,7 +70,7 @@ to a bank platform the console connects to.
 |---|---|---|
 | In-application search | Have | `/api/search` (entitled) |
 | Enterprise integrated search | Have | Partner applications register a search endpoint (`onefinux.ux.search-providers`); results merge in the header |
-| Embedded AI chat | Have | Assistant panel, `/api/assist`; Claude when configured, hub facts otherwise; advisory only |
+| Embedded AI chat | Have | Assistant panel, `/api/assist`; Claude when configured, hub facts otherwise; advisory only. A team chatbot is framed beside it with the same styling ([`chatbot.md`](chatbot.md)) |
 
 ### Secure UX
 

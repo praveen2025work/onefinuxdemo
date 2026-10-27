@@ -127,7 +127,11 @@ public class UxController {
     /** What the console needs at start: other applications' search sources and this user's experiment variants. */
     @GetMapping("/api/ux/config")
     public Map<String, Object> config() {
-        return Map.of("searchProviders", props.searchProviders(), "assignments", experiments.assignments(currentUser.actor()));
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("searchProviders", props.searchProviders());
+        m.put("assignments", experiments.assignments(currentUser.actor()));
+        if (props.chatbot().enabled()) m.put("chatbot", props.chatbot());
+        return m;
     }
 
     // ---------------------------------------------------------------- experiments

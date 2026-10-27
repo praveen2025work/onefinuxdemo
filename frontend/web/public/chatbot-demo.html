@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en" data-skin="steps" data-theme="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chat (demo bot)</title>
+  <!-- A chatbot framed in One Finance looks like the console by linking the shared tokens and using .ofx-chat. -->
+  <link rel="stylesheet" href="/theme/onefinux-tokens.css" />
+  <style>html, body { margin: 0; height: 100%; } body { background: var(--ofx-card); }</style>
+</head>
+<body class="ofx-app">
+  <div class="ofx-chat" id="chat">
+    <div class="ofx-chat-list" id="list" aria-live="polite">
+      <div class="ofx-chat-empty" id="empty">
+        <span class="ofx-eyebrow">Demo chatbot · framed by One Finance</span>
+        <p style="margin:0">This page stands in for your team's bot. It uses the console's tokens and chat classes, hears the theme
+          and your scope, and can ask the console to open a screen or share a pick.</p>
+        <p style="margin:0" class="ofx-muted" id="scope">Waiting for the console…</p>
+        <div class="ofx-chat-starters">
+          <button type="button" class="ofx-chat-chip" data-ask="Why is R-2031 blocked?">Why is R-2031 blocked?</button>
+          <button type="button" class="ofx-chat-chip" data-ask="Show me the board">Show me the board</button>
+          <button type="button" class="ofx-chat-chip" data-ask="What is my scope?">What is my scope?</button>
+        </div>
+      </div>
+    </div>
+    <form class="ofx-chat-compose" id="compose">
+      <input class="ofx-chat-input" id="input" maxlength="300" placeholder="Message the demo bot" aria-label="Message the demo bot" />
+      <button class="ofx-btn" type="submit">Send</button>
+    </form>
+    <p class="ofx-chat-foot">Demo bot. Replace with your chatbot: set ONEFINUX_CHATBOT_URL and ONEFINUX_CHATBOT_ORIGIN on the hub.</p>
+  </div>
+  <script src="/chatbot-demo.js"></script>
+</body>
+</html>

@@ -6,7 +6,7 @@ test.describe('One Finance console', () => {
     const errors = watchErrors(page);
     for (const path of ['/', '/board', '/finance', '/desks', '/grids', '/reports', '/onboarding', '/configuration', '/usage', '/access', '/architecture']) {
       await page.goto(path);
-      await expect(page.locator('.ph h1, .ph-title').first()).toBeVisible();
+      await expect(page.locator('.tb-page-title, .ph h1, .ph-title').first()).toBeVisible();
     }
     expect(errors).toEqual([]);
   });
@@ -19,9 +19,22 @@ test.describe('One Finance console', () => {
     await search.fill('MB014');
     await expect(page.locator('.shell-search-lbl', { hasText: 'Break register (partner)' })).toBeVisible();
     await page.locator('.shell-search-grp.ask button').click();
-    const answer = page.locator('.as-turn.assistant .as-text').last();
+    const answer = page.locator('.ofx-chat-msg.ofx-chat-bot').last();
     await expect(answer).toContainText(/MB014|blocked|outcome/i);
-    await expect(page.locator('.as-actions button').first()).toBeVisible();
+    await expect(page.locator('.ofx-chat-action').first()).toBeVisible();
+  });
+
+  test('a framed chatbot hears the scope and can open a screen in the console', async ({ page }) => {
+    const errors = watchErrors(page);
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Assistant', exact: true }).click();
+    await page.getByRole('tab', { name: /Chat/ }).click();
+    const bot = page.frameLocator('.chat-frame');
+    await expect(bot.locator('#scope')).toContainText(/Your scope: \S+/);
+    await bot.getByRole('button', { name: 'Why is R-2031 blocked?' }).click();
+    await bot.getByRole('button', { name: 'Open R-2031' }).click();
+    await expect(page).toHaveURL(/\/instance\/.*R-2031/);
+    expect(errors).toEqual([]);
   });
 
   test('grid write-back: maker submits, the same role cannot approve, a checker applies it to the owning system', async ({ page }) => {

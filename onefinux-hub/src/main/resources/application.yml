@@ -124,6 +124,13 @@ onefinux:
     # Other applications' search, included in the header search. GET url?q= returns {hits:[{kind,id,title,detail,route}]}.
     search-providers:
       - { id: breaks, label: "Break register (partner)", url: /sim/search }
+    # A chatbot another team runs, framed in the assistant panel and as a desk widget. It links /theme/onefinux-tokens.css
+    # and uses the .ofx-chat classes, so it looks like the console. Set url to the bot (https://chat.bank.local/…) and
+    # origin to its origin; the console accepts messages only from that origin. The demo bot ships with the console.
+    chatbot:
+      url: ${ONEFINUX_CHATBOT_URL:/chatbot-demo.html}
+      title: ${ONEFINUX_CHATBOT_TITLE:Chat (demo)}
+      origin: ${ONEFINUX_CHATBOT_ORIGIN:}
     # A-B experiments: each user always sees the same variant; conversion names the component-use event that counts.
     experiments:
       - id: home-team-picks

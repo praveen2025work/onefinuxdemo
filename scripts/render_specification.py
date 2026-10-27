@@ -362,6 +362,9 @@ ONEUX_REQ = [
     ("REQ-ONEUX-020", "The console is served with a Content-Security-Policy that frames partner screens, connects only to its own origin, and allows ancestors only on /widget/."),
     ("REQ-ONEUX-021", "A grid framed by another site shows no edit or approve controls."),
     ("REQ-ONEUX-022", "CI runs browser journeys and WCAG 2.1 AA checks; a critical or serious accessibility finding fails the build."),
+    ("REQ-ONEUX-023", "A chatbot set in onefinux.ux.chatbot is framed in the assistant panel and as a desk widget; the console sends it ofx.theme and ofx.context, and acts only on ofx.chat.ready, ofx.chat.open with a same-origin route, and ofx.chat.share, from the configured origin and that frame."),
+    ("REQ-ONEUX-024", "The console's built-in assistant and every framed chatbot style conversations with the .ofx-chat classes in frontend/theme/onefinux-tokens.css."),
+    ("REQ-ONEUX-025", "Under the STEPS skin the console uses white cards with a 1px border and no tinted tile fills, ghost header icons, counts as coloured text, and rounded filter chips."),
 ]
 
 ONEUX_AC = [

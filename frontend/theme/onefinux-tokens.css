@@ -320,7 +320,7 @@ html[data-ofx-embedded="1"] .ofx-masthead,
   color: var(--ofx-on-accent);
   border: 1px solid transparent;
   border-radius: var(--ofx-r-ctl);
-  font: 600 12.5px/1 var(--ofx-font);
+  font: 500 12.5px/1 var(--ofx-font);
   cursor: pointer;
 }
 .ofx-btn:hover { filter: brightness(1.06); }
@@ -355,8 +355,8 @@ html[data-ofx-embedded="1"] .ofx-masthead,
 .ofx-tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; }
 .ofx-tbl thead th {
   position: sticky; top: 0; z-index: 2;
-  background: var(--ofx-surface-2);
-  font: 600 11px/1 var(--ofx-font);
+  background: var(--ofx-card);
+  font: 500 11px/1 var(--ofx-font);
   letter-spacing: 0.04em; text-transform: uppercase;
   color: var(--ofx-ink-2); text-align: left;
   padding: 10px 12px;
@@ -369,3 +369,38 @@ html[data-ofx-embedded="1"] .ofx-masthead,
 .ofx-mono { font-family: var(--ofx-mono); font-size: 12px; }
 .ofx-muted { color: var(--ofx-ink-2); }
 .ofx-eyebrow { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ofx-ink-2); }
+
+/* ---------------------------------------------------------------- Chat (assistant and framed chatbots)
+   One look for every conversational surface: the console's built-in assistant uses these classes, and a chatbot
+   framed in the console links this file and uses them too, so a reply looks the same wherever it comes from.
+
+     <div class="ofx-chat">
+       <div class="ofx-chat-list">
+         <div class="ofx-chat-msg ofx-chat-user">…</div>
+         <div class="ofx-chat-msg ofx-chat-bot">… <div class="ofx-chat-note">…</div>
+           <div class="ofx-chat-actions"><button class="ofx-chat-action">Open R-2031</button></div></div>
+       </div>
+       <div class="ofx-chat-starters"><button class="ofx-chat-chip">What needs my attention?</button></div>
+       <form class="ofx-chat-compose"><input class="ofx-chat-input"><button class="ofx-btn">Send</button></form>
+     </div>                                                                                                      */
+.ofx-chat { display: flex; flex-direction: column; min-height: 0; height: 100%; background: var(--ofx-card);
+  color: var(--ofx-ink); font: 400 13px/1.5 var(--ofx-font); }
+.ofx-chat-list { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.ofx-chat-msg { max-width: 92%; padding: 8px 11px; border-radius: var(--ofx-r); white-space: pre-wrap; overflow-wrap: anywhere; }
+.ofx-chat-user { align-self: flex-end; background: var(--ofx-accent); color: var(--ofx-on-accent); }
+.ofx-chat-bot { align-self: flex-start; background: var(--ofx-surface-2); border: 1px solid var(--ofx-line); }
+.ofx-chat-bot.ofx-chat-error { border-color: var(--ofx-fail-line); color: var(--ofx-fail); }
+.ofx-chat-pending { color: var(--ofx-ink-2); }
+.ofx-chat-note { margin-top: 4px; font-size: 11.5px; color: var(--ofx-ink-2); }
+.ofx-chat-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
+.ofx-chat-action, .ofx-chat-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 3px 10px;
+  border: 1px solid var(--ofx-line); border-radius: 999px; background: var(--ofx-card); color: var(--ofx-ink);
+  font: 500 12px/1.3 var(--ofx-font); text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04); }
+.ofx-chat-action:hover, .ofx-chat-chip:hover { border-color: var(--ofx-accent); }
+.ofx-chat-empty { display: flex; flex-direction: column; gap: 8px; color: var(--ofx-ink-2); font-size: 12.5px; }
+.ofx-chat-starters { display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
+.ofx-chat-compose { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--ofx-line); background: var(--ofx-card); }
+.ofx-chat-input { flex: 1; min-width: 0; height: 32px; padding: 0 11px; border: 1px solid var(--ofx-line); border-radius: var(--ofx-r-ctl);
+  background: var(--ofx-surface-2); color: var(--ofx-ink); font: 400 13px var(--ofx-font); }
+.ofx-chat-input:focus { outline: 2px solid color-mix(in srgb, var(--ofx-accent) 35%, transparent); border-color: var(--ofx-accent); }
+.ofx-chat-foot { margin: 0; padding: 0 12px 8px; font-size: 11px; color: var(--ofx-ink-3); background: var(--ofx-card); }

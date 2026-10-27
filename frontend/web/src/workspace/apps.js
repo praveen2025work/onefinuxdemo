@@ -37,6 +37,8 @@ export const BUILTIN_APPS = [
     desc: 'Shows what views on its colour are sharing.' },
   { appId: 'activity', title: 'Outcome activity', icon: 'history', kind: 'widget', linkable: true,
     desc: 'Who did what on the desk’s outcome — from every screen, tab and browser, live over the hub. Post a note to all.' },
+  { appId: 'chat', title: 'Chat', icon: 'message', kind: 'widget', linkable: false,
+    desc: 'The team chatbot (configured on the hub), styled like the console; it can open screens and share picks.' },
   { appId: 'grid', title: 'Grid (from a spec)', icon: 'grid', kind: 'widget', linkable: true,
     desc: 'Any read-only grid described as config — pick a spec in the grid library. A row pick is shared.' },
   { appId: 'helix', title: 'Helix FOBO (partner)', icon: 'tower', kind: 'web', url: '/sim/screens/helix', linkable: true,

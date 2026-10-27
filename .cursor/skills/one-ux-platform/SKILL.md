@@ -14,6 +14,7 @@ subsystem ONEUX in `docs/design/specification.md`.
 |---|---|---|
 | Search across apps | `search/` (`/api/search`), `onefinux.ux.search-providers` | `components/ShellSearch.jsx`, `search/providers.js` |
 | Assistant | `assist/` (`/api/assist`, Anthropic Java SDK) | `components/AssistantPanel.jsx`, `ux/bus.js openAssistant()` |
+| Team chatbot (framed) | `onefinux.ux.chatbot` → `/api/ux/config` | `chat/ChatFrame.jsx`, `chat/chatHost.js`, desk widget `chat` |
 | Usage, feedback, experiments, recommendations | `ux/UxController` (`/api/ux/*`), table `ux_event` | `ux/track.js`, `ux/experiments.js`, `components/FeedbackDialog.jsx`, `components/TeamPicks.jsx`, `pages/Usage.jsx` |
 | Saved prefs, team templates | `/api/prefs/{desks,grids,settings}`, `/api/templates` (kind desk\|grid\|finance), `/api/grids?groupUnit=` | `ux/prefs.js` (newer copy wins), Desks share / New desk, Grid library Unit shelf, Finance unit dashboards |
 | Grid write-back | `writeback/` (`/api/writeback`), `onefinux.writeback.targets` | GridSpec `edit` → `grid/writeback.js`, `SpecGrid`, `DataGrid edit` |
@@ -26,6 +27,12 @@ subsystem ONEUX in `docs/design/specification.md`.
 - **Assistant**: it reads, never writes. The actions under an answer are built from hub facts in `AssistService.actions`,
   never by the model. Facts are already entitlement-filtered (`SearchService`, `StitchService`). The model id is
   configuration (`ONEFINUX_ASSIST_MODEL`) — do not hard-code one. Without a model it must still answer (grounded mode).
+- **Chatbot**: another team's bot is framed, never rebuilt. Set `ONEFINUX_CHATBOT_URL` (and `_ORIGIN` when it is on
+  another host). The contract is host↔embed only, like `ofx.theme`: the console sends `ofx.theme` and `ofx.context`;
+  it acts on `ofx.chat.ready`, `ofx.chat.open {route}` (same-origin path) and `ofx.chat.share {context}`, which goes out
+  through FDC3 `broadcastContext`. Screens never talk to each other this way. The bot styles itself with
+  `/theme/onefinux-tokens.css` and the `.ofx-chat*` classes, which the built-in assistant uses too. See
+  `docs/design/chatbot.md`.
 - **Telemetry**: `track(type, {app, component, variant, detail})` with a type from `EVENT_TYPES`. `app` is a route key
   (`routeKey`) or a desk app id; `component` names the feature (`grid.writeback.submit`, `desk.share`). No personal data
   in `detail` beyond what the user typed into feedback.

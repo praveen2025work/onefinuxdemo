@@ -6,6 +6,8 @@ import { assistApi } from '../api.js';
 import { broadcastContext } from '../workspace/interop.js';
 import { routeKey } from '../ux/telemetry.js';
 import { track, trackUse } from '../ux/track.js';
+import { uxConfig } from '../ux/experiments.js';
+import ChatFrame from '../chat/ChatFrame.jsx';
 
 const STORE = 'ofx-assist';
 const STARTERS = [
@@ -33,11 +35,17 @@ export default function AssistantPanel({ open, onClose, seed }) {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [mode, setMode] = useState(null);
+  const [chatbot, setChatbot] = useState(null);
+  const [tab, setTab] = useState('assistant');
+  const [chatSeen, setChatSeen] = useState(false);
   const listRef = useRef(null);
   const inputRef = useRef(null);
   const asked = useRef(null);
 
   useEffect(() => { if (open && !mode) assistApi.status().then((s) => setMode(s.mode)).catch(() => setMode('grounded')); }, [open, mode]);
+  useEffect(() => { if (open) uxConfig().then((c) => setChatbot(c?.chatbot || null)); }, [open]);
+  // The framed chatbot loads the first time its tab is opened and then stays, so its conversation survives tab switches.
+  useEffect(() => { if (tab === 'chat') setChatSeen(true); }, [tab]);
   useEffect(() => { try { sessionStorage.setItem(STORE, JSON.stringify(turns.slice(-20))); } catch { /* no storage */ } }, [turns]);
   useEffect(() => { listRef.current?.scrollTo({ top: listRef.current.scrollHeight }); }, [turns, busy]);
   useEffect(() => {
@@ -49,7 +57,7 @@ export default function AssistantPanel({ open, onClose, seed }) {
   }, [open, onClose]);
   // A question handed over from search or another screen is asked once.
   useEffect(() => {
-    if (open && seed?.question && asked.current !== seed) { asked.current = seed; ask(seed.question); }
+    if (open && seed?.question && asked.current !== seed) { asked.current = seed; setTab('assistant'); ask(seed.question); }
   }, [open, seed]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function ask(text) {
@@ -81,14 +89,21 @@ export default function AssistantPanel({ open, onClose, seed }) {
       <div className="np-inner">
         <div className="np-hd">
           <div className="np-ttl">
-            <h3>Assistant</h3>
-            <span className={'np-badge' + (mode === 'claude' ? ' accent' : '')}
-              title={mode === 'claude' ? 'Answers are written by Claude from the hub’s facts for you' : 'Answers are composed from the hub’s facts for you (no model configured)'}>
-              {mode === 'claude' ? 'Claude' : 'Hub facts'}
-            </span>
+            {chatbot ? (
+              <div className="seg sm as-tabs" role="tablist" aria-label="Assistant or chat">
+                <button type="button" role="tab" aria-selected={tab === 'assistant'} className={tab === 'assistant' ? 'on' : ''} onClick={() => setTab('assistant')}>Assistant</button>
+                <button type="button" role="tab" aria-selected={tab === 'chat'} className={tab === 'chat' ? 'on' : ''} onClick={() => { setTab('chat'); trackUse('chatbot.tab'); }}>{chatbot.title}</button>
+              </div>
+            ) : <h3>Assistant</h3>}
+            {tab === 'assistant' && (
+              <span className={'np-badge' + (mode === 'claude' ? ' accent' : '')}
+                title={mode === 'claude' ? 'Answers are written by Claude from the hub’s facts for you' : 'Answers are composed from the hub’s facts for you (no model configured)'}>
+                {mode === 'claude' ? 'Claude' : 'Hub facts'}
+              </span>
+            )}
           </div>
           <div className="np-tools">
-            {turns.length > 0 && (
+            {tab === 'assistant' && turns.length > 0 && (
               <button type="button" className="np-ic" onClick={() => setTurns([])} title="Clear the conversation" aria-label="Clear the conversation">
                 <Icon name="trash" size={15} />
               </button>
@@ -98,39 +113,45 @@ export default function AssistantPanel({ open, onClose, seed }) {
             </button>
           </div>
         </div>
-        <div className="np-list as-list" ref={listRef}>
-          {turns.length === 0 && (
-            <div className="as-empty">
-              <Icon name="spark" size={22} />
-              <p>Ask about your close. Answers use only what you are entitled to see, and each comes with buttons to open what it points at.</p>
-              <div className="as-starters">
-                {STARTERS.map((s) => <button key={s} type="button" className="btn ghost sm" onClick={() => ask(s)}>{s}</button>)}
-              </div>
-            </div>
-          )}
-          {turns.map((t, i) => (
-            <div key={i} className={'as-turn ' + t.role + (t.error ? ' error' : '')}>
-              <div className="as-text">{t.text}</div>
-              {t.note && <div className="as-note"><Icon name="info" size={12} /> {t.note}</div>}
-              {t.actions?.length > 0 && (
-                <div className="as-actions">
-                  {t.actions.map((a) => (
-                    <button key={a.route + a.label} type="button" className="btn ghost sm" onClick={() => follow(a)} title={a.route}>
-                      <Icon name="open" size={12} /> {a.label}
-                    </button>
-                  ))}
+        {chatbot && chatSeen && (
+          <div className="as-chat" hidden={tab !== 'chat'}><ChatFrame chatbot={chatbot} /></div>
+        )}
+        <div className="ofx-chat as-assist" hidden={tab !== 'assistant'}>
+          <div className="ofx-chat-list" ref={listRef}>
+            {turns.length === 0 && (
+              <div className="ofx-chat-empty">
+                <Icon name="spark" size={22} />
+                <p style={{ margin: 0 }}>Ask about your close. Answers use only what you are entitled to see, and each comes with buttons to open what it points at.</p>
+                <div className="ofx-chat-starters">
+                  {STARTERS.map((q) => <button key={q} type="button" className="ofx-chat-chip" onClick={() => ask(q)}>{q}</button>)}
                 </div>
-              )}
-            </div>
-          ))}
-          {busy && <div className="as-turn assistant"><div className="as-text muted">Looking at your close…</div></div>}
+              </div>
+            )}
+            {turns.map((t, i) => (
+              <div key={i} className={'ofx-chat-msg ' + (t.role === 'user' ? 'ofx-chat-user' : 'ofx-chat-bot') + (t.error ? ' ofx-chat-error' : '')}>
+                <div>{t.text}</div>
+                {t.note && <div className="ofx-chat-note"><Icon name="info" size={12} /> {t.note}</div>}
+                {t.actions?.length > 0 && (
+                  <div className="ofx-chat-actions">
+                    {t.actions.map((a) => (
+                      <button key={a.route + a.label} type="button" className="ofx-chat-action" onClick={() => follow(a)} title={a.route}>
+                        <Icon name="open" size={12} /> {a.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            {busy && <div className="ofx-chat-msg ofx-chat-bot ofx-chat-pending">Looking at your close…</div>}
+          </div>
+          <form className="ofx-chat-compose" onSubmit={(e) => { e.preventDefault(); ask(input); }}>
+            <input ref={inputRef} className="ofx-chat-input" value={input} onChange={(e) => setInput(e.target.value)} maxLength={500}
+              placeholder="Ask about an instance, an outcome or your day" aria-label="Ask the assistant" />
+            <button type="submit" className="ofx-btn" disabled={busy || !input.trim()} aria-label="Ask"><Icon name="send" size={14} /></button>
+          </form>
+          <p className="ofx-chat-foot">Advisory. It reads; you act. Readiness comes from the hub’s fold.</p>
         </div>
-        <form className="as-compose" onSubmit={(e) => { e.preventDefault(); ask(input); }}>
-          <input ref={inputRef} className="inp" value={input} onChange={(e) => setInput(e.target.value)} maxLength={500}
-            placeholder="Ask about an instance, an outcome or your day" aria-label="Ask the assistant" />
-          <button type="submit" className="btn" disabled={busy || !input.trim()} aria-label="Ask"><Icon name="send" size={14} /></button>
-        </form>
-        <p className="as-foot">Advisory. It reads; you act. Readiness comes from the hub’s fold.</p>
+
       </div>
     </aside>
   );

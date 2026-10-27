@@ -9,6 +9,8 @@ import { broadcastContext, onAnyContext } from './interop.js';
 import { channelInfo, cleanSubject, feedItem, matchesSubject, mergeFeed } from './desks.js';
 import { activityApi } from '../api.js';
 import SpecGrid from '../grid/SpecGrid.jsx';
+import ChatFrame from '../chat/ChatFrame.jsx';
+import { uxConfig } from '../ux/experiments.js';
 import { paramContext } from '../grid/spec.js';
 import { useGridSpec } from '../grid/useGridSpec.js';
 import { EMBED, framedByOtherOrigin } from '../embed.js';
@@ -323,10 +325,20 @@ export function ActivityWidget({ view, desk }) {
   );
 }
 
+/** The configured chatbot (onefinux.ux.chatbot) in a desk view. */
+function ChatWidget() {
+  const [chatbot, setChatbot] = useState(undefined);
+  useEffect(() => { uxConfig().then((c) => setChatbot(c?.chatbot || null)); }, []);
+  if (chatbot === undefined) return <div className="empty sm">Loading…</div>;
+  if (!chatbot) return <div className="empty sm">No chatbot is configured (onefinux.ux.chatbot.url on the hub).</div>;
+  return <div className="wg wg-chat"><ChatFrame chatbot={chatbot} /></div>;
+}
+
 export const WIDGETS = {
   'live-feed': LiveFeed,
   'instance-grid': InstanceGrid,
   context: ContextInspector,
   grid: GridWidget,
   activity: ActivityWidget,
+  chat: ChatWidget,
 };

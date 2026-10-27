@@ -24,7 +24,7 @@ class ExperimentsTest {
     void onlyEnabledExperimentsAreAssignedAndZeroWeightIsNeverPicked() {
         UxProperties props = new UxProperties(List.of(
                 new UxProperties.Experiment("on", null, List.of("A", "B"), List.of(0, 1), true, null),
-                new UxProperties.Experiment("off", null, null, null, false, null)), null, null);
+                new UxProperties.Experiment("off", null, null, null, false, null)), null, null, null);
         Map<String, String> a = new Experiments(props).assignments("alice");
         assertThat(a).containsOnlyKeys("on").containsEntry("on", "B");
     }

@@ -9,12 +9,29 @@ import java.util.List;
  * header search covers them, and how long usage events are kept.
  */
 @ConfigurationProperties(prefix = "onefinux.ux")
-public record UxProperties(List<Experiment> experiments, List<SearchProvider> searchProviders, Integer retentionDays) {
+public record UxProperties(List<Experiment> experiments, List<SearchProvider> searchProviders, Integer retentionDays,
+                           Chatbot chatbot) {
 
     public UxProperties {
         experiments = experiments == null ? List.of() : List.copyOf(experiments);
         searchProviders = searchProviders == null ? List.of() : List.copyOf(searchProviders);
         retentionDays = retentionDays == null ? 180 : retentionDays;
+        chatbot = chatbot == null ? new Chatbot(null, null, null) : chatbot;
+    }
+
+    /**
+     * A chatbot another team runs, shown in the console's assistant panel and as a desk widget, in an iframe. The
+     * console sends it the theme and the user's scope and accepts only its own messages (open a console route, share
+     * a context) from {@code origin}. {@code url} may be a same-origin path.
+     */
+    public record Chatbot(String url, String title, String origin) {
+        public Chatbot {
+            title = title == null || title.isBlank() ? "Chat" : title;
+        }
+
+        public boolean enabled() {
+            return url != null && !url.isBlank();
+        }
     }
 
     /**
