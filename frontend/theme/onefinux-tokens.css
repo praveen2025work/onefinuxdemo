@@ -8,6 +8,7 @@
  *       <html data-skin="steps" data-theme="light|dark" data-ofx-embedded="1">  (from the iframe query)
  *   - shadcn / Tailwind apps (STEPS) framed with data-ofx-embedded="1" also get the shadcn HSL variables
  *     below, so their components paint with the same palette without a code change.
+ *   - The MITR chatbot (support-bot) framed with data-ofx-vars="mitr" gets its own variable names (MITR bridge).
  *
  * Skins
  *   steps (default) — the STEPS look: shadcn tokens, Banking Blue primary, white cards, system type.
@@ -279,6 +280,51 @@ html[data-ofx-embedded="1"][data-skin="ofx"][data-theme="light"] {
   --border: 214.3 31.8% 91.4%;
   --input: 212.7 26.8% 83.9%;
   --ring: 238.7 83.5% 66.7%;
+}
+
+/* ---------------------------------------------------------------- MITR bridge (framed support-bot / MITR AI)
+   The chatbot paints with its own variable names (--brand, --bg-*, --text-*, --border as a colour). When it is
+   framed it sets <html data-ofx-vars="mitr" data-skin data-theme> from the iframe query and these names follow the
+   One Finance palette in every skin and mode. Not combined with data-ofx-embedded: --border and --accent mean
+   colours here, HSL triplets in the shadcn bridge. */
+html[data-ofx-vars="mitr"] {
+  --brand: var(--ofx-accent);
+  --brand-hover: var(--ofx-accent-2);
+  --brand-active: var(--ofx-accent-2);
+  --brand-text: var(--ofx-on-accent);
+  --brand-subtle: color-mix(in srgb, var(--ofx-accent) 10%, var(--ofx-card));
+  --brand-gradient: var(--ofx-accent);
+  --accent: var(--ofx-gold);
+  --accent-subtle: color-mix(in srgb, var(--ofx-gold) 14%, var(--ofx-card));
+  --bg-primary: var(--ofx-card);
+  --bg-secondary: var(--ofx-page);
+  --bg-tertiary: var(--ofx-surface-2);
+  --bg-elevated: var(--ofx-card);
+  --bg-canvas: var(--ofx-page);
+  --text-primary: var(--ofx-ink);
+  --text-secondary: var(--ofx-ink-2);
+  --text-muted: var(--ofx-ink-3);
+  --success: var(--ofx-ok);
+  --success-subtle: color-mix(in srgb, var(--ofx-ok) 10%, var(--ofx-card));
+  --danger: var(--ofx-fail);
+  --danger-subtle: color-mix(in srgb, var(--ofx-fail) 10%, var(--ofx-card));
+  --warning: var(--ofx-warn);
+  --warning-subtle: color-mix(in srgb, var(--ofx-warn) 12%, var(--ofx-card));
+  --border: var(--ofx-line);
+  --border-subtle: var(--ofx-surface-2);
+  --border-strong: var(--ofx-line-2);
+  --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-sm: var(--ofx-sh-1);
+  --shadow-md: var(--ofx-sh-1);
+  --shadow-lg: var(--ofx-sh-2);
+  --shadow-glow: 0 0 0 1px color-mix(in srgb, var(--ofx-accent) 30%, transparent);
+  --radius-sm: var(--ofx-r-ctl);
+  --radius-md: var(--ofx-r);
+  --radius-lg: var(--ofx-r-lg);
+  --radius-xl: var(--ofx-r-lg);
+  --font-sans: var(--ofx-font);
+  --font-display: var(--ofx-display);
+  --font-mono: var(--ofx-mono);
 }
 
 /* ---------------------------------------------------------------- partner components (plain CSS screens) */

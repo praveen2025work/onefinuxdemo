@@ -54,3 +54,21 @@ Post to the console with `window.parent.postMessage(msg, '<console origin>')`, a
 It does not pass tokens or cookies to the bot (the bot signs users in itself), it does not act on any other message,
 and it never follows a route that leaves the console. Opens and shares are logged as usage (`chatbot.open`,
 `chatbot.share`).
+
+## 5. MITR AI (support-bot)
+
+MITR AI is hosted on its own and framed at `/widget`. Its components paint with their own variables (`--brand`,
+`--bg-*`, `--text-*`, `--border`), so the tokens file carries a **MITR bridge**: with `<html data-ofx-vars="mitr">`
+those names follow the One Finance palette in every skin and mode. The bot sets that attribute, links the tokens file
+and hides its own title bar and sidebar when it sees `ofx-embed=1` and its `NEXT_PUBLIC_ONEFINUX_ORIGIN` is set
+(support-bot `docs/ONEFINUX-EMBED.md`).
+
+| Side | Setting | Example |
+|---|---|---|
+| One Finance hub | `ONEFINUX_CHATBOT_URL` | `https://mitr.your-company.com/widget?group=finance` |
+| One Finance hub | `ONEFINUX_CHATBOT_ORIGIN` | `https://mitr.your-company.com` |
+| One Finance hub | `ONEFINUX_CHATBOT_TITLE` | `MITR AI` |
+| MITR AI build | `NEXT_PUBLIC_ONEFINUX_ORIGIN` | `https://onefinance.your-company.com` |
+| MITR AI nginx / IIS | `location /widget` → `frame-ancestors` | the One Finance origin |
+
+Keep both on the same parent domain so the bot's sign-in cookies stay first-party inside the frame.

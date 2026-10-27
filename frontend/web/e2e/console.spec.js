@@ -37,6 +37,22 @@ test.describe('One Finance console', () => {
     expect(errors).toEqual([]);
   });
 
+  test('the MITR chatbot framed with data-ofx-vars="mitr" paints with the One Finance palette', async ({ page }) => {
+    await page.goto('/');
+    for (const theme of ['light', 'dark']) {
+      // The bot's own variables (support-bot tokens.css) load first; the console's tokens file maps them.
+      await page.setContent(`<html data-ofx-vars="mitr" data-skin="steps" data-theme="${theme}"><head>
+        <style>:root { --brand: #6366f1; --bg-primary: #ffffff; --border: #e2e8f0; } .dark { --brand: #818cf8; }</style>
+        <link rel="stylesheet" href="/theme/onefinux-tokens.css"></head><body></body></html>`, { waitUntil: 'load' });
+      const colours = await page.evaluate(() => {
+        const paint = (v) => { const d = document.createElement('div'); d.style.color = v; document.body.append(d); const c = getComputedStyle(d).color; d.remove(); return c; };
+        return { brand: paint('var(--brand)'), accent: paint('var(--ofx-accent)'), bg: paint('var(--bg-primary)'), card: paint('var(--ofx-card)') };
+      });
+      expect(colours.brand).toBe(colours.accent);
+      expect(colours.bg).toBe(colours.card);
+    }
+  });
+
   test('grid write-back: maker submits, the same role cannot approve, a checker applies it to the owning system', async ({ page }) => {
     const owner = 'E2E ' + Date.now().toString().slice(-6);
     await signInAs(page, 'alice.revacc');
