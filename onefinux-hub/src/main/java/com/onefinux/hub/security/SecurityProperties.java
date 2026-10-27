@@ -22,14 +22,45 @@ public record SecurityProperties(
         boolean devDefaultUser,
         String defaultUser,
         Integer tokenTtlMinutes,
-        Map<String, DemoUser> users) {
+        Map<String, DemoUser> users,
+        Boolean devTokens,
+        Oidc oidc,
+        Map<String, List<String>> roleActions,
+        Integer inactivityDays,
+        Integer idleLockMinutes,
+        boolean requireMfa) {
+
+    /** The demo signing secret. A hub that refuses anonymous access must not run with it. */
+    public static final String DEMO_SECRET = "onefinux-dev-signing-secret-please-override-in-prod-0123456789";
 
     public SecurityProperties {
-        jwtSecret = (jwtSecret == null || jwtSecret.isBlank())
-                ? "onefinux-dev-signing-secret-please-override-in-prod-0123456789" : jwtSecret;
+        jwtSecret = (jwtSecret == null || jwtSecret.isBlank()) ? DEMO_SECRET : jwtSecret;
         defaultUser = defaultUser == null ? "praveen.kumar" : defaultUser;
         tokenTtlMinutes = tokenTtlMinutes == null ? 480 : tokenTtlMinutes;
         users = users == null ? Map.of() : Map.copyOf(users);
+        devTokens = devTokens == null ? devDefaultUser : devTokens;
+        oidc = oidc == null ? new Oidc(null, null, null, null, null, null) : oidc;
+        roleActions = roleActions == null ? Map.of() : Map.copyOf(roleActions);
+        inactivityDays = inactivityDays == null ? 90 : inactivityDays;
+        idleLockMinutes = idleLockMinutes == null ? 15 : idleLockMinutes;
+    }
+
+    /**
+     * Single sign-on against the bank identity provider (OpenID Connect, authorization code + PKCE in the browser).
+     * With an issuer set, the hub validates that issuer's tokens from its published keys; the console signs users in
+     * there. Claim names say where roles and group units sit in the IdP's token.
+     */
+    public record Oidc(String issuer, String clientId, String scope, String audience, String rolesClaim,
+                       String groupUnitsClaim) {
+        public Oidc {
+            scope = scope == null || scope.isBlank() ? "openid profile email" : scope;
+            rolesClaim = rolesClaim == null || rolesClaim.isBlank() ? "roles" : rolesClaim;
+            groupUnitsClaim = groupUnitsClaim == null || groupUnitsClaim.isBlank() ? "groupUnits" : groupUnitsClaim;
+        }
+
+        public boolean enabled() {
+            return issuer != null && !issuer.isBlank();
+        }
     }
 
     /** A named demo identity the dev-token endpoint can mint, with its entitlements. */

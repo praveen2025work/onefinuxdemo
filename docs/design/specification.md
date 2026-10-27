@@ -160,12 +160,13 @@ Motif, SAP, Helix, Axiom, CATS, MBR, FAS, and Kafka remain origins or destinatio
 | REPORTS | Reports | Layouts, document route, stage flow |
 | GOVERN | Onboarding and configuration | Create vs govern |
 | OPERATE | Drive, RTB, monitor, notify | Scenarios, replay, SSE, inbox |
+| ONEUX | One UX platform | Search across apps, assistant, usage and feedback, experiments, saved desks and team templates, grid write-back, access register, sign-in |
 
 Each subsystem has numbered REQ-IDs and exactly 23 AC-IDs.
 
 ## 11. Functional requirements
 
-This section states every functional REQ-ID by subsystem. Quality-attribute REQ-IDs follow the eight subsystems.
+This section states every functional REQ-ID by subsystem. Quality-attribute REQ-IDs follow the nine subsystems.
 
 ### 11.1 Event ingest and translation (INGEST)
 
@@ -300,6 +301,33 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-OPERATE-011` | Board is the supervisor table; My outcomes is the doer card worklist; both drill to /instance/:id. |
 | `REQ-OPERATE-012` | Operations does not sign off a rec or publish a kit. |
 
+### 11.9 One UX platform: search, assistant, telemetry, personalisation, write-back, access (ONEUX)
+
+| REQ-ID | Requirement |
+| --- | --- |
+| `REQ-ONEUX-001` | The header search returns hub hits (instances, outcomes, notifications, entitlement-filtered), each registered partner search provider's hits, and console screens, grids, and tasks, grouped by source. |
+| `REQ-ONEUX-002` | A partner search hit is followed only when its route is a same-origin path. |
+| `REQ-ONEUX-003` | POST /api/assist answers from facts the hub holds for the caller; the actions under an answer are built from those facts and not by a model. |
+| `REQ-ONEUX-004` | The assistant calls Claude only when onefinux.assist.model and an API key are both set; otherwise it answers from the same facts without a model; it never changes state. |
+| `REQ-ONEUX-005` | POST /api/ux/events records APP_OPEN, VIEW_OPEN, COMPONENT_USE, SEARCH, ASSIST, EXPOSURE, CONVERSION, and FEEDBACK with the authenticated actor and an entitled team only. |
+| `REQ-ONEUX-006` | GET /api/ux/usage reports opens, features used, and the access log; all-teams usage needs the ACCESS_REVIEW verb. |
+| `REQ-ONEUX-007` | Each user receives a stable variant for every enabled experiment, and /api/ux/experiments/results counts distinct users exposed and converted per variant. |
+| `REQ-ONEUX-008` | GET /api/ux/recommendations lists screens teammates in the group unit opened in the last 30 days that the caller has not opened in the last 14 days. |
+| `REQ-ONEUX-009` | Desks, saved grids, and settings are stored per user at /api/prefs/{key}; the copy saved later wins between browser and hub. |
+| `REQ-ONEUX-010` | A desk shared with a group unit appears to that unit's members under New desk; only its author or a superuser removes it. |
+| `REQ-ONEUX-011` | A GridSpec edit block makes only its listed columns editable and validates each value before it is accepted. |
+| `REQ-ONEUX-012` | Edits are submitted as one change set to /api/writeback/{gridId}; with maker-checker a different user holding WRITEBACK_APPROVE applies it. |
+| `REQ-ONEUX-013` | An approved change set is sent only to a write-back target named in onefinux.writeback.targets, and every submit, approval, rejection, and apply is audited and published as activity. |
+| `REQ-ONEUX-014` | The role structure (onefinux.security.role-actions) decides which verbs each role performs; roles outside it are ignored and superuser requires ADMIN. |
+| `REQ-ONEUX-015` | Access is suspended after onefinux.security.inactivity-days without a visit; a suspended user receives 403 on every API except sign-in and access requests. |
+| `REQ-ONEUX-016` | One access request lists every entitlement a desk needs; an approver who is not the requester decides it, and approval grants every item. |
+| `REQ-ONEUX-017` | A review lists every active grant, flags grants outside the role structure, and lets a reviewer other than the holder keep or revoke it. |
+| `REQ-ONEUX-018` | With onefinux.security.oidc.issuer set, the console signs users in by OIDC authorization code with PKCE and the hub validates that issuer's tokens; require-mfa demands a second-factor amr claim. |
+| `REQ-ONEUX-019` | The console locks after idle-lock-minutes without input; with SSO, unlocking signs in again. |
+| `REQ-ONEUX-020` | The console is served with a Content-Security-Policy that frames partner screens, connects only to its own origin, and allows ancestors only on /widget/. |
+| `REQ-ONEUX-021` | A grid framed by another site shows no edit or approve controls. |
+| `REQ-ONEUX-022` | CI runs browser journeys and WCAG 2.1 AA checks; a critical or serious accessibility finding fails the build. |
+
 ### 11.9 Quality attributes (NFR)
 
 | REQ-ID | Requirement |
@@ -307,7 +335,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-NFR-001` | Hub and tests run on Java 21 with mvn -B verify in CI. |
 | `REQ-NFR-002` | The console builds with npm ci && npm run build in frontend/web in CI. |
 | `REQ-NFR-003` | Phase 1 persistence is the hub store (H2 in the local demo) and does not require Kafka, Redis, or a cloud bus. |
-| `REQ-NFR-004` | The console uses REST plus SSE only. |
+| `REQ-NFR-004` | The console uses REST plus the hub live link (WebSocket, with SSE as the fallback) only; it never connects to a message bus. |
 | `REQ-NFR-005` | Theme tokens live in frontend/web/src/styles.css and frontend/theme/onefinux-tokens.css. |
 | `REQ-NFR-006` | Partner embeds import --ofx-* tokens and omit their own masthead. |
 
@@ -1635,6 +1663,171 @@ These 23 criteria lock OPERATE behaviour. Each Maps-to line names one REQ-ID.
 - When notification inbox is fetched
 - Then no notification is created for that advisory comment
 
+### 12.9 One UX platform: search, assistant, telemetry, personalisation, write-back, access (ONEUX)
+
+These 23 criteria lock ONEUX behaviour. Each Maps-to line names one REQ-ID.
+
+#### AC-ONEUX-01
+
+- Maps to: `REQ-ONEUX-001`
+- Given the user types R-2031 in the header search
+- When results render
+- Then a group of hub hits contains the R-2031 instance
+
+#### AC-ONEUX-02
+
+- Maps to: `REQ-ONEUX-001`
+- Given the user types MB014 in the header search
+- When results render
+- Then a Break register (partner) group lists BK-4420 and the last line offers to ask the assistant
+
+#### AC-ONEUX-03
+
+- Maps to: `REQ-ONEUX-002`
+- Given a partner returns a hit with route javascript:alert(1)
+- When results render
+- Then that hit is dropped
+
+#### AC-ONEUX-04
+
+- Maps to: `REQ-ONEUX-003`
+- Given R-2031 is BLOCKED on MOTIF MB014
+- When the user asks why R-2031 is blocked
+- Then the answer names MB014 and an action opens /instance/{id} for R-2031
+
+#### AC-ONEUX-05
+
+- Maps to: `REQ-ONEUX-004`
+- Given no model or no API key is configured
+- When GET /api/assist is called
+- Then mode is grounded and answers still return
+
+#### AC-ONEUX-06
+
+- Maps to: `REQ-ONEUX-004`
+- Given the model declines a question
+- When the answer returns
+- Then it comes from the hub facts with a note saying so
+
+#### AC-ONEUX-07
+
+- Maps to: `REQ-ONEUX-005`
+- Given a batch carries an unknown event type
+- When POST /api/ux/events is called
+- Then the hub answers 400 and stores nothing
+
+#### AC-ONEUX-08
+
+- Maps to: `REQ-ONEUX-005`
+- Given a user names a team they are not entitled to
+- When the event is stored
+- Then its team is empty
+
+#### AC-ONEUX-09
+
+- Maps to: `REQ-ONEUX-006`
+- Given a controller without ACCESS_REVIEW
+- When GET /api/ux/usage without a team is called
+- Then the hub answers 403
+
+#### AC-ONEUX-10
+
+- Maps to: `REQ-ONEUX-007`
+- Given the same user loads the console twice
+- When experiment assignments are fetched
+- Then the variant is identical both times
+
+#### AC-ONEUX-11
+
+- Maps to: `REQ-ONEUX-008`
+- Given two teammates opened /operations this month and the caller has not
+- When recommendations are fetched for the team
+- Then /operations is listed with the count of teammates
+
+#### AC-ONEUX-12
+
+- Maps to: `REQ-ONEUX-009`
+- Given the hub copy of desks is newer than the browser copy
+- When /desks loads
+- Then the hub copy is shown and cached
+
+#### AC-ONEUX-13
+
+- Maps to: `REQ-ONEUX-010`
+- Given a user shares a desk with REV-ACC
+- When another REV-ACC user opens New desk
+- Then the desk is listed under Shared by your team
+
+#### AC-ONEUX-14
+
+- Maps to: `REQ-ONEUX-011`
+- Given the break register is in edit mode
+- When a user enters a status outside its options
+- Then the value is refused with the allowed options named
+
+#### AC-ONEUX-15
+
+- Maps to: `REQ-ONEUX-012`
+- Given alice submits an owner change
+- When alice approves it
+- Then the hub refuses: WRITEBACK_APPROVE is not her verb, and the maker can never be the checker
+
+#### AC-ONEUX-16
+
+- Maps to: `REQ-ONEUX-012`
+- Given gla.reviewer approves alice's change set
+- When the approval completes
+- Then the change set is APPLIED and the reconciliation system shows the new owner
+
+#### AC-ONEUX-17
+
+- Maps to: `REQ-ONEUX-013`
+- Given a submission names a target that is not configured
+- When it is posted
+- Then the hub answers 400 and calls nothing
+
+#### AC-ONEUX-18
+
+- Maps to: `REQ-ONEUX-014`
+- Given the auditor (role AUDIT) holds a token
+- When POST /api/stitch/instance/signoff is called
+- Then the hub answers 403 and audits the refusal
+
+#### AC-ONEUX-19
+
+- Maps to: `REQ-ONEUX-015`
+- Given the auditor was last seen 120 days ago
+- When the auditor opens the console
+- Then the access-suspended page is shown and other APIs answer 403
+
+#### AC-ONEUX-20
+
+- Maps to: `REQ-ONEUX-016`
+- Given bob.markets requests REV-ACC and product:FOBO in one request
+- When an approver who is not bob approves it
+- Then bob's entitlements include both on the next request
+
+#### AC-ONEUX-21
+
+- Maps to: `REQ-ONEUX-017`
+- Given a grant names a role outside the role structure
+- When the review queue is fetched
+- Then the grant is flagged outside the role structure
+
+#### AC-ONEUX-22
+
+- Maps to: `REQ-ONEUX-018`
+- Given require-mfa is true
+- When an SSO token without an mfa or otp amr value is presented
+- Then the caller receives no entitlements
+
+#### AC-ONEUX-23
+
+- Maps to: `REQ-ONEUX-022`
+- Given a change introduces a serious contrast failure on /board
+- When CI runs the accessibility checks
+- Then the e2e job fails naming the rule and element
+
 ## 13. Traceability
 
 This section maps every subsystem REQ-ID to AC-IDs and records NFR verification.
@@ -1738,6 +1931,28 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-OPERATE-010` | `AC-OPERATE-14`, `AC-OPERATE-23` |
 | `REQ-OPERATE-011` | `AC-OPERATE-15`, `AC-OPERATE-16`, `AC-OPERATE-17` |
 | `REQ-OPERATE-012` | `AC-OPERATE-18` |
+| `REQ-ONEUX-001` | `AC-ONEUX-01`, `AC-ONEUX-02` |
+| `REQ-ONEUX-002` | `AC-ONEUX-03` |
+| `REQ-ONEUX-003` | `AC-ONEUX-04` |
+| `REQ-ONEUX-004` | `AC-ONEUX-05`, `AC-ONEUX-06` |
+| `REQ-ONEUX-005` | `AC-ONEUX-07`, `AC-ONEUX-08` |
+| `REQ-ONEUX-006` | `AC-ONEUX-09` |
+| `REQ-ONEUX-007` | `AC-ONEUX-10` |
+| `REQ-ONEUX-008` | `AC-ONEUX-11` |
+| `REQ-ONEUX-009` | `AC-ONEUX-12` |
+| `REQ-ONEUX-010` | `AC-ONEUX-13` |
+| `REQ-ONEUX-011` | `AC-ONEUX-14` |
+| `REQ-ONEUX-012` | `AC-ONEUX-15`, `AC-ONEUX-16` |
+| `REQ-ONEUX-013` | `AC-ONEUX-17` |
+| `REQ-ONEUX-014` | `AC-ONEUX-18` |
+| `REQ-ONEUX-015` | `AC-ONEUX-19` |
+| `REQ-ONEUX-016` | `AC-ONEUX-20` |
+| `REQ-ONEUX-017` | `AC-ONEUX-21` |
+| `REQ-ONEUX-018` | `AC-ONEUX-22` |
+| `REQ-ONEUX-019` |  |
+| `REQ-ONEUX-020` |  |
+| `REQ-ONEUX-021` |  |
+| `REQ-ONEUX-022` | `AC-ONEUX-23` |
 
 ### 13.2 Quality-attribute coverage
 
@@ -1762,6 +1977,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | REPORTS | 10 | 23 |
 | GOVERN | 10 | 23 |
 | OPERATE | 12 | 23 |
+| ONEUX | 22 | 23 |
 
 ## 14. Data contracts
 
@@ -1838,6 +2054,7 @@ This section lists the hub HTTP paths and console routes that implement the REQ-
 | `/onboarding` `/configuration` | GOVERN |
 | `/drive` | OPERATE |
 | `/operations` `/monitoring` | OPERATE |
+| `/desks` `/grids` `/usage` `/access` `/auth/callback` | ONEUX |
 
 ## 16. Fail-closed behaviour and errors
 

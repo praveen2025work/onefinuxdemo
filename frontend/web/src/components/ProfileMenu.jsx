@@ -5,6 +5,7 @@ import Icon from './Icon.jsx';
 import { useApp } from '../store.jsx';
 import { actorLabel, currentActor, listActors, setActor } from '../api';
 import { useInstallPrompt } from '../pwa.js';
+import { openFeedback } from '../ux/bus.js';
 
 function initials(label) {
   const parts = String(label || '').replace(/[^A-Za-z ]/g, ' ').trim().split(/\s+/).filter(Boolean);
@@ -26,6 +27,7 @@ export default function ProfileMenu({ onOpenSettings }) {
 
   async function onActor(user) {
     await setActor(user);
+    window.dispatchEvent(new Event('ofx-session'));
     setActorState(user);
     refreshInstances().catch(() => {});
   }
@@ -35,7 +37,7 @@ export default function ProfileMenu({ onOpenSettings }) {
 
   return (
     <Menu width={300} trigger={(open, toggle) => (
-      <button type="button" className={'profile-trig' + (open ? ' on' : '')} onClick={toggle} aria-label={`Profile: ${label}`}
+      <button type="button" className={'profile-trig' + (open ? ' on' : '')} onClick={toggle} aria-label={`${initials(label)} — profile: ${label}`}
         aria-expanded={open} title={`${label} · last updated ${lastUpdated.toLocaleTimeString()}`}>
         <span className="avatar">{initials(label)}</span>
       </button>
@@ -74,8 +76,11 @@ export default function ProfileMenu({ onOpenSettings }) {
             <button type="button" className="menu-item" onClick={() => { navigate('/notifications'); close(); }}>
               <Icon name="bell" size={14} /><span className="menu-txt">Notifications</span>
             </button>
-            <button type="button" className="menu-item" onClick={() => { navigate('/desks'); close(); }}>
-              <Icon name="window" size={14} /><span className="menu-txt">Desks</span>
+            <button type="button" className="menu-item" onClick={() => { navigate('/access'); close(); }}>
+              <Icon name="shield" size={14} /><span className="menu-txt">My access</span>
+            </button>
+            <button type="button" className="menu-item" onClick={() => { openFeedback(); close(); }}>
+              <Icon name="message" size={14} /><span className="menu-txt">Give feedback</span>
             </button>
             <button type="button" className="menu-item" onClick={() => { navigate('/guide'); close(); }}>
               <Icon name="code" size={14} /><span className="menu-txt">Help · developer guide</span>

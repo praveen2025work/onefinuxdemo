@@ -1,0 +1,84 @@
+import { test, expect } from '@playwright/test';
+import { signInAs, watchErrors } from './helpers.js';
+
+test.describe('One Finance console', () => {
+  test('every main screen renders without errors', async ({ page }) => {
+    const errors = watchErrors(page);
+    for (const path of ['/', '/board', '/finance', '/desks', '/grids', '/reports', '/onboarding', '/configuration', '/usage', '/access', '/architecture']) {
+      await page.goto(path);
+      await expect(page.locator('.ph h1, .ph-title').first()).toBeVisible();
+    }
+    expect(errors).toEqual([]);
+  });
+
+  test('search reaches the hub and a partner application, and hands a question to the assistant', async ({ page }) => {
+    await page.goto('/');
+    const search = page.locator('.shell-search input');
+    await search.fill('R-2031');
+    await expect(page.locator('.shell-search-lbl', { hasText: 'Instances, outcomes and alerts' })).toBeVisible();
+    await search.fill('MB014');
+    await expect(page.locator('.shell-search-lbl', { hasText: 'Break register (partner)' })).toBeVisible();
+    await page.locator('.shell-search-grp.ask button').click();
+    const answer = page.locator('.as-turn.assistant .as-text').last();
+    await expect(answer).toContainText(/MB014|blocked|outcome/i);
+    await expect(page.locator('.as-actions button').first()).toBeVisible();
+  });
+
+  test('grid write-back: maker submits, the same role cannot approve, a checker applies it to the owning system', async ({ page }) => {
+    const owner = 'E2E ' + Date.now().toString().slice(-6);
+    await signInAs(page, 'alice.revacc');
+    await page.goto('/grids?spec=break-register');
+    await expect(page.locator('.wj-cell', { hasText: 'BK-4502' }).first()).toBeVisible();
+    await page.getByRole('button', { name: 'Edit', exact: true }).click();
+    const row = await page.locator('.wj-cell', { hasText: 'BK-4502' }).first().boundingBox();
+    const col = await page.locator('.wj-colheaders .wj-cell', { hasText: 'Owner' }).first().boundingBox();
+    await page.mouse.dblclick(col.x + col.width / 2, row.y + row.height / 2);
+    await page.keyboard.press('Control+A');
+    await page.keyboard.type(owner);
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.wj-cell.cell-dirty')).toHaveCount(1);
+    await page.getByRole('button', { name: /Submit/ }).click();
+    await expect(page.locator('.wb-msg.ok')).toContainText('sent for approval');
+
+    await signInAs(page, 'gla.reviewer');
+    await page.goto('/grids?spec=break-register');
+    const set = page.locator('.wb-set', { hasText: owner });
+    await set.getByRole('button', { name: 'Approve' }).click();
+    await expect(page.locator('.wb-msg.ok')).toContainText('applied');
+    const applied = await page.evaluate(() => fetch('/sim/grids/breaks').then((r) => r.json()).then((d) => d.rows.find((r) => r.breakId === 'BK-4502').owner));
+    expect(applied).toBe(owner);
+  });
+
+  test('role structure: an auditor cannot sign off; a controller cannot approve access', async ({ page }) => {
+    await signInAs(page, 'auditor');
+    const status = await page.evaluate(async () => {
+      const res = await fetch('/api/stitch/instance/signoff?id=' + encodeURIComponent('FOBO|2026-09-12|APAC|R-1042'),
+        { method: 'POST', headers: { Authorization: 'Bearer ' + sessionStorage.getItem('ofx-token') } });
+      return res.status;
+    });
+    expect(status).toBe(403);
+    await signInAs(page, 'alice.revacc');
+    const approve = await page.evaluate(async () => (await fetch('/api/access/review', { headers: { Authorization: 'Bearer ' + sessionStorage.getItem('ofx-token') } })).status);
+    expect(approve).toBe(403);
+  });
+
+  test('feedback and usage are recorded', async ({ page }) => {
+    await page.goto('/board');
+    // Through search: the Wijmo evaluation banner can cover the profile menu until a licence key is set.
+    await page.locator('.shell-search input').fill('feedback');
+    await page.locator('.shell-search-hit', { hasText: 'Give feedback' }).click();
+    await page.locator('textarea').fill('E2E: the board is clear.');
+    await page.getByRole('radio', { name: '4 of 5' }).click();
+    await page.getByRole('button', { name: 'Send' }).click();
+    await expect(page.getByText('Thank you')).toBeVisible();
+    await expect.poll(async () => page.evaluate(() => fetch('/api/ux/feedback').then((r) => r.json()).then((rows) => rows.some((r) => r.text === 'E2E: the board is clear.')))).toBe(true);
+  });
+
+  test('a desk shared with the team appears under New desk', async ({ page }) => {
+    await page.goto('/desks');
+    await page.getByRole('button', { name: 'Share desk with team' }).click();
+    await expect(page.locator('.banner.ok')).toContainText('shared with');
+    await page.goto('/desks?new=1');
+    await expect(page.getByText('Shared by your team')).toBeVisible();
+  });
+});

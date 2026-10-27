@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
@@ -8,6 +8,7 @@ import { BUILTIN_SPECS } from '../grid/specs.js';
 import { encodeJson, normalizeSpec, paramContext } from '../grid/spec.js';
 import { loadMySpecs, loadOutcomeSpecs, saveMySpecs } from '../grid/useGridSpec.js';
 import { subscribeLive } from '../live/liveLink.js';
+import { loadRemote, newer, remoteSaver } from '../ux/prefs.js';
 
 const SNIPPETS = [
   { id: 'iframe', label: 'Embed (iframe)', hint: 'Any app: themed, live, picks posted to your page as ofx.grid.select' },
@@ -61,7 +62,30 @@ export default function GridLibrary() {
   const [kind, setKind] = useState('iframe');
   const [copied, setCopied] = useState(null);
 
+  const [params] = useSearchParams();
+  const saveRemote = useMemo(() => remoteSaver('grids'), []);
   useEffect(() => { loadOutcomeSpecs().then(setOutcomeSpecs); }, []);
+  // Saved grids follow the user to any browser (/api/prefs/grids); the newer copy wins.
+  useEffect(() => {
+    loadRemote('grids').then((remote) => {
+      const local = { savedAt: Number(localStorage.getItem('ofx-my-grids-at')) || 0, state: loadMySpecs() };
+      if (remote && Array.isArray(remote.state) && newer(local, remote) === 'remote') { setMine(remote.state); saveMySpecs(remote.state); }
+    });
+  }, []);
+  // /grids?spec=<id> (from search or a link) opens that grid.
+  useEffect(() => {
+    const want = params.get('spec');
+    if (!want) return;
+    const found = BUILTIN_SPECS.find((x) => x.id === want) || outcomeSpecs.find((x) => x.id === want) || mine.find((x) => x.id === want || `my:${x.id}` === want);
+    if (found) choose(BUILTIN_SPECS.includes(found) ? 'builtin' : outcomeSpecs.includes(found) ? 'outcome' : 'my', found);
+  }, [params, outcomeSpecs.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function persistMine(next) {
+    setMine(next);
+    saveMySpecs(next);
+    try { localStorage.setItem('ofx-my-grids-at', String(Date.now())); } catch { /* private window */ }
+    saveRemote(next);
+  }
 
   const groups = [
     { id: 'builtin', label: 'Built-in', hint: 'data One Finance serves', specs: BUILTIN_SPECS },
@@ -90,15 +114,13 @@ export default function GridLibrary() {
     if (!check.spec) return;
     const spec = parsed.obj;
     const next = [...mine.filter((s) => s.id !== spec.id), spec];
-    setMine(next);
-    saveMySpecs(next);
+    persistMine(next);
     setSelected({ group: 'my', id: spec.id });
   }
 
   function remove() {
     const next = mine.filter((s) => s.id !== selected.id);
-    setMine(next);
-    saveMySpecs(next);
+    persistMine(next);
     choose('builtin', BUILTIN_SPECS[0]);
   }
 

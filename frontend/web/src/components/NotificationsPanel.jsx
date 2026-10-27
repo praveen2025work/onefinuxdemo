@@ -30,7 +30,7 @@ export default function NotificationsPanel() {
   }
 
   return (
-    <aside className={'npanel' + (notifPanelOpen ? ' open' : '')} aria-label="Notifications" aria-hidden={!notifPanelOpen}>
+    <aside className={'npanel' + (notifPanelOpen ? ' open' : '')} aria-label="Notifications" aria-hidden={!notifPanelOpen} inert={notifPanelOpen ? undefined : ''}>
       <div className="np-inner">
         <div className="np-hd">
           <div className="np-ttl">

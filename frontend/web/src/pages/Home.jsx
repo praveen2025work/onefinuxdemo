@@ -7,9 +7,12 @@ import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
 import { viewIncludes } from '../views.js';
 import { hasPrediction } from '../eta.js';
+import TeamPicks from '../components/TeamPicks.jsx';
+import { useVariant } from '../ux/experiments.js';
 
 export default function Home() {
   const { instances, filters, view } = useApp();
+  const picksVariant = useVariant('home-team-picks');
   const [events, setEvents] = useState([]);
   const [engineOutcomes, setEngineOutcomes] = useState([]);
   const navigate = useNavigate();
@@ -163,6 +166,12 @@ export default function Home() {
         </div>
 
         <div>
+          {picksVariant === 'shown' && (
+            <div className="panel">
+              <div className="panel-hd"><h2><Icon name="users" size={16} /> Popular with your team</h2><span className="hint">{filters.groupUnit} · this month</span></div>
+              <div className="panel-bd"><TeamPicks team={filters.groupUnit} experiment="home-team-picks" /></div>
+            </div>
+          )}
           <div className="panel accent">
             <div className="panel-hd"><h2><Icon name="activity" size={16} /> Activity</h2><span className="hint">live · SSE</span></div>
             <div className="panel-bd">
@@ -178,7 +187,7 @@ export default function Home() {
                   <div className="empty">
                     {viewIncludes(view, '/drive')
                       ? <>No live facts yet. Open Drive in the left rail to run a scenario.</>
-                      : <>No live facts yet. Top bar View → Developer (or All) to reach Drive.</>}
+                      : <>No live facts yet. Settings (top bar) → View → Developer (or All) to reach Drive.</>}
                   </div>
                 )}
               </div>

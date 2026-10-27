@@ -77,6 +77,17 @@ public class StitchService {
         return inst;
     }
 
+    /**
+     * The role structure decides who may do what: a verb the user's roles do not allow is refused (403) and the
+     * refusal is audited. Seeing an instance (group unit) and acting on it (role) are separate checks.
+     */
+    private void requireAction(String verb) {
+        if (!currentUser.entitlements().canAct(verb)) {
+            repo.insertAudit(currentUser.actor(), verb, null, "DENY", json(Map.of("reason", "role does not allow " + verb)));
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your role does not allow " + verb);
+        }
+    }
+
     /** Tenant-scoped instance list: rows are filtered to the caller's entitled group units. */
     public List<Map<String, Object>> instances(String groupUnit, String cobDate, String region, String status) {
         var ent = currentUser.entitlements();
@@ -247,6 +258,7 @@ public class StitchService {
 
     public Map<String, Object> signoff(String instanceId) {
         Map<String, Object> inst = requireEntitledInstance(instanceId);
+        requireAction("SIGN_OFF");
         if (!"READY".equals(inst.get("status"))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Only a READY instance can be signed off (was " + inst.get("status") + ")");
@@ -285,6 +297,7 @@ public class StitchService {
 
     public Map<String, Object> countersign(String instanceId) {
         Map<String, Object> inst = requireEntitledInstance(instanceId);
+        requireAction("COUNTERSIGN");
         if (!"SIGNED".equals(inst.get("status"))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "Only a SIGNED instance can be countersigned (was " + inst.get("status") + ")");
@@ -312,6 +325,7 @@ public class StitchService {
 
     public Map<String, Object> adjust(String instanceId) {
         Map<String, Object> inst = requireEntitledInstance(instanceId);
+        requireAction("ADJUST");
         String status = str(inst, "status");
         if (!"BLOCKED".equals(status) && !"READY".equals(status)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -330,6 +344,7 @@ public class StitchService {
 
     public Map<String, Object> post(String instanceId) {
         Map<String, Object> inst = requireEntitledInstance(instanceId);
+        requireAction("POST");
         String runId = "RUN-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         repo.insertPendingCommandRun(runId, instanceId, "FAS_MOTIF");
         repo.insertAudit(currentUser.actor(), "POST", instanceId, "OK", json(Map.of("runId", runId, "dest", "FAS_MOTIF")));
@@ -341,6 +356,7 @@ public class StitchService {
 
     public Map<String, Object> escalate(String instanceId, String reason) {
         Map<String, Object> inst = requireEntitledInstance(instanceId);
+        requireAction("ESCALATE");
         String escalationId = "ESC-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
         repo.insertEscalation(escalationId, instanceId, "HUMAN");
         repo.insertAudit(currentUser.actor(), "ESCALATE", instanceId, "OK",
@@ -365,6 +381,7 @@ public class StitchService {
     public Map<String, Object> action(String instanceId, String actionName, Map<String, Object> body) {
         String action = actionName == null ? "" : actionName.trim().toUpperCase();
         Map<String, Object> inst = requireEntitledInstance(instanceId);
+        requireAction(action);
         Set<String> allowed = allowedActions(repo.kitById(str(inst, "kitId")));
         if (!allowed.contains(action)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Action '" + action + "' is not offered by kit "

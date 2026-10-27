@@ -12,13 +12,13 @@ import dEngine from '@diagrams/06-engine-stage.mmd?raw';
 import dDesks from '@diagrams/07-desks-live.mmd?raw';
 
 const SCREENS = [
-  { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold. Group unit, region and view live in Settings (top bar).', creates: 'Nothing — read', not: 'Scenario buttons or a role picker' },
+  { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold, and what your team uses. Search (top bar) covers every app; the spark icon opens the assistant.', creates: 'Nothing — read', not: 'Scenario buttons or a role picker' },
   { to: '/product', title: 'Product', who: 'Everyone', job: 'Why this exists. The morning story a BU head and a controller both recognise.', creates: 'This guide', not: 'Live outcomes' },
   { to: '/architecture', title: 'Architecture', who: 'Everyone', job: 'How facts become Ready or Blocked, and how desks link screens live. Same diagrams as docs/design.', creates: 'This guide', not: 'Live outcomes' },
   { to: '/guide', title: 'Developer guide', who: 'Engineer', job: 'Run it, extend it with data, review a PR. First change is Onboarding, not a Java type.', creates: 'This guide', not: 'Live outcomes' },
   { to: '/lifecycle', title: 'Event lifecycle', who: 'Engineer / RTB', job: 'One fact end to end: the request, how it is saved, the state it moved, and who was told.', creates: 'A feed file (demo)', not: 'Business sign-off' },
   { to: '/desks', title: 'Desks', who: 'Everyone', job: 'Many screens on one page: console screens, widgets, STEPS and partner apps. One desk per business outcome, or a blank one. Views link on the desk channel across tabs and browsers.', creates: 'Desks and views (saved in this browser)', not: 'A rebuild of a partner screen' },
-  { to: '/grids', title: 'Grid library', who: 'Engineer / analyst', job: 'Every read-only grid as a GridSpec. Edit, preview, save, put it on a desk, or copy the iframe / <ofx-grid> snippet for another app.', creates: 'Grids saved in this browser', not: 'A hand-coded grid per team' },
+  { to: '/grids', title: 'Grid library', who: 'Engineer / analyst', job: 'Every grid as a GridSpec. Edit, preview, save, put it on a desk, or copy the iframe / <ofx-grid> snippet. A spec with an edit block (Break register) takes write-back with maker-checker.', creates: 'Saved grids; change sets for approval', not: 'A hand-coded grid per team' },
   { to: '/onboarding', title: 'Onboarding', who: 'Maker / config', job: 'Create a live outcome in six numbered steps: outcome → feeds → SLA → when ready → grids → review.', creates: 'A new outcome (data, not a release)', not: 'Editing an existing outcome' },
   { to: '/configuration', title: 'Configuration', who: 'Owner / config', job: 'Govern the registry: pick an outcome or kit → review its contract → edit it through the same steps → save.', creates: 'Edits to a live outcome', not: 'A second create form (that is Onboarding)' },
   { to: '/drive', title: 'Drive scenarios', who: 'Demo / QA', job: 'Reset and inject COB facts. Product pages stay view-only.', creates: 'Simulator events into the hub', not: 'Buttons on Home or Reports' },
@@ -26,6 +26,8 @@ const SCREENS = [
   { to: '/board', title: 'Outcome board', who: 'CIO / MD / BU head', job: 'Traffic lights for the whole unit. Named blocker, SLA, escalation count. A row pick links to the desk.', creates: 'Nothing — read only', not: 'Sign-off or post' },
   { to: '/outcomes', title: 'My outcomes', who: 'Outcome user', job: 'Doer worklist. Open a ready instance to sign off or post.', creates: 'Nothing until you open an instance', not: 'Head roll-ups or RTB queues' },
   { to: '/instance/:id', title: 'Instance detail', who: 'Outcome user', job: 'Fold + embed + kit-declared actions. Drill-down only — no rail item. On a desk it follows the linked board.', creates: 'Sign-off / post / kit verb (audited, sent as activity)', not: 'A left-nav destination' },
+  { to: '/usage', title: 'Usage & feedback', who: 'Product / RTB', job: 'Screens and features people use, the access log, feedback notes, and A-B experiment results.', creates: 'Nothing — read', not: 'Business data' },
+  { to: '/access', title: 'My access', who: 'Everyone', job: 'What you hold and which verbs your roles allow; one request for everything a desk needs; approvals and reviews by someone else.', creates: 'Access requests, approvals, reviews (audited)', not: 'Granting yourself anything' },
   { to: '/finance', title: 'Finance dashboard', who: 'Head / controller', job: 'KPIs, charts and a pivot over the day’s outcomes (Wijmo).', creates: 'Nothing — read', not: 'Sign-off' },
   { to: '/operations', title: 'Operations', who: 'RTB', job: 'Escalations, watermarks, dead letters, dual-control replay.', creates: 'Replay / escalate (audited)', not: 'Business sign-off' },
   { to: '/monitoring', title: 'Monitoring', who: 'RTB / engineering', job: 'Received → persisted → propagated → audited.', creates: 'Nothing — observe the tape', not: 'Business sign-off' },
@@ -270,6 +272,20 @@ function StartTab() {
             <Link className="btn ghost" to="/drive">Open Drive</Link>
             <Link className="btn ghost" to="/architecture">Open Architecture</Link>
           </div>
+        </div>
+      </div>
+
+      <div className="panel">
+        <div className="panel-hd"><h2>One UX platform</h2><span className="hint">search · assistant · usage · write-back · access</span></div>
+        <div className="panel-bd">
+          <ol className="prod-ol">
+            <li><b>Search</b> in the top bar covers the hub, partner apps that register a search endpoint (<span className="mono">onefinux.ux.search-providers</span>), and the console’s screens, grids and tasks. Try <span className="mono">MB014</span>.</li>
+            <li><b>Assistant</b> (spark icon) answers from the hub’s facts for you, with buttons that open what it points at. Set <span className="mono">ONEFINUX_ASSIST_MODEL</span> and <span className="mono">ANTHROPIC_API_KEY</span> to have Claude write the answer. It never changes anything.</li>
+            <li><b>Usage &amp; feedback</b> (<Link to="/usage">/usage</Link>): opens, features, the access log, feedback and A-B results. Log a feature with <span className="mono">trackUse('my.feature')</span>; run an experiment with <span className="mono">useVariant(id)</span>.</li>
+            <li><b>Write-back</b>: add an <span className="mono">edit</span> block to a GridSpec. Edits go as one change set; someone else approves before the owning system is called. Try <Link to="/grids?spec=break-register">Break register</Link> as alice, then approve as gla.reviewer.</li>
+            <li><b>Access</b> (<Link to="/access">/access</Link>): verbs come from the role structure (<span className="mono">onefinux.security.role-actions</span>) — check <span className="mono">Entitlements.canAct</span>, never a role name. SSO is OIDC + PKCE (<span className="mono">ONEFINUX_OIDC_ISSUER</span>).</li>
+          </ol>
+          <p className="muted" style={{ marginBottom: 0 }}>Map against the UX taxonomy: <span className="mono">docs/design/one-ux.md</span>. Skill: <span className="mono">one-ux-platform</span>.</p>
         </div>
       </div>
 

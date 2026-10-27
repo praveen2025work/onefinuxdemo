@@ -85,10 +85,31 @@ onefinux:
   # set spring.security.oauth2.resourceserver.jwt.issuer-uri to the bank IdP, source entitlements from
   # CEES, and set dev-default-user=false so unauthenticated access is denied (fail-closed).
   security:
-    jwt-secret: onefinux-dev-signing-secret-please-override-in-prod-0123456789
-    dev-default-user: true          # no token => act as default-user (keeps console/simulator working)
+    jwt-secret: ${ONEFINUX_JWT_SECRET:onefinux-dev-signing-secret-please-override-in-prod-0123456789}
+    dev-default-user: ${ONEFINUX_DEV_DEFAULT_USER:true}   # no token => act as default-user (keeps console/simulator working)
+    dev-tokens: ${ONEFINUX_DEV_TOKENS:true}               # demo identities in the profile menu; false in production
     default-user: praveen.kumar
     token-ttl-minutes: 480
+    # Single sign-on (OpenID Connect). Set the issuer and client id to have the console sign users in at the bank
+    # IdP (authorization code + PKCE) and the hub validate that issuer's tokens. Claim names map the IdP's token.
+    oidc:
+      issuer: ${ONEFINUX_OIDC_ISSUER:}
+      client-id: ${ONEFINUX_OIDC_CLIENT_ID:}
+      scope: openid profile email
+      audience: ${ONEFINUX_OIDC_AUDIENCE:}
+      roles-claim: roles
+      group-units-claim: groupUnits
+    require-mfa: ${ONEFINUX_REQUIRE_MFA:false}   # SSO tokens must show a second factor (amr claim)
+    idle-lock-minutes: 15            # the console locks after this long without input
+    inactivity-days: 90              # access is suspended after this long without a visit
+    # Role structure: the verbs each role may perform. Roles outside this list are ignored, superuser needs ADMIN,
+    # and a role change in the IdP changes what the user can do on their next request.
+    role-actions:
+      ADMIN: [SIGN_OFF, COUNTERSIGN, POST, AMEND, ADJUST, ESCALATE, REPLAY, WRITEBACK, WRITEBACK_APPROVE, ACCESS_APPROVE, ACCESS_REVIEW]
+      CONTROLLER: [SIGN_OFF, POST, AMEND, ADJUST, ESCALATE, WRITEBACK]
+      GLA: [COUNTERSIGN, ESCALATE, WRITEBACK_APPROVE]
+      RTB: [REPLAY, ESCALATE]
+      AUDIT: [ACCESS_REVIEW]
     users:
       # Bracket-quoted keys so dotted usernames bind as literal map keys (not nested paths).
       "[praveen.kumar]": { superuser: true, roles: [ADMIN] }
@@ -96,6 +117,34 @@ onefinux:
       "[gla.reviewer]":  { roles: [GLA], groupUnits: [REV-ACC], ceesProducts: ["product:FOBO"] }
       "[bob.markets]":   { roles: [CONTROLLER], groupUnits: [MARKETS] }   # entitled to a unit with no instances
       "[auditor]":       { roles: [AUDIT], groupUnits: [REV-ACC] }
+
+  # ---------------------------------------------------------------- One UX platform
+  ux:
+    retention-days: 180
+    # Other applications' search, included in the header search. GET url?q= returns {hits:[{kind,id,title,detail,route}]}.
+    search-providers:
+      - { id: breaks, label: "Break register (partner)", url: /sim/search }
+    # A-B experiments: each user always sees the same variant; conversion names the component-use event that counts.
+    experiments:
+      - id: home-team-picks
+        description: Show "Popular with your team" on Home
+        variants: [hidden, shown]
+        weights: [1, 1]
+        enabled: true
+        conversion: recommendation.open
+
+  # In-app assistant: answers from the hub's facts for the user; advisory, never on the readiness path. It calls
+  # Claude only when both are set: ONEFINUX_ASSIST_MODEL (a Claude model id) and ANTHROPIC_API_KEY.
+  assist:
+    model: ${ONEFINUX_ASSIST_MODEL:}
+    api-key: ${ANTHROPIC_API_KEY:}
+    effort: low
+    fallbacks: true
+
+  # Grid write-back: approved edits are applied by calling the owning system. Only targets listed here can be called.
+  writeback:
+    targets:
+      breaks: { url: "http://localhost:7081/sim/grids/breaks/apply" }
 
   # ---------------------------------------------------------------- Component 2: translation layer
   translation:

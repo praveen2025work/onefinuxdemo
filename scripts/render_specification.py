@@ -339,11 +339,62 @@ OPERATE_AC = [
     ac("AC-OPERATE-23", "REQ-OPERATE-010", "an advisory comment is stored off the fold", "notification inbox is fetched", "no notification is created for that advisory comment"),
 ]
 
+ONEUX_REQ = [
+    ("REQ-ONEUX-001", "The header search returns hub hits (instances, outcomes, notifications, entitlement-filtered), each registered partner search provider's hits, and console screens, grids, and tasks, grouped by source."),
+    ("REQ-ONEUX-002", "A partner search hit is followed only when its route is a same-origin path."),
+    ("REQ-ONEUX-003", "POST /api/assist answers from facts the hub holds for the caller; the actions under an answer are built from those facts and not by a model."),
+    ("REQ-ONEUX-004", "The assistant calls Claude only when onefinux.assist.model and an API key are both set; otherwise it answers from the same facts without a model; it never changes state."),
+    ("REQ-ONEUX-005", "POST /api/ux/events records APP_OPEN, VIEW_OPEN, COMPONENT_USE, SEARCH, ASSIST, EXPOSURE, CONVERSION, and FEEDBACK with the authenticated actor and an entitled team only."),
+    ("REQ-ONEUX-006", "GET /api/ux/usage reports opens, features used, and the access log; all-teams usage needs the ACCESS_REVIEW verb."),
+    ("REQ-ONEUX-007", "Each user receives a stable variant for every enabled experiment, and /api/ux/experiments/results counts distinct users exposed and converted per variant."),
+    ("REQ-ONEUX-008", "GET /api/ux/recommendations lists screens teammates in the group unit opened in the last 30 days that the caller has not opened in the last 14 days."),
+    ("REQ-ONEUX-009", "Desks, saved grids, and settings are stored per user at /api/prefs/{key}; the copy saved later wins between browser and hub."),
+    ("REQ-ONEUX-010", "A desk shared with a group unit appears to that unit's members under New desk; only its author or a superuser removes it."),
+    ("REQ-ONEUX-011", "A GridSpec edit block makes only its listed columns editable and validates each value before it is accepted."),
+    ("REQ-ONEUX-012", "Edits are submitted as one change set to /api/writeback/{gridId}; with maker-checker a different user holding WRITEBACK_APPROVE applies it."),
+    ("REQ-ONEUX-013", "An approved change set is sent only to a write-back target named in onefinux.writeback.targets, and every submit, approval, rejection, and apply is audited and published as activity."),
+    ("REQ-ONEUX-014", "The role structure (onefinux.security.role-actions) decides which verbs each role performs; roles outside it are ignored and superuser requires ADMIN."),
+    ("REQ-ONEUX-015", "Access is suspended after onefinux.security.inactivity-days without a visit; a suspended user receives 403 on every API except sign-in and access requests."),
+    ("REQ-ONEUX-016", "One access request lists every entitlement a desk needs; an approver who is not the requester decides it, and approval grants every item."),
+    ("REQ-ONEUX-017", "A review lists every active grant, flags grants outside the role structure, and lets a reviewer other than the holder keep or revoke it."),
+    ("REQ-ONEUX-018", "With onefinux.security.oidc.issuer set, the console signs users in by OIDC authorization code with PKCE and the hub validates that issuer's tokens; require-mfa demands a second-factor amr claim."),
+    ("REQ-ONEUX-019", "The console locks after idle-lock-minutes without input; with SSO, unlocking signs in again."),
+    ("REQ-ONEUX-020", "The console is served with a Content-Security-Policy that frames partner screens, connects only to its own origin, and allows ancestors only on /widget/."),
+    ("REQ-ONEUX-021", "A grid framed by another site shows no edit or approve controls."),
+    ("REQ-ONEUX-022", "CI runs browser journeys and WCAG 2.1 AA checks; a critical or serious accessibility finding fails the build."),
+]
+
+ONEUX_AC = [
+    ac("AC-ONEUX-01", "REQ-ONEUX-001", "the user types R-2031 in the header search", "results render", "a group of hub hits contains the R-2031 instance"),
+    ac("AC-ONEUX-02", "REQ-ONEUX-001", "the user types MB014 in the header search", "results render", "a Break register (partner) group lists BK-4420 and the last line offers to ask the assistant"),
+    ac("AC-ONEUX-03", "REQ-ONEUX-002", "a partner returns a hit with route javascript:alert(1)", "results render", "that hit is dropped"),
+    ac("AC-ONEUX-04", "REQ-ONEUX-003", "R-2031 is BLOCKED on MOTIF MB014", "the user asks why R-2031 is blocked", "the answer names MB014 and an action opens /instance/{id} for R-2031"),
+    ac("AC-ONEUX-05", "REQ-ONEUX-004", "no model or no API key is configured", "GET /api/assist is called", "mode is grounded and answers still return"),
+    ac("AC-ONEUX-06", "REQ-ONEUX-004", "the model declines a question", "the answer returns", "it comes from the hub facts with a note saying so"),
+    ac("AC-ONEUX-07", "REQ-ONEUX-005", "a batch carries an unknown event type", "POST /api/ux/events is called", "the hub answers 400 and stores nothing"),
+    ac("AC-ONEUX-08", "REQ-ONEUX-005", "a user names a team they are not entitled to", "the event is stored", "its team is empty"),
+    ac("AC-ONEUX-09", "REQ-ONEUX-006", "a controller without ACCESS_REVIEW", "GET /api/ux/usage without a team is called", "the hub answers 403"),
+    ac("AC-ONEUX-10", "REQ-ONEUX-007", "the same user loads the console twice", "experiment assignments are fetched", "the variant is identical both times"),
+    ac("AC-ONEUX-11", "REQ-ONEUX-008", "two teammates opened /operations this month and the caller has not", "recommendations are fetched for the team", "/operations is listed with the count of teammates"),
+    ac("AC-ONEUX-12", "REQ-ONEUX-009", "the hub copy of desks is newer than the browser copy", "/desks loads", "the hub copy is shown and cached"),
+    ac("AC-ONEUX-13", "REQ-ONEUX-010", "a user shares a desk with REV-ACC", "another REV-ACC user opens New desk", "the desk is listed under Shared by your team"),
+    ac("AC-ONEUX-14", "REQ-ONEUX-011", "the break register is in edit mode", "a user enters a status outside its options", "the value is refused with the allowed options named"),
+    ac("AC-ONEUX-15", "REQ-ONEUX-012", "alice submits an owner change", "alice approves it", "the hub refuses: WRITEBACK_APPROVE is not her verb, and the maker can never be the checker"),
+    ac("AC-ONEUX-16", "REQ-ONEUX-012", "gla.reviewer approves alice's change set", "the approval completes", "the change set is APPLIED and the reconciliation system shows the new owner"),
+    ac("AC-ONEUX-17", "REQ-ONEUX-013", "a submission names a target that is not configured", "it is posted", "the hub answers 400 and calls nothing"),
+    ac("AC-ONEUX-18", "REQ-ONEUX-014", "the auditor (role AUDIT) holds a token", "POST /api/stitch/instance/signoff is called", "the hub answers 403 and audits the refusal"),
+    ac("AC-ONEUX-19", "REQ-ONEUX-015", "the auditor was last seen 120 days ago", "the auditor opens the console", "the access-suspended page is shown and other APIs answer 403"),
+    ac("AC-ONEUX-20", "REQ-ONEUX-016", "bob.markets requests REV-ACC and product:FOBO in one request", "an approver who is not bob approves it", "bob's entitlements include both on the next request"),
+    ac("AC-ONEUX-21", "REQ-ONEUX-017", "a grant names a role outside the role structure", "the review queue is fetched", "the grant is flagged outside the role structure"),
+    ac("AC-ONEUX-22", "REQ-ONEUX-018", "require-mfa is true", "an SSO token without an mfa or otp amr value is presented", "the caller receives no entitlements"),
+    ac("AC-ONEUX-23", "REQ-ONEUX-022", "a change introduces a serious contrast failure on /board", "CI runs the accessibility checks", "the e2e job fails naming the rule and element"),
+]
+
 NFR_REQ = [
     ("REQ-NFR-001", "Hub and tests run on Java 21 with mvn -B verify in CI."),
     ("REQ-NFR-002", "The console builds with npm ci && npm run build in frontend/web in CI."),
     ("REQ-NFR-003", "Phase 1 persistence is the hub store (H2 in the local demo) and does not require Kafka, Redis, or a cloud bus."),
-    ("REQ-NFR-004", "The console uses REST plus SSE only."),
+    ("REQ-NFR-004", "The console uses REST plus the hub live link (WebSocket, with SSE as the fallback) only; it never connects to a message bus."),
     ("REQ-NFR-005", "Theme tokens live in frontend/web/src/styles.css and frontend/theme/onefinux-tokens.css."),
     ("REQ-NFR-006", "Partner embeds import --ofx-* tokens and omit their own masthead."),
 ]
@@ -357,6 +408,7 @@ SUBSYSTEMS = [
     ("REPORTS", "Reports index and document", REPORTS_REQ, REPORTS_AC),
     ("GOVERN", "Onboarding and configuration", GOVERN_REQ, GOVERN_AC),
     ("OPERATE", "Drive, operations, monitoring, notifications", OPERATE_REQ, OPERATE_AC),
+    ("ONEUX", "One UX platform: search, assistant, telemetry, personalisation, write-back, access", ONEUX_REQ, ONEUX_AC),
 ]
 
 
@@ -536,13 +588,14 @@ def render() -> str:
     a("| REPORTS | Reports | Layouts, document route, stage flow |")
     a("| GOVERN | Onboarding and configuration | Create vs govern |")
     a("| OPERATE | Drive, RTB, monitor, notify | Scenarios, replay, SSE, inbox |")
+    a("| ONEUX | One UX platform | Search across apps, assistant, usage and feedback, experiments, saved desks and team templates, grid write-back, access register, sign-in |")
     a("")
     a("Each subsystem has numbered REQ-IDs and exactly 23 AC-IDs.")
     a("")
 
     a("## 11. Functional requirements")
     a("")
-    a("This section states every functional REQ-ID by subsystem. Quality-attribute REQ-IDs follow the eight subsystems.")
+    a("This section states every functional REQ-ID by subsystem. Quality-attribute REQ-IDs follow the nine subsystems.")
     a("")
     for code, name, reqs, _acs in SUBSYSTEMS:
         a(f"### 11.{SUBSYSTEMS.index((code, name, reqs, _acs)) + 1} {name} ({code})")
@@ -692,6 +745,7 @@ def render() -> str:
     a("| `/onboarding` `/configuration` | GOVERN |")
     a("| `/drive` | OPERATE |")
     a("| `/operations` `/monitoring` | OPERATE |")
+    a("| `/desks` `/grids` `/usage` `/access` `/auth/callback` | ONEUX |")
     a("")
 
     a("## 16. Fail-closed behaviour and errors")

@@ -17,6 +17,10 @@ import { builtinSpec } from '../grid/specs.js';
 import { loadMySpecs } from '../grid/useGridSpec.js';
 import { BUILTIN_INTENTS, setWorkspaceHost } from '../workspace/fdc3.js';
 import { subscribeLive } from '../live/liveLink.js';
+import { uxApi } from '../api.js';
+import TeamPicks from '../components/TeamPicks.jsx';
+import { loadRemote, newer, remoteSaver } from '../ux/prefs.js';
+import { track, trackUse } from '../ux/track.js';
 import {
   LAYOUTS, WS_KEY, addView, createWorkspace, currentWorkspace, deleteWorkspace, deskFor, loadState, moveView, newId,
   gridColumns, patchView, removeView, renameWorkspace, resizePair, setActive, setLayout, splitShares, switchWorkspace, toggleMaximized,
@@ -84,9 +88,29 @@ export default function Desks() {
   const lastContext = useRef({}); // channel -> last context (FDC3: a channel keeps its current context)
   const domOrder = useRef(new Map()); // viewId -> first-seen index: DOM order never changes, so iframes never reload
 
+  // Desks follow the user: localStorage is the cache, the hub (/api/prefs/desks) the copy every browser shares.
+  // The newer copy wins at load; after that every change is saved to both.
+  const synced = useRef(false);
+  const saveRemote = useMemo(() => remoteSaver('desks'), []);
+  const [deskMsg, setDeskMsg] = useState(null);
   useEffect(() => {
-    try { localStorage.setItem(WS_KEY, JSON.stringify(state)); } catch { /* quota / private window */ }
-  }, [state]);
+    let alive = true;
+    loadRemote('desks').then((remote) => {
+      if (!alive) return;
+      const local = { savedAt: Number(localStorage.getItem(WS_KEY + '-at')) || 0, state: stateRef.current };
+      synced.current = true;
+      if (remote && newer(local, remote) === 'remote') setState(loadState(remote.state));
+      else saveRemote(stateRef.current, local.savedAt || Date.now());
+    });
+    return () => { alive = false; };
+  }, []);
+  useEffect(() => {
+    try {
+      localStorage.setItem(WS_KEY, JSON.stringify(state));
+      if (synced.current) localStorage.setItem(WS_KEY + '-at', String(Date.now()));
+    } catch { /* quota / private window */ }
+    if (synced.current) saveRemote(state);
+  }, [state, saveRemote]);
 
   // /desks?outcome=outcome:FOBO_HELIX&name=… (from Reports and the Board): open that outcome's desk, or build it.
   const handledLink = useRef(null);
@@ -95,6 +119,7 @@ export default function Desks() {
     const link = searchParams.toString();
     if (!link || handledLink.current === link) return;
     handledLink.current = link;
+    if (searchParams.get('new')) { navigate('/desks', { replace: true }); setCreating(true); return; }
     const grid = searchParams.get('grid');
     if (grid) {
       // From the grid library: a spec id, or `def:<encoded spec>` for an edited one.
@@ -378,11 +403,25 @@ export default function Desks() {
   }
 
   function launch(app) {
+    track('VIEW_OPEN', { app: app.appId, component: app.kind });
     // On an outcome desk new views join the desk's shared channel; elsewhere the first colour in use.
     const linked = deskChan?.id || ws.views.find((v) => v.channel)?.channel || null;
     setState((s) => addView(s, { id: newId(), appId: app.appId, title: app.title, channel: app.linkable ? linked : null,
       ...(app.kind === 'widget' && subject ? { config: { subject } } : {}) }));
     setLauncher(false);
+  }
+
+  /** Share this desk's layout with the team (group unit): anyone in it can start a desk from it. */
+  async function shareDesk() {
+    setDeskMsg(null);
+    try {
+      await uxApi.shareTemplate({ team: filters.groupUnit, kind: 'desk', name: ws.name,
+        json: { name: ws.name, layout: ws.layout, ...(ws.subject ? { subject: ws.subject } : {}), views: ws.views } });
+      trackUse('desk.share');
+      setDeskMsg({ cls: 'ok', text: `“${ws.name}” is shared with ${filters.groupUnit}. Teammates find it under New desk.` });
+    } catch (e) {
+      setDeskMsg({ cls: 'fail', text: e.message });
+    }
   }
 
   /** Build a desk for a business outcome from its template (lineage grids come from the outcome definition). */
@@ -539,6 +578,8 @@ export default function Desks() {
             onClick={() => setNaming({ mode: 'rename', value: ws.name })}><Icon name="config" size={16} /></button>
           <button className="tb-icon" title="Delete desk" aria-label="Delete desk"
             onClick={() => setState((s) => deleteWorkspace(s))} disabled={state.workspaces.length <= 1}><Icon name="trash" size={16} /></button>
+          <button className="tb-icon" title={`Share this desk with ${filters.groupUnit || 'your team'}`} aria-label="Share desk with team"
+            onClick={shareDesk} disabled={!filters.groupUnit || ws.views.length === 0}><Icon name="share" size={16} /></button>
           {Object.entries(unread).some(([id, n]) => n && id !== ws.id) && (
             <span className="pill warn" title="Activity on other desks’ outcomes while you were here">
               {Object.entries(unread).filter(([id]) => id !== ws.id).reduce((n, [, c]) => n + c, 0)} new elsewhere
@@ -640,15 +681,19 @@ export default function Desks() {
         </div>
       )}
 
+      {deskMsg && <div className={'banner ' + deskMsg.cls} style={{ marginTop: 6 }}><div>{deskMsg.text}</div>
+        <button type="button" className="np-ic" onClick={() => setDeskMsg(null)} aria-label="Dismiss"><Icon name="x" size={13} /></button></div>}
+
       {launcher && (
-        <AppDirectory apps={apps} onLaunch={launch} onClose={() => setLauncher(false)}
+        <AppDirectory apps={apps} onLaunch={launch} onClose={() => setLauncher(false)} team={filters.groupUnit}
           onAdd={(app) => { setCustomApps((list) => [...list, app]); launch(app); }}
           onRemove={(appId) => setCustomApps((list) => list.filter((a) => a.appId !== appId))}
           pageOrigin={pageOrigin} />
       )}
 
       {creating && (
-        <NewDesk state={state} onOutcome={openOutcomeDesk} onClose={() => setCreating(false)}
+        <NewDesk state={state} onOutcome={openOutcomeDesk} onClose={() => setCreating(false)} team={filters.groupUnit}
+          onTemplate={(t) => { setState((s) => createWorkspace(s, t.name, { template: t.json })); trackUse('desk.fromTemplate'); setCreating(false); }}
           onBlank={(name) => { setState((s) => createWorkspace(s, name)); setCreating(false); }}
           onOpen={(id) => { setState((s) => switchWorkspace(s, id)); setCreating(false); }} />
       )}
@@ -680,14 +725,16 @@ function ViewFrame({ view, app, src, onFrame }) {
 }
 
 /** New desk: pick a business outcome (engine outcome or kit) to get its template, or start blank. */
-function NewDesk({ state, onOutcome, onBlank, onOpen, onClose }) {
+function NewDesk({ state, onOutcome, onBlank, onOpen, onClose, team, onTemplate }) {
   const [subjects, setSubjects] = useState(null);
   const [name, setName] = useState('');
+  const [templates, setTemplates] = useState([]);
   useEffect(() => {
     Promise.allSettled([outcomesApi.all(), api.kits()]).then(([o, k]) => {
       setSubjects(deskSubjects(o.status === 'fulfilled' ? o.value : [], k.status === 'fulfilled' ? k.value : []));
     });
-  }, []);
+    if (team) uxApi.templates(team, 'desk').then(setTemplates).catch(() => setTemplates([]));
+  }, [team]);
   return (
     <Modal title="New desk" subtitle="One desk per business outcome — or a blank desk for anything" onClose={onClose} width={720}>
       <div className="appdir-sec">
@@ -712,6 +759,24 @@ function NewDesk({ state, onOutcome, onBlank, onOpen, onClose }) {
           })}
         </div>
       </div>
+      {templates.length > 0 && (
+        <div className="appdir-sec">
+          <div className="menu-lbl">Shared by your team <span className="muted">· {team} desks teammates set up</span></div>
+          <div className="appdir">
+            {templates.filter((t) => t.json?.views).map((t) => (
+              <div key={t.id} className="appdir-card" role="button" tabIndex={0} onClick={() => onTemplate(t)}
+                onKeyDown={(e) => { if (e.key === 'Enter') onTemplate(t); }}>
+                <span className="ph-ico"><Icon name="users" size={16} /></span>
+                <div className="appdir-txt">
+                  <b>{t.name}</b>
+                  <span>{t.json.views.length} view{t.json.views.length === 1 ? '' : 's'} · shared by {t.createdBy}</span>
+                </div>
+                <span className="chip">team</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <form className="appdir-add" onSubmit={(e) => { e.preventDefault(); if (name.trim()) onBlank(name.trim()); }}>
         <div className="menu-lbl">Blank desk <span className="muted">· any screens, frames and widgets; link them by colour</span></div>
         <div className="appdir-form">
@@ -723,7 +788,7 @@ function NewDesk({ state, onOutcome, onBlank, onOpen, onClose }) {
   );
 }
 
-function AppDirectory({ apps, onLaunch, onAdd, onRemove, onClose, pageOrigin }) {
+function AppDirectory({ apps, onLaunch, onAdd, onRemove, onClose, pageOrigin, team }) {
   const [title, setTitle] = useState('');
   const [url, setUrl] = useState('');
   const [error, setError] = useState(null);
@@ -744,6 +809,12 @@ function AppDirectory({ apps, onLaunch, onAdd, onRemove, onClose, pageOrigin }) 
 
   return (
     <Modal title="Launch app" subtitle="App directory — screens, widgets and framed web apps" onClose={onClose} width={760}>
+      <div className="appdir-sec">
+        <TeamPicks team={team} compact label={<div className="menu-lbl">Popular with your team <span className="muted">· what {team} opened this month</span></div>} onPick={(p) => {
+          const app = apps.find((a) => a.appId === p.app) || appForPath(apps, p.app);
+          if (app) onLaunch(app);
+        }} />
+      </div>
       {groups.map((g) => (
         <div key={g.kind} className="appdir-sec">
           <div className="menu-lbl">{g.label} <span className="muted">· {g.hint}</span></div>

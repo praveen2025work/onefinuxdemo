@@ -47,13 +47,13 @@ export default function GridConfigFields({ grids = [], onChange }) {
         {grids.map((g, i) => (
           <div className="ob-grid" key={i}>
             <div className="ob-feed">
-              <input className="inp mono" placeholder="investigation" value={g.id}
+              <input className="inp mono" placeholder="investigation" aria-label={`Grid ${i + 1} id`} value={g.id}
                 onChange={(e) => setGrid(i, { id: e.target.value.replace(/[^A-Za-z0-9_-]/g, '_') })} />
-              <input className="inp" placeholder="Investigation" value={g.title}
+              <input className="inp" placeholder="Investigation" aria-label={`Grid ${i + 1} title`} value={g.title}
                 onChange={(e) => setGrid(i, { title: e.target.value })} />
-              <input className="inp mono" placeholder="/sim/grids/investigation" value={g.endpoint}
+              <input className="inp mono" placeholder="/sim/grids/investigation" aria-label={`Grid ${i + 1} endpoint`} value={g.endpoint}
                 onChange={(e) => setGrid(i, { endpoint: e.target.value })} />
-              <select className="inp" value={g.method || 'GET'} onChange={(e) => setGrid(i, { method: e.target.value })}>
+              <select className="inp" aria-label={`Grid ${i + 1} method`} value={g.method || 'GET'} onChange={(e) => setGrid(i, { method: e.target.value })}>
                 <option>GET</option>
                 <option>POST</option>
               </select>
@@ -64,13 +64,13 @@ export default function GridConfigFields({ grids = [], onChange }) {
             <div className="ob-params">
               {(g.params || []).map((p, pi) => (
                 <div className="ob-param" key={pi}>
-                  <input className="inp mono" placeholder="name" value={p.name}
+                  <input className="inp mono" placeholder="name" aria-label="Parameter name" value={p.name}
                     onChange={(e) => setParam(i, pi, { name: e.target.value })} />
-                  <select className="inp" value={p.from || ''} onChange={(e) => setParam(i, pi, { from: e.target.value, value: e.target.value ? '' : p.value })}>
+                  <select className="inp" aria-label="Parameter bound to" value={p.from || ''} onChange={(e) => setParam(i, pi, { from: e.target.value, value: e.target.value ? '' : p.value })}>
                     <option value="">literal value</option>
                     {GRID_FROM.map((f) => <option key={f} value={f}>{f}</option>)}
                   </select>
-                  <input className="inp mono" placeholder={p.from ? 'from context' : 'value'} value={p.value}
+                  <input className="inp mono" placeholder={p.from ? 'from context' : 'value'} aria-label="Parameter value" value={p.value}
                     disabled={Boolean(p.from)} onChange={(e) => setParam(i, pi, { value: e.target.value, from: '' })} />
                   <button type="button" className="ob-x" title="Remove parameter" aria-label="Remove parameter" onClick={() => removeParam(i, pi)}>
                     <Icon name="x" size={13} />

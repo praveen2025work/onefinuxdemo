@@ -56,8 +56,38 @@ public class AuthController {
         return currentUser.entitlements();
     }
 
+    /**
+     * How this console signs in and how long it may sit idle: SSO settings (issuer, client id, scope) for the PKCE
+     * flow, whether demo tokens exist, the idle-lock minutes, and the caller's own state (suspended, allowed verbs).
+     */
+    @GetMapping("/session")
+    public Map<String, Object> session() {
+        Entitlements ent = currentUser.entitlements();
+        SecurityProperties.Oidc oidc = props.oidc();
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("mode", oidc.enabled() ? "oidc" : "dev");
+        m.put("devTokens", props.devTokens());
+        m.put("anonymousAllowed", props.devDefaultUser());
+        if (oidc.enabled()) {
+            m.put("oidc", Map.of("issuer", oidc.issuer(), "clientId", String.valueOf(oidc.clientId()), "scope", oidc.scope()));
+        }
+        m.put("idleLockMinutes", props.idleLockMinutes());
+        m.put("inactivityDays", props.inactivityDays());
+        m.put("requireMfa", props.requireMfa());
+        m.put("subject", ent.subject());
+        m.put("suspended", ent.suspended());
+        m.put("roles", ent.roles());
+        m.put("groupUnits", ent.groupUnits());
+        m.put("superuser", ent.superuser());
+        m.put("actions", ent.actions() == null ? List.of("*") : ent.actions());
+        return m;
+    }
+
     @PostMapping("/dev-token")
     public ResponseEntity<Map<String, Object>> devToken(@RequestParam String user) {
+        if (!props.devTokens()) {
+            return ResponseEntity.status(404).body(Map.of("error", "demo tokens are disabled; sign in through SSO"));
+        }
         SecurityProperties.DemoUser demo = props.users().get(user);
         if (demo == null) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -66,7 +96,7 @@ public class AuthController {
         Instant now = Instant.now();
         Instant exp = now.plus(Duration.ofMinutes(props.tokenTtlMinutes()));
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("onefinux-dev")
+                .issuer(CurrentUser.DEV_ISSUER)
                 .issuedAt(now)
                 .expiresAt(exp)
                 .subject(user)

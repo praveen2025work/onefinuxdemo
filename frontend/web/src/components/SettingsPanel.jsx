@@ -22,7 +22,7 @@ export default function SettingsPanel({ open, onClose }) {
   }, [open, onClose]);
 
   return (
-    <aside className={'npanel' + (open ? ' open' : '')} aria-label="Settings" aria-hidden={!open}>
+    <aside className={'npanel' + (open ? ' open' : '')} aria-label="Settings" aria-hidden={!open} inert={open ? undefined : ''}>
       <div className="np-inner">
         <div className="np-hd">
           <div className="np-ttl"><h3>Settings</h3></div>

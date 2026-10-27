@@ -8,44 +8,15 @@ import ProfileMenu from './ProfileMenu.jsx';
 import ShellSearch from './ShellSearch.jsx';
 import SettingsPanel from './SettingsPanel.jsx';
 import NotificationsPanel from './NotificationsPanel.jsx';
+import AssistantPanel from './AssistantPanel.jsx';
+import FeedbackDialog from './FeedbackDialog.jsx';
+import { telemetry, trackOpen } from '../ux/track.js';
 import EmbedShell from '../workspace/EmbedShell.jsx';
 import { filterNav } from '../views.js';
+import { NAV } from '../nav.js';
 import { EMBED } from '../embed.js';
 import { useInstallPrompt } from '../pwa.js';
 
-const NAV = [
-  { grp: 'Console', items: [
-    { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
-    { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
-    { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
-    { to: '/finance', label: 'Finance dashboard', short: 'Finance', icon: 'dollar' },
-    { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
-  ] },
-  { grp: 'Collaborate', items: [
-    { to: '/desks', label: 'Desks', short: 'Desks', icon: 'window' },
-    { to: '/notifications', label: 'Notifications', short: 'Alerts', icon: 'bell', badge: 'unread' },
-    { to: '/grids', label: 'Grid library', short: 'Grids', icon: 'grid' },
-  ] },
-  { grp: 'Operate', items: [
-    { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },
-  ] },
-  { grp: 'Observe', items: [
-    { to: '/monitoring', label: 'Monitoring', short: 'Monitor', icon: 'activity' },
-  ] },
-  { grp: 'Build', items: [
-    { to: '/onboarding', label: 'Onboarding', short: 'Onboard', icon: 'build' },
-    { to: '/configuration', label: 'Configuration', short: 'Config', icon: 'config' },
-  ] },
-  { grp: 'Testing', items: [
-    { to: '/drive', label: 'Drive scenarios', short: 'Drive', icon: 'bolt' },
-  ] },
-  { grp: 'Guide', items: [
-    { to: '/product', label: 'Product', short: 'Product', icon: 'book' },
-    { to: '/architecture', label: 'Architecture', short: 'Arch', icon: 'compass' },
-    { to: '/guide', label: 'Developer guide', short: 'Guide', icon: 'code' },
-    { to: '/lifecycle', label: 'Event lifecycle', short: 'Lifecycle', icon: 'inbox' },
-  ] },
-];
 
 export default function Layout({ children }) {
   if (EMBED) return <EmbedShell>{children}</EmbedShell>;
@@ -61,11 +32,23 @@ function Shell({ children }) {
   const [railOpen, setRailOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
+  const [assist, setAssist] = useState({ open: false, seed: null });
+  const [feedback, setFeedback] = useState({ open: false, category: null });
   const location = useLocation();
   const navigate = useNavigate();
   const { canInstall, standalone, install } = useInstallPrompt();
 
   useEffect(() => { setRailOpen(false); }, [location.pathname]);
+  useEffect(() => { trackOpen(location.pathname); }, [location.pathname]);
+  useEffect(() => { telemetry.setTeam(filters.groupUnit); }, [filters.groupUnit]);
+  // Any screen can open the assistant (with a question) or the feedback dialog through ux/bus.js.
+  useEffect(() => {
+    const onAssist = (e) => { setNotifPanelOpen(false); setSettingsOpen(false); setAssist({ open: true, seed: e.detail?.question ? { question: e.detail.question } : null }); };
+    const onFeedback = (e) => setFeedback({ open: true, category: e.detail?.category || null });
+    window.addEventListener('ofx-assist', onAssist);
+    window.addEventListener('ofx-feedback', onFeedback);
+    return () => { window.removeEventListener('ofx-assist', onAssist); window.removeEventListener('ofx-feedback', onFeedback); };
+  }, [setNotifPanelOpen]);
   useEffect(() => { if (location.pathname === '/notifications') setNotifPanelOpen(false); }, [location.pathname, setNotifPanelOpen]);
 
   function toggleRail() {
@@ -95,7 +78,14 @@ function Shell({ children }) {
 
   function openSettings() {
     setNotifPanelOpen(false);
+    setAssist((a) => ({ ...a, open: false }));
     setSettingsOpen(true);
+  }
+
+  function toggleAssist() {
+    setNotifPanelOpen(false);
+    setSettingsOpen(false);
+    setAssist((a) => ({ open: !a.open, seed: null }));
   }
 
   const railItems = nav.flatMap((section) => section.items);
@@ -104,14 +94,14 @@ function Shell({ children }) {
   const bottomItems = bottomPicked.length >= 3 ? bottomPicked.slice(0, 5) : railItems.slice(0, 5);
 
   return (
-    <div className={'app' + (railOpen ? ' rail-open' : '') + (notifPanelOpen ? ' notif-open' : '')}>
+    <div className={'app' + (railOpen ? ' rail-open' : '') + (notifPanelOpen || assist.open || settingsOpen ? ' notif-open' : '')}>
       <div className="rail-scrim" onClick={() => setRailOpen(false)} aria-hidden={!railOpen} />
       {!railOpen && (
         <button type="button" className="rail-tab" onClick={() => setRailOpen(true)} title="Open menu" aria-label="Open menu">
           <Icon name="right" size={15} />
         </button>
       )}
-      <aside className="rail" aria-hidden={!railOpen}>
+      <aside className="rail" aria-hidden={!railOpen} inert={railOpen ? undefined : ''}>
         <div className="rail-top">
           <div className="brand">
             <BrandMark size={32} />
@@ -191,8 +181,12 @@ function Shell({ children }) {
                 <Icon name="message" size={16} />
               </button>
             )}
+            <button type="button" className={'tb-icon' + (assist.open ? ' on' : '')} onClick={toggleAssist}
+              title="Assistant — ask about your close" aria-label="Assistant" aria-expanded={assist.open}>
+              <Icon name="spark" size={16} />
+            </button>
             <ThemeMenu />
-            <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={() => { setSettingsOpen(false); toggleNotifPanel(); }} title="Notifications"
+            <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={() => { setSettingsOpen(false); setAssist((a) => ({ ...a, open: false })); toggleNotifPanel(); }} title="Notifications"
               aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={notifPanelOpen}>
               <Icon name="bell" size={16} />
               {unread > 0 && <span className="dot-n">{unread > 99 ? '99+' : unread}</span>}
@@ -212,7 +206,9 @@ function Shell({ children }) {
           <main className="body"><div className="wrap">{children}</div></main>
           <NotificationsPanel />
           <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+          <AssistantPanel open={assist.open} seed={assist.seed} onClose={() => setAssist((a) => ({ ...a, open: false }))} />
         </div>
+        <FeedbackDialog open={feedback.open} initialCategory={feedback.category} onClose={() => setFeedback({ open: false, category: null })} />
       </div>
 
       <nav className="bottom-nav" aria-label="Primary">

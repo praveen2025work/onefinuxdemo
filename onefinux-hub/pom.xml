@@ -77,6 +77,12 @@
             <artifactId>json-schema-validator</artifactId>
             <version>1.5.4</version>
         </dependency>
+        <!-- Advisory in-app assistant (never on the readiness path). Off unless a model and key are configured. -->
+        <dependency>
+            <groupId>com.anthropic</groupId>
+            <artifactId>anthropic-java</artifactId>
+            <version>3.2.0</version>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>

@@ -17,8 +17,9 @@ const OPS = ['sum', 'avg', 'count', 'min', 'max'];
  * shows tabular data uses this, so an analyst gets the same tools everywhere.
  */
 export default function DataView({ rows = [], columns, views = ['grid', 'pivot', 'chart'], defaultView = 'grid', height = 360,
-  title, exportName, onSelect, empty, pivot = {}, chart = {}, actions, rowHeight, maxHeight }) {
-  const [view, setView] = useState(views.includes(defaultView) ? defaultView : views[0]);
+  title, exportName, onSelect, empty, pivot = {}, chart = {}, actions, rowHeight, maxHeight, edit, below }) {
+  const [picked, setView] = useState(views.includes(defaultView) ? defaultView : views[0]);
+  const view = views.includes(picked) ? picked : views[0];
   const data = useMemo(() => plainRows(rows), [rows]);
   const { numeric, text } = useMemo(() => fieldKinds(data), [data]);
   const [cat, setCat] = useState(chart.x || null);
@@ -41,8 +42,13 @@ export default function DataView({ rows = [], columns, views = ['grid', 'pivot',
   );
 
   if (view === 'grid') {
-    return <DataGrid rows={rows} columns={columns} height={height} title={title} exportName={exportName} onSelect={onSelect}
-      empty={empty} rowHeight={rowHeight} maxHeight={maxHeight} actions={<>{actions}{switcher}</>} />;
+    return (
+      <>
+        <DataGrid rows={rows} columns={columns} height={height} title={title} exportName={exportName} onSelect={onSelect}
+          empty={empty} rowHeight={rowHeight} maxHeight={maxHeight} actions={<>{actions}{switcher}</>} edit={edit} />
+        {below}
+      </>
+    );
   }
 
   return (

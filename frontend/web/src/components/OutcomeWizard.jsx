@@ -74,17 +74,17 @@ export default function OutcomeWizard({ initial, mode = 'create', knownSources =
               <div className="ob-row2">
                 <div className="field"><label>Outcome id {mode === 'edit' && <span className="muted">(fixed once live)</span>}</label>
                   <input className="inp mono" value={form.id} disabled={mode === 'edit'} autoFocus={mode !== 'edit'}
-                    placeholder="MEC_CLOSE" onChange={(e) => patch({ id: UPPER_ID(e.target.value) })} /></div>
+                    placeholder="MEC_CLOSE" aria-label="Outcome id" onChange={(e) => patch({ id: UPPER_ID(e.target.value) })} /></div>
                 <div className="field"><label>Name</label>
-                  <input className="inp" value={form.name} placeholder="Month-end close" onChange={(e) => patch({ name: e.target.value })} /></div>
+                  <input className="inp" value={form.name} placeholder="Month-end close" aria-label="Name" onChange={(e) => patch({ name: e.target.value })} /></div>
               </div>
               <div className="field"><label>Business question <InfoHint title="The question" width={260}>Every outcome answers a plain business question, e.g. “Can I close the books?”. It is the title on the board and in reports.</InfoHint></label>
-                <input className="inp" value={form.question} placeholder="Can I close the books?" onChange={(e) => patch({ question: e.target.value })} /></div>
+                <input className="inp" value={form.question} placeholder="Can I close the books?" aria-label="Business question" onChange={(e) => patch({ question: e.target.value })} /></div>
               <div className="ob-row2">
                 <div className="field"><label>Owner group</label>
-                  <input className="inp" value={form.ownerGroup} placeholder="Financial Control" onChange={(e) => patch({ ownerGroup: e.target.value })} /></div>
+                  <input className="inp" value={form.ownerGroup} placeholder="Financial Control" aria-label="Owner group" onChange={(e) => patch({ ownerGroup: e.target.value })} /></div>
                 <div className="field"><label>Regions <span className="muted">(comma separated; GLOBAL for all)</span></label>
-                  <input className="inp mono" value={form.regions} onChange={(e) => patch({ regions: e.target.value })} /></div>
+                  <input className="inp mono" value={form.regions} aria-label="Regions" onChange={(e) => patch({ regions: e.target.value })} /></div>
               </div>
             </>
           )}
@@ -137,9 +137,9 @@ export default function OutcomeWizard({ initial, mode = 'create', knownSources =
               </div>
               {form.actionMode === 'command' && (
                 <div className="ob-row3" style={{ marginTop: 8 }}>
-                  <div className="field"><label>Target engine</label><input className="inp mono" placeholder="axiom" value={form.target} onChange={(e) => patch({ target: e.target.value })} /></div>
-                  <div className="field"><label>Completion event</label><input className="inp mono" placeholder="REPORT_GENERATED" value={form.completionEvent} onChange={(e) => patch({ completionEvent: UPPER_ID(e.target.value) })} /></div>
-                  <div className="field"><label>Action label</label><input className="inp" placeholder="Generate report" value={form.actionLabel} onChange={(e) => patch({ actionLabel: e.target.value })} /></div>
+                  <div className="field"><label>Target engine</label><input className="inp mono" placeholder="axiom" aria-label="Target engine" value={form.target} onChange={(e) => patch({ target: e.target.value })} /></div>
+                  <div className="field"><label>Completion event</label><input className="inp mono" placeholder="REPORT_GENERATED" aria-label="Completion event" value={form.completionEvent} onChange={(e) => patch({ completionEvent: UPPER_ID(e.target.value) })} /></div>
+                  <div className="field"><label>Action label</label><input className="inp" placeholder="Generate report" aria-label="Action label" value={form.actionLabel} onChange={(e) => patch({ actionLabel: e.target.value })} /></div>
                 </div>
               )}
             </div>

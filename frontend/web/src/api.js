@@ -273,3 +273,69 @@ export const activityApi = {
   /** Tell every desk on this outcome about an action (a note, or an action a partner screen took). */
   post: (body) => postJson('/api/interop/activity', body),
 };
+
+/** JSON to and from the hub with the session's token. Errors carry the hub's detail text. */
+export async function hubJson(path, { method = 'GET', body, params, keepalive } = {}) {
+  const qs = params ? '?' + new URLSearchParams(clean(params)).toString() : '';
+  const res = await fetch(path + qs, {
+    method,
+    keepalive,
+    headers: authHeaders(body !== undefined ? { 'Content-Type': 'application/json' } : undefined),
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    let detail = `${res.status} on ${path}`;
+    try { const j = await res.json(); detail = j.detail || j.message || j.error || detail; } catch { /* ignore */ }
+    const err = new Error(detail);
+    err.status = res.status;
+    throw err;
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+// One UX platform: assistant, usage, experiments, preferences, team templates, write-back, access, session.
+export const uxApi = {
+  config: () => hubJson('/api/ux/config'),
+  events: (batch, keepalive) => hubJson('/api/ux/events', { method: 'POST', body: batch, keepalive }),
+  usage: (params) => hubJson('/api/ux/usage', { params }),
+  feedback: () => hubJson('/api/ux/feedback'),
+  experimentResults: () => hubJson('/api/ux/experiments/results'),
+  recommendations: (team) => hubJson('/api/ux/recommendations', { params: { team } }),
+  pref: (key) => hubJson(`/api/prefs/${key}`),
+  savePref: (key, value) => hubJson(`/api/prefs/${key}`, { method: 'PUT', body: value }),
+  templates: (team, kind) => hubJson('/api/templates', { params: { team, kind } }),
+  shareTemplate: (body) => hubJson('/api/templates', { method: 'POST', body }),
+  removeTemplate: (id) => hubJson(`/api/templates/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+};
+
+export const assistApi = {
+  status: () => hubJson('/api/assist'),
+  ask: (body) => hubJson('/api/assist', { method: 'POST', body }),
+};
+
+export const writebackApi = {
+  submit: (gridId, body) => hubJson(`/api/writeback/${encodeURIComponent(gridId)}`, { method: 'POST', body }),
+  list: (params) => hubJson('/api/writeback', { params }),
+  overlay: (gridId) => hubJson(`/api/writeback/${encodeURIComponent(gridId)}/overlay`),
+  approve: (id) => hubJson(`/api/writeback/sets/${encodeURIComponent(id)}/approve`, { method: 'POST' }),
+  reject: (id, reason) => hubJson(`/api/writeback/sets/${encodeURIComponent(id)}/reject`, { method: 'POST', params: { reason } }),
+};
+
+export const accessApi = {
+  session: () => hubJson('/api/auth/session'),
+  me: () => hubJson('/api/access/me'),
+  users: () => hubJson('/api/access/users'),
+  requests: (status) => hubJson('/api/access/requests', { params: { status } }),
+  request: (body) => hubJson('/api/access/requests', { method: 'POST', body }),
+  decide: (id, decision) => hubJson(`/api/access/requests/${encodeURIComponent(id)}/${decision}`, { method: 'POST' }),
+  review: () => hubJson('/api/access/review'),
+  reviewOne: (grantId, keep) => hubJson(`/api/access/review/${grantId}`, { method: 'POST', params: { keep } }),
+  restore: (subject) => hubJson(`/api/access/users/${encodeURIComponent(subject)}/restore`, { method: 'POST' }),
+  sweep: () => hubJson('/api/access/sweep', { method: 'POST' }),
+};
+
+/** Store an access token from sign-in (SSO) as the session's identity. */
+export function setSessionToken(token, subject) {
+  if (token) sessionStorage.setItem(TOKEN_KEY, token); else sessionStorage.removeItem(TOKEN_KEY);
+  if (subject) sessionStorage.setItem(ACTOR_KEY, subject); else sessionStorage.removeItem(ACTOR_KEY);
+}

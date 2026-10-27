@@ -17,6 +17,7 @@
 //   height?: number | 'auto', maxHeight?, rowHeight?, exportName?
 // }
 
+import { normalizeEdit } from './writeback.js';
 import { bindGridParams, gridRequestUrl } from '../lib/bindGridParams.js';
 
 export const COLUMN_TYPES = ['text', 'number', 'money', 'percent', 'date', 'datetime', 'status', 'chip', 'mono', 'bool'];
@@ -113,6 +114,7 @@ export function normalizeSpec(raw) {
     maxHeight: Number.isFinite(raw.maxHeight) ? Math.min(2000, Math.max(160, raw.maxHeight)) : 520,
     rowHeight: Number.isFinite(raw.rowHeight) ? Math.min(80, Math.max(26, raw.rowHeight)) : 34,
     exportName: typeof raw.exportName === 'string' && ID.test(raw.exportName) ? raw.exportName : id.replace(/[:]/g, '-'),
+    edit: normalizeEdit(raw.edit, errors),
   };
   return { spec, errors };
 }

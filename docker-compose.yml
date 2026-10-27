@@ -11,6 +11,15 @@ services:
     environment:
       # Point downstream commands + propagation sink at the simulator container.
       ONEFINUX_SIMULATOR_URL: http://simulator:7081
+      ONEFINUX_WRITEBACK_TARGETS_BREAKS_URL: http://simulator:7081/sim/grids/breaks/apply
+      # Assistant: set both to have Claude write answers (otherwise answers come from the hub's facts alone).
+      ONEFINUX_ASSIST_MODEL: ${ONEFINUX_ASSIST_MODEL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      # Production-like identity: sign in at the bank IdP and refuse anonymous access.
+      ONEFINUX_OIDC_ISSUER: ${ONEFINUX_OIDC_ISSUER:-}
+      ONEFINUX_OIDC_CLIENT_ID: ${ONEFINUX_OIDC_CLIENT_ID:-}
+      ONEFINUX_DEV_DEFAULT_USER: ${ONEFINUX_DEV_DEFAULT_USER:-true}
+      ONEFINUX_DEV_TOKENS: ${ONEFINUX_DEV_TOKENS:-true}
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:7070/actuator/health/readiness"]
       interval: 15s

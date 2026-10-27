@@ -306,6 +306,20 @@ Every accounting-space UI comes into One Finance, so it uses one look and one in
 
 Try it: open `/desks` in two browsers (or a normal and a private window) and switch both to the **FOBO rec** desk. Pick R-2031 in one: the instance view moves in both. Escalate it in the other: the first browser's Activity view shows who did it. On `/drive`, the WebSocket cards push a notification, a context on Blue, a `ViewInstance` intent, or a `ViewBreak` that the Helix partner frame handles.
 
+## One UX platform: search, assistant, usage, personalisation, write-back, access
+
+The capability map against the UX taxonomy is [`docs/design/one-ux.md`](docs/design/one-ux.md); the contract is subsystem ONEUX in the specification.
+
+- **Search across apps.** The header search covers the hub (instances, outcomes, alerts, entitlement-filtered), any application that registers a search endpoint (`onefinux.ux.search-providers`; the simulator's break register is the example), and the console's screens, grids and tasks. The last line always offers **Ask the assistant**.
+- **Assistant.** The spark icon opens a panel beside the page. Answers come from facts the hub holds for you (your group unit, COB and entitlements), with buttons that open what they point at. Set `ONEFINUX_ASSIST_MODEL` (a Claude model id) and `ANTHROPIC_API_KEY` to have Claude write the answer from those facts; without them the hub composes it. Advisory only: it reads, you act.
+- **Usage and feedback (`/usage`).** Screens and desk views opened, features used, the access log, feedback notes (profile menu → Give feedback, or search “feedback”), and A-B experiment results (`onefinux.ux.experiments`).
+- **Saved for you and your team.** Desks, saved grids and settings are stored on the hub (`/api/prefs`), so they follow you to any browser. **Share desk with team** (desk toolbar) offers the layout to your group unit under **New desk**. **Popular with your team** (Home, app directory) lists screens teammates use.
+- **Grid write-back.** A GridSpec `edit` block makes named columns editable (Break register in `/grids`). Edits go as one change set; a second person with `WRITEBACK_APPROVE` approves before the owning system is called. Everything is audited and shown as activity.
+- **Access (`/access`).** What you hold and which verbs your roles allow (the **role structure**, `onefinux.security.role-actions`); one request for everything a desk needs; approvals and periodic reviews by someone else. Access is suspended after 90 days without a visit (the demo `auditor` starts suspended), and the screen locks after 15 minutes idle.
+- **Sign-in.** Set `ONEFINUX_OIDC_ISSUER` and `ONEFINUX_OIDC_CLIENT_ID` to sign in at the bank IdP (authorization code + PKCE); `ONEFINUX_REQUIRE_MFA=true` demands a second factor. In production also set `ONEFINUX_DEV_DEFAULT_USER=false`, `ONEFINUX_DEV_TOKENS=false` and `ONEFINUX_JWT_SECRET`; the hub refuses to start with anonymous access off and the demo secret. The console ships CSP and security headers (`frontend/web/nginx.conf`, `public/web.config`) and a TLS block to enable.
+
+Try it: search `MB014`, then ask the assistant. In `/grids` open **Break register**, sign in as `alice.revacc` (profile menu), Edit an owner and Submit; switch to `gla.reviewer` and Approve. Switch to `auditor` to see the inactivity lock.
+
 ## How the code maps to the vision
 
 | Vision component | Package |
@@ -329,6 +343,7 @@ Design rules the code keeps:
 ```bash
 mvn test
 cd frontend/web && npm test   # workspace model, FDC3 channels, app directory, themes, finance blueprint, live link
+cd frontend/web && npm run e2e   # with the hub and simulator running: browser journeys + WCAG 2.1 AA checks
 ```
 
 `OutcomeEngineTest` covers these cases:

@@ -37,13 +37,26 @@ function esc(text) {
  *             template: (item) => ReactNode   — React cell content (buttons, meters, two-line cells) }]
  * height:  px, '100%', or 'auto' (fits the rows up to maxHeight).
  * onSelect(item) fires when a row is selected — Workspace views share that row on their link channel.
+ * edit:    { columns: {binding: {options}}, validate(item, binding, value) → message|null,
+ *            onEdit(item, binding, before, after), isDirty(item, binding) } — makes those columns editable in place
+ *            (write-back). Other columns stay read-only; edited cells are marked until submitted.
  */
 export default function DataGrid({ rows = [], columns, height = 360, maxHeight = 520, rowHeight = 28, onSelect,
-  title, exportName = 'grid', toolbar = true, search = true, empty = 'No rows.', dense = false, actions, frozen = 0 }) {
+  title, exportName = 'grid', toolbar = true, search = true, empty = 'No rows.', dense = false, actions, frozen = 0, edit }) {
+  const [editError, setEditError] = useState(null);
+  const beforeEdit = useRef(undefined);
+  const gridRef = useRef(null);
+  // Wijmo binds event handlers once; they read the current edit settings through this ref.
+  const editRef = useRef(edit);
+  editRef.current = edit;
+  // Edited-cell marks come from the parent's state, which changes after Wijmo has drawn the cell: redraw then.
+  useEffect(() => { gridRef.current?.invalidate(); }, [edit?.version, Boolean(edit)]);
   const [query, setQuery] = useState('');
   const queryRef = useRef('');
   queryRef.current = query.trim().toLowerCase();
   const cols = columns && columns.length ? columns : null;
+  const colsRef = useRef(cols);
+  colsRef.current = cols;
 
   // One CollectionView for the life of the grid; new rows swap its source, so a poll or a live refresh keeps
   // the user's sort, column filters, scroll and selection.
@@ -79,8 +92,15 @@ export default function DataGrid({ rows = [], columns, height = 360, maxHeight =
     : height;
 
   function formatItem(grid, e) {
+    const cols = colsRef.current;
     if (e.panel !== grid.cells || !cols) return;
     const col = cols[e.col];
+    const edit = editRef.current;
+    if (col && edit) {
+      const item = grid.rows[e.row]?.dataItem;
+      e.cell.classList.toggle('cell-editable', Boolean(edit.columns[col.binding]));
+      e.cell.classList.toggle('cell-dirty', Boolean(item && edit.isDirty?.(item, col.binding)));
+    }
     if (!col || col.template) return;
     if (!col.pill && !col.chip && !col.suffix) return;
     const value = grid.getCellData(e.row, e.col, true);
@@ -131,12 +151,36 @@ export default function DataGrid({ rows = [], columns, height = 360, maxHeight =
         onPointerDownCapture={markPick} onKeyDownCapture={markPick}>
         <FlexGrid
           itemsSource={view}
-          isReadOnly
+          isReadOnly={!edit}
+          beginningEdit={(g, e) => {
+            const edit = editRef.current;
+            const binding = g.columns[e.col]?.binding;
+            if (!edit?.columns[binding]) { e.cancel = true; return; }
+            beforeEdit.current = g.rows[e.row]?.dataItem?.[binding];
+          }}
+          cellEditEnding={(g, e) => {
+            const edit = editRef.current;
+            if (e.cancel || !edit) return;
+            const binding = g.columns[e.col]?.binding;
+            const value = g.activeEditor ? g.activeEditor.value : undefined;
+            const why = edit.validate?.(g.rows[e.row]?.dataItem, binding, value);
+            if (why) { e.cancel = true; setEditError(`${g.columns[e.col]?.header || binding}: ${why}`); }
+            else setEditError(null);
+          }}
+          cellEditEnded={(g, e) => {
+            const edit = editRef.current;
+            if (!edit) return;
+            const binding = g.columns[e.col]?.binding;
+            const item = g.rows[e.row]?.dataItem;
+            if (item) edit.onEdit?.(item, binding, beforeEdit.current, item[binding]);
+            beforeEdit.current = undefined;
+          }}
           autoGenerateColumns={!cols}
           headersVisibility="Column"
           selectionMode="Row"
           frozenColumns={frozen}
           initialized={(g) => {
+            gridRef.current = g;
             g.rows.defaultSize = rowHeight;
             g.columnHeaders.rows.defaultSize = HEADER_H;
           }}
@@ -151,13 +195,16 @@ export default function DataGrid({ rows = [], columns, height = 360, maxHeight =
           {cols && cols.map((c, i) => (
             <FlexGridColumn key={c.binding || `col-${i}`} binding={c.binding} header={c.header ?? c.binding}
               width={c.width || '*'} minWidth={c.minWidth || 70} format={c.format} align={c.align}
-              wordWrap={Boolean(c.wrap)} allowSorting={c.sortable !== false} cssClass={[c.mono ? 'cell-mono' : '', c.className || ''].join(' ').trim() || undefined}>
+              wordWrap={Boolean(c.wrap)} allowSorting={c.sortable !== false} cssClass={[c.mono ? 'cell-mono' : '', c.className || ''].join(' ').trim() || undefined}
+              isReadOnly={edit ? !edit.columns[c.binding] : undefined}
+              dataMap={edit?.columns[c.binding]?.options?.length ? edit.columns[c.binding].options : undefined}>
               {c.template && <FlexGridCellTemplate cellType="Cell" template={(ctx) => c.template(ctx.item, ctx)} />}
             </FlexGridColumn>
           ))}
         </FlexGrid>
         {rows.length === 0 && <div className="dg-empty">{empty}</div>}
       </div>
+      {edit && editError && <div className="dg-edit-err" role="alert"><Icon name="warning" size={13} /> {editError}</div>}
     </div>
   );
 }

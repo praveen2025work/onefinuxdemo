@@ -5,6 +5,7 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 | Document | Audience | What it is |
 |---|---|---|
 | [`specification.md`](specification.md) | Implementers / reviewers | Spec-driven contract: REQ-IDs, 23 Given/When/Then per subsystem, AC mapping |
+| [`one-ux.md`](one-ux.md) | Architects / product | One UX capability map (39 L4 capabilities): what the console does, where, and its configuration |
 | [`unified-ui-waves.md`](unified-ui-waves.md) | Implementers / reviewers | Organisation UI waves: Wave 1 search and entitlement, Wave 3 shared desk, Wave 4 folded-fact search. Wave 2 stays parked |
 | [`unified-ui-wave1-plan.md`](unified-ui-wave1-plan.md) | Implementers | Task plan for the Wave 1 build |
 | [`instance-surface.md`](instance-surface.md) | Controller | Click-to-expand feed history, in-shell iframe, generic GRID |

@@ -33,3 +33,12 @@ export function embedScope() {
   }
   return scope;
 }
+
+/** True when another site frames this page (any ancestor on a different origin). Edits and approvals stay off then. */
+export function framedByOtherOrigin() {
+  try {
+    return window.top !== window && window.top.location.origin !== window.location.origin;
+  } catch {
+    return true;
+  }
+}

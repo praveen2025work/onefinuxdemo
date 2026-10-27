@@ -9,7 +9,7 @@ from pathlib import Path
 
 SPEC = Path(__file__).resolve().parents[1] / "docs/design/specification.md"
 BANNED = re.compile(r"\b(should|could|improve|optimize|fast|simple|TBD)\b", re.I)
-SUBSYSTEMS = ("INGEST", "FOLD", "ENGINE", "ACTION", "CONSOLE", "REPORTS", "GOVERN", "OPERATE")
+SUBSYSTEMS = ("INGEST", "FOLD", "ENGINE", "ACTION", "CONSOLE", "REPORTS", "GOVERN", "OPERATE", "ONEUX")
 REQUIRED_H2 = [
     "1. Document control",
     "2. Purpose",

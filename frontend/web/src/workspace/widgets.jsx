@@ -11,7 +11,7 @@ import { activityApi } from '../api.js';
 import SpecGrid from '../grid/SpecGrid.jsx';
 import { paramContext } from '../grid/spec.js';
 import { useGridSpec } from '../grid/useGridSpec.js';
-import { EMBED } from '../embed.js';
+import { EMBED, framedByOtherOrigin } from '../embed.js';
 
 /** The origin of the page that frames this document, when it is another app (not the console itself). */
 function embedderOrigin() {
@@ -220,7 +220,7 @@ export function GridWidget({ view }) {
       <div className="wg-grid">
         {spec
           ? <SpecGrid spec={spec} context={paramContext(filters)} subscribe={subscribeLive} onShare={share}
-            onSelect={embedderOrigin() ? tellEmbedder : undefined} height="100%" />
+            onSelect={embedderOrigin() ? tellEmbedder : undefined} height="100%" writeback={!framedByOtherOrigin()} />
           : <div className="empty sm">{loading ? 'Loading grid…' : error}</div>}
       </div>
     </div>

@@ -2,3 +2,5 @@ node_modules
 dist
 *.local
 .vite
+e2e-report/
+test-results/

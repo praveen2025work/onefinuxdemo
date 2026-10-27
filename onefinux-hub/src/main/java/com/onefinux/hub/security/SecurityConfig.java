@@ -54,11 +54,61 @@ public class SecurityConfig {
         return new SecretKeySpec(props.jwtSecret().getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256");
     }
 
+    /**
+     * Demo tokens (issuer {@value CurrentUser#DEV_ISSUER}) are checked with the shared secret, and only while demo
+     * tokens are enabled. Tokens from the configured identity provider are checked against its published keys,
+     * looked up on first use so the hub starts even when the IdP is briefly unreachable.
+     */
     @Bean
     public JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withSecretKey(secretKey())
+        JwtDecoder dev = NimbusJwtDecoder.withSecretKey(secretKey())
                 .macAlgorithm(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256)
                 .build();
+        SecurityProperties.Oidc oidc = props.oidc();
+        java.util.concurrent.atomic.AtomicReference<JwtDecoder> sso = new java.util.concurrent.atomic.AtomicReference<>();
+        return token -> {
+            String issuer = issuerOf(token);
+            if (oidc.enabled() && oidc.issuer().equals(issuer)) {
+                JwtDecoder d = sso.updateAndGet(cur -> cur != null ? cur : ssoDecoder(oidc));
+                return d.decode(token);
+            }
+            if (!props.devTokens()) {
+                throw new org.springframework.security.oauth2.jwt.BadJwtException("demo tokens are disabled; sign in through SSO");
+            }
+            return dev.decode(token);
+        };
+    }
+
+    private static JwtDecoder ssoDecoder(SecurityProperties.Oidc oidc) {
+        NimbusJwtDecoder d = (NimbusJwtDecoder) org.springframework.security.oauth2.jwt.JwtDecoders.fromIssuerLocation(oidc.issuer());
+        java.util.List<org.springframework.security.oauth2.core.OAuth2TokenValidator<org.springframework.security.oauth2.jwt.Jwt>> checks =
+                new java.util.ArrayList<>(java.util.List.of(org.springframework.security.oauth2.jwt.JwtValidators.createDefaultWithIssuer(oidc.issuer())));
+        if (oidc.audience() != null && !oidc.audience().isBlank()) {
+            checks.add(new org.springframework.security.oauth2.jwt.JwtClaimValidator<java.util.List<String>>("aud",
+                    aud -> aud != null && aud.contains(oidc.audience())));
+        }
+        d.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(checks));
+        return d;
+    }
+
+    static String issuerOf(String token) {
+        try {
+            return com.nimbusds.jwt.JWTParser.parse(token).getJWTClaimsSet().getIssuer();
+        } catch (Exception e) {
+            throw new org.springframework.security.oauth2.jwt.BadJwtException("not a JWT");
+        }
+    }
+
+    /**
+     * A hub that refuses anonymous access is a production hub: it must not sign or accept tokens with the demo
+     * secret. Fail at start rather than run open.
+     */
+    @jakarta.annotation.PostConstruct
+    void refuseDemoSecretInProduction() {
+        if (!props.devDefaultUser() && props.devTokens() && SecurityProperties.DEMO_SECRET.equals(props.jwtSecret())) {
+            throw new IllegalStateException("onefinux.security: dev-default-user is false but demo tokens still use the demo "
+                    + "secret. Set ONEFINUX_JWT_SECRET, or set dev-tokens: false and configure oidc.issuer.");
+        }
     }
 
     @Bean
