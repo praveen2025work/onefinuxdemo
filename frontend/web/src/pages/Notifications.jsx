@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { PageHeader, Stat } from '../components/bits.jsx';
@@ -23,10 +23,14 @@ export default function Notifications() {
   const [tab, setTab] = useState('all');
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(() => focus || null);
+  const appliedFocusRef = useRef(null);
 
   useEffect(() => {
-    if (!focus) return;
-    if (notifications.some((n) => idOf(n) === focus)) setOpen(focus);
+    if (!focus || appliedFocusRef.current === focus) return;
+    if (notifications.some((n) => idOf(n) === focus)) {
+      appliedFocusRef.current = focus;
+      setOpen(focus);
+    }
   }, [focus, notifications]);
 
   const readIds = useMemo(() => new Set(notifications.filter((n) => isRead(n)).map(idOf)), [notifications, isRead]);

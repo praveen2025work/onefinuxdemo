@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from './Icon.jsx';
 import { searchAll } from '../api';
@@ -11,6 +11,8 @@ export default function ShellSearch() {
   const [q, setQ] = useState('');
   const [hits, setHits] = useState([]);
   const [open, setOpen] = useState(false);
+  const latestRef = useRef({ q: '', groupUnit: filters.groupUnit, cobDate: filters.cobDate });
+  latestRef.current = { q: q.trim(), groupUnit: filters.groupUnit, cobDate: filters.cobDate };
 
   useEffect(() => {
     const trimmed = q.trim();
@@ -18,19 +20,30 @@ export default function ShellSearch() {
       setHits([]);
       return undefined;
     }
+    let cancelled = false;
     const handle = setTimeout(() => {
       const reqQ = trimmed;
-      searchAll({ q: reqQ, groupUnit: filters.groupUnit, cobDate: filters.cobDate })
+      const reqGroupUnit = filters.groupUnit;
+      const reqCobDate = filters.cobDate;
+      searchAll({ q: reqQ, groupUnit: reqGroupUnit, cobDate: reqCobDate })
         .then((data) => {
-          if (q.trim() !== reqQ) return;
+          if (cancelled) return;
+          const cur = latestRef.current;
+          if (cur.q !== reqQ || cur.groupUnit !== reqGroupUnit || cur.cobDate !== reqCobDate || cur.q.length < 2) return;
           setHits(data.hits || []);
           setOpen(true);
         })
         .catch(() => {
-          if (q.trim() === reqQ) setHits([]);
+          if (cancelled) return;
+          const cur = latestRef.current;
+          if (cur.q !== reqQ || cur.groupUnit !== reqGroupUnit || cur.cobDate !== reqCobDate || cur.q.length < 2) return;
+          setHits([]);
         });
     }, 200);
-    return () => clearTimeout(handle);
+    return () => {
+      cancelled = true;
+      clearTimeout(handle);
+    };
   }, [q, filters.groupUnit, filters.cobDate]);
 
   useEffect(() => {
