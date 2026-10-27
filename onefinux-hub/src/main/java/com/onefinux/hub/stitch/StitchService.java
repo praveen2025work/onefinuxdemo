@@ -85,6 +85,17 @@ public class StitchService {
                 .toList();
     }
 
+    public List<Map<String, Object>> notifications(int limit) {
+        var ent = currentUser.entitlements();
+        return repo.notifications(limit).stream()
+                .filter(row -> {
+                    String unit = str(row, "groupUnitId");
+                    if (unit == null || unit.isBlank()) return ent.superuser();
+                    return ent.canSeeGroupUnit(unit);
+                })
+                .toList();
+    }
+
     public Map<String, Object> context(int liveClients) {
         return Map.of(
                 "businessDate", LocalDate.now(clock).toString(),

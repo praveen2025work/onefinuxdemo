@@ -50,6 +50,24 @@ class StitchServiceTest {
     }
 
     @Test
+    @DisplayName("AC-ENT-01 notifications outside the caller unit are omitted")
+    void notifications_omit_other_group_units() {
+        Map<String, Object> rev = new HashMap<>();
+        rev.put("id", 1);
+        rev.put("groupUnitId", "REV-ACC");
+        rev.put("title", "REV-ACC blocked");
+        Map<String, Object> markets = new HashMap<>();
+        markets.put("id", 2);
+        markets.put("groupUnitId", "MARKETS");
+        markets.put("title", "MARKETS note");
+        when(repo.notifications(50)).thenReturn(List.of(rev, markets));
+
+        List<Map<String, Object>> rows = service.notifications(50);
+
+        assertThat(rows).extracting(r -> r.get("id")).containsExactly(1);
+    }
+
+    @Test
     @DisplayName("AC-ACTION-09 sign-off without COUNTERSIGN clears")
     void ac_action_09_signoff_clears_without_countersign() {
         when(repo.instance(ID)).thenReturn(inst("READY"), inst("CLEARED"));

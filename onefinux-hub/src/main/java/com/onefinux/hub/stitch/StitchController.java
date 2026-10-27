@@ -101,7 +101,7 @@ public class StitchController {
 
     @GetMapping("/notifications")
     public List<Map<String, Object>> notifications(@RequestParam(defaultValue = "50") int limit) {
-        return repo.notifications(limit);
+        return service.notifications(limit);
     }
 
     @GetMapping("/rtb")
