@@ -8,6 +8,7 @@ import { HIDDEN_KEY, READ_KEY, capIds, idOf, mergeNotifications, unreadCount } f
 import { EMBED, embedScope } from './embed.js';
 import { onSystem, postSystem } from './workspace/interop.js';
 import { applyTheme, currentThemeId } from './theme.js';
+import { entitledGroupUnit } from './lib/entitledGroupUnit.js';
 
 const Ctx = createContext(null);
 
@@ -51,7 +52,7 @@ export function AppProvider({ children }) {
     setContext(c);
     setFiltersState((f) => ({
       ...f,
-      groupUnit: f.groupUnit || c.groupUnits?.[0]?.groupUnitId || '',
+      groupUnit: entitledGroupUnit(f.groupUnit, c.groupUnits),
       cobDate: f.cobDate || c.cobDates?.[0] || '',
     }));
   }, []);
