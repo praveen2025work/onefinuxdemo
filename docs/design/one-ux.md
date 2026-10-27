@@ -22,9 +22,9 @@ to a bank platform the console connects to.
 
 | L4 | Status | Where |
 |---|---|---|
-| Tabular data presentation | Have | GridSpec + `SpecGrid` (grid, pivot, chart), `/grids`, `<ofx-grid>`, `/widget/grid` |
+| Tabular data presentation | Have | GridSpec + `SpecGrid` (grid, pivot, chart), `/grids` Platform·Unit·Mine catalogue, propose-from-source, `<ofx-grid>`, `/widget/grid` |
 | Tabular data write back | Have | GridSpec `edit` block → change set → maker-checker → owning system (`/api/writeback`, `grid/writeback.js`) |
-| Chart presentation | Have | `Chart.jsx`, DataView chart lens, Finance |
+| Chart presentation | Have | `Chart.jsx`, DataView chart lens, Finance dashboards (`/finance`, `/finance/:id`) |
 | Information display | Have | PageHeader, panels, instance split view, Home |
 | Functionality configuration and administration | Partial | Settings panel; role structure, experiments, search providers and write-back targets are hub configuration (`application.yml`), not a screen |
 | Business configuration management | Have | Onboarding and Configuration, six numbered steps |
@@ -48,7 +48,7 @@ to a bank platform the console connects to.
 | Whole screen workspace | Have | Console routes, full-width partner stage |
 | Composable workspace | Have | Desks |
 | Context sensitive navigation framework | Have | FDC3 channels and intents, outcome channels through the hub |
-| Experience marketplace | Partial | Desk app directory with team picks, grid library, team desk templates; no owner or rating catalogue |
+| Experience marketplace | Partial | Desk app directory with team picks, grid library (Platform·Unit·Mine), team desk / grid / finance templates; no owner or rating catalogue |
 | Integrated access provisioning | Have | One request for every entitlement a desk needs (`/access`), approved by someone else |
 
 ### Personalisation and telemetry
@@ -56,7 +56,7 @@ to a bank platform the console connects to.
 | L4 | Status | Where |
 |---|---|---|
 | Single user personalisation | Have | Desks, saved grids, settings at `/api/prefs/{key}`; follow the user to any browser |
-| Team based personalisation | Have | Desks shared with a group unit, offered under New desk |
+| Team based personalisation | Have | Desks, GridSpecs and finance dashboards shared with a group unit (`/api/templates` kind desk\|grid\|finance) |
 | Team usage based recommendations | Have | `/api/ux/recommendations`, Home and the app directory |
 | AI personalisation recommendations | Partial | The assistant suggests what to open from your scope and team usage; no trained ranking |
 | Basic application access logging | Have | APP_OPEN / VIEW_OPEN events, access log on `/usage` |

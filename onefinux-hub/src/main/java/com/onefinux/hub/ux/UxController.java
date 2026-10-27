@@ -40,6 +40,8 @@ public class UxController {
     static final Set<String> TYPES = Set.of("APP_OPEN", "VIEW_OPEN", "COMPONENT_USE", "SEARCH", "ASSIST", "EXPOSURE",
             "CONVERSION", "FEEDBACK");
     static final Set<String> PREF_KEYS = Set.of("desks", "grids", "settings");
+    /** Team templates: a desk layout, a shared GridSpec, or a finance dashboard blueprint. */
+    static final Set<String> TEMPLATE_KINDS = Set.of("desk", "grid", "finance");
     static final Pattern TEXT = Pattern.compile("^[\\p{L}\\p{N} _.:/|?=&%#,()'+@-]{1,120}$");
     static final int MAX_BATCH = 50;
     static final int MAX_DETAIL = 2000;
@@ -201,18 +203,47 @@ public class UxController {
     @GetMapping("/api/templates")
     public List<Map<String, Object>> templates(@RequestParam String team, @RequestParam(required = false) String kind) {
         if (!currentUser.entitlements().canSeeGroupUnit(team)) return List.of();
-        return repo.templates(team, kind).stream().map(r -> {
-            Map<String, Object> m = new LinkedHashMap<>(r);
-            m.put("json", parse(String.valueOf(r.get("json"))));
-            return m;
-        }).toList();
+        if (kind != null && !TEMPLATE_KINDS.contains(kind)) throw bad("kind is desk, grid or finance");
+        return repo.templates(team, kind).stream().map(this::templateRow).toList();
     }
 
-    /** Share a desk (or grid) with the team. Anyone in the team can start from it; only its author or an admin removes it. */
+    /**
+     * GridSpec catalogue for a group unit: unit-shared templates (kind=grid) and this user's saved grids
+     * (prefs). Platform built-ins stay in the console; the hub never invents a product-specific list.
+     * Unentitled group units return empty lists (fail-closed), never 403 with a leak.
+     */
+    @GetMapping("/api/grids")
+    public Map<String, Object> grids(@RequestParam String groupUnit) {
+        Entitlements ent = currentUser.entitlements();
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("groupUnit", groupUnit);
+        if (!ent.canSeeGroupUnit(groupUnit)) {
+            out.put("unit", List.of());
+            out.put("mine", List.of());
+            return out;
+        }
+        out.put("unit", repo.templates(groupUnit, "grid").stream().map(this::templateRow).toList());
+        List<Object> mine = List.of();
+        var pref = repo.pref(ent.subject(), "grids");
+        if (pref.isPresent()) {
+            Object value = parse(String.valueOf(pref.get().get("json")));
+            if (value instanceof JsonNode node && node.isObject() && node.has("state") && node.get("state").isArray()) {
+                mine = new ArrayList<>();
+                node.get("state").forEach(mine::add);
+            } else if (value instanceof JsonNode node && node.isArray()) {
+                mine = new ArrayList<>();
+                node.forEach(mine::add);
+            }
+        }
+        out.put("mine", mine);
+        return out;
+    }
+
+    /** Share a desk, grid or finance dashboard with the team. Anyone in the team can start from it; only its author or an admin removes it. */
     @PostMapping("/api/templates")
     public Map<String, Object> share(@RequestBody Template body) {
         if (body == null || body.team() == null || body.name() == null || body.json() == null) throw bad("team, name and json are required");
-        if (!Set.of("desk", "grid").contains(body.kind())) throw bad("kind is desk or grid");
+        if (!TEMPLATE_KINDS.contains(body.kind())) throw bad("kind is desk, grid or finance");
         if (!currentUser.entitlements().canSeeGroupUnit(body.team())) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no such team");
         String json = body.json().toString();
         if (json.length() > MAX_PREF) throw bad("template is limited to " + MAX_PREF + " characters");
@@ -238,6 +269,12 @@ public class UxController {
     }
 
     // ---------------------------------------------------------------- helpers
+
+    private Map<String, Object> templateRow(Map<String, Object> r) {
+        Map<String, Object> m = new LinkedHashMap<>(r);
+        m.put("json", parse(String.valueOf(r.get("json"))));
+        return m;
+    }
 
     private Object parse(String json) {
         try {

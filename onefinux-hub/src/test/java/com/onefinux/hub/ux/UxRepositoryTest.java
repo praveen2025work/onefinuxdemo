@@ -69,5 +69,10 @@ class UxRepositoryTest {
         assertThat(repo.templates("MARKETS", null)).isEmpty();
         repo.deleteTemplate("TPL-1");
         assertThat(repo.template("TPL-1")).isEmpty();
+        repo.insertTemplate("TPL-G", "REV-ACC", "grid", "Breaks", "{\"id\":\"breaks\",\"source\":{\"rows\":[]}}", "alice", now);
+        repo.insertTemplate("TPL-F", "REV-ACC", "finance", "Liquidity board", "{\"id\":\"liq\",\"tiles\":[{\"id\":\"t1\"}]}", "alice", now);
+        assertThat(repo.templates("REV-ACC", "grid")).extracting(m -> m.get("id")).containsExactly("TPL-G");
+        assertThat(repo.templates("REV-ACC", "finance")).extracting(m -> m.get("name")).containsExactly("Liquidity board");
+        assertThat(repo.templates("REV-ACC", null)).hasSize(2);
     }
 }

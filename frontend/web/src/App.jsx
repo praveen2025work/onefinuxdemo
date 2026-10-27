@@ -54,6 +54,7 @@ export default function App() {
           <Route path="/outcomes" element={<Outcomes />} />
           <Route path="/workspaces" element={<Navigate to="/outcomes" replace />} />
           <Route path="/finance" element={<Finance />} />
+          <Route path="/finance/:id" element={<Finance />} />
           <Route path="/desks" element={<Desks />} />
           <Route path="/workspace" element={<Navigate to="/desks" replace />} />
           <Route path="/grids" element={<GridLibrary />} />
