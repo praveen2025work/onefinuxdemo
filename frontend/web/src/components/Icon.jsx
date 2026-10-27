@@ -529,6 +529,8 @@ export function BrandMark({ size = 34 }) {
     return () => window.removeEventListener('ofx-theme', on);
   }, []);
   return (
-    <img className="brand-mark" src={appIconForMode(mode)} width={size} height={size} alt="" />
+    <span className="brand-mark" style={{ width: size, height: size }}>
+      <img src={appIconForMode(mode)} alt="" />
+    </span>
   );
 }

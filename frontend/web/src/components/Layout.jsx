@@ -147,9 +147,12 @@ function Shell({ children }) {
           <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
             <Icon name="menu" size={16} />
           </button>
-          <div className="brand top-brand" title="One Finance · Outcome platform">
-            <BrandMark size={26} />
-            <b className="txt">One Finance</b>
+          <div className="brand top-brand" title={`One Finance · UAT · ${live ? `live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'reconnecting…'}`}>
+            <BrandMark size={32} />
+            <span className="brand-copy">
+              <b className="txt">One Finance</b>
+              <span className="env"><span className={'live-dot' + (live ? '' : ' off')} />UAT</span>
+            </span>
           </div>
           <div className="tb-scope" aria-label="Current scope">
             <DatePicker value={filters.cobDate} cobDates={context?.cobDates} onChange={(v) => setFilters({ cobDate: v })} />
@@ -202,9 +205,6 @@ function Shell({ children }) {
               <Icon name="config" size={16} />
             </button>
             <ProfileMenu onOpenSettings={openSettings} />
-            <span className="env" title={`UAT · ${live ? `live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'reconnecting…'}`}>
-              <span className={'live-dot' + (live ? '' : ' off')} />UAT
-            </span>
           </div>
         </header>
 
