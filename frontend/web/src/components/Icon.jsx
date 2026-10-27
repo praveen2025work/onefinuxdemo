@@ -1,4 +1,5 @@
-import { useId } from 'react';
+import { useEffect, useState } from 'react';
+import { appIconForMode } from '../lib/themes.js';
 
 // Lucide marks from MITR design assets (ISC). Stroke 2, currentColor.
 const P = {
@@ -519,24 +520,15 @@ export default function Icon({ name, size = 18, fill = 'none', className = '' })
 }
 
 export function BrandMark({ size = 34 }) {
-  // Unique paint id per instance. A shared ofx-g id made the collapsed header
-  // mark inherit the hidden rail SVG; browsers drop that fill and leave only
-  // the white briefcase stroke — invisible on the light topbar.
-  const gid = `ofx-g-${useId().replace(/:/g, '')}`;
+  const [mode, setMode] = useState(() => (
+    typeof document === 'undefined' ? 'light' : (document.documentElement.getAttribute('data-theme') || 'light')
+  ));
+  useEffect(() => {
+    const on = () => setMode(document.documentElement.getAttribute('data-theme') || 'light');
+    window.addEventListener('ofx-theme', on);
+    return () => window.removeEventListener('ofx-theme', on);
+  }, []);
   return (
-    <svg width={size} height={size} viewBox="0 0 40 40" fill="none" aria-hidden>
-      <defs>
-        <linearGradient id={gid} x1="8" y1="4" x2="34" y2="36">
-          <stop offset="0" style={{ stopColor: 'var(--brand-a, #6366f1)' }} />
-          <stop offset="1" style={{ stopColor: 'var(--brand-b, #8b5cf6)' }} />
-        </linearGradient>
-      </defs>
-      <rect x="1.5" y="1.5" width="37" height="37" rx="12" fill={`url(#${gid})`} />
-      <g stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.96">
-        <rect x="9" y="16.5" width="22" height="13.5" rx="2.4" />
-        <path d="M15.2 16.5v-2.4a4.8 4.8 0 0 1 9.6 0v2.4" />
-        <path d="M9 22.8h22" />
-      </g>
-    </svg>
+    <img className="brand-mark" src={appIconForMode(mode)} width={size} height={size} alt="" />
   );
 }

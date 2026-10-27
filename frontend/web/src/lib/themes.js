@@ -33,6 +33,11 @@ export function resolveTheme(forced, stored) {
   return DEFAULT_THEME;
 }
 
+/** Tab and installed-style icon for a light or dark theme. */
+export function appIconForMode(mode) {
+  return mode === 'dark' ? '/app-icon-dark.png' : '/app-icon-light.png';
+}
+
 /** Query a framed screen gets, so it sets html[data-theme] + html[data-skin] and paints from the same tokens. */
 export function partnerThemeParams(id) {
   const t = themeById(id);

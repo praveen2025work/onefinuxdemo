@@ -1,4 +1,4 @@
-import { THEME_KEY, resolveTheme, themeById } from './lib/themes.js';
+import { THEME_KEY, appIconForMode, resolveTheme, themeById } from './lib/themes.js';
 
 export { THEMES } from './lib/themes.js';
 
@@ -18,6 +18,11 @@ export function applyTheme(id, { persist = true } = {}) {
   html.setAttribute('data-skin', t.skin);
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute('content', t.chrome);
+  const icon = document.querySelector('link[rel="icon"]');
+  if (icon) {
+    icon.type = 'image/png';
+    icon.href = appIconForMode(t.mode);
+  }
   if (persist) store(t.id);
   window.dispatchEvent(new CustomEvent('ofx-theme', { detail: t }));
   return t.id;

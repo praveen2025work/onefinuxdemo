@@ -91,6 +91,7 @@ p { text-wrap: pretty; }
 /* STEPS left-panel header: brand block over a divider, collapse chevron on the right. */
 .rail-top { display: flex; align-items: center; gap: 8px; margin: -14px -10px 8px; padding: 14px 14px 13px; border-bottom: 1px solid var(--rail-line); }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.brand-mark { display: block; border-radius: 22%; object-fit: cover; }
 .brand b { display: block; font-family: var(--display); font-size: 13.5px; letter-spacing: -0.02em; white-space: nowrap; color: var(--rail-ink); }
 .brand span { display: block; font-size: 10.5px; color: var(--rail-muted); white-space: nowrap; }
 .rail-toggle { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; cursor: pointer;

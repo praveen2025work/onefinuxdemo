@@ -3,8 +3,8 @@ const BADGE = '/notify-badge.png';
 
 // One service worker per scope, so this one also makes One Finance an installable app (PWA):
 // it keeps the app shell for offline start. /api and /sim are never cached — readiness is always live.
-const SHELL = 'ofx-shell-v1';
-const SHELL_FILES = ['/', '/index.html', '/manifest.webmanifest', '/app-icon.svg', '/app-icon-192.png', '/app-icon-512.png', ICON, BADGE];
+const SHELL = 'ofx-shell-v2';
+const SHELL_FILES = ['/', '/index.html', '/manifest.webmanifest', '/app-icon-light.png', '/app-icon-dark.png', '/app-icon-192.png', '/app-icon-512.png', ICON, BADGE];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

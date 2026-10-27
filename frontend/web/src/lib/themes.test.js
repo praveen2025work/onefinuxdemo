@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DEFAULT_THEME, THEMES, isThemeId, partnerThemeParams, resolveTheme, themeById } from './themes.js';
+import { DEFAULT_THEME, THEMES, appIconForMode, isThemeId, partnerThemeParams, resolveTheme, themeById } from './themes.js';
 
 test('STEPS Banking Blue is the default and first theme', () => {
   assert.equal(DEFAULT_THEME, 'steps');
@@ -21,6 +21,12 @@ test('resolveTheme: forced, then stored, then the default', () => {
   assert.equal(resolveTheme('neon', 'light'), 'light');
   assert.equal(resolveTheme(null, 'banking-blue'), 'steps');
   assert.equal(resolveTheme(null, null), 'steps');
+});
+
+test('light and dark themes use their own app icon', () => {
+  assert.equal(appIconForMode('light'), '/app-icon-light.png');
+  assert.equal(appIconForMode('dark'), '/app-icon-dark.png');
+  assert.equal(appIconForMode(undefined), '/app-icon-light.png');
 });
 
 test('framed screens get mode and skin', () => {
