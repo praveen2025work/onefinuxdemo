@@ -36,25 +36,41 @@ export default function Monitoring() {
   const [sink, setSink] = useState({ count: 0, received: [] });
   const [outFilter, setOutFilter] = useState('');
   const [busy, setBusy] = useState(null);
+  const [loadError, setLoadError] = useState(null);
   const timer = useRef(null);
+  const inFlight = useRef(false);
+  const again = useRef(false);
 
+  // One load at a time. The poll and every live nudge call this; while a load is running they only ask for one more
+  // afterwards, so a slow hub cannot pile requests up (the browser allows six per host, and a queue would starve
+  // every other screen, page downloads included). Panels that answer are shown; the rest say why they are stale.
   const load = useCallback(async () => {
-    const [ov, ob, rt, tp, ad] = await Promise.all([
-      api.monitorOverview(), api.outbox(outFilter || undefined), api.routes(), api.tape(40), api.audit(60),
-    ]);
-    setOverview(ov);
-    setOutbox(ob);
-    setRoutes(rt);
-    setTape(tp);
-    setAudit(ad);
-    try { setSink(await fetchSink()); } catch { /* sink offline — leave last snapshot */ }
+    if (inFlight.current) { again.current = true; return; }
+    inFlight.current = true;
+    try {
+      const results = await Promise.allSettled([
+        api.monitorOverview(), api.outbox(outFilter || undefined), api.routes(), api.tape(40), api.audit(60),
+      ]);
+      const [ov, ob, rt, tp, ad] = results.map((r) => (r.status === 'fulfilled' ? r.value : undefined));
+      if (ov) setOverview(ov);
+      if (ob) setOutbox(ob);
+      if (rt) setRoutes(rt);
+      if (tp) setTape(tp);
+      if (ad) setAudit(ad);
+      const failed = results.find((r) => r.status === 'rejected');
+      setLoadError(failed ? (failed.reason?.name === 'TimeoutError' ? 'the hub did not answer within 10 s' : failed.reason?.message || 'the hub did not answer') : null);
+      try { setSink(await fetchSink()); } catch { /* sink offline — leave last snapshot */ }
+    } finally {
+      inFlight.current = false;
+      if (again.current) { again.current = false; load(); }
+    }
   }, [outFilter]);
 
   useEffect(() => { load(); }, [load]);
 
-  // Steady 3s poll so counters and the sink panel stay fresh even between SSE nudges.
+  // Steady 3s poll so counters and the sink panel stay fresh even between SSE nudges; a hidden tab does not poll.
   useEffect(() => {
-    timer.current = setInterval(load, 3000);
+    timer.current = setInterval(() => { if (!document.hidden) load(); }, 3000);
     return () => clearInterval(timer.current);
   }, [load]);
 
@@ -71,7 +87,16 @@ export default function Monitoring() {
     try { await api.retryOutbox(id); await load(); } finally { setBusy(null); }
   }
 
-  if (!overview) return <Loading what="Loading monitoring…" />;
+  if (!overview) {
+    if (!loadError) return <Loading what="Loading monitoring…" />;
+    return (
+      <div className="banner fail" role="alert">
+        <Icon name="alert" size={16} />
+        <span>Monitoring could not load: {loadError}. Check that the hub is running.</span>
+        <button type="button" className="btn ghost sm" onClick={load}>Retry</button>
+      </div>
+    );
+  }
 
   const ev = overview.events || {};
   const ob = overview.outbox || {};
@@ -133,6 +158,8 @@ export default function Monitoring() {
         info="Every fact the hub receives is stored append-only in the event store, then fanned out to other systems through a transactional outbox (at-least-once, subscribers de-dupe on event id). This screen shows what arrived, how it persisted, where it was propagated, and the audit trail of human commands.">
         <button className="btn ghost" onClick={() => load()}><Icon name="refresh" size={15} /> Refresh</button>
       </PageHeader>
+
+      {loadError && <div className="banner warn" role="status"><Icon name="alert" size={15} /> Some panels did not refresh: {loadError}. Showing the last answer.</div>}
 
       <div className="stats">
         <Stat tone="info" icon="inbox" label="Events received" value={ev.total ?? 0} foot="persisted to event store" />

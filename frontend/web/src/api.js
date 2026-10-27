@@ -55,6 +55,9 @@ export function searchAll({ q, groupUnit, cobDate }) {
     });
 }
 
+// Monitoring polls; a call that takes longer than this is abandoned so a slow hub never piles requests up.
+const MONITOR_WAIT = { timeoutMs: 10000 };
+
 async function get(path, params, opts = {}) {
   const qs = params ? '?' + new URLSearchParams(clean(params)).toString() : '';
   const ctrl = opts.timeoutMs ? AbortSignal.timeout(opts.timeoutMs) : undefined;
@@ -102,17 +105,17 @@ export const api = {
   kit: (id) => get('/kit', { id }),
   registerKit: (body) => send('POST', '/kits', null, body),
   reset: () => send('POST', '/reset'),
-  monitorOverview: () => get('/monitor/overview'),
-  outbox: (status) => get('/monitor/outbox', { status }),
-  routes: () => get('/monitor/routes'),
+  monitorOverview: () => get('/monitor/overview', undefined, MONITOR_WAIT),
+  outbox: (status) => get('/monitor/outbox', { status }, MONITOR_WAIT),
+  routes: () => get('/monitor/routes', undefined, MONITOR_WAIT),
   retryOutbox: (id) => send('POST', `/monitor/outbox/${encodeURIComponent(id)}/retry`),
-  tape: (limit = 40) => get('/monitor/events', { limit }),
-  audit: (limit = 60) => get('/monitor/audit', { limit }),
+  tape: (limit = 40) => get('/monitor/events', { limit }, MONITOR_WAIT),
+  audit: (limit = 60) => get('/monitor/audit', { limit }, MONITOR_WAIT),
 };
 
 // The propagated facts land in the simulator's sink (an "other system"), reachable via the /sim proxy.
 export async function fetchSink() {
-  const res = await fetch('/sim/sink');
+  const res = await fetch('/sim/sink', { signal: AbortSignal.timeout(MONITOR_WAIT.timeoutMs) });
   if (!res.ok) throw new Error(`${res.status} on /sim/sink`);
   return res.json();
 }

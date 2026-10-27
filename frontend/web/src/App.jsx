@@ -16,7 +16,7 @@ import Drive from './pages/Drive.jsx';
 import Lifecycle from './pages/Lifecycle.jsx';
 import Notifications from './pages/Notifications.jsx';
 import Product, { ArchitecturePage, GuidePage } from './pages/Product.jsx';
-import { Loading } from './components/bits.jsx';
+import RouteBoundary, { ScreenLoading } from './components/RouteBoundary.jsx';
 import { setFdc3Navigator } from './workspace/fdc3.js';
 import SessionGate, { AuthCallback } from './auth/SessionGate.jsx';
 
@@ -43,7 +43,8 @@ export default function App() {
     <SessionGate>
     <Layout>
       <Fdc3Bridge />
-      <Suspense fallback={<Loading what="Loading…" />}>
+      <RouteBoundary>
+      <Suspense fallback={<ScreenLoading />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/product" element={<Product />} />
@@ -75,6 +76,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      </RouteBoundary>
     </Layout>
     </SessionGate>
   );

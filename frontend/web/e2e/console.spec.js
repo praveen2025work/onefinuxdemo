@@ -11,6 +11,21 @@ test.describe('One Finance console', () => {
     expect(errors).toEqual([]);
   });
 
+  test('a screen whose data or code does not arrive says so instead of loading for ever', async ({ page }) => {
+    const monitor = /\/api\/stitch\/monitor\//;
+    await page.route(monitor, (route) => route.fulfill({ status: 500, body: 'down' }));
+    await page.goto('/monitoring');
+    await expect(page.getByRole('alert')).toContainText('Monitoring could not load');
+    await page.unroute(monitor);
+    await page.getByRole('button', { name: 'Retry' }).click();
+    await expect(page.getByText('Events received')).toBeVisible();
+
+    await page.route(/pages\/Access\.jsx/, (route) => route.abort());
+    await page.goto('/');
+    await page.evaluate(() => { history.pushState({}, '', '/access'); dispatchEvent(new PopStateEvent('popstate')); });
+    await expect(page.getByRole('alert')).toContainText('did not download');
+  });
+
   test('search reaches the hub and a partner application, and hands a question to the assistant', async ({ page }) => {
     await page.goto('/');
     const search = page.locator('.shell-search input');
