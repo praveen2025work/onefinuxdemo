@@ -100,7 +100,9 @@ public class StitchService {
         return Map.of(
                 "businessDate", LocalDate.now(clock).toString(),
                 "zone", clock.getZone().getId(),
-                "groupUnits", repo.groupUnits(),
+                "groupUnits", repo.groupUnits().stream()
+                        .filter(row -> currentUser.entitlements().canSeeGroupUnit(str(row, "groupUnitId")))
+                        .toList(),
                 "cobDates", repo.distinctCobDates().stream().map(m -> m.get("cobDate")).toList(),
                 "regions", repo.distinctRegions().stream().map(m -> m.get("region")).toList(),
                 "liveClients", liveClients);
