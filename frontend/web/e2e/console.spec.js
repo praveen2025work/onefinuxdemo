@@ -12,13 +12,14 @@ test.describe('One Finance console', () => {
   });
 
   test('a screen whose data or code does not arrive says so instead of loading for ever', async ({ page }) => {
-    const monitor = /\/api\/stitch\/monitor\//;
-    await page.route(monitor, (route) => route.fulfill({ status: 500, body: 'down' }));
+    // The hub is down for the first loads, then comes back: the screen says why, then recovers on its own poll.
+    let hubDown = true;
+    await page.route(/\/api\/stitch\/monitor\//, (route) => (hubDown ? route.fulfill({ status: 500, body: 'down' }) : route.continue()));
     await page.goto('/monitoring');
     await expect(page.getByRole('alert')).toContainText('Monitoring could not load');
-    await page.unroute(monitor);
-    await page.getByRole('button', { name: 'Retry' }).click();
-    await expect(page.getByText('Events received')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
+    hubDown = false;
+    await expect(page.getByText('Events received')).toBeVisible({ timeout: 20_000 });
 
     await page.route(/pages\/Access\.jsx/, (route) => route.abort());
     await page.goto('/');
@@ -94,6 +95,9 @@ test.describe('One Finance console', () => {
   });
 
   test('role structure: an auditor cannot sign off; a controller cannot approve access', async ({ page }) => {
+    // The hub answers 404 for an instance it has not built yet; wait for the simulator's replay to create R-1042.
+    const id = encodeURIComponent('FOBO|2026-09-12|APAC|R-1042');
+    await expect.poll(async () => (await page.request.get('/api/stitch/instance?id=' + id)).status(), { timeout: 30_000 }).toBe(200);
     await signInAs(page, 'auditor');
     const status = await page.evaluate(async () => {
       const res = await fetch('/api/stitch/instance/signoff?id=' + encodeURIComponent('FOBO|2026-09-12|APAC|R-1042'),
