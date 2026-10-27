@@ -12,22 +12,35 @@ export default function ShellSearch() {
   const [hits, setHits] = useState([]);
   const [open, setOpen] = useState(false);
   const dismissedRef = useRef(false);
+  const rootRef = useRef(null);
+  const trimmed = q.trim();
   const latestRef = useRef({ q: '', groupUnit: filters.groupUnit, cobDate: filters.cobDate });
-  latestRef.current = { q: q.trim(), groupUnit: filters.groupUnit, cobDate: filters.cobDate };
+  latestRef.current = { q: trimmed, groupUnit: filters.groupUnit, cobDate: filters.cobDate };
+
+  // Drop the previous list in this render when the trimmed query or filters change,
+  // so those hits are not clickable while the debounced request is still in flight.
+  const scopeKey = `${trimmed}\u0000${filters.groupUnit}\u0000${filters.cobDate}`;
+  const [seenScope, setSeenScope] = useState(scopeKey);
+  if (seenScope !== scopeKey) {
+    setSeenScope(scopeKey);
+    setHits([]);
+    setOpen(false);
+  }
 
   useEffect(() => {
     dismissedRef.current = false;
   }, [q, filters.groupUnit, filters.cobDate]);
 
   useEffect(() => {
-    const trimmed = q.trim();
-    if (trimmed.length < 2) {
+    const trimmedQ = q.trim();
+    if (trimmedQ.length < 2) {
       setHits([]);
+      setOpen(false);
       return undefined;
     }
     let cancelled = false;
     const handle = setTimeout(() => {
-      const reqQ = trimmed;
+      const reqQ = trimmedQ;
       const reqGroupUnit = filters.groupUnit;
       const reqCobDate = filters.cobDate;
       searchAll({ q: reqQ, groupUnit: reqGroupUnit, cobDate: reqCobDate })
@@ -53,14 +66,23 @@ export default function ShellSearch() {
 
   useEffect(() => {
     if (!open) return undefined;
+    function dismiss() {
+      dismissedRef.current = true;
+      setOpen(false);
+    }
     function onKey(e) {
-      if (e.key === 'Escape') {
-        dismissedRef.current = true;
-        setOpen(false);
-      }
+      if (e.key === 'Escape') dismiss();
+    }
+    function onPointerDown(e) {
+      if (rootRef.current && rootRef.current.contains(e.target)) return;
+      dismiss();
     }
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('pointerdown', onPointerDown);
+    };
   }, [open]);
 
   function choose(hit) {
@@ -71,14 +93,14 @@ export default function ShellSearch() {
   }
 
   return (
-    <div className="shell-search" role="combobox" aria-expanded={open} aria-haspopup="listbox">
+    <div ref={rootRef} className="shell-search" role="combobox" aria-expanded={open} aria-haspopup="listbox">
       <label className="search-inp sm">
         <Icon name="search" size={14} />
         <input
           value={q}
-          onChange={(e) => { setQ(e.target.value); if (e.target.value.trim().length >= 2) setOpen(true); }}
+          onChange={(e) => setQ(e.target.value)}
           onFocus={() => { if (hits.length) setOpen(true); }}
-          placeholder="Search instances, outcomes…"
+          placeholder="Search instances, outcomes, notifications"
           aria-label="Search"
           aria-autocomplete="list"
           aria-controls="shell-search-list"

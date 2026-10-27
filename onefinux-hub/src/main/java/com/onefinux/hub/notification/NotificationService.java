@@ -2,6 +2,8 @@ package com.onefinux.hub.notification;
 
 import com.onefinux.hub.outcome.OutcomeChanged;
 import com.onefinux.hub.outcome.Severity;
+import com.onefinux.hub.security.CurrentUser;
+import com.onefinux.hub.security.Entitlements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
@@ -26,11 +28,14 @@ public class NotificationService {
     private final NotificationRepository repository;
     private final List<NotificationChannel> channels;
     private final Clock clock;
+    private final CurrentUser currentUser;
 
-    public NotificationService(NotificationRepository repository, List<NotificationChannel> channels, Clock clock) {
+    public NotificationService(NotificationRepository repository, List<NotificationChannel> channels, Clock clock,
+                               CurrentUser currentUser) {
         this.repository = repository;
         this.channels = channels;
         this.clock = clock;
+        this.currentUser = currentUser;
     }
 
     @EventListener
@@ -92,8 +97,18 @@ public class NotificationService {
     }
 
     public List<NotificationView> recent(int limit) {
+        Entitlements ent = currentUser.entitlements();
         return repository.findAllByOrderByIdDesc(PageRequest.of(0, Math.max(1, Math.min(limit, 500))))
-                .stream().map(NotificationView::from).toList();
+                .stream()
+                .filter(n -> visibleTo(ent, n.getGroupUnitId()))
+                .map(NotificationView::from)
+                .toList();
+    }
+
+    /** Same gate as {@code StitchService.notifications}: a blank unit is kept only for a superuser. */
+    private static boolean visibleTo(Entitlements ent, String unit) {
+        if (unit == null || unit.isBlank()) return ent.superuser();
+        return ent.canSeeGroupUnit(unit);
     }
 
     public void purge() {

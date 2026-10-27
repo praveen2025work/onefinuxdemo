@@ -66,6 +66,34 @@ class StitchServiceTest {
     }
 
     @Test
+    @DisplayName("AC-ENT-02 Bob context lists only MARKETS")
+    void context_for_bob_lists_markets_only() {
+        when(currentUser.entitlements()).thenReturn(
+                new Entitlements("bob.markets", Set.of("CONTROLLER"), Set.of("MARKETS"), Set.of(), false));
+        Map<String, Object> rev = Map.of("groupUnitId", "REV-ACC", "name", "Revenue Accounting");
+        Map<String, Object> markets = Map.of("groupUnitId", "MARKETS", "name", "Markets");
+        when(repo.groupUnits()).thenReturn(List.of(rev, markets));
+        when(repo.distinctCobDates()).thenReturn(List.of());
+        when(repo.distinctRegions()).thenReturn(List.of());
+
+        Map<String, Object> ctx = service.context(0);
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> units = (List<Map<String, Object>>) ctx.get("groupUnits");
+        assertThat(units).extracting(u -> u.get("groupUnitId")).containsExactly("MARKETS");
+    }
+
+    @Test
+    @DisplayName("AC-ENT-03 Bob cannot open a REV-ACC instance")
+    void instance_detail_is_null_when_bob_requests_rev_acc() {
+        when(currentUser.entitlements()).thenReturn(
+                new Entitlements("bob.markets", Set.of("CONTROLLER"), Set.of("MARKETS"), Set.of(), false));
+        when(repo.instance("FOBO|2026-09-12|EMEA|R-2031")).thenReturn(inst("BLOCKED"));
+
+        assertThat(service.instanceDetail("FOBO|2026-09-12|EMEA|R-2031")).isNull();
+    }
+
+    @Test
     @DisplayName("AC-ENT-01 notifications outside the caller unit are omitted")
     void notifications_omit_other_group_units() {
         Map<String, Object> rev = new HashMap<>();

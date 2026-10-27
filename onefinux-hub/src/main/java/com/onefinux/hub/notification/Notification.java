@@ -48,6 +48,9 @@ public class Notification {
     @Column(length = 200)
     private String channels;
 
+    @Column(name = "group_unit_id", length = 40)
+    private String groupUnitId;
+
     protected Notification() {
     }
 
@@ -74,4 +77,5 @@ public class Notification {
     public String getTitle() { return title; }
     public String getMessage() { return message; }
     public String getChannels() { return channels; }
+    public String getGroupUnitId() { return groupUnitId; }
 }
