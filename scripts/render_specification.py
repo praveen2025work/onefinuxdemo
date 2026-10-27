@@ -365,6 +365,7 @@ ONEUX_REQ = [
     ("REQ-ONEUX-023", "A chatbot set in onefinux.ux.chatbot is framed in the assistant panel and as a desk widget; the console sends it ofx.theme and ofx.context, and acts only on ofx.chat.ready, ofx.chat.open with a same-origin route, and ofx.chat.share, from the configured origin and that frame."),
     ("REQ-ONEUX-024", "The console's built-in assistant and every framed chatbot style conversations with the .ofx-chat classes in frontend/theme/onefinux-tokens.css."),
     ("REQ-ONEUX-025", "Under the STEPS skin the console uses white cards with a 1px border and no tinted tile fills, ghost header icons, counts as coloured text, and rounded filter chips."),
+    ("REQ-ONEUX-026", "Buttons, inputs, drop-downs, labels and Wijmo grids in the console, in STEPS and in MITR AI take one control scale from frontend/theme (--ofx-ctl-* and onefinux-wijmo.css): 32px controls with 10px corners, 12px/500 button text, 14px typed text, 14px/500 labels, and 33px grid rows under a 12px semibold uppercase header."),
 ]
 
 ONEUX_AC = [

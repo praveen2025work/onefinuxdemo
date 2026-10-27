@@ -44,7 +44,18 @@ Build new screens by composing existing classes in `styles.css`. If a screen nee
 | `--ofx-fail` | `#dc2626` · `#f87171` | BLOCKED, FAILED |
 | `--ofx-chart-1..6` | accent-led | Chart series (read by `components/Chart.jsx`) |
 
-Each status has `-bg` and `-line` tints. Radii are `--ofx-r-ctl` 8px, cards 10px and `--ofx-r-lg` 12px. Type is the system UI stack (`--ofx-font`), with `--ofx-mono` (JetBrains Mono) for ids, offsets, times and money. Numerics are `tabular-nums`. Icons are Lucide-style strokes from `components/Icon.jsx`.
+Each status has `-bg` and `-line` tints. Radii are `--ofx-r-ctl` 10px (STEPS `rounded-md`), cards 10px and `--ofx-r-lg` 12px. Type is the system UI stack (`--ofx-font`), with `--ofx-mono` (JetBrains Mono) for ids and offsets outside grids. Numerics are `tabular-nums`. Icons are Lucide-style strokes from `components/Icon.jsx`.
+
+**One control scale for One Finance, STEPS and MITR AI** (values from STEPS v3, tokens in the derived `:root` block):
+
+| Control | Rule |
+|---|---|
+| Button | `--ofx-ctl-h` 32px, `--ofx-r-ctl`, `--ofx-btn-fs` 12px / `--ofx-btn-fw` 500, `--ofx-ctl-sh`; small 28px |
+| Input, select, drop-down trigger | 32px, `--ofx-ctl-bg`, 1px `--ofx-ctl-line`, `--ofx-ctl-fs` 14px, focus `--ofx-focus` |
+| Label | `--ofx-label-fs` 14px / 500, ink |
+| Wijmo grid | 33px rows and header, 13px cells, 12px semibold uppercase header on a half band over a 2px rule (`onefinux-wijmo.css`) |
+
+Partner screens use `.ofx-btn`, `.ofx-btn-2`, `.ofx-btn-ghost`, `.ofx-input`, `.ofx-select`, `.ofx-label`. MITR AI copies the two theme files with `npm run sync:ofx-theme`; edit them here, never in a copy.
 
 Never use `backdrop-filter`, translucent fills, or radial washes on the page.
 

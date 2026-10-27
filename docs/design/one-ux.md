@@ -39,7 +39,7 @@ to a bank platform the console connects to.
 | Evergreening through automated testing | Have | Unit tests (node, JUnit), Playwright journeys in CI (`frontend/web/e2e`) |
 | Responsive and adaptive | Have | Mobile shell, desks collapse to one column |
 | Accessibility | Have | WCAG 2.1 AA axe checks in CI on the main screens; contrast-safe tokens; closed panels are `inert` |
-| Consistency and design standards | Have | STEPS light skin by default (white cards, ghost header icons, filter chips); `frontend/theme` tokens and `.ofx-chat` classes shared with STEPS, partners and chatbots; one control scale, `barclays-ib-console` skill, CI guards |
+| Consistency and design standards | Have | STEPS light skin by default (white cards, ghost header icons, filter chips); `frontend/theme` tokens, Wijmo skin and `.ofx-chat` classes shared with STEPS, partners and MITR AI; one control scale for buttons, inputs, drop-downs, labels and grids in all three apps (`--ofx-ctl-*`, REQ-ONEUX-026); `barclays-ib-console` skill, CI guards |
 
 ### Micro front end
 

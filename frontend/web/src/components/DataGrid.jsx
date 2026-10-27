@@ -18,7 +18,7 @@ export const PILL_TONE = {
   'In Progress': 'warn', Submitted: 'ok', Delayed: 'warn',
 };
 
-const HEADER_H = 26;
+const HEADER_H = 33; // STEPS grid header and row height (frontend/theme/onefinux-wijmo.css)
 
 function keyOf(row) {
   if (!row || typeof row !== 'object') return null;
@@ -41,7 +41,7 @@ function esc(text) {
  *            onEdit(item, binding, before, after), isDirty(item, binding) } — makes those columns editable in place
  *            (write-back). Other columns stay read-only; edited cells are marked until submitted.
  */
-export default function DataGrid({ rows = [], columns, height = 360, maxHeight = 520, rowHeight = 28, onSelect,
+export default function DataGrid({ rows = [], columns, height = 360, maxHeight = 520, rowHeight = 33, onSelect,
   title, exportName = 'grid', toolbar = true, search = true, empty = 'No rows.', dense = false, actions, frozen = 0, edit }) {
   const [editError, setEditError] = useState(null);
   const beforeEdit = useRef(undefined);

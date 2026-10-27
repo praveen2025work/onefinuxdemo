@@ -112,7 +112,7 @@ export function normalizeSpec(raw) {
     share,
     height: raw.height === 'auto' || raw.height === '100%' ? raw.height : Number.isFinite(raw.height) ? Math.min(2000, Math.max(120, raw.height)) : 'auto',
     maxHeight: Number.isFinite(raw.maxHeight) ? Math.min(2000, Math.max(160, raw.maxHeight)) : 520,
-    rowHeight: Number.isFinite(raw.rowHeight) ? Math.min(80, Math.max(26, raw.rowHeight)) : 34,
+    rowHeight: Number.isFinite(raw.rowHeight) ? Math.min(80, Math.max(26, raw.rowHeight)) : 33,
     exportName: typeof raw.exportName === 'string' && ID.test(raw.exportName) ? raw.exportName : id.replace(/[:]/g, '-'),
     edit: normalizeEdit(raw.edit, errors),
   };

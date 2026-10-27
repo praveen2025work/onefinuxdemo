@@ -72,3 +72,7 @@ and hides its own title bar and sidebar when it sees `ofx-embed=1` and its `NEXT
 | MITR AI nginx / IIS | `location /widget` → `frame-ancestors` | the One Finance origin |
 
 Keep both on the same parent domain so the bot's sign-in cookies stay first-party inside the frame.
+
+MITR AI also carries a copy of both theme files (`apps/web/src/styles/ofx`, refreshed with `npm run sync:ofx-theme`), so
+it looks like STEPS on its own too: the STEPS look is its default, with "MITR classic" (the indigo `ofx` skin) in its
+theme menu. Its own buttons, fields, labels and Wijmo grids follow the shared control scale (REQ-ONEUX-026).

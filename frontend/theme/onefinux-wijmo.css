@@ -10,59 +10,66 @@
  * @mescius/wijmo.styles/wijmo.css.
  */
 
-/* ---------------------------------------------------------------- FlexGrid */
+/* ---------------------------------------------------------------- FlexGrid
+   The STEPS v3 grid (steps-api-v2-main globals.css "Wijmo Theme"): 13px cells with faint lines, a 12px semibold
+   uppercase header on a half-tinted band over a 2px rule, selection at 12% of the accent. */
 .wj-control { font-family: var(--ofx-font); }
 .wj-flexgrid {
   background: var(--ofx-card);
   color: var(--ofx-ink);
   border: 1px solid var(--ofx-line);
-  border-radius: var(--ofx-r);
-  font-size: 12px;
+  border-radius: 8px;
+  font-size: var(--ofx-grid-fs);
+  font-variant-numeric: tabular-nums;
 }
 .wj-flexgrid .wj-cell {
   background: var(--ofx-card);
   color: var(--ofx-ink);
-  border-right: 0;
-  border-bottom: 1px solid var(--ofx-line);
-  padding: 2px 6px;
-  line-height: 1.25;
+  border-right: 1px solid color-mix(in srgb, var(--ofx-line) 30%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--ofx-line) 30%, transparent);
+  padding: 6px 12px;
 }
 .wj-flexgrid .wj-cell.wj-header,
 .wj-flexgrid .wj-topleft .wj-cell.wj-header {
-  background: var(--ofx-surface-2);
-  color: var(--ofx-ink-2);
+  background: color-mix(in srgb, var(--ofx-surface-2) 50%, var(--ofx-card));
+  color: var(--ofx-ink);
   font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  font-size: var(--ofx-grid-hd-fs);
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  border-right: 0;
-  border-bottom: 1px solid var(--ofx-line);
+  border-right: 1px solid color-mix(in srgb, var(--ofx-line) 50%, transparent);
+  border-bottom: 2px solid var(--ofx-line);
+  padding: 8px 12px;
 }
+.wj-flexgrid .wj-rowheaders .wj-cell.wj-header { border-bottom: 1px solid color-mix(in srgb, var(--ofx-line) 30%, transparent); }
 .wj-flexgrid .wj-cells .wj-cell.wj-alt:not(.wj-state-selected):not(.wj-state-multi-selected) {
-  background: color-mix(in srgb, var(--ofx-surface-2) 45%, var(--ofx-card));
+  background: color-mix(in srgb, var(--ofx-surface-2) 15%, var(--ofx-card));
 }
 .wj-flexgrid .wj-cells .wj-row:hover .wj-cell:not(.wj-state-selected):not(.wj-state-multi-selected):not(.wj-header) {
-  background: var(--ofx-surface-2);
+  background: color-mix(in srgb, var(--ofx-accent) 8%, var(--ofx-card));
 }
-/* Row selection reads as one band: the cursor cell gets the same tint as the rest of the row. */
-.wj-flexgrid .wj-cells .wj-cell.wj-state-multi-selected,
 .wj-flexgrid .wj-cells .wj-cell.wj-state-selected {
-  background: color-mix(in srgb, var(--ofx-accent) 13%, var(--ofx-card));
+  background: color-mix(in srgb, var(--ofx-accent) 12%, var(--ofx-card));
+  color: var(--ofx-ink);
+}
+.wj-flexgrid .wj-cells .wj-cell.wj-state-multi-selected {
+  background: color-mix(in srgb, var(--ofx-accent) 8%, var(--ofx-card));
   color: var(--ofx-ink);
 }
 .wj-flexgrid .wj-colheaders .wj-header.wj-state-multi-selected { border-bottom: 2px solid var(--ofx-accent); }
-.wj-flexgrid .wj-cell.wj-header.wj-state-multi-selected { background: var(--ofx-surface-2); color: var(--ofx-ink); }
+.wj-flexgrid .wj-cell.wj-header.wj-state-multi-selected { color: var(--ofx-ink); }
 .wj-flexgrid .wj-cell.wj-group:not(.wj-state-selected):not(.wj-state-multi-selected) {
   background: var(--ofx-surface-3);
   color: var(--ofx-ink);
   font-weight: 600;
 }
 .wj-flexgrid .wj-marquee { border-color: var(--ofx-accent); }
-.wj-flexgrid .wj-cell.wj-header .wj-elem-filter { opacity: 0.5; color: var(--ofx-ink-2); }
+.wj-flexgrid .wj-marker { background: var(--ofx-accent); }
+.wj-flexgrid .wj-cell.wj-header .wj-elem-filter { opacity: 0.6; color: var(--ofx-ink-3); }
 .wj-flexgrid .wj-cell.wj-header.wj-filter-on .wj-elem-filter { opacity: 1; color: var(--ofx-accent); }
+.wj-flexgrid .wj-glyph-up,
+.wj-flexgrid .wj-glyph-down,
 .wj-cell.wj-header .wj-sort-index { color: var(--ofx-accent); }
-.wj-flexgrid .wj-cell.wj-align-right { font-family: var(--ofx-mono); font-size: 12px; }
-.wj-flexgrid .wj-cell.wj-header.wj-align-right { font-family: var(--ofx-font); font-size: 11px; }
 
 /* ---------------------------------------------------------------- popups: column filter, drop-downs, list boxes */
 .wj-dropdown-panel,
@@ -79,19 +86,23 @@
 .wj-columnfiltereditor input,
 .wj-columnfiltereditor select,
 .wj-columnfiltereditor .wj-listbox {
-  background: var(--ofx-surface-2);
+  background: var(--ofx-card);
   color: var(--ofx-ink);
   border-color: var(--ofx-line);
+  font-size: 12px;
 }
+/* STEPS filter editor: small bordered buttons that fill with the accent on hover. */
 .wj-columnfiltereditor .wj-btn,
 .wj-dropdown-panel .wj-btn {
   background: var(--ofx-card);
   color: var(--ofx-ink);
-  border: 1px solid var(--ofx-line-2);
-  border-radius: var(--ofx-r-ctl);
+  border: 1px solid var(--ofx-line);
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 4px 12px;
 }
 .wj-columnfiltereditor .wj-btn:hover,
-.wj-dropdown-panel .wj-btn:hover { border-color: var(--ofx-accent); }
+.wj-dropdown-panel .wj-btn:hover { background: var(--ofx-accent); color: var(--ofx-on-accent); }
 .wj-columnfiltereditor a { color: var(--ofx-accent); }
 .wj-listbox { background: var(--ofx-card); color: var(--ofx-ink); }
 .wj-listbox .wj-listbox-item.wj-state-selected { background: var(--ofx-accent); color: var(--ofx-on-accent); }

@@ -1289,7 +1289,7 @@ a.story-row:hover { border-color: var(--stroke-2); }
 }
 .cell-2l { display: flex; flex-direction: column; justify-content: center; gap: 0; height: 100%; line-height: 1.2; min-width: 0; }
 .cell-2l .sec { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.wj-flexgrid .wj-cell.cell-mono { font-family: var(--mono); font-size: 12px; }
+.wj-flexgrid .wj-cell.cell-mono { font-variant-numeric: tabular-nums; } /* STEPS grids keep one typeface; ids line up by tabular digits */
 .wj-flexgrid .wj-cell .meter { min-width: 0; height: 100%; }
 .wj-flexgrid .wj-cell .btn.sm { padding: 3px 9px; }
 .dataview { display: flex; flex-direction: column; gap: 8px; }
@@ -1505,23 +1505,43 @@ a.story-row:hover { border-color: var(--stroke-2); }
 [data-skin="steps"] .story-row { background: var(--surface); }
 [data-skin="steps"] .oc { background: var(--surface); }
 
-/* Controls: white bordered buttons with a hairline shadow; segmented groups become STEPS filter chips. */
-[data-skin="steps"] .btn { font-weight: 500; border-radius: var(--r-ctl); }
-[data-skin="steps"] .btn.ghost { background: var(--surface); box-shadow: var(--shadow); }
+/* Controls: the shared scale in frontend/theme (--ofx-ctl-*), the same numbers as STEPS v3 and MITR AI — 32px buttons,
+   inputs and drop-downs, 10px corners, 12px/500 button text, 14px typed text, 14px/500 labels, a hairline shadow.
+   Segmented groups are STEPS filter chips. */
+[data-skin="steps"] .btn { height: var(--ofx-ctl-h); padding: 0 var(--ofx-ctl-px); justify-content: center; border-radius: var(--ofx-r-ctl);
+  font-family: var(--ofx-font); font-size: var(--ofx-btn-fs); font-weight: var(--ofx-btn-fw); box-shadow: var(--ofx-ctl-sh); }
+[data-skin="steps"] .btn:hover:not(:disabled) { filter: none; background: color-mix(in srgb, var(--accent) 90%, var(--surface)); }
+[data-skin="steps"] .btn.sm { height: var(--ofx-ctl-h-sm); padding: 0 10px; font-size: var(--ofx-btn-fs); }
+[data-skin="steps"] .btn.ghost { background: var(--ofx-ctl-bg); border: 1px solid var(--ofx-ctl-line); color: var(--ink); box-shadow: var(--ofx-ctl-sh); }
+[data-skin="steps"] .btn.ghost:hover:not(:disabled) { background: var(--raised); border-color: var(--ofx-ctl-line); }
+[data-skin="steps"] .btn.danger:hover:not(:disabled) { background: color-mix(in srgb, var(--fail) 90%, var(--surface)); }
 [data-skin="steps"] .seg { background: transparent; border: 0; padding: 0; gap: 6px; }
-[data-skin="steps"] .seg button, [data-skin="steps"] .seg a { border: 1px solid var(--stroke); border-radius: var(--r-pill); background: var(--surface);
-  color: var(--ink); font-weight: 500; padding: 3px 11px; }
+[data-skin="steps"] .seg button, [data-skin="steps"] .seg a { height: var(--ofx-ctl-h-sm); border: 1px solid var(--stroke); border-radius: var(--r-pill);
+  background: var(--surface); color: var(--ink); font-size: var(--ofx-btn-fs); font-weight: 500; padding: 0 11px; }
 [data-skin="steps"] .seg button:hover, [data-skin="steps"] .seg a:hover { border-color: var(--stroke-2); }
 [data-skin="steps"] .seg button.on, [data-skin="steps"] .seg a.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-[data-skin="steps"] .seg.sm button { padding: 2px 9px; }
+[data-skin="steps"] .seg.sm button { height: 24px; padding: 0 9px; }
 [data-skin="steps"] .ph-tools .seg { height: auto; }
-[data-skin="steps"] .ph-tools .seg button, [data-skin="steps"] .ph-tools .seg a { height: 28px; }
-[data-skin="steps"] .sel2-trig { background: var(--surface); box-shadow: var(--shadow); }
-[data-skin="steps"] .inp { background: var(--raised); }
+[data-skin="steps"] .sel2-trig,
+[data-skin="steps"] .inp,
+[data-skin="steps"] .sel { min-height: var(--ofx-ctl-h); padding: 0 var(--ofx-ctl-px); border-radius: var(--ofx-r-ctl); background: var(--ofx-ctl-bg);
+  border: 1px solid var(--ofx-ctl-line); box-shadow: var(--ofx-ctl-sh); color: var(--ink); font-family: var(--ofx-font); font-size: var(--ofx-ctl-fs); }
+[data-skin="steps"] textarea.inp { padding: 8px var(--ofx-ctl-px); }
+[data-skin="steps"] .inp.sm { min-height: var(--ofx-ctl-h-sm); padding: 0 9px; }
+[data-skin="steps"] .inp:focus, [data-skin="steps"] .sel:focus,
+[data-skin="steps"] .sel2-trig:focus-visible { outline: none; border-color: var(--ofx-ctl-line); box-shadow: var(--ofx-focus); }
+[data-skin="steps"] .inp::placeholder { color: var(--ofx-ink-3); }
+[data-skin="steps"] .search-inp { height: var(--ofx-ctl-h); padding: 0 var(--ofx-ctl-px); border-radius: var(--ofx-r-ctl); background: var(--ofx-ctl-bg);
+  border: 1px solid var(--ofx-ctl-line); box-shadow: var(--ofx-ctl-sh); }
+[data-skin="steps"] .search-inp input { font-size: var(--ofx-ctl-fs); }
+[data-skin="steps"] .search-inp.sm { height: var(--ofx-ctl-h-sm); }
+[data-skin="steps"] .search-inp.sm input { font-size: var(--ofx-btn-fs); }
+[data-skin="steps"] .field label { font-size: var(--ofx-label-fs); font-weight: var(--ofx-label-fw); color: var(--ink); margin-bottom: 8px; }
 
-/* Tables and grid headers: white headers with quiet labels, as in STEPS' lists. */
-[data-skin="steps"] .tbl th { background: var(--surface); color: var(--muted); font-weight: 500; letter-spacing: 0.3px; }
-[data-skin="steps"] .wj-flexgrid .wj-colheaders .wj-cell.wj-header { background: var(--surface); color: var(--muted); font-weight: 500; }
+/* Tables: the STEPS grid header — 12px semibold uppercase on a half-tinted band over a 2px rule; 13px rows. */
+[data-skin="steps"] .tbl th { background: color-mix(in srgb, var(--raised) 50%, var(--surface)); color: var(--ink); font-size: var(--ofx-grid-hd-fs);
+  font-weight: 600; letter-spacing: 0.03em; padding: 8px 12px; border-bottom: 2px solid var(--stroke); }
+[data-skin="steps"] .tbl td { padding: 6px 12px; font-size: var(--ofx-grid-fs); border-bottom-color: color-mix(in srgb, var(--stroke) 30%, transparent); }
 [data-skin="steps"] .pill { font-weight: 500; }
 
 /* Phone: two rows — menu, mark, page title, assistant and avatar; then search and the business date. Counts live on
