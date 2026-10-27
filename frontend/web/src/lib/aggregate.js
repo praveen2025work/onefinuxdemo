@@ -44,6 +44,20 @@ export function aggregateBy(rows = [], category, value, op = 'sum') {
   return [...groups.entries()].map(([name, vals]) => ({ name, value: Math.round(reduce(vals) * 100) / 100 }));
 }
 
+/**
+ * Find the Wijmo pivot field for a GridSpec name.
+ * PivotField.key is the header ("Region", "Slice Key"), while specs and row objects use the binding
+ * ("region", "sliceKey"). Either form is accepted.
+ */
+export function resolvePivotField(fields, name) {
+  if (!fields || name == null || name === '') return null;
+  for (let i = 0; i < fields.length; i++) {
+    const field = fields[i];
+    if (field && (field.binding === name || field.header === name || field.key === name)) return field;
+  }
+  return null;
+}
+
 /** Rows a grid can export or chart: plain objects only, private (_x) fields dropped. */
 export function plainRows(rows = []) {
   return rows.filter((r) => r && typeof r === 'object').map((r) => {

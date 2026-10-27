@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { aggregateBy, fieldKinds, plainRows } from './aggregate.js';
+import { aggregateBy, fieldKinds, plainRows, resolvePivotField } from './aggregate.js';
 
 const rows = [
   { region: 'EMEA', status: 'READY', amount: 10, _color: 'x' },
@@ -27,4 +27,18 @@ test('aggregateBy sums, averages, counts in first-seen order', () => {
 
 test('plainRows drops private fields and non-objects', () => {
   assert.deepEqual(plainRows([rows[0], null, 'x']), [{ region: 'EMEA', status: 'READY', amount: 10 }]);
+});
+
+test('resolvePivotField matches a binding or the Wijmo header', () => {
+  const fields = [
+    { binding: 'region', header: 'Region', key: 'Region' },
+    { binding: 'sliceKey', header: 'Slice Key', key: 'Slice Key' },
+    { binding: 'amount', header: 'Amount', key: 'Amount' },
+  ];
+  assert.equal(resolvePivotField(fields, 'region'), fields[0]);
+  assert.equal(resolvePivotField(fields, 'Region'), fields[0]);
+  assert.equal(resolvePivotField(fields, 'sliceKey'), fields[1]);
+  assert.equal(resolvePivotField(fields, 'Slice Key'), fields[1]);
+  assert.equal(resolvePivotField(fields, 'missing'), null);
+  assert.equal(resolvePivotField(undefined, 'region'), null);
 });
