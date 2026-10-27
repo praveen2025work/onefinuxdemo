@@ -5,13 +5,13 @@ description: Use when another team builds a heavy screen (STEPS, Helix FOBO, Axi
 
 # Partner screen inside One Finance
 
-One Finance is the **shell**. Other teams build the **workload**. We iframe their app so the look stays one platform: in a kit's embed slot or as a Workspace view beside other screens.
+One Finance is the **shell**. Other teams build the **workload**. We iframe their app so the look stays one platform: in a kit's embed slot or as a view on a desk beside other screens.
 
 ## Who builds what
 
 | One Finance | Partner team |
 |---|---|
-| Head board, user cards, RTB, config, Workspace | STEPS, Helix FOBO tower, Axiom viewer, … |
+| Head board, user cards, RTB, config, desks | STEPS, Helix FOBO tower, Axiom viewer, … |
 | Theme files + embed host + FDC3 desktop agent + CEES gate | Screen body using `--ofx-*` tokens |
 | Fold, notify, kit `embed.url` | Their SoR / engine UI |
 
@@ -39,7 +39,7 @@ Host shows the iframe only when the outcome is entitled and Ready (or Blocked wi
 
 ## Context we pass (query + postMessage)
 
-Query: `groupUnitId`, `productId`, `outcomeId`, `cobDate`, `region`, `runId`, `theme`, `skin`, and `ofxView` (the Workspace view id).
+Query: `groupUnitId`, `productId`, `outcomeId`, `cobDate`, `region`, `runId`, `theme`, `skin`, and `ofxView` (the desk view id).
 
 Screen-to-screen links use FDC3. Load the host SDK and use `window.fdc3`. **REQUIRED:** `workspace-interop`.
 
@@ -53,11 +53,21 @@ Screen-to-screen links use FDC3. Load the host SDK and use `window.fdc3`. **REQU
 
 A team that cannot load cross-origin script bundles the same contract. STEPS does this in `src/lib/ofx-interop.ts`.
 
+On an outcome desk the frame's channel is the outcome's shared channel (`outcome:<id>`), so its picks reach that outcome's screens in every browser. When the partner screen acts in its own system (assigns a break, closes an exception), it tells every desk on the outcome:
+
+```js
+ofx.activity({ action: 'ASSIGNED', summary: 'BK-4420 assigned to Alex', instanceId });
+```
+
+The host adds the desk's outcome and posts it to the hub as the signed-in user, so no CORS setup is needed. A server-side system can post the same thing to `POST /api/interop/activity`.
+
+A partner that only needs a **read-only grid** of One Finance data embeds it instead of building one: `/widget/grid?ofx-embed=1&spec=<id>` in an iframe, or `<ofx-grid>` from `/lib/onefinux-grid.js`. **REQUIRED:** `wijmo-outcome-grid`.
+
 Kit embeds may also post `{ type: "ofx.height", px }`, `{ type: "ofx.signedOff" }`, `{ type: "ofx.posted" }` and `{ type: "ofx.escalate" }`. Both sides ignore other origins, and a partner posts only to the host origin.
 
 ## Security
 
-- `frame-src` allowlist = kit `allowedOrigin`, and the Workspace sandboxes web views.
+- `frame-src` allowlist = kit `allowedOrigin`, and desks sandbox web views.
 - The partner allows the host in `frame-ancestors` (STEPS: `OFX_HOST_ORIGINS` / `-OfxHostOrigins`) and only enters embedded mode for allow-listed host origins (STEPS: `NEXT_PUBLIC_OFX_HOST_ORIGINS`).
 - The token in the iframe is the user's SSO, not a shared service account. The partner still checks their ACL, and we still check CEES before rendering the frame.
 

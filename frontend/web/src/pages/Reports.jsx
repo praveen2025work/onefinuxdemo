@@ -90,6 +90,10 @@ function ReportCard({ outcome, compact }) {
         </div>
         <div className="rcard-cta">
           <OpenReport outcome={outcome} compact={compact} />
+          <Link className="btn ghost sm" title={`Open the ${outcome.name} desk — its screens, grids and live activity in one place`}
+            to={`/desks?outcome=outcome:${encodeURIComponent(outcome.outcomeId)}&name=${encodeURIComponent(outcome.name)}`}>
+            <Icon name="window" size={13} /> Desk
+          </Link>
         </div>
       </div>
 

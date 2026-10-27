@@ -1,5 +1,6 @@
 package com.onefinux.hub.workflow;
 
+import com.onefinux.hub.activity.ActivityFeed;
 import com.onefinux.hub.event.EventHubService;
 import com.onefinux.hub.event.EventStatus;
 import com.onefinux.hub.outcome.DependencyView;
@@ -36,11 +37,13 @@ public class WorkflowController {
     private final OutcomeEngine engine;
     private final EventHubService hub;
     private final ActionDispatcher dispatcher;
+    private final ActivityFeed activity;
 
-    public WorkflowController(OutcomeEngine engine, EventHubService hub, ActionDispatcher dispatcher) {
+    public WorkflowController(OutcomeEngine engine, EventHubService hub, ActionDispatcher dispatcher, ActivityFeed activity) {
         this.engine = engine;
         this.hub = hub;
         this.dispatcher = dispatcher;
+        this.activity = activity;
     }
 
     public record OverrideRequest(@NotBlank String dependency, @NotBlank String reason, @NotBlank String requestedBy) {
@@ -66,6 +69,9 @@ public class WorkflowController {
                 outcome.region(), EventStatus.COMPLETED,
                 Map.of("outcomeId", outcome.outcomeId(), "dependency", request.dependency().toUpperCase(),
                         "reason", request.reason(), "requestedBy", request.requestedBy()));
+        activity.publish(new ActivityFeed.Activity("OVERRIDE", request.requestedBy(),
+                "Override " + input.label() + " on " + outcome.name() + ": " + request.reason(), outcome.outcomeId(),
+                null, null, null, cobDate.toString(), outcome.region(), "console"));
         return find(outcomeId, cobDate, region);
     }
 
@@ -83,7 +89,11 @@ public class WorkflowController {
                     outcome.name() + " is " + outcome.status() + "; it can only run once all inputs are complete");
         }
         String by = request == null || request.requestedBy() == null ? "unknown user" : request.requestedBy();
-        return Map.of("runId", dispatcher.trigger(outcome, by));
+        String runId = dispatcher.trigger(outcome, by);
+        activity.publish(new ActivityFeed.Activity("RERUN", by,
+                "Re-ran " + outcome.actionLabel() + " for " + outcome.name() + " (" + runId + ")", outcome.outcomeId(),
+                null, null, null, cobDate.toString(), outcome.region(), "console"));
+        return Map.of("runId", runId);
     }
 
     private OutcomeView find(String outcomeId, LocalDate cobDate, String region) {

@@ -171,7 +171,9 @@
     joinChannel: function (channelId) { return fdc3.joinUserChannel(channelId); },
     getCurrentChannel: function () {
       var c = USER_CHANNELS.filter(function (x) { return x.id === state.channel; })[0];
-      return Promise.resolve(c ? userChannel(c) : null);
+      if (c) return Promise.resolve(userChannel(c));
+      // An outcome desk channel: shared with that outcome's screens in every browser.
+      return Promise.resolve(/^outcome:/.test(state.channel || '') ? channelObject(state.channel, 'app', { name: state.channel }) : null);
     },
     leaveCurrentChannel: function () {
       post({ type: 'ofx.join', channel: null });
@@ -214,7 +216,17 @@
         post({ type: 'ofx.ready' });
       });
     },
-    /** Hub WebSocket events relayed by the host: notification | outcome | event | context. */
+    /**
+     * Tell every desk on this outcome, in every browser, about an action this screen took in its own system:
+     *   ofx.activity({ action: 'ASSIGNED', summary: 'BK-4420 assigned to Alex', instanceId })
+     * The host adds the desk's outcome and posts it to the hub as the signed-in user (live event `activity`).
+     */
+    activity: function (a) {
+      if (!a || !/^[A-Z][A-Z0-9_]{0,39}$/.test(a.action || '') || !a.summary) return false;
+      post({ type: 'ofx.activity', action: a.action, summary: String(a.summary).slice(0, 280), instanceId: a.instanceId || null });
+      return true;
+    },
+    /** Hub WebSocket events relayed by the host: notification | outcome | event | context | activity. */
     addLiveListener: function (name, handler) {
       (liveListeners[name] = liveListeners[name] || []).push(handler);
       post({ type: 'ofx.live.subscribe', names: Object.keys(liveListeners) });

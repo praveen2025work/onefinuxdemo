@@ -20,9 +20,10 @@ const NAV = [
     { to: '/finance', label: 'Finance dashboard', short: 'Finance', icon: 'dollar' },
     { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
   ] },
-  { grp: 'Workspace', items: [
-    { to: '/workspace', label: 'Workspace', short: 'Workspace', icon: 'window' },
+  { grp: 'Collaborate', items: [
+    { to: '/desks', label: 'Desks', short: 'Desks', icon: 'window' },
     { to: '/notifications', label: 'Notifications', short: 'Alerts', icon: 'bell', badge: 'unread' },
+    { to: '/grids', label: 'Grid library', short: 'Grids', icon: 'grid' },
   ] },
   { grp: 'Operate', items: [
     { to: '/operations', label: 'Operations', short: 'Ops', icon: 'ops', badge: 'esc' },
@@ -93,7 +94,7 @@ function Shell({ children }) {
   const groupUnits = context?.groupUnits || [];
 
   const railItems = nav.flatMap((section) => section.items);
-  const bottomPref = ['/', '/board', '/finance', '/workspace', '/reports'];
+  const bottomPref = ['/', '/board', '/finance', '/desks', '/reports'];
   const bottomPicked = bottomPref.map((to) => railItems.find((it) => it.to === to)).filter(Boolean);
   const bottomItems = bottomPicked.length >= 3 ? bottomPicked.slice(0, 5) : railItems.slice(0, 5);
 

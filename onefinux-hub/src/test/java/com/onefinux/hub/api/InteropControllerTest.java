@@ -39,6 +39,30 @@ class InteropControllerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void sharesAnOutcomeChannelAcrossBrowsersWithOriginIdAndTheRealActor() {
+        com.onefinux.hub.security.CurrentUser user = mock(com.onefinux.hub.security.CurrentUser.class);
+        org.mockito.Mockito.when(user.actor()).thenReturn("pk");
+        InteropController withUser = new InteropController(stream, new ObjectMapper(),
+                Clock.fixed(Instant.parse("2026-09-12T20:00:00Z"), ZoneOffset.UTC), user);
+        withUser.context(new InteropController.ContextPush("outcome:fobo_helix", Map.of("type", "ofx.instance", "id", "R-2031"),
+                "v1", "b7f3c2a1-browser", "b7f3c2a1-browser:12"));
+        ArgumentCaptor<Object> payload = ArgumentCaptor.forClass(Object.class);
+        verify(stream).broadcast(eq("context"), payload.capture());
+        assertThat((Map<String, Object>) payload.getValue()).containsEntry("channel", "outcome:fobo_helix")
+                .containsEntry("origin", "b7f3c2a1-browser").containsEntry("id", "b7f3c2a1-browser:12").containsEntry("by", "pk");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void dropsAMalformedOriginOrMessageId() {
+        controller.context(new InteropController.ContextPush("blue", Map.of("type", "x"), null, "bad origin!", "<id>"));
+        ArgumentCaptor<Object> payload = ArgumentCaptor.forClass(Object.class);
+        verify(stream).broadcast(eq("context"), payload.capture());
+        assertThat((Map<String, Object>) payload.getValue()).doesNotContainKeys("origin", "id", "by");
+    }
+
+    @Test
     void acceptsAnAppChannel() {
         controller.context(new InteropController.ContextPush("app:fobo-desk", Map.of("type", "fdc3.instrument"), null));
         verify(stream).broadcast(eq("context"), any());

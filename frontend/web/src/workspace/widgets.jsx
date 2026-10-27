@@ -6,6 +6,23 @@ import { recentLive, subscribeLive } from '../live/liveLink.js';
 import { useLiveStatus } from '../useStream.js';
 import { channelById, contextLabel, instanceContext, isValidContext } from './channels.js';
 import { broadcastContext, onAnyContext } from './interop.js';
+import { channelInfo, cleanSubject, feedItem, matchesSubject, mergeFeed } from './desks.js';
+import { activityApi } from '../api.js';
+import SpecGrid from '../grid/SpecGrid.jsx';
+import { paramContext } from '../grid/spec.js';
+import { useGridSpec } from '../grid/useGridSpec.js';
+import { EMBED } from '../embed.js';
+
+/** The origin of the page that frames this document, when it is another app (not the console itself). */
+function embedderOrigin() {
+  if (!EMBED || window.parent === window) return null;
+  try {
+    const origin = new URL(document.referrer).origin;
+    return origin !== window.location.origin ? origin : null;
+  } catch {
+    return null;
+  }
+}
 
 const FEED_TONE = { notification: 'warn', outcome: 'info', event: 'plain', kit: 'bo', reset: 'fail', propagation: 'ok', hello: 'ok' };
 
@@ -167,8 +184,149 @@ export function ContextInspector({ view, titles = {} }) {
   );
 }
 
+/**
+ * Any read-only grid, from a GridSpec (view.config.spec: a built-in id, outcome:<id>:<grid>, my:<id>, or an inline
+ * spec; view.config.filter narrows it). Refetches on hub pushes; a row pick is shared on the view's channel.
+ */
+export function GridWidget({ view }) {
+  const { filters } = useApp();
+  const ref = view?.config?.spec || 'instances';
+  const { spec, error, loading } = useGridSpec(ref, view?.config?.filter ? { filter: view.config.filter } : null);
+  const chan = channelInfo(view?.channel, view?.config?.subject);
+  const [shared, setShared] = useState(null);
+
+  function share(ctx) {
+    if (broadcastContext(ctx, { channel: view?.channel, source: view?.id })) setShared(contextLabel(ctx));
+  }
+
+  // Another team's app framing this grid hears each pick (posted to its origin only).
+  function tellEmbedder(row) {
+    const origin = embedderOrigin();
+    if (!origin) return;
+    const plain = Object.fromEntries(Object.entries(row || {}).filter(([k]) => !k.startsWith('_')));
+    window.parent.postMessage({ type: 'ofx.grid.select', spec: spec?.id, row: plain }, origin);
+  }
+
+  return (
+    <div className="wg">
+      {spec?.share && (
+        <div className="wg-note">
+          {chan
+            ? <>Pick a row to share it on <i className="chan-dot" style={{ background: chan.color }} /> <b>{chan.label}</b>
+              {chan.shared ? ' — every browser on this outcome' : ''}{shared ? <> · shared <span className="mono">{shared}</span></> : null}</>
+            : 'Not linked — pick a channel in the view header to drive other views.'}
+        </div>
+      )}
+      <div className="wg-grid">
+        {spec
+          ? <SpecGrid spec={spec} context={paramContext(filters)} subscribe={subscribeLive} onShare={share}
+            onSelect={embedderOrigin() ? tellEmbedder : undefined} height="100%" />
+          : <div className="empty sm">{loading ? 'Loading grid…' : error}</div>}
+      </div>
+    </div>
+  );
+}
+
+const VERB_LABEL = { SIGN_OFF: 'signed off', COUNTERSIGN: 'countersigned', POST: 'posted', ADJUST: 'adjusted', ESCALATE: 'escalated',
+  OVERRIDE: 'overrode', RERUN: 're-ran', NOTE: 'noted', SHARED: 'shared' };
+
+function initials(name) {
+  const parts = String(name || '?').replace(/[^A-Za-z. ]/g, ' ').split(/[\s.]+/).filter(Boolean);
+  return ((parts[0]?.[0] || '?') + (parts[1]?.[0] || '')).toUpperCase();
+}
+
+/**
+ * Everything happening on this desk's outcome, from every screen, tab and browser: actions (sign-off, post, override,
+ * re-run, partner actions) as the hub pushes them, notifications, and contexts shared on the desk's channel. A note
+ * typed here reaches every desk on the same outcome.
+ */
+export function ActivityWidget({ view, desk }) {
+  const subject = cleanSubject(view?.config?.subject || desk?.subject);
+  const { notifications } = useApp();
+  const [items, setItems] = useState([]);
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState(null);
+  const subjectKey = subject ? `${subject.kind}:${subject.id}` : 'all';
+  const keys = subject ? (subject.kind === 'outcome' ? { outcomeId: subject.id } : { kitId: subject.id }) : {};
+
+  useEffect(() => {
+    let alive = true;
+    activityApi.recent({ ...keys, limit: 60 })
+      .then((rows) => { if (alive) setItems((prev) => [...prev, ...rows.map((r) => feedItem('activity', r))]); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [subjectKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => subscribeLive((name, data) => {
+    if (name === 'activity' && matchesSubject(subject, data)) setItems((prev) => [feedItem('activity', data), ...prev].slice(0, 150));
+    if (name === 'reset') setItems([]);
+  }), [subjectKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => onAnyContext((msg) => {
+    if (!view?.channel || msg.channel !== view.channel || msg.source === view.id) return;
+    setItems((prev) => [feedItem('context', msg), ...prev].slice(0, 150));
+  }), [view?.channel, view?.id]);
+
+  const feed = useMemo(() => mergeFeed([
+    ...items,
+    ...notifications.filter((n) => matchesSubject(subject, n)).map((n) => feedItem('notification', n)),
+  ], 120), [items, notifications, subjectKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function post(e) {
+    e.preventDefault();
+    const summary = note.trim();
+    if (!summary || !subject) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await activityApi.post({ action: 'NOTE', summary, ...keys, source: 'desk' });
+      setNote('');
+    } catch (ex) {
+      setErr(ex.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="wg">
+      <div className="wg-note">
+        {subject ? <>Actions on <b>{subject.name}</b> from every screen, tab and browser — live over the hub</> : 'Actions on every outcome — live over the hub'}
+      </div>
+      <div className="feed act-feed">
+        {feed.length === 0 && <div className="empty sm">Nothing yet. Sign off, post or escalate an instance, or post a note below.</div>}
+        {feed.map((it) => (
+          <div key={it.id} className={'act-row ' + it.kind}>
+            <span className="avatar xs" title={it.actor || 'One Finance'}>{it.actor ? initials(it.actor) : <Icon name="bell" size={10} />}</span>
+            <div className="act-main">
+              <div className="act-line">
+                {it.actor && <b>{it.actor}</b>}
+                <span className={'pill ' + it.tone}>{VERB_LABEL[it.verb] || String(it.verb || '').toLowerCase().replace(/_/g, ' ')}</span>
+                {it.remote && <span className="chip" title="Shared from another browser">other browser</span>}
+                <span className="mono feed-t">{new Date(it.at).toLocaleTimeString('en-GB')}</span>
+              </div>
+              <div className="act-text">{it.text}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {subject && (
+        <form className="act-compose" onSubmit={post}>
+          <input className="inp" value={note} maxLength={280} onChange={(e) => setNote(e.target.value)}
+            placeholder={`Note to everyone on ${subject.name}…`} aria-label="Post a note to this outcome" />
+          <button type="submit" className="btn sm" disabled={busy || !note.trim()}><Icon name="send" size={12} /> Post</button>
+        </form>
+      )}
+      {err && <div className="sec" style={{ color: 'var(--fail)', padding: '0 10px 8px' }}>{err}</div>}
+    </div>
+  );
+}
+
 export const WIDGETS = {
   'live-feed': LiveFeed,
   'instance-grid': InstanceGrid,
   context: ContextInspector,
+  grid: GridWidget,
+  activity: ActivityWidget,
 };

@@ -1,7 +1,10 @@
 // Pure helpers for the live channel. No window / DOM here so node --test can load them.
 
-/** Hub event names carried on /api/ws and /api/stream. `context` / `intent` are screen links the hub pushes. */
-export const LIVE_EVENTS = ['hello', 'event', 'outcome', 'notification', 'reset', 'kit', 'propagation', 'context', 'intent'];
+/**
+ * Hub event names carried on /api/ws and /api/stream. `context` / `intent` are screen links the hub pushes;
+ * `activity` is who did what on a business outcome.
+ */
+export const LIVE_EVENTS = ['hello', 'event', 'outcome', 'notification', 'reset', 'kit', 'propagation', 'context', 'intent', 'activity'];
 
 const TYPE_SEVERITY = {
   approval: 'SUCCESS',

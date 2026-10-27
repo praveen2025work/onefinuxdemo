@@ -2,8 +2,11 @@ import { EMBED, EMBED_VIEW_ID } from '../embed.js';
 import { subscribeLive } from '../live/liveLink.js';
 import { CHANNELS, CONTEXT_TYPES, channelById, isValidContext, routeForContext } from './channels.js';
 import {
-  broadcastContext, deliverRemoteContext, interopSelf, lastContextOn, onAnyContext, onSystem, postSystem, setOwnChannel,
+  CLIENT_ID, broadcastContext, deliverRemoteContext, interopSelf, lastContextOn, onAnyContext, onSystem, postSystem,
+  setOwnChannel, setSharedRelay,
 } from './interop.js';
+import { isSharedChannel } from './desks.js';
+import { interopApi } from '../api.js';
 
 /**
  * window.fdc3 for every One Finance screen — the FDC3 2.0 Desktop Agent API that OpenFin, io.Connect and
@@ -123,8 +126,11 @@ export function createDesktopAgent() {
     },
     async joinChannel(channelId) { return this.joinUserChannel(channelId); },
     async getCurrentChannel() {
-      const c = channelById(self().channel);
-      return c ? userChannel(c) : null;
+      const id = self().channel;
+      const c = channelById(id);
+      if (c) return userChannel(c);
+      // An outcome desk channel: shared with that outcome's screens in every browser.
+      return isSharedChannel(id) ? channelApi(id, 'app', { name: id }) : null;
     },
     async leaveCurrentChannel() {
       setOwnChannel(null);
@@ -180,6 +186,9 @@ export function installFdc3() {
   installed = true;
   const agent = createDesktopAgent();
   window.fdc3 = agent;
+
+  // Outcome desk channels reach other browsers through the hub (it stamps who shared it).
+  setSharedRelay((msg) => interopApi.context(msg.channel, msg.context, 'console', { origin: CLIENT_ID, id: msg.id }).catch(() => {}));
 
   // The hub pushed a context over the WebSocket: deliver it here like a broadcast on that channel.
   subscribeLive((name, data) => {

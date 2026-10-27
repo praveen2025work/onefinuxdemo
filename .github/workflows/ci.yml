@@ -61,6 +61,8 @@ jobs:
         run: test -f dist/web.config
       - name: Shared design standard served at /theme for framed apps
         run: test -f dist/theme/onefinux-tokens.css && test -f dist/theme/onefinux-wijmo.css
+      - name: Grid library served at /lib for other apps (<ofx-grid>)
+        run: test -f dist/lib/onefinux-grid.js && test -f dist/lib/onefinux-grid.css
 
   windows-host-files:
     name: Windows IIS + NSSM host files

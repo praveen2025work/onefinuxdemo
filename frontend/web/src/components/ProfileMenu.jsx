@@ -71,8 +71,8 @@ export default function ProfileMenu() {
             <button type="button" className="menu-item" onClick={() => { navigate('/notifications'); close(); }}>
               <Icon name="bell" size={14} /><span className="menu-txt">Notifications</span>
             </button>
-            <button type="button" className="menu-item" onClick={() => { navigate('/workspace'); close(); }}>
-              <Icon name="window" size={14} /><span className="menu-txt">Workspace</span>
+            <button type="button" className="menu-item" onClick={() => { navigate('/desks'); close(); }}>
+              <Icon name="window" size={14} /><span className="menu-txt">Desks</span>
             </button>
             <button type="button" className="menu-item" onClick={() => { navigate('/guide'); close(); }}>
               <Icon name="code" size={14} /><span className="menu-txt">Help · developer guide</span>

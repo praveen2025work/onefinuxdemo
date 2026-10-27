@@ -33,7 +33,7 @@ function esc(text) {
  * The standard grid — Wijmo FlexGrid with the shared skin, column filters, sort, quick search and CSV export.
  *
  * columns: [{ binding, header, width, minWidth, format, align,
- *             pill (status pill; tone(value) overrides), chip (mono chip), mono, wrap,
+ *             pill (status pill; tone(value) overrides), chip (mono chip), mono, wrap, suffix (e.g. '%'),
  *             template: (item) => ReactNode   — React cell content (buttons, meters, two-line cells) }]
  * height:  px, '100%', or 'auto' (fits the rows up to maxHeight).
  * onSelect(item) fires when a row is selected — Workspace views share that row on their link channel.
@@ -82,9 +82,13 @@ export default function DataGrid({ rows = [], columns, height = 360, maxHeight =
     if (e.panel !== grid.cells || !cols) return;
     const col = cols[e.col];
     if (!col || col.template) return;
-    if (!col.pill && !col.chip) return;
+    if (!col.pill && !col.chip && !col.suffix) return;
     const value = grid.getCellData(e.row, e.col, true);
     if (value == null || value === '') return;
+    if (!col.pill && !col.chip) {
+      e.cell.textContent = value + col.suffix;
+      return;
+    }
     if (col.pill) {
       const raw = grid.getCellData(e.row, e.col, false);
       const tone = (col.tone && col.tone(raw, grid.rows[e.row]?.dataItem)) || PILL_TONE[raw] || 'plain';

@@ -52,12 +52,12 @@ Never use `backdrop-filter`, translucent fills, or radial washes on the page.
 
 - **Floating rail.** The left nav is an overlay, closed by default, so content uses the full width. A small edge tab (`.rail-tab`) on the left opens it; the scrim, Escape or a navigation closes it. Do not bring back a docked icon strip.
 - **Compact chrome.** The top header is one 48px row: business date, group unit and region (values only, captions in tooltips) and the ready / blocked / escalation counts, which open the board or Operations; then icons for view, install, desktop alerts, theme, notifications, refresh and profile, with live status as a dot in the env chip. There is no separate ribbon row. Do not add captions, text chips or a second row.
-- **One-row page header.** Every screen starts with `PageHeader` (`components/bits.jsx`): icon + title, an info icon holding the context line and the explanation, an optional one-line live summary, and the screen's tools on the right. Put a screen's toolbar in it rather than in a panel underneath. Descriptive paragraphs go behind the info icon, never on the page. In a Workspace view the title is omitted (the view title bar names it) unless the title changes, like an instance id.
+- **One-row page header.** Every screen starts with `PageHeader` (`components/bits.jsx`): icon + title, an info icon holding the context line and the explanation, an optional one-line live summary, and the screen's tools on the right. Put a screen's toolbar in it rather than in a panel underneath. Descriptive paragraphs go behind the info icon, never on the page. On a desk view the title is omitted (the view title bar names it) unless the title changes, like an instance id.
 - Content sits in `.panel` blocks with a `.panel-hd` that names the table or view behind it.
 - KPI tiles use `.stat` plus `.ok` / `.fail` / `.warn` / `.info`.
 - Detail screens use `.split`: content plus a 340px right rail for facts, event trail and rules.
 - Status is a `.pill` with the platform vocabulary: `NOT_YET`, `BLOCKED`, `READY`, `CLEARED`, `DELAYED`.
-- Data is a Wijmo `DataGrid` or `DataView` (grid, pivot, chart), and charts use `Chart`. **REQUIRED:** `wijmo-outcome-grid`.
+- Read-only data is a GridSpec rendered by `SpecGrid` (a `DataView`: grid, pivot, chart), and charts use `Chart`. **REQUIRED:** `wijmo-outcome-grid`.
 - A disabled action is a **fact**, not a style: it is off because the fold says so. Say why next to it.
 
 ## Framed screens (STEPS, partners)

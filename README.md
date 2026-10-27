@@ -264,10 +264,12 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 | POST | `/api/outcomes/{id}/{cobDate}/{region}/override` | Manual override `{dependency, reason, requestedBy}` |
 | POST | `/api/outcomes/{id}/{cobDate}/{region}/run` | Re-run the downstream action `{requestedBy}` |
 | GET | `/api/notifications?limit=` | Notification inbox |
-| GET | `/api/stream` | Server-Sent Events: `outcome`, `notification`, `event`, `context`, `intent` |
+| GET | `/api/stream` | Server-Sent Events: `outcome`, `notification`, `event`, `context`, `intent`, `activity` |
 | GET (upgrade) | `/api/ws` | WebSocket with the same events as `{"type", "data"}` frames (the console's first choice) |
-| POST | `/api/interop/context` | Push an FDC3 context to every screen on a channel `{channel, context, source}` |
-| POST | `/api/interop/intent` | Raise an FDC3 intent in every open Workspace `{intent, context, source}` |
+| POST | `/api/interop/context` | Push an FDC3 context to every screen on a channel `{channel, context, source}`; `outcome:<id>` channels link desks across browsers |
+| POST | `/api/interop/intent` | Raise an FDC3 intent on every open desk `{intent, context, source}` |
+| GET | `/api/activity?outcomeId=&kitId=&limit=` | Recent actions on an outcome (sign-off, post, escalate, override, re-run, partner actions), newest first |
+| POST | `/api/interop/activity` | Announce an action to every desk on an outcome `{action, summary, outcomeId \| kitId, instanceId?}`; the actor is the signed-in user |
 | POST | `/api/admin/announce` | Demo / RTB: a platform announcement to every console and the inbox |
 | GET | `/api/config` | Loaded outcomes, mappings, targets |
 | POST | `/api/admin/reset` | Clear everything (demo only) |
@@ -285,20 +287,24 @@ Every notification is persisted once, then fanned out:
 
 Milestones default to 50% and 90% (`onefinux.notifications.milestones`). Progress ticks never notify, and a replay never notifies.
 
-## One console: design standard, Workspace, FDC3 links
+## One console: design standard, desks, screen-to-screen links, one grid
 
 Every accounting-space UI comes into One Finance, so it uses one look and one interop model.
 
 - **Design standard.** `frontend/theme/onefinux-tokens.css` (palette) and `onefinux-wijmo.css` (grid, pivot, chart skin) are the only colour source. The default is STEPS Banking Blue, with STEPS dark beside it; the MITR indigo themes stay in the theme menu. Framed apps link the same files from `/theme/*`, so STEPS and partner screens repaint with the console.
 - **Shell.** STEPS-style top header and notifications panel. The left rail floats over the page and opens from a small tab on the left edge, so content uses the full width.
 - **Data.** Wijmo is the standard: `DataGrid`, `DataView` (grid, pivot and chart over the same rows) and `Chart`. Set `VITE_WIJMO_LICENSE` at build time; without it Wijmo shows an evaluation banner.
-- **Workspace (`/workspace`).** Many screens in one page: console routes, native widgets, STEPS and partner iframes. Grid, columns, rows or tabs layout with drag-to-resize, tear-out windows that dock back, and named workspaces.
-- **Screen-to-screen links.** Every screen gets `window.fdc3` (FDC3 2.0, the API OpenFin and io.Connect implement). Views on the same colour share context, `raiseIntent('ViewInstance', …)` lets the Workspace pick the screen, and the hub can push a context or an intent over the WebSocket (`/api/interop/*`). Partner frames use `/ofx-interop.js`. See `.cursor/skills/workspace-interop`.
+- **Desks (`/desks`).** One Finance is business-outcome driven, so each business outcome can have its own **desk**: many screens in one page (console screens, widgets, STEPS and partner frames), in a grid, columns, rows or tabs layout with drag-to-resize, tear-out windows that dock back, saved by name. **New desk** offers every business outcome (engine outcomes and stitch kits) with a ready template: an engine outcome gets its activity, readiness, report and lineage grids; a kit gets its activity, instances, instance viewer and board. Each report card has a **Desk** button. A desk can also be blank, for any mix of screens and frames.
+- **Events reach every screen, tab and browser.** Views on an outcome desk link on the outcome's channel (`outcome:<id>`): a pick on one screen moves that outcome's screens in this tab, in other tabs, and in other people's browsers (the hub relays it over the WebSocket, SSE fallback; each browser drops its own echo). Every action on the outcome (sign-off, countersign, post, adjust, escalate, override, re-run, or a partner screen's own action through `ofx.activity()`) is pushed as `activity`. The desk's **Activity** view shows them as they happen, with notifications and shared picks, and anyone can post a note to everyone on the outcome. Desks you are not looking at count what they missed. Colours still link views in one browser only.
+- **Screen-to-screen links.** Every screen gets `window.fdc3` (FDC3 2.0, the API OpenFin and io.Connect implement). Views on the same channel share context, `raiseIntent('ViewInstance', …)` lets the desk pick the screen, and the hub can push a context or an intent (`/api/interop/*`). Partner frames use `/ofx-interop.js`. See `.cursor/skills/workspace-interop`.
+- **One grid for read-only data (`/grids`).** Every read-only grid is a **GridSpec**: JSON that names the source (an endpoint with params bound to the business date, group unit and region, or inline rows), the columns and their types, a filter, the lenses (grid, pivot, chart), the hub pushes that refresh it, and what a row pick shares. The grid library lists the built-in specs and each outcome definition's grids. You can edit a spec with a live preview, save it as yours, or put it on a desk. Other teams use the same grid without rebuilding it:
+  - an iframe: `/widget/grid?ofx-embed=1&spec=<id>` (or `&def=<encoded spec>`), which posts picks to the embedding page as `ofx.grid.select`;
+  - the `<ofx-grid>` web component for Angular, React, .NET Razor or plain HTML: `<script src=".../lib/onefinux-grid.js">` plus `/lib/onefinux-grid.css`, both built by `npm run build`.
 - **Finance dashboard (`/finance`).** STEPS-style blueprint tiles: live readiness from the hub plus seeded finance datasets, and an analysis tab.
-- **STEPS inside One Finance.** The `STEPS` Workspace app frames STEPS in embedded mode (no STEPS masthead, the console's theme and business date, FDC3 tile links). Point `VITE_STEPS_URL` at it (default `http://localhost:3000/finance?ofx-embed=1`). On the STEPS side, list the console origin in `NEXT_PUBLIC_OFX_HOST_ORIGINS` and allow it to frame STEPS (`OFX_HOST_ORIGINS` for Docker, `-OfxHostOrigins` for IIS); see the STEPS README.
+- **STEPS inside One Finance.** The `STEPS` desk app frames STEPS in embedded mode (no STEPS masthead, the console's theme and business date, FDC3 tile links). Point `VITE_STEPS_URL` at it (default `http://localhost:3000/finance?ofx-embed=1`). On the STEPS side, list the console origin in `NEXT_PUBLIC_OFX_HOST_ORIGINS` and allow it to frame STEPS (`OFX_HOST_ORIGINS` for Docker, `-OfxHostOrigins` for IIS); see the STEPS README.
 - **Installable.** Chrome / Edge offer **Install**; the installed app opens in its own window with an unread badge.
 
-Try it: open `/workspace`, then on `/drive` use the WebSocket cards to push a notification, a context on Blue, a `ViewInstance` intent, or a `ViewBreak` that the Helix partner frame handles.
+Try it: open `/desks` in two browsers (or a normal and a private window) and switch both to the **FOBO rec** desk. Pick R-2031 in one: the instance view moves in both. Escalate it in the other: the first browser's Activity view shows who did it. On `/drive`, the WebSocket cards push a notification, a context on Blue, a `ViewInstance` intent, or a `ViewBreak` that the Helix partner frame handles.
 
 ## How the code maps to the vision
 

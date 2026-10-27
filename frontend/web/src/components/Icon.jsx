@@ -498,7 +498,8 @@ export const ROUTE_ICON = {
   '/onboarding': 'build',
   '/configuration': 'config',
   '/drive': 'bolt',
-  '/workspace': 'window',
+  '/desks': 'window',
+  '/grids': 'grid',
   '/finance': 'dollar',
   '/notifications': 'bell',
 };

@@ -29,7 +29,7 @@ export const VIEWS = [
     tag: 'start here',
     cls: 'info',
     job: 'Understand the idea, run the three processes, create an outcome as data, watch the tape.',
-    routes: ['/', '/product', '/architecture', '/guide', '/onboarding', '/configuration', '/monitoring', '/drive', '/workspace', '/notifications'],
+    routes: ['/', '/product', '/architecture', '/guide', '/onboarding', '/configuration', '/monitoring', '/drive', '/desks', '/notifications', '/grids'],
     starts: [
       { to: '/guide', title: 'Developer guide', q: 'Plain-language idea, how to run it, first change, how we review PRs.', tag: 'read', cls: 'info' },
       { to: '/architecture', title: 'Architecture', q: 'Same diagrams as docs/design — enterprise context through engine stages.', tag: 'diagrams', cls: 'bo' },
@@ -46,7 +46,7 @@ export const VIEWS = [
     tag: 'shape',
     cls: 'bo',
     job: 'Two models, group-unit fold, configuration as the registry, monitoring as the tape.',
-    routes: ['/', '/product', '/architecture', '/guide', '/board', '/configuration', '/monitoring', '/finance', '/workspace', '/notifications'],
+    routes: ['/', '/product', '/architecture', '/guide', '/board', '/configuration', '/monitoring', '/finance', '/desks', '/notifications', '/grids'],
     starts: [
       { to: '/architecture', title: 'Architecture', q: 'Same diagrams as docs/design — enterprise context through engine stages.', tag: 'diagrams', cls: 'info' },
       { to: '/product', title: 'Product story', q: 'The morning a BU head recognises, then the two models.', tag: 'story', cls: 'plain' },
@@ -63,7 +63,7 @@ export const VIEWS = [
     tag: 'act',
     cls: 'ok',
     job: 'Worklist, reports, and the unit board. Sign-off lives on the instance, not on Home.',
-    routes: ['/', '/product', '/architecture', '/guide', '/outcomes', '/reports', '/board', '/finance', '/workspace', '/notifications'],
+    routes: ['/', '/product', '/architecture', '/guide', '/outcomes', '/reports', '/board', '/finance', '/desks', '/notifications', '/grids'],
     starts: [
       { to: '/outcomes', title: 'My outcomes', q: 'Doer worklist. Open a ready instance to sign off or post.', tag: 'user', cls: 'ok' },
       { to: '/reports', title: 'Reports', q: 'Engine outcomes and the 15C3 five-stage pack.', tag: 'artifact', cls: 'info' },
@@ -78,7 +78,7 @@ export const VIEWS = [
     tag: 'glance',
     cls: 'plain',
     job: 'Morning traffic lights and report availability. No sign-off, no Drive.',
-    routes: ['/', '/product', '/architecture', '/guide', '/board', '/reports', '/finance', '/workspace', '/notifications'],
+    routes: ['/', '/product', '/architecture', '/guide', '/board', '/reports', '/finance', '/desks', '/notifications', '/grids'],
     starts: [
       { to: '/board', title: 'Outcome board', q: 'Ready / blocked / delayed / escalations for the unit.', tag: 'Read only', cls: 'plain' },
       { to: '/reports', title: 'Reports', q: 'Is the 15C3 pack available to view?', tag: 'artifact', cls: 'info' },
@@ -93,7 +93,7 @@ export const VIEWS = [
     tag: 'ops',
     cls: 'warn',
     job: 'Escalations, dead letters, dual-control replay, and the event tape.',
-    routes: ['/', '/product', '/architecture', '/guide', '/operations', '/monitoring', '/drive', '/workspace', '/notifications'],
+    routes: ['/', '/product', '/architecture', '/guide', '/operations', '/monitoring', '/drive', '/desks', '/notifications', '/grids'],
     starts: [
       { to: '/operations', title: 'Operations', q: 'Escalations, watermarks, dead letters, dual-control replay.', tag: 'RTB', cls: 'warn' },
       { to: '/monitoring', title: 'Monitoring', q: 'Outbox, audit, received events.', tag: 'tape', cls: 'ok' },
@@ -108,7 +108,7 @@ export const VIEWS = [
     tag: 'create',
     cls: 'bo',
     job: 'Create an outcome, inspect it, then drive a COB to prove the fold.',
-    routes: ['/', '/product', '/architecture', '/guide', '/onboarding', '/configuration', '/drive', '/workspace', '/notifications'],
+    routes: ['/', '/product', '/architecture', '/guide', '/onboarding', '/configuration', '/drive', '/desks', '/notifications', '/grids'],
     starts: [
       { to: '/onboarding', title: 'Onboarding', q: 'Write the question, feeds, SLA and on-ready. Submit is POST /api/outcomes/definitions.', tag: 'create', cls: 'bo' },
       { to: '/configuration', title: 'Configuration', q: 'Govern what you created. Not a second create form.', tag: 'govern', cls: 'plain' },

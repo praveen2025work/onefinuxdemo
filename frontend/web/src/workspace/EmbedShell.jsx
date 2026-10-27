@@ -60,7 +60,7 @@ export default function EmbedShell({ children }) {
           <LiveDot />
           <div className="spacer" />
           <ChannelPicker value={channel} onChange={(c) => setOwnChannel(c)} />
-          <button type="button" className="btn ghost sm" onClick={dock} title="Put this view back into the Workspace">
+          <button type="button" className="btn ghost sm" onClick={dock} title="Put this view back on its desk">
             <Icon name="minimize" size={13} /> Dock
           </button>
         </header>

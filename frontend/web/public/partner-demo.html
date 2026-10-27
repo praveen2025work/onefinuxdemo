@@ -40,6 +40,7 @@
     <button class="ofx-btn" id="intent">fdc3.raiseIntent('ViewInstance')</button>
     <button class="ofx-btn ofx-btn-2" id="instrument">broadcast fdc3.instrument</button>
     <button class="ofx-btn ofx-btn-2" id="appch">app channel “fobo-desk”</button>
+    <button class="ofx-btn ofx-btn-2" id="assign" title="ofx.activity(): every desk on this outcome, in every browser, sees it">assign break (activity)</button>
   </div>
   <div class="cols">
     <div>
@@ -119,6 +120,11 @@
       });
       document.getElementById('instrument').addEventListener('click', function () {
         fdc3.broadcast({ type: 'fdc3.instrument', id: { ticker: 'BARC.L' }, name: 'Barclays PLC' });
+      });
+      document.getElementById('assign').addEventListener('click', function () {
+        var tr = picked || document.querySelector('tr.pick');
+        var sent = ofx.activity({ action: 'ASSIGNED', summary: tr.dataset.break + ' assigned to Alex (partner screen)', instanceId: tr.dataset.id });
+        line(document.getElementById('log'), sent ? 'activity ASSIGNED ' + tr.dataset.break : 'activity not sent');
       });
       document.getElementById('appch').addEventListener('click', async function () {
         var desk = await fdc3.getOrCreateChannel('fobo-desk');

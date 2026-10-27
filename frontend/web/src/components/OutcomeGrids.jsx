@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import WijmoGrid from './WijmoGrid.jsx';
 
-export default function OutcomeGrids({ definition, context, heading = 'Workspace grids' }) {
+export default function OutcomeGrids({ definition, context, heading = 'Outcome grids' }) {
   const grids = Array.isArray(definition?.grids) ? definition.grids : [];
   const [gridId, setGridId] = useState(grids[0]?.id || '');
 

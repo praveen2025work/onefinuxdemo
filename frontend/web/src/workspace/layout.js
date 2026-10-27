@@ -1,10 +1,12 @@
-// Workspace model: named workspaces (OpenFin "snapshots"), each a layout plus a list of views.
-// Every function is pure and returns a new state, so the reducer is easy to test and to persist.
+// Desk model: named desks (OpenFin "snapshots"), each a layout plus a list of views, optionally bound to a business
+// outcome (see desks.js). Every function is pure and returns a new state, so the reducer is easy to test and persist.
 //
-// state     = { current: workspaceId, workspaces: [workspace] }
-// workspace = { id, name, layout: 'grid'|'columns'|'rows'|'tabs', views: [view], active, maximized }
-// view      = { id, appId, title, channel, wide?, size?, path? }
-//             `path` overrides a route app's start page; `size` is the view's share (fr) in columns / rows layouts
+// state     = { current: deskId, workspaces: [desk] }      (key kept as `workspaces` so saved desks still load)
+// desk      = { id, name, subject?, layout: 'grid'|'columns'|'rows'|'tabs', views: [view], active, maximized }
+// view      = { id, appId, title, channel, wide?, size?, path?, config? }
+//             `path` overrides a route app's start page; `size` is the view's share (fr) in columns / rows layouts;
+//             `config` is a small JSON object an app reads (e.g. the grid spec a Grid view shows)
+import { cleanSubject, deskTemplate } from './desks.js';
 
 export const WS_KEY = 'ofx-workspaces';
 export const LAYOUTS = [
@@ -16,6 +18,7 @@ export const LAYOUTS = [
 const LAYOUT_IDS = new Set(LAYOUTS.map((l) => l.id));
 const MAX_VIEWS = 12;
 
+const MAX_CONFIG_CHARS = 4000;
 const MIN_SIZE = 0.15;
 const MAX_SIZE = 20;
 
@@ -51,7 +54,7 @@ export function seedState() {
   };
   const finance = {
     id: 'ws-finance',
-    name: 'Finance desk',
+    name: 'Finance',
     layout: 'grid',
     views: [
       view('finance', 'Finance dashboard', 'green', { wide: true }),
@@ -62,7 +65,18 @@ export function seedState() {
     active: null,
     maximized: null,
   };
-  return { current: close.id, workspaces: [close, finance] };
+  const rec = deskTemplate({ kind: 'kit', id: 'FOBO', name: 'FOBO rec', question: 'Can I execute this rec?' });
+  const fobo = { id: 'ws-fobo', ...rec, views: rec.views.map((v) => view(v.appId, v.title, v.channel, v)), active: null, maximized: null };
+  return { current: close.id, workspaces: [close, finance, fobo] };
+}
+
+function cleanConfig(config) {
+  if (!config || typeof config !== 'object' || Array.isArray(config)) return null;
+  try {
+    return JSON.stringify(config).length <= MAX_CONFIG_CHARS ? config : null;
+  } catch {
+    return null;
+  }
 }
 
 function cleanView(v) {
@@ -75,6 +89,7 @@ function cleanView(v) {
     wide: Boolean(v.wide),
     size: clampSize(v.size),
     ...(typeof v.path === 'string' && v.path.startsWith('/') && !v.path.startsWith('//') ? { path: v.path } : {}),
+    ...(cleanConfig(v.config) ? { config: v.config } : {}),
   };
 }
 
@@ -92,9 +107,11 @@ export function loadState(raw) {
     .map((w) => {
       const views = (Array.isArray(w.views) ? w.views : []).map(cleanView).filter(Boolean).slice(0, MAX_VIEWS);
       const ids = new Set(views.map((v) => v.id));
+      const subject = cleanSubject(w.subject);
       return {
         id: w.id,
-        name: String(w.name || 'Workspace').slice(0, 60),
+        name: String(w.name || 'Desk').slice(0, 60),
+        ...(subject ? { subject } : {}),
         layout: LAYOUT_IDS.has(w.layout) ? w.layout : 'grid',
         views,
         active: ids.has(w.active) ? w.active : null,
@@ -196,18 +213,30 @@ export function switchWorkspace(state, id) {
   return state.workspaces.some((w) => w.id === id) ? { ...state, current: id } : state;
 }
 
-/** New empty workspace, or a copy of the current one ("Save as"). Copies get fresh view ids. */
-export function createWorkspace(state, name, { copyCurrent = false } = {}) {
-  const base = copyCurrent ? currentWorkspace(state) : null;
+/**
+ * New desk: empty, a copy of the current one ("Save as"), or from a template (an outcome desk, see deskTemplate).
+ * Copies and templates get fresh view ids.
+ */
+export function createWorkspace(state, name, { copyCurrent = false, template = null } = {}) {
+  const base = template || (copyCurrent ? currentWorkspace(state) : null);
+  const subject = cleanSubject(base?.subject);
   const ws = {
     id: newId('ws-'),
-    name: String(name || 'Workspace').trim().slice(0, 60) || 'Workspace',
-    layout: base ? base.layout : 'grid',
-    views: base ? base.views.map((v) => ({ ...v, id: newId() })) : [],
+    name: String(name || base?.name || 'Desk').trim().slice(0, 60) || 'Desk',
+    ...(subject ? { subject } : {}),
+    layout: LAYOUT_IDS.has(base?.layout) ? base.layout : 'grid',
+    views: base ? base.views.map((v) => cleanView({ ...v, id: newId() })).filter(Boolean).slice(0, MAX_VIEWS) : [],
     active: null,
     maximized: null,
   };
   return { current: ws.id, workspaces: [...state.workspaces, ws] };
+}
+
+/** The desk bound to this outcome, if there is one. */
+export function deskFor(state, subject) {
+  const s = cleanSubject(subject);
+  if (!s) return null;
+  return state.workspaces.find((w) => w.subject && w.subject.kind === s.kind && w.subject.id.toUpperCase() === s.id.toUpperCase()) || null;
 }
 
 export function renameWorkspace(state, name) {

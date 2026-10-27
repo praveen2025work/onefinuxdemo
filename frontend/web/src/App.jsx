@@ -21,8 +21,10 @@ import { setFdc3Navigator } from './workspace/fdc3.js';
 
 // Heavier screens (Wijmo FlexChart / pivot, the multi-view container) load on first visit.
 const Finance = lazy(() => import('./pages/Finance.jsx'));
-const Workspace = lazy(() => import('./pages/Workspace.jsx'));
+const Desks = lazy(() => import('./pages/Desks.jsx'));
 const WidgetPage = lazy(() => import('./pages/WidgetPage.jsx'));
+const GridLibrary = lazy(() => import('./pages/GridLibrary.jsx'));
+const OutcomeReport = lazy(() => import('./pages/OutcomeReport.jsx'));
 
 /** Lets window.fdc3 open a route for a built-in intent (ViewInstance, ViewReport) in this document. */
 function Fdc3Bridge() {
@@ -46,10 +48,13 @@ export default function App() {
           <Route path="/outcomes" element={<Outcomes />} />
           <Route path="/workspaces" element={<Navigate to="/outcomes" replace />} />
           <Route path="/finance" element={<Finance />} />
-          <Route path="/workspace" element={<Workspace />} />
+          <Route path="/desks" element={<Desks />} />
+          <Route path="/workspace" element={<Navigate to="/desks" replace />} />
+          <Route path="/grids" element={<GridLibrary />} />
           <Route path="/widget/:appId" element={<WidgetPage />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/reports" element={<Reports />} />
+          <Route path="/reports/:outcomeId" element={<OutcomeReport />} />
           <Route path="/reports/:outcomeId/:cobDate/:region" element={<ReportDocument />} />
           <Route path="/instance" element={<InstanceWaiting />} />
           <Route path="/instance/:id" element={<InstanceDetail />} />

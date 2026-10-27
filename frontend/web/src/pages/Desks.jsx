@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
@@ -9,10 +10,15 @@ import { WIDGETS } from '../workspace/widgets.jsx';
 import { Control } from '@mescius/wijmo';
 import { BUILTIN_APPS, appById, appForPath, appOrigin, makeCustomApp, viewSrc } from '../workspace/apps.js';
 import { channelById, isValidContext, routeForContext } from '../workspace/channels.js';
+import { channelInfo, cleanSubject, deskChannel, deskSubjects, deskTemplate, matchesSubject } from '../workspace/desks.js';
+import { activityApi, api, outcomesApi } from '../api.js';
+import { decodeJson } from '../grid/spec.js';
+import { builtinSpec } from '../grid/specs.js';
+import { loadMySpecs } from '../grid/useGridSpec.js';
 import { BUILTIN_INTENTS, setWorkspaceHost } from '../workspace/fdc3.js';
 import { subscribeLive } from '../live/liveLink.js';
 import {
-  LAYOUTS, WS_KEY, addView, createWorkspace, currentWorkspace, deleteWorkspace, loadState, moveView, newId,
+  LAYOUTS, WS_KEY, addView, createWorkspace, currentWorkspace, deleteWorkspace, deskFor, loadState, moveView, newId,
   patchView, removeView, renameWorkspace, resizePair, setActive, setLayout, splitShares, switchWorkspace, toggleMaximized,
 } from '../workspace/layout.js';
 import { broadcastContext, onAnyContext, onSystem, postSystem } from '../workspace/interop.js';
@@ -20,7 +26,7 @@ import { partnerThemeParams } from '../lib/themes.js';
 
 const APPS_KEY = 'ofx-ws-apps';
 // Live (WebSocket) events a partner frame may subscribe to through ofx-interop.js.
-const PARTNER_LIVE_EVENTS = ['notification', 'outcome', 'event', 'context'];
+const PARTNER_LIVE_EVENTS = ['notification', 'outcome', 'event', 'context', 'activity'];
 const APP_CHANNEL = /^app:[a-z0-9:_-]{1,48}$/;
 const SANDBOX = 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads';
 
@@ -34,20 +40,25 @@ function loadCustomApps() {
 }
 
 /**
- * Workspace — the OpenFin / Rainbow idea inside One Finance: several screens hosted in one UI, laid out as
- * grid, columns, rows or tabs, saved as named workspaces, torn out into their own windows and docked back.
- * Views on the same colour channel share context (pick a row in one, the others follow). Console screens run
- * as the same SPA in chrome-less iframes; partner web apps run sandboxed and join channels over postMessage.
- * All views share the shell's single live link (WebSocket), so a hub notification reaches every screen once.
+ * Desks — the OpenFin / Rainbow idea inside One Finance, organised around business outcomes. A desk hosts several
+ * screens in one UI (console screens, widgets, STEPS and partner frames), laid out as grid, columns, rows or tabs,
+ * saved by name, torn out into their own windows and docked back. A desk is bound to a business outcome or free.
+ * Views on the same colour share context in this browser; views on an outcome desk's channel share it with that
+ * outcome's desks in every browser (the hub relays it). Actions on the outcome arrive live as `activity`, so a
+ * sign-off on one screen shows on every desk for that outcome; other desks count what they missed.
  */
-export default function Workspace() {
+export default function Desks() {
   const { filters, themeId } = useApp();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [state, setState] = useState(() => {
     try { return loadState(localStorage.getItem(WS_KEY)); } catch { return loadState(null); }
   });
   const [customApps, setCustomApps] = useState(loadCustomApps);
   const [launcher, setLauncher] = useState(false);
-  const [naming, setNaming] = useState(null); // { mode: 'new' | 'copy' | 'rename', value }
+  const [naming, setNaming] = useState(null); // { mode: 'copy' | 'rename', value }
+  const [creating, setCreating] = useState(false);
+  const [unread, setUnread] = useState({}); // deskId -> activity on its outcome while another desk was open
   const [flash, setFlash] = useState({});
   const [dragId, setDragId] = useState(null);
   const [reloadTick, setReloadTick] = useState({});
@@ -59,9 +70,13 @@ export default function Workspace() {
   const apps = useMemo(() => [...BUILTIN_APPS, ...customApps], [customApps]);
   const ws = currentWorkspace(state);
   const pageOrigin = window.location.origin;
+  const subject = cleanSubject(ws.subject);
+  const deskChan = subject ? { ...channelInfo(deskChannel(subject), subject), subject } : null;
 
   const wsRef = useRef(ws);
   wsRef.current = ws;
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const appsRef = useRef(apps);
   appsRef.current = apps;
   const frames = useRef(new Map()); // viewId -> iframe element
@@ -71,6 +86,53 @@ export default function Workspace() {
   useEffect(() => {
     try { localStorage.setItem(WS_KEY, JSON.stringify(state)); } catch { /* quota / private window */ }
   }, [state]);
+
+  // /desks?outcome=outcome:FOBO_HELIX&name=… (from Reports and the Board): open that outcome's desk, or build it.
+  const handledLink = useRef(null);
+  useEffect(() => {
+    // Act on a link once (React may run this effect twice in development before the URL is cleared).
+    const link = searchParams.toString();
+    if (!link || handledLink.current === link) return;
+    handledLink.current = link;
+    const grid = searchParams.get('grid');
+    if (grid) {
+      // From the grid library: a spec id, or `def:<encoded spec>` for an edited one.
+      const spec = grid.startsWith('def:') ? decodeJson(grid.slice(4)) : grid;
+      navigate('/desks', { replace: true });
+      if (spec) {
+        const linked = deskChannel(wsRef.current.subject) || null;
+        const title = typeof spec === 'string'
+          ? builtinSpec(spec)?.title || loadMySpecs().find((m) => `my:${m.id}` === spec)?.title || spec
+          : spec.title || 'Grid';
+        setState((s) => addView(s, { id: newId(), appId: 'grid', title, channel: linked,
+          config: { spec, ...(wsRef.current.subject ? { subject: wsRef.current.subject } : {}) } }));
+      }
+      return;
+    }
+    const ref = searchParams.get('outcome');
+    if (!ref) return;
+    const [kind, ...rest] = ref.split(':');
+    const wanted = cleanSubject({ kind, id: rest.join(':'), name: searchParams.get('name') || rest.join(':') });
+    navigate('/desks', { replace: true });
+    if (!wanted) return;
+    const existing = deskFor(state, wanted);
+    if (existing) { setState((s) => switchWorkspace(s, existing.id)); return; }
+    openOutcomeDesk(wanted);
+  }, [searchParams]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Activity on another desk's outcome while this one is open: count it on that desk.
+  useEffect(() => subscribeLive((name, data) => {
+    if (name !== 'activity' || !data) return;
+    const current = wsRef.current;
+    setUnread((u) => {
+      const next = { ...u };
+      stateRef.current.workspaces.forEach((w) => {
+        if (w.id !== current.id && w.subject && matchesSubject(w.subject, data)) next[w.id] = (next[w.id] || 0) + 1;
+      });
+      return next;
+    });
+  }), []);
+  useEffect(() => { setUnread((u) => (u[ws.id] ? { ...u, [ws.id]: 0 } : u)); }, [ws.id]);
   useEffect(() => {
     try { localStorage.setItem(APPS_KEY, JSON.stringify(customApps)); } catch { /* ignore */ }
   }, [customApps]);
@@ -265,13 +327,23 @@ export default function Workspace() {
           postSystem({ kind: 'intent-result', raiseId: data.raiseId, ...payload });
         }
       } else if (data.type === 'ofx.join') {
-        const next = data.channel == null ? null : channelById(data.channel)?.id;
+        const own = cleanSubject(wsRef.current.subject);
+        const next = data.channel == null ? null
+          : channelById(data.channel)?.id || (own && data.channel === deskChannel(own) ? data.channel : undefined);
         if (data.channel == null || next) setChannel(view, next ?? null);
       } else if (data.type === 'ofx.subscribe' && typeof data.channel === 'string' && APP_CHANNEL.test(data.channel)) {
         if (!appSubs.current.has(view.id)) appSubs.current.set(view.id, new Set());
         appSubs.current.get(view.id).add(data.channel);
         const ctx = lastContext.current[data.channel];
         if (ctx) postToWeb(view, { type: 'ofx.context', channel: data.channel, context: ctx, source: 'replay' });
+      } else if (data.type === 'ofx.activity' && typeof data.action === 'string' && typeof data.summary === 'string') {
+        // A partner screen acted in its own system: every desk on this outcome, in every browser, hears it.
+        const own = cleanSubject(wsRef.current.subject);
+        if (own) {
+          activityApi.post({ action: data.action, summary: data.summary.slice(0, 280), source: app.appId.replace(/[^A-Za-z0-9._-]/g, '').slice(0, 40) || 'partner',
+            ...(own.kind === 'outcome' ? { outcomeId: own.id } : { kitId: own.id }),
+            ...(typeof data.instanceId === 'string' ? { instanceId: data.instanceId } : {}) }).catch(() => {});
+        }
       } else if (data.type === 'ofx.live.subscribe' && Array.isArray(data.names)) {
         liveSubs.current.set(view.id, new Set(data.names.filter((n) => PARTNER_LIVE_EVENTS.includes(n))));
       }
@@ -305,9 +377,22 @@ export default function Workspace() {
   }
 
   function launch(app) {
-    const linked = ws.views.find((v) => v.channel)?.channel || null;
-    setState((s) => addView(s, { id: newId(), appId: app.appId, title: app.title, channel: app.linkable ? linked : null }));
+    // On an outcome desk new views join the desk's shared channel; elsewhere the first colour in use.
+    const linked = deskChan?.id || ws.views.find((v) => v.channel)?.channel || null;
+    setState((s) => addView(s, { id: newId(), appId: app.appId, title: app.title, channel: app.linkable ? linked : null,
+      ...(app.kind === 'widget' && subject ? { config: { subject } } : {}) }));
     setLauncher(false);
+  }
+
+  /** Build a desk for a business outcome from its template (lineage grids come from the outcome definition). */
+  async function openOutcomeDesk(target) {
+    let grids = [];
+    if (target.kind === 'outcome') {
+      try { grids = (await outcomesApi.definitions()).find((d) => d.id === target.id)?.grids || []; } catch { /* no grids */ }
+    }
+    const template = deskTemplate(target, { grids });
+    if (template) setState((s) => createWorkspace(s, template.name, { template }));
+    setCreating(false);
   }
 
   function popOut(view) {
@@ -406,32 +491,44 @@ export default function Workspace() {
   const position = Object.fromEntries(ws.views.map((v, i) => [v.id, i]));
   const activeId = ws.active && ws.views.some((v) => v.id === ws.active) ? ws.active : ws.views[0]?.id;
   const usedChannels = [...new Set(ws.views.map((v) => v.channel).filter(Boolean))];
+  const chanOf = (id) => channelInfo(id, subject);
   const sized = ['columns', 'rows'].includes(ws.layout) && !ws.maximized;
   const tracks = ws.views.map((v) => `minmax(${ws.layout === 'columns' ? 240 : 160}px, ${v.size || 1}fr)`).join(' ');
   const sizedTracks = sized ? (ws.layout === 'columns' ? { gridTemplateColumns: tracks } : { gridTemplateRows: tracks }) : undefined;
 
   return (
     <>
-      <PageHeader icon="window" title="Workspace" context="Multi-screen container · installable app"
-        infoTitle="One UI, many screens" infoWidth={340}
+      <PageHeader icon="window" title="Desks" context="Outcome desks · multi-screen · installable app"
+        infoTitle="One desk per business outcome" infoWidth={360}
         info={<>
-          Launch console screens, widgets and partner web apps side by side. Give views the same <b>link colour</b> and they
-          share context: pick a row in the board and the instance viewer, grid and partner frame follow. Tear a view out into
-          its own window and <b>Dock</b> it back. Every view rides the shell’s one WebSocket.
+          A <b>desk</b> hosts screens side by side: console screens, widgets, STEPS and partner web apps. Build one for a
+          business outcome and its views link on the <b>desk channel</b>: a pick or an action on one screen reaches that
+          outcome’s screens in every tab and every browser, through the hub (WebSocket, SSE fallback). Colours link views in
+          this browser only. Tear a view out into its own window and <b>Dock</b> it back.
         </>}
-        summary={`${ws.views.length} view${ws.views.length === 1 ? '' : 's'}${usedChannels.length ? ` · linked on ${usedChannels.map((c) => channelById(c)?.label).join(', ')}` : ''}`}>
-        <Select variant="header" icon="window" value={ws.id} minWidth={170} title="Switch workspace"
+        summary={[
+          subject ? `${subject.kind === 'kit' ? 'Kit' : 'Outcome'} desk · ${subject.name}` : 'Free desk',
+          `${ws.views.length} view${ws.views.length === 1 ? '' : 's'}`,
+          usedChannels.length ? `linked on ${usedChannels.map((c) => chanOf(c)?.label).filter(Boolean).join(', ')}` : '',
+        ].filter(Boolean).join(' · ')}>
+        <Select variant="header" icon={subject ? 'tower' : 'window'} value={ws.id} minWidth={190} title="Switch desk"
           onChange={(id) => setState((s) => switchWorkspace(s, id))}
-          options={state.workspaces.map((w) => ({ value: w.id, label: w.name }))} />
+          options={state.workspaces.map((w) => ({ value: w.id,
+            label: `${w.name}${w.subject ? ' ◆' : ''}${unread[w.id] ? ` · ${unread[w.id]} new` : ''}` }))} />
         <div className="ws-btns">
-          <button className="tb-icon" title="New workspace" aria-label="New workspace"
-            onClick={() => setNaming({ mode: 'new', value: '' })}><Icon name="plus" size={15} /></button>
-          <button className="tb-icon" title="Save as a new workspace" aria-label="Save workspace as"
+          <button className="tb-icon" title="New desk — for a business outcome, or blank" aria-label="New desk"
+            onClick={() => setCreating(true)}><Icon name="plus" size={15} /></button>
+          <button className="tb-icon" title="Save as a new desk" aria-label="Save desk as"
             onClick={() => setNaming({ mode: 'copy', value: ws.name + ' copy' })}><Icon name="save" size={15} /></button>
-          <button className="tb-icon" title="Rename workspace" aria-label="Rename workspace"
+          <button className="tb-icon" title="Rename desk" aria-label="Rename desk"
             onClick={() => setNaming({ mode: 'rename', value: ws.name })}><Icon name="config" size={15} /></button>
-          <button className="tb-icon" title="Delete workspace" aria-label="Delete workspace"
+          <button className="tb-icon" title="Delete desk" aria-label="Delete desk"
             onClick={() => setState((s) => deleteWorkspace(s))} disabled={state.workspaces.length <= 1}><Icon name="trash" size={15} /></button>
+          {Object.entries(unread).some(([id, n]) => n && id !== ws.id) && (
+            <span className="pill warn" title="Activity on other desks’ outcomes while you were here">
+              {Object.entries(unread).filter(([id]) => id !== ws.id).reduce((n, [, c]) => n + c, 0)} new elsewhere
+            </span>
+          )}
         </div>
         <div className="seg" role="group" aria-label="Layout">
           {LAYOUTS.map((l) => (
@@ -447,7 +544,7 @@ export default function Workspace() {
       {ws.layout === 'tabs' && ws.views.length > 0 && (
         <div className="ws-tabs" role="tablist">
           {ws.views.map((v) => {
-            const chan = channelById(v.channel);
+            const chan = chanOf(v.channel);
             return (
               <button key={v.id} role="tab" aria-selected={v.id === activeId} className={'ws-tab' + (v.id === activeId ? ' on' : '')}
                 onClick={() => setState((s) => setActive(s, v.id))}>
@@ -462,8 +559,8 @@ export default function Workspace() {
       {ws.views.length === 0 ? (
         <div className="panel"><div className="panel-bd ws-empty">
           <Icon name="window" size={30} />
-          <b>This workspace is empty</b>
-          <span className="muted">Launch console screens, widgets or any web app and link them by colour.</span>
+          <b>This desk is empty</b>
+          <span className="muted">Launch console screens, widgets or any web app, and link them on the desk channel or by colour.</span>
           <button className="btn" onClick={() => setLauncher(true)}><Icon name="plus" size={15} /> Launch app</button>
         </div></div>
       ) : (
@@ -471,7 +568,7 @@ export default function Workspace() {
           style={sizedTracks}>
           {ordered.map((v) => {
             const app = appById(apps, v.appId);
-            const chan = channelById(v.channel);
+            const chan = chanOf(v.channel);
             const hidden = (ws.layout === 'tabs' && v.id !== activeId) || (ws.maximized && ws.maximized !== v.id);
             return (
               <section key={v.id} ref={(el) => { if (el) sectionRefs.current.set(v.id, el); else sectionRefs.current.delete(v.id); }} className={'wsv' + (v.wide ? ' wide' : '') + (ws.maximized === v.id ? ' max' : '') + (hidden ? ' hidden' : '') + (flash[v.id] ? ' flash' : '') + (dragId === v.id ? ' dragging' : '')}
@@ -488,7 +585,7 @@ export default function Workspace() {
                   <span className="wsv-title" title={v.title}>{v.title}</span>
                   <span className="wsv-kind">{app?.kind === 'web' ? 'web' : app?.kind === 'widget' ? 'widget' : 'screen'}</span>
                   <span className="spacer" />
-                  {app?.linkable && <ChannelPicker value={v.channel} onChange={(c) => setChannel(v, c)} compact />}
+                  {app?.linkable && <ChannelPicker value={v.channel} onChange={(c) => setChannel(v, c)} compact desk={deskChan} />}
                   {app && app.kind !== 'widget' && (
                     <button className="wsv-btn" title="Reload view" onClick={() => reload(v)}><Icon name="refresh" size={13} /></button>
                   )}
@@ -509,7 +606,7 @@ export default function Workspace() {
                 </header>
                 <div className="wsv-bd">
                   {!app && <div className="empty sm">This app is no longer in the directory.</div>}
-                  {app?.kind === 'widget' && WIDGETS[app.appId] && (() => { const W = WIDGETS[app.appId]; return <W view={v} titles={titles} />; })()}
+                  {app?.kind === 'widget' && WIDGETS[app.appId] && (() => { const W = WIDGETS[app.appId]; return <W view={v} titles={titles} desk={ws} />; })()}
                   {app && app.kind !== 'widget' && (
                     <ViewFrame key={v.id + ':' + (reloadTick[v.id] || 0)} view={v} app={app}
                       src={viewSrc(v, app, { scope: filters, theme: partnerThemeParams(themeId), pageOrigin })}
@@ -535,8 +632,14 @@ export default function Workspace() {
           pageOrigin={pageOrigin} />
       )}
 
+      {creating && (
+        <NewDesk state={state} onOutcome={openOutcomeDesk} onClose={() => setCreating(false)}
+          onBlank={(name) => { setState((s) => createWorkspace(s, name)); setCreating(false); }}
+          onOpen={(id) => { setState((s) => switchWorkspace(s, id)); setCreating(false); }} />
+      )}
+
       {naming && (
-        <Modal title={naming.mode === 'rename' ? 'Rename workspace' : naming.mode === 'copy' ? 'Save workspace as' : 'New workspace'}
+        <Modal title={naming.mode === 'rename' ? 'Rename desk' : 'Save desk as'}
           subtitle={naming.mode === 'copy' ? 'Copies the current layout, views and link colours.' : undefined}
           onClose={() => setNaming(null)}
           footer={<><button className="btn ghost" onClick={() => setNaming(null)}>Cancel</button><button className="btn" onClick={submitName}>Save</button></>}>
@@ -559,6 +662,50 @@ function ViewFrame({ view, app, src, onFrame }) {
     ? { sandbox: SANDBOX, referrerPolicy: 'strict-origin-when-cross-origin', allow: 'clipboard-write; fullscreen' }
     : { name: 'ofx-view:' + view.id };
   return <iframe ref={onFrame} title={view.title} src={initialSrc} {...props} />;
+}
+
+/** New desk: pick a business outcome (engine outcome or kit) to get its template, or start blank. */
+function NewDesk({ state, onOutcome, onBlank, onOpen, onClose }) {
+  const [subjects, setSubjects] = useState(null);
+  const [name, setName] = useState('');
+  useEffect(() => {
+    Promise.allSettled([outcomesApi.all(), api.kits()]).then(([o, k]) => {
+      setSubjects(deskSubjects(o.status === 'fulfilled' ? o.value : [], k.status === 'fulfilled' ? k.value : []));
+    });
+  }, []);
+  return (
+    <Modal title="New desk" subtitle="One desk per business outcome — or a blank desk for anything" onClose={onClose} width={720}>
+      <div className="appdir-sec">
+        <div className="menu-lbl">For a business outcome <span className="muted">· views link on the outcome’s channel across browsers</span></div>
+        {!subjects && <div className="empty sm">Loading outcomes…</div>}
+        {subjects && subjects.length === 0 && <div className="empty sm">The hub lists no outcomes yet.</div>}
+        <div className="appdir">
+          {(subjects || []).map((s) => {
+            const existing = deskFor(state, s);
+            return (
+              <div key={s.kind + s.id} className="appdir-card" role="button" tabIndex={0}
+                onClick={() => (existing ? onOpen(existing.id) : onOutcome(s))}
+                onKeyDown={(e) => { if (e.key === 'Enter') { if (existing) onOpen(existing.id); else onOutcome(s); } }}>
+                <span className="ph-ico"><Icon name={s.kind === 'kit' ? 'cards' : 'report'} size={16} /></span>
+                <div className="appdir-txt">
+                  <b>{s.name}</b>
+                  <span>{s.question || s.id}{s.owner ? ` · ${s.owner}` : ''}</span>
+                </div>
+                <span className="chip">{existing ? 'open' : s.kind}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <form className="appdir-add" onSubmit={(e) => { e.preventDefault(); if (name.trim()) onBlank(name.trim()); }}>
+        <div className="menu-lbl">Blank desk <span className="muted">· any screens, frames and widgets; link them by colour</span></div>
+        <div className="appdir-form">
+          <input className="inp" placeholder="Desk name" value={name} maxLength={60} onChange={(e) => setName(e.target.value)} aria-label="Desk name" />
+          <button className="btn" type="submit" disabled={!name.trim()}><Icon name="plus" size={14} /> Create</button>
+        </div>
+      </form>
+    </Modal>
+  );
 }
 
 function AppDirectory({ apps, onLaunch, onAdd, onRemove, onClose, pageOrigin }) {

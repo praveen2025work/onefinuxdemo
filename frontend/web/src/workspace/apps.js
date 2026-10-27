@@ -1,4 +1,6 @@
-// App directory for the Workspace (the OpenFin "apps.json" / FDC3 App Directory idea). Pure data + helpers.
+import { encodeJson } from '../grid/spec.js';
+
+// App directory for desks (the OpenFin "apps.json" / FDC3 App Directory idea). Pure data + helpers.
 //
 // kind:
 //   route  — a console screen, rendered as the same SPA in an iframe with ?ofx-embed=1 (no chrome)
@@ -33,12 +35,16 @@ export const BUILTIN_APPS = [
     desc: 'Wijmo FlexGrid of the unit with filters. Select a row to drive linked views.' },
   { appId: 'context', title: 'Context inspector', icon: 'link', kind: 'widget', linkable: true,
     desc: 'Shows what views on its colour are sharing.' },
+  { appId: 'activity', title: 'Outcome activity', icon: 'history', kind: 'widget', linkable: true,
+    desc: 'Who did what on the desk’s outcome — from every screen, tab and browser, live over the hub. Post a note to all.' },
+  { appId: 'grid', title: 'Grid (from a spec)', icon: 'grid', kind: 'widget', linkable: true,
+    desc: 'Any read-only grid described as config — pick a spec in the grid library. A row pick is shared.' },
   { appId: 'helix', title: 'Helix FOBO (partner)', icon: 'tower', kind: 'web', url: '/sim/screens/helix', linkable: true,
     desc: 'Partner screen framed, not rebuilt. Context arrives on the query.' },
   { appId: 'partner-demo', title: 'Partner interop demo', icon: 'globe', kind: 'web', url: '/partner-demo.html', linkable: true,
     desc: 'A partner page that joins link channels with ofx-interop.js (postMessage).' },
   { appId: 'steps', title: 'STEPS (workflow & finance)', icon: 'layers', kind: 'web', url: STEPS_URL, linkable: true,
-    desc: 'The STEPS app in embedded mode: same theme, FDC3 links to the other views.' },
+    desc: 'The STEPS app in embedded mode: same theme, FDC3 links to the other views on the desk.' },
 ];
 
 const BLOCKED_SCHEMES = /^(javascript|data|vbscript|file|blob|about):/i;
@@ -129,6 +135,7 @@ export function viewSrc(view, app, { scope = {}, theme = {}, pageOrigin }) {
     qs.set('ofx-view', view.id);
     if (view.channel) qs.set('ofx-channel', view.channel);
     qs.set('ofx-title', view.title || app.title);
+    if (app.kind === 'widget' && view.config) qs.set('ofx-config', encodeJson(view.config));
     for (const [k, v] of Object.entries({ groupUnit: scope.groupUnit, cobDate: scope.cobDate, region: scope.region })) {
       if (v) qs.set(k, v);
     }

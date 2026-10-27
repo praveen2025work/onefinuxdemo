@@ -2,7 +2,9 @@ package com.onefinux.hub.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onefinux.hub.security.CurrentUser;
 import com.onefinux.hub.stream.StreamHub;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +21,11 @@ import java.util.regex.Pattern;
  * channel, or raise an intent, and every open console receives it over the WebSocket ({@code context} /
  * {@code intent} events) — linked screens then follow exactly as if another screen had broadcast it.
  *
+ * <p>Outcome channels ({@code outcome:<id>}) are how desks on the same business outcome share context across
+ * browsers: a console broadcasts locally, posts here with its {@code origin} (browser id) and message {@code id},
+ * and every other browser delivers it; the sender drops its own echo by origin. {@code by} is the authenticated
+ * principal, never a client-supplied name.
+ *
  * <p>Same trust level as {@code /api/admin/announce} in this POC; production puts it behind an entitlement.
  * The hub only relays: it never interprets a context, and nothing here touches readiness.
  */
@@ -28,29 +35,41 @@ public class InteropController {
     static final Pattern CHANNEL = Pattern.compile("^[a-z][a-z0-9:_-]{0,48}$");
     static final Pattern INTENT = Pattern.compile("^[A-Za-z][A-Za-z0-9]{0,63}$");
     static final Pattern LABEL = Pattern.compile("^[A-Za-z0-9._-]{1,40}$");
+    static final Pattern ORIGIN = Pattern.compile("^[A-Za-z0-9-]{6,64}$");
+    static final Pattern MESSAGE_ID = Pattern.compile("^[A-Za-z0-9:._-]{1,80}$");
     static final int MAX_CONTEXT_CHARS = 16 * 1024;
 
     private final StreamHub stream;
     private final ObjectMapper json;
     private final Clock clock;
+    private final CurrentUser currentUser;
 
     public InteropController(StreamHub stream, ObjectMapper json, Clock clock) {
+        this(stream, json, clock, null);
+    }
+
+    @Autowired
+    public InteropController(StreamHub stream, ObjectMapper json, Clock clock, CurrentUser currentUser) {
         this.stream = stream;
         this.json = json;
         this.clock = clock;
+        this.currentUser = currentUser;
     }
 
     /** Share a context on a channel: a colour ({@code blue}) or an app channel ({@code app:fobo-desk}). */
     @PostMapping("/api/interop/context")
     public Map<String, Object> context(@RequestBody ContextPush body) {
         if (body == null || body.channel() == null || !CHANNEL.matcher(body.channel()).matches()) {
-            throw bad("channel must be a colour or app:<name> (lower-case, max 49 chars)");
+            throw bad("channel must be a colour, app:<name> or outcome:<id> (lower-case, max 49 chars)");
         }
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("channel", body.channel());
         payload.put("context", checkedContext(body.context()));
         payload.put("source", source(body.source()));
         payload.put("at", clock.instant().toString());
+        if (body.origin() != null && ORIGIN.matcher(body.origin()).matches()) payload.put("origin", body.origin());
+        if (body.id() != null && MESSAGE_ID.matcher(body.id()).matches()) payload.put("id", body.id());
+        if (currentUser != null) payload.put("by", currentUser.actor());
         stream.broadcast("context", payload);
         return Map.of("pushed", true, "channel", body.channel(), "clients", stream.clients());
     }
@@ -92,7 +111,10 @@ public class InteropController {
         return new ResponseStatusException(HttpStatus.BAD_REQUEST, reason);
     }
 
-    public record ContextPush(String channel, Map<String, Object> context, String source) {
+    public record ContextPush(String channel, Map<String, Object> context, String source, String origin, String id) {
+        public ContextPush(String channel, Map<String, Object> context, String source) {
+            this(channel, context, source, null, null);
+        }
     }
 
     public record IntentPush(String intent, Map<String, Object> context, String source) {

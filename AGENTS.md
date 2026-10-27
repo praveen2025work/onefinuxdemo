@@ -3,7 +3,7 @@
 Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 
 Visual truth: `frontend/web` (live React console). One design standard for every accounting-space screen, framed STEPS and partners included: the STEPS look (Banking Blue `#2563eb`, page `#f8fafc`, white cards) from [`frontend/theme/`](frontend/theme/onefinux-tokens.css), served at `/theme/*`. MITR indigo stays selectable.  
-Screens: data is Wijmo (`DataGrid` / `DataView` / `Chart`), and many screens share one page in the **Workspace**, linked with FDC3 (`window.fdc3`) and hub pushes over `/api/ws`.  
+Screens: read-only data is Wijmo, described as a **GridSpec** (`/grids`; `SpecGrid`, `DataView`, `Chart`), and many screens share one page on a **desk** (`/desks`), one desk per business outcome or a blank one. Screens link with FDC3 (`window.fdc3`); outcome desk channels and `activity` reach every tab and browser through the hub (`/api/ws`, SSE fallback).  
 Design folder (only one): [`docs/design/`](docs/design/README.md).  
 Spec-driven contract (REQ-IDs + Given/When/Then): [`docs/design/specification.md`](docs/design/specification.md). Gate: `python3 scripts/check_specification.py`.  
 New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and console **`/guide`**. Architecture diagrams: console **`/architecture`**. Product story: **`/product`**.
@@ -13,7 +13,7 @@ New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and consol
 | Job | Skill |
 |---|---|
 | Chrome / theme / design tokens / mobile shell | `.cursor/skills/barclays-ib-console` |
-| Workspace, screen-to-screen links (FDC3), hub contexts / intents | `.cursor/skills/workspace-interop` |
+| Desks, screen-to-screen links (FDC3), outcome channels, activity, hub contexts / intents | `.cursor/skills/workspace-interop` |
 | Create a live outcome or kit | `.cursor/skills/register-outcome-kit` |
 | Outcome Engine fold + ActionExecutor | `.cursor/skills/outcome-engine` |
 | Inspect / govern the live registry | `.cursor/skills/engineering-view` |
@@ -23,7 +23,7 @@ New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and consol
 | RTB delays / escalations / dead letters | `.cursor/skills/rtb-support-view` |
 | Bind a source or destination | `.cursor/skills/bind-source-destination` |
 | Partner or STEPS iframe + shared theme | `.cursor/skills/embed-partner-screen` |
-| Grids, pivots, charts; analyst explorer (same unit) | `.cursor/skills/wijmo-outcome-grid` |
+| Grids (GridSpec, grid library, embed / `<ofx-grid>`), pivots, charts; analyst explorer | `.cursor/skills/wijmo-outcome-grid` |
 
 ## Never
 
@@ -36,6 +36,8 @@ New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and consol
 - Colours outside `frontend/theme` tokens, or a second stylesheet per screen / team
 - An HTML data table or another chart library where `DataGrid` / `DataView` / `Chart` fits
 - A private postMessage protocol between screens (FDC3 channels and intents)
+- Polling or a side channel to tell other screens about an action (publish `activity` / share on the outcome channel)
+- A hand-coded read-only grid component per screen or per team (a GridSpec, rendered by `SpecGrid` / `<ofx-grid>`)
 
 ## Views
 

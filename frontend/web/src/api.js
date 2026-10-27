@@ -242,10 +242,23 @@ async function postJson(path, body) {
 
 // Server-side screen links and notifications, pushed to every open console over the WebSocket.
 export const interopApi = {
-  /** Share an FDC3 context on a link channel (colour or app:<name>) from the hub. */
-  context: (channel, context, source = 'drive') => postJson('/api/interop/context', { channel, context, source }),
+  /** Share an FDC3 context on a link channel (colour, app:<name> or outcome:<id>) from the hub. */
+  context: (channel, context, source = 'drive', { origin, id } = {}) => postJson('/api/interop/context', { channel, context, source, origin, id }),
   /** Raise an intent (ViewInstance, ViewBreak, …) for the Workspace resolver on every console. */
   intent: (intent, context, source = 'drive') => postJson('/api/interop/intent', { intent, context, source }),
   /** A platform announcement into the inbox, the notification panel and desktop cards. */
   announce: (title, message, severity = 'INFO') => postJson('/api/admin/announce', { title, message, severity }),
+};
+
+// Who did what on a business outcome. The hub pushes each activity to every console (live event `activity`).
+export const activityApi = {
+  /** Recent activity for one outcome (outcomeId) or kit (kitId); newest first. */
+  recent: async ({ outcomeId, kitId, limit = 50 } = {}) => {
+    const qs = new URLSearchParams(clean({ outcomeId, kitId, limit }));
+    const res = await fetch(`/api/activity?${qs}`, { headers: authHeaders() });
+    if (!res.ok) throw new Error(`${res.status} on /api/activity`);
+    return res.json();
+  },
+  /** Tell every desk on this outcome about an action (a note, or an action a partner screen took). */
+  post: (body) => postJson('/api/interop/activity', body),
 };

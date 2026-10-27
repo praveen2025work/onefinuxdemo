@@ -1,6 +1,7 @@
 package com.onefinux.hub.stitch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onefinux.hub.activity.ActivityFeed;
 import com.onefinux.hub.config.OneFinUxProperties;
 import com.onefinux.hub.event.EventHubService;
 import com.onefinux.hub.event.EventStatus;
@@ -41,16 +42,17 @@ public class StitchService {
     private final CurrentUser currentUser;
     private final DownstreamPoster poster;
     private final OneFinUxProperties properties;
+    private final ActivityFeed activity;
 
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
                          StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser) {
-        this(repo, fold, hub, stream, mapper, clock, currentUser, (url, body) -> {}, null);
+        this(repo, fold, hub, stream, mapper, clock, currentUser, (url, body) -> {}, null, null);
     }
 
     @Autowired
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
                          StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser,
-                         DownstreamPoster poster, OneFinUxProperties properties) {
+                         DownstreamPoster poster, OneFinUxProperties properties, ActivityFeed activity) {
         this.repo = repo;
         this.fold = fold;
         this.hub = hub;
@@ -60,6 +62,7 @@ public class StitchService {
         this.currentUser = currentUser;
         this.poster = poster == null ? (url, body) -> {} : poster;
         this.properties = properties;
+        this.activity = activity;
     }
 
     /**
@@ -249,6 +252,7 @@ public class StitchService {
                     "SSE", instanceId, str(inst, "groupUnitId"));
             stream.broadcast("notification", Map.of("severity", "INFO", "transition", "SIGNED",
                     "title", inst.get("kitId") + " " + inst.get("sliceKey") + " signed", "instanceId", instanceId));
+            activity("SIGN_OFF", instanceId, inst, inst.get("sliceKey") + " signed off — countersign open");
             fold.broadcastOutcome(instanceId);
             return repo.instance(instanceId);
         }
@@ -261,6 +265,7 @@ public class StitchService {
                 "SSE", instanceId, str(inst, "groupUnitId"));
         stream.broadcast("notification", Map.of("severity", "INFO", "transition", "CLEARED",
                 "title", inst.get("kitId") + " " + inst.get("sliceKey") + " cleared", "instanceId", instanceId));
+        activity("SIGN_OFF", instanceId, inst, inst.get("sliceKey") + " signed off and cleared");
         fold.broadcastOutcome(instanceId);
         return repo.instance(instanceId);
     }
@@ -287,6 +292,7 @@ public class StitchService {
                 "SSE", instanceId, str(inst, "groupUnitId"));
         stream.broadcast("notification", Map.of("severity", "INFO", "transition", "CLEARED",
                 "title", inst.get("kitId") + " " + inst.get("sliceKey") + " cleared", "instanceId", instanceId));
+        activity("COUNTERSIGN", instanceId, inst, inst.get("sliceKey") + " countersigned — cleared");
         fold.broadcastOutcome(instanceId);
         return repo.instance(instanceId);
     }
@@ -304,6 +310,7 @@ public class StitchService {
                 json(Map.of("runId", runId, "dest", "FAS_MOTIF")));
         publishWorkflow("ADJUST_REQUESTED", instanceId, inst, Map.of("runId", runId, "dest", "FAS_MOTIF"));
         commandAdjust(runId, inst);
+        activity("ADJUST", instanceId, inst, "Adjustment requested on " + inst.get("sliceKey") + " (" + runId + ")");
         fold.broadcastOutcome(instanceId);
         return Map.of("instanceId", instanceId, "runId", runId, "dest", "FAS_MOTIF", "echoPending", true);
     }
@@ -314,6 +321,7 @@ public class StitchService {
         repo.insertPendingCommandRun(runId, instanceId, "FAS_MOTIF");
         repo.insertAudit(currentUser.actor(), "POST", instanceId, "OK", json(Map.of("runId", runId, "dest", "FAS_MOTIF")));
         publishWorkflow("POST_REQUESTED", instanceId, inst, Map.of("runId", runId, "dest", "FAS_MOTIF"));
+        activity("POST", instanceId, inst, "Posted " + inst.get("sliceKey") + " to FAS_MOTIF (" + runId + ")");
         fold.broadcastOutcome(instanceId);
         return Map.of("instanceId", instanceId, "runId", runId, "dest", "FAS_MOTIF", "echoPending", true);
     }
@@ -331,6 +339,7 @@ public class StitchService {
                 reason == null ? "Human escalation to RTB" : reason, "SSE", instanceId, str(inst, "groupUnitId"));
         stream.broadcast("notification", Map.of("severity", "WARN", "transition", "ESCALATED",
                 "title", "Escalation " + escalationId + " raised", "instanceId", instanceId));
+        activity("ESCALATE", instanceId, inst, "Escalation " + escalationId + " raised on " + inst.get("sliceKey"));
         return Map.of("escalationId", escalationId, "instanceId", instanceId, "status", "OPEN");
     }
 
@@ -372,6 +381,7 @@ public class StitchService {
                 "SSE", instanceId, str(inst, "groupUnitId"));
         stream.broadcast("notification", Map.of("severity", "INFO", "transition", action,
                 "title", headline, "instanceId", instanceId));
+        activity(action, instanceId, inst, headline + (note == null || note.isBlank() ? "" : ": " + note));
         fold.broadcastOutcome(instanceId);
         return Map.of("instanceId", instanceId, "action", action, "status", "OK", "by", actor);
     }
@@ -432,6 +442,13 @@ public class StitchService {
         repo.resetDemo();
         repo.insertAudit(currentUser.actor(), "RESET", "demo", "OK", null);
         stream.broadcast("reset", Map.of("at", clock.instant().toString()));
+    }
+
+    /** Tell every console desk on this kit who did what (live event {@code activity}). */
+    private void activity(String action, String instanceId, Map<String, Object> inst, String summary) {
+        if (activity == null) return;
+        activity.publish(new ActivityFeed.Activity(action, currentUser.actor(), summary, null, str(inst, "kitId"),
+                instanceId, str(inst, "groupUnitId"), str(inst, "cobDate"), str(inst, "region"), "console"));
     }
 
     private void publishWorkflow(String eventType, String instanceId, Map<String, Object> inst,

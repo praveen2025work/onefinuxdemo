@@ -615,7 +615,7 @@ button.oc { width: 100%; text-align: left; font: inherit; color: inherit; }
 .rcard-hd h3 { margin: 9px 0 2px; font-size: 17px; }
 .rcard-hd .q { margin: 0; color: var(--muted); font-size: 13px; }
 .rcard-hd .row { gap: 7px; }
-.rcard-cta { flex: none; }
+.rcard-cta { flex: none; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
 .rpt-name { color: inherit; }
 .rpt-name:hover { color: var(--accent); }
 .rcard.compact { padding: 10px 14px 12px; }
@@ -1032,6 +1032,9 @@ a.story-row:hover { border-color: var(--stroke-2); }
 .chan-trig.linked { color: var(--ink); }
 .chan-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 0%, var(--surface)); }
 .chan-dot.lg { width: 14px; height: 14px; }
+/* An outcome desk's channel reaches every browser on that outcome: a ring marks it apart from the colours. */
+.chan-dot.shared { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px currentColor; color: #0891b2; }
+.chan-trig.shared { border-color: color-mix(in srgb, #0891b2 55%, var(--stroke)); }
 .chan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 2px 2px 6px; }
 .chan-opt { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border-radius: var(--r-ctl); cursor: pointer;
   background: transparent; border: 1px solid transparent; color: var(--ink); font-size: 12.5px; }
@@ -1122,6 +1125,16 @@ a.story-row:hover { border-color: var(--stroke-2); }
 .wg .datagrid { flex: 1; min-height: 0; padding: 8px 10px 10px; }
 .seg.sm button { padding: 3px 9px; font-size: 11.5px; }
 .feed { flex: 1; overflow-y: auto; }
+/* Outcome activity: who did what, from every screen, tab and browser. */
+.act-row { display: flex; gap: 9px; padding: 8px 12px; border-bottom: 1px solid var(--stroke); animation: fade 0.3s ease; }
+.act-row .avatar.xs { margin-top: 1px; }
+.act-main { flex: 1; min-width: 0; }
+.act-line { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12.5px; }
+.act-line .feed-t { margin-left: auto; }
+.act-text { margin-top: 2px; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.act-row.shared .act-text { font-family: var(--mono); font-size: 12px; }
+.act-compose { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--stroke); }
+.act-compose .inp { flex: 1; min-width: 0; }
 .feed-row { display: grid; grid-template-columns: 70px auto 1fr; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--stroke); font-size: 12px; animation: fade 0.3s ease; }
 .feed-t { font-size: 11px; color: var(--faint); }
 .feed-s { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--ink); }
@@ -1148,6 +1161,29 @@ a.story-row:hover { border-color: var(--stroke-2); }
 .datagrid.fill .dg-host { flex: 1; min-height: 160px; }
 .dg-host { position: relative; }
 .dg-empty { position: absolute; inset: 37px 1px 1px; display: grid; place-items: center; color: var(--muted); font-size: 12.5px; pointer-events: none; }
+.dg-empty.static { position: static; display: flex; align-items: center; gap: 8px; padding: 16px; color: var(--fail); }
+
+/* ================================================================ Grid library (/grids) */
+.gl { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 14px; align-items: start; }
+.gl-list { padding: 6px; position: sticky; top: 0; max-height: calc(100dvh - 140px); overflow: auto; }
+.gl-sec + .gl-sec { margin-top: 6px; }
+.gl-item { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; padding: 7px 10px; cursor: pointer; text-align: left;
+  color: var(--ink); background: transparent; border: 0; border-radius: var(--r-ctl); }
+.gl-item:hover { background: var(--raised); }
+.gl-item.on { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); box-shadow: inset 3px 0 0 var(--accent); }
+.gl-item b { font-size: 13px; font-weight: 600; }
+.gl-item .mono { font-size: 11px; color: var(--muted); }
+.gl-none { padding: 4px 10px; }
+.gl-main { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.gl-edit { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+.gl-json { width: 100%; min-height: 320px; font-size: 12px; line-height: 1.45; resize: vertical; }
+.gl-errors { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--fail); }
+.gl-snippet { margin: 0; max-height: 300px; overflow: auto; padding: 10px 12px; font-family: var(--mono); font-size: 11.5px; white-space: pre-wrap;
+  overflow-wrap: anywhere; background: var(--raised); border: 1px solid var(--stroke); border-radius: var(--r-card); }
+@media (max-width: 1180px) {
+  .gl, .gl-edit { grid-template-columns: 1fr; }
+  .gl-list { position: static; max-height: none; }
+}
 .cell-2l { display: flex; flex-direction: column; justify-content: center; gap: 1px; height: 100%; line-height: 1.3; min-width: 0; }
 .cell-2l .sec { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .wj-flexgrid .wj-cell.cell-mono { font-family: var(--mono); font-size: 12px; }

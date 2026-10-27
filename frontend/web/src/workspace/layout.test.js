@@ -1,20 +1,51 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  addView, clampSize, createWorkspace, currentWorkspace, deleteWorkspace, loadState, moveView, patchView,
+  addView, clampSize, createWorkspace, currentWorkspace, deleteWorkspace, deskFor, loadState, moveView, patchView,
   removeView, resizePair, seedState, setLayout, splitShares, toggleMaximized, viewsOnChannel,
 } from './layout.js';
 
 const view = (id, extra = {}) => ({ id, appId: 'board', title: id, channel: null, ...extra });
 const withViews = (views) => ({ current: 'w', workspaces: [{ id: 'w', name: 'W', layout: 'grid', views, active: null, maximized: null }] });
 
-test('seedState opens Close control with linked views and a Finance desk', () => {
+test('seedState opens Close control, a Finance desk and an outcome desk for the FOBO kit', () => {
   const s = seedState();
   assert.equal(s.current, 'ws-close');
-  assert.deepEqual(s.workspaces.map((w) => w.name), ['Close control', 'Finance desk']);
+  assert.deepEqual(s.workspaces.map((w) => w.name), ['Close control', 'Finance', 'FOBO rec']);
   const close = currentWorkspace(s);
   assert.deepEqual(close.views.filter((v) => v.channel === 'blue').map((v) => v.appId), ['board', 'instance', 'helix']);
   assert.ok(close.views.every((v) => v.size === 1));
+  const fobo = s.workspaces[2];
+  assert.deepEqual(fobo.subject, { kind: 'kit', id: 'FOBO', name: 'FOBO rec', question: 'Can I execute this rec?' });
+  assert.deepEqual(fobo.views.map((v) => v.appId), ['activity', 'grid', 'instance', 'board']);
+  assert.ok(fobo.views.filter((v) => v.appId !== 'board').every((v) => v.channel === 'outcome:kit-fobo'));
+});
+
+test('a desk keeps its outcome and its views keep a small config', () => {
+  const s = loadState(JSON.stringify({
+    current: 'd',
+    workspaces: [{ id: 'd', name: 'D', subject: { kind: 'outcome', id: 'FOBO_HELIX', name: 'FOBO investigation' }, views: [
+      { id: 'g', appId: 'grid', config: { spec: 'outcomes', filter: { outcomeId: 'FOBO_HELIX' } } },
+      { id: 'h', appId: 'grid', config: { blob: 'x'.repeat(5000) } },
+    ] }, { id: 'e', name: 'E', subject: { kind: 'planet', id: 'X' }, views: [] }],
+  }));
+  assert.equal(currentWorkspace(s).subject.id, 'FOBO_HELIX');
+  assert.deepEqual(currentWorkspace(s).views[0].config, { spec: 'outcomes', filter: { outcomeId: 'FOBO_HELIX' } });
+  assert.equal(currentWorkspace(s).views[1].config, undefined);
+  assert.equal(s.workspaces[1].subject, undefined);
+});
+
+test('createWorkspace builds an outcome desk from a template; deskFor finds it', () => {
+  const template = { name: 'PnL reporting', subject: { kind: 'outcome', id: 'PNL_REPORTING', name: 'PnL reporting' }, layout: 'columns',
+    views: [{ appId: 'activity', title: 'Activity', channel: 'outcome:pnl_reporting' }] };
+  const s = createWorkspace(withViews([]), null, { template });
+  const desk = currentWorkspace(s);
+  assert.equal(desk.name, 'PnL reporting');
+  assert.equal(desk.layout, 'columns');
+  assert.equal(desk.views[0].channel, 'outcome:pnl_reporting');
+  assert.ok(desk.views[0].id);
+  assert.equal(deskFor(s, { kind: 'outcome', id: 'pnl_reporting' })?.id, desk.id);
+  assert.equal(deskFor(s, { kind: 'kit', id: 'PNL_REPORTING' }), null);
 });
 
 test('loadState falls back to the seed for junk and cleans what it keeps', () => {

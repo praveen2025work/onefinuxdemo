@@ -10,7 +10,7 @@ export default function InstanceWaiting() {
       <PageHeader keepTitle icon="eye" title="Waiting for a selection"
         summary={EMBED
           ? 'Pick a row in a view on the same link colour — the Outcome board or the Instance grid — and it opens here.'
-          : 'Open an instance from the Outcome board, or put this viewer in the Workspace and link it to a board.'} />
+          : 'Open an instance from the Outcome board, or put this viewer on a desk and link it to a board.'} />
       <div className="panel">
         <div className="panel-bd wait-card">
           <Icon name="link" size={22} />

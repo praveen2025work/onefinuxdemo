@@ -1909,9 +1909,17 @@ Home tells today's close. Board is the head table. My outcomes is the doer list.
 
 ### 19.4 Header and page header
 
-The top header is one 48-pixel row. Scope controls show values only; their captions are tooltips. Install, desktop alerts, view, theme, notifications, refresh, and profile are icons. Live status is a dot in the environment chip. Each screen has one page-header row: icon, title, an info icon holding the context line and explanation, an optional one-line live summary, and the screen's tools. In a Workspace view the page title is omitted because the view title bar names it.
+The top header is one 48-pixel row. Scope controls show values only; their captions are tooltips. Install, desktop alerts, view, theme, notifications, refresh, and profile are icons. Live status is a dot in the environment chip. Each screen has one page-header row: icon, title, an info icon holding the context line and explanation, an optional one-line live summary, and the screen's tools. On a desk view the page title is omitted because the view title bar names it.
 
-### 19.5 Mobile
+### 19.5 Desks and shared outcome channels
+
+A desk at /desks hosts several screens in one page: console screens, widgets, STEPS, and partner frames. A desk is bound to one business outcome (an engine outcome or a stitch kit) or it is blank. New desk lists every outcome and builds its views from one template; each report card opens its outcome's desk. Views on an outcome desk link on the channel outcome:<id>: the hub relays a pick to that outcome's views in every tab and every browser, and each browser drops its own echo by its browser id. Every human action on the outcome is pushed as a live activity event with the authenticated actor; the desk's Activity view lists actions, notifications, and shared picks, and a note posted there reaches every desk on the outcome. A desk that is not open counts the activity it missed.
+
+### 19.6 Grid library
+
+Read-only data is a GridSpec: JSON naming the source (an endpoint with parameters bound to the business date, group unit, and region, or inline rows), the columns and their types, a filter, the lenses, the hub events that refetch it, and the context a row pick shares. /grids lists the built-in specs and each outcome definition's grids, edits a spec with a live preview, saves it in the browser, and adds it to a desk. Other applications embed the same grid as an iframe at /widget/grid or as the ofx-grid web component served at /lib.
+
+### 19.7 Mobile
 
 Below 820px: drawer rail, hamburger, bottom nav. Below 640px: Board and Home instance tables become one card per row. Report flow stacks on a phone. Predicted-ready clocks use 24-hour time.
 

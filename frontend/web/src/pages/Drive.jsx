@@ -56,15 +56,15 @@ const SCENARIOS = [
   { key: 'cancel', title: 'Cancel scheduled', icon: 'warning', tone: 'plain', cta: 'Cancel',
     desc: 'Stop the drip of any scenario still scheduled, so a clean run is not disturbed.',
     run: () => cancelScenarios() },
-  // Screen links over the WebSocket: the hub pushes FDC3 contexts / intents; open a Workspace to watch the views move.
+  // Screen links over the WebSocket: the hub pushes FDC3 contexts / intents; open a desk to watch the views move.
   { key: 'ws-notify', title: 'Test notification', icon: 'bell', tone: 'info', cta: 'Send',
     desc: 'POST /api/admin/announce. The hub persists it and pushes it over /api/ws: bell, panel, inbox, live feed and desktop card.',
     run: () => interopApi.announce('Ops broadcast', 'EMEA ledger feed delayed 20 minutes — RTB is on it.', 'WARN') },
   { key: 'ws-context', title: 'Link screens from the hub', icon: 'link', tone: 'ok', cta: 'Push to Blue',
-    desc: 'POST /api/interop/context. Shares R-2031 (blocked) on the Blue channel over the WebSocket — every blue view in the Workspace follows.',
+    desc: 'POST /api/interop/context. Shares R-2031 (blocked) on the Blue channel over the WebSocket — every blue view on a desk follows.',
     run: () => interopApi.context('blue', { type: 'ofx.instance', id: 'FOBO|2026-09-12|EMEA|R-2031', kitId: 'FOBO', region: 'EMEA', status: 'BLOCKED' }) },
   { key: 'ws-intent', title: 'Raise ViewInstance from the hub', icon: 'window', tone: 'info', cta: 'Raise',
-    desc: 'POST /api/interop/intent. The Workspace resolver opens (or focuses) an instance viewer on R-1042.',
+    desc: 'POST /api/interop/intent. The desk resolver opens (or focuses) an instance viewer on R-1042.',
     run: () => interopApi.intent('ViewInstance', { type: 'ofx.instance', id: 'FOBO|2026-09-12|APAC|R-1042', kitId: 'FOBO', region: 'APAC' }) },
   { key: 'ws-break', title: 'Raise ViewBreak (partner handles)', icon: 'globe', tone: 'plain', cta: 'Raise',
     desc: 'An intent only the partner frame listens for (fdc3.addIntentListener in partner-demo.html). The resolver delivers it over postMessage.',
