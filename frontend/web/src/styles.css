@@ -142,7 +142,7 @@ p { text-wrap: pretty; }
 .tb-page .infohint-btn { width: 20px; height: 20px; background: transparent; border-color: transparent; }
 .tb-page .infohint-btn:hover { background: var(--raised); border-color: var(--stroke); }
 .spacer { flex: 1; }
-.tb-scope { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.tb-date { display: flex; align-items: center; flex: none; }
 .topbar .sel2-trig { height: var(--ctl-h); padding: 0 9px; gap: 6px; }
 .topbar .sel2.header .sel2-trig { background: var(--raised); border-color: var(--stroke); padding: 0 9px; }
 .topbar .sel2.header .sel2-val { font-size: 12px; font-weight: 600; max-width: 190px; }

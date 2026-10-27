@@ -135,8 +135,7 @@ function Shell({ children }) {
       </aside>
 
       <div className="main">
-        {/* One compact row: scope (the stitch keys) and fold counts on the left, icons on the right. Details live in
-            tooltips and menus, so the page keeps its height for content. */}
+        {/* One compact row: brand + page label + fold counts + search on the left; business date and icons on the right. */}
         <header className="topbar">
           <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
             <Icon name="menu" size={16} />
@@ -154,25 +153,25 @@ function Shell({ children }) {
               <h1 className="tb-page-title">{page.title}</h1>
             </div>
           )}
-          <div className="tb-scope" aria-label="Current scope">
-            <DatePicker value={filters.cobDate} cobDates={context?.cobDates} onChange={(v) => setFilters({ cobDate: v })} />
-            <div className="tb-counts" role="group" aria-label={`${instances.length} instances`}>
-              <button type="button" className={'tb-count' + (ready ? ' ok' : '')} onClick={() => openBoard('READY')}
-                title={`${ready} ready of ${instances.length} instances — open on the board`}>
-                <i className="ctx-dot" />{ready}<span className="tb-count-k">ready</span>
-              </button>
-              <button type="button" className={'tb-count' + (blocked ? ' fail' : '')} onClick={() => openBoard('BLOCKED')}
-                title={`${blocked} blocked — open on the board`}>
-                <i className="ctx-dot" />{blocked}<span className="tb-count-k">blocked</span>
-              </button>
-              <button type="button" className={'tb-count' + (esc ? ' warn' : '')} onClick={() => navigate('/operations')}
-                title={`${esc} open escalations — open Operations`}>
-                <i className="ctx-dot" />{esc}<span className="tb-count-k">esc</span>
-              </button>
-            </div>
+          <div className="tb-counts" role="group" aria-label={`${instances.length} instances`}>
+            <button type="button" className={'tb-count' + (ready ? ' ok' : '')} onClick={() => openBoard('READY')}
+              title={`${ready} ready of ${instances.length} instances — open on the board`}>
+              <i className="ctx-dot" />{ready}<span className="tb-count-k">ready</span>
+            </button>
+            <button type="button" className={'tb-count' + (blocked ? ' fail' : '')} onClick={() => openBoard('BLOCKED')}
+              title={`${blocked} blocked — open on the board`}>
+              <i className="ctx-dot" />{blocked}<span className="tb-count-k">blocked</span>
+            </button>
+            <button type="button" className={'tb-count' + (esc ? ' warn' : '')} onClick={() => navigate('/operations')}
+              title={`${esc} open escalations — open Operations`}>
+              <i className="ctx-dot" />{esc}<span className="tb-count-k">esc</span>
+            </button>
           </div>
           <ShellSearch />
           <div className="spacer" />
+          <div className="tb-date" aria-label="Business date">
+            <DatePicker value={filters.cobDate} cobDates={context?.cobDates} onChange={(v) => setFilters({ cobDate: v })} />
+          </div>
           <div className="tb-icons">
             {canInstall && !standalone && (
               <button className="tb-icon" type="button" onClick={install} title="Install One Finance as a desktop app (PWA)" aria-label="Install app">
