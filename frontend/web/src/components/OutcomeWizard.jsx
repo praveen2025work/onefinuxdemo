@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import Icon from './Icon.jsx';
 import InfoHint from './InfoHint.jsx';
+import Select from './Select.jsx';
 import GridConfigFields from './GridConfigFields.jsx';
 import { BLANK_FEED, OUTCOME_STEPS, formToDefinition, stepErrors } from '../lib/outcomeForm.js';
+
+const REGION_CHOICES = ['GLOBAL', 'AMER', 'AMERS', 'EMEA', 'APAC', 'UK', 'US'];
+
+function regionList(text) {
+  return String(text || '').split(',').map((r) => r.trim().toUpperCase()).filter(Boolean);
+}
 
 const UPPER_ID = (v) => v.toUpperCase().replace(/[^A-Z0-9_]/g, '_');
 
@@ -83,8 +90,12 @@ export default function OutcomeWizard({ initial, mode = 'create', knownSources =
               <div className="ob-row2">
                 <div className="field"><label>Owner group</label>
                   <input className="inp" value={form.ownerGroup} placeholder="Financial Control" aria-label="Owner group" onChange={(e) => patch({ ownerGroup: e.target.value })} /></div>
-                <div className="field"><label>Regions <span className="muted">(comma separated; GLOBAL for all)</span></label>
-                  <input className="inp mono" value={form.regions} aria-label="Regions" onChange={(e) => patch({ regions: e.target.value })} /></div>
+                <div className="field"><label id="wiz-regions-lbl">Regions <span className="muted">· one or more</span></label>
+                  <Select labelledBy="wiz-regions-lbl" variant="block" multiple creatable placeholder="Select regions"
+                    value={regionList(form.regions)}
+                    options={[...new Set([...REGION_CHOICES, ...regionList(form.regions)])].map((r) => ({ value: r, label: r }))}
+                    onChange={(list) => patch({ regions: [...new Set(list.map((r) => String(r).trim().toUpperCase()).filter(Boolean))].join(', ') })} />
+                </div>
               </div>
             </>
           )}
