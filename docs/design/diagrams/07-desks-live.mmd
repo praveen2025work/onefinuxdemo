@@ -1,0 +1,40 @@
+flowchart LR
+  classDef app fill:#eaf3fb,stroke:#2b6ea3,color:#0b2f4a;
+  classDef web fill:#eef0fb,stroke:#5b5fb0,color:#23255e;
+  classDef sim fill:#fff7e8,stroke:#d0a24a,color:#5a4412;
+
+  subgraph A["Browser A · desk for outcome FOBO_HELIX"]
+    direction TB
+    BOARD["Outcome board<br/>(console screen)"]
+    INST["Instance detail<br/>(console screen)"]
+    PART["STEPS / Helix<br/>(partner iframe, FDC3)"]
+    BUS["window.fdc3 + BroadcastChannel<br/>desk channel outcome:FOBO_HELIX"]
+  end
+
+  subgraph B["Browser B · same outcome desk"]
+    direction TB
+    FEED["Activity widget<br/>who did what"]
+    GRID["Grid widget<br/>GridSpec · SpecGrid"]
+  end
+
+  subgraph HUB["onefinux-hub · :7070"]
+    direction TB
+    INT["InteropController<br/>POST /api/interop/context · /intent"]
+    ACT["ActivityController<br/>POST /api/interop/activity · GET /api/activity"]
+    STR["StreamHub<br/>/api/ws WebSocket · /api/stream SSE fallback"]
+  end
+
+  BOARD -->|"row pick → ofx.instance"| BUS
+  BUS --> INST
+  BUS --> PART
+  BUS -->|"shared outcome channel"| INT
+  INST -->|"sign-off · escalate · note"| ACT
+  PART -->|"ofx.activity"| ACT
+  INT --> STR
+  ACT --> STR
+  STR -->|"context · activity"| FEED
+  STR -->|"live refresh"| GRID
+
+  class BOARD,INST,FEED,GRID,BUS web
+  class PART sim
+  class INT,ACT,STR app

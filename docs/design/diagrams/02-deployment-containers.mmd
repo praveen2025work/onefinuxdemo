@@ -5,8 +5,8 @@ flowchart LR
   classDef store fill:#eef7f0,stroke:#3f9d63,color:#12492a;
 
   subgraph WEB["frontend/web · React 18 + Vite · :7091"]
-    UI["Console SPA<br/>onboard · config · drive · reports<br/>board · outcomes · ops · monitoring"]
-    SSE["SSE client /api/stream"]
+    UI["Console SPA<br/>desks · grids · onboard · config · drive<br/>reports · board · outcomes · ops · monitoring"]
+    SSE["Live link: WebSocket /api/ws<br/>(SSE /api/stream fallback)"]
   end
 
   subgraph HUB["onefinux-hub · Spring Boot 3.5 / Java 21 · :7070"]
@@ -16,7 +16,8 @@ flowchart LR
     SAPI["StitchController<br/>/api/stitch/*"]
     MAPI["MonitorController<br/>/api/stitch/monitor/*"]
     CORE["Outcome engine · ActionExecutor<br/>translation · workflow · outbox"]
-    STR["StreamHub (SSE broadcast)"]
+    IAPI["InteropController · ActivityController<br/>/api/interop/* · /api/activity"]
+    STR["StreamHub (WebSocket + SSE broadcast)"]
   end
 
   subgraph SIM["source-simulator · Spring Boot · :7081"]
@@ -30,6 +31,7 @@ flowchart LR
   UI -->|REST| OAPI
   UI -->|REST| SAPI
   UI -->|REST| MAPI
+  UI -->|desk links · activity| IAPI
   SSE -->|events| STR
   SCEN -->|POST facts| EAPI
   CORE -->|HTTP command| SCEN
@@ -38,10 +40,11 @@ flowchart LR
   OAPI --> CORE
   SAPI --> CORE
   MAPI --> CORE
+  IAPI --> STR
   CORE --> DB
   CORE --> STR
 
   class UI,SSE web
-  class EAPI,OAPI,SAPI,MAPI,CORE,STR app
+  class EAPI,OAPI,SAPI,MAPI,IAPI,CORE,STR app
   class SCEN,SINK sim
   class DB store

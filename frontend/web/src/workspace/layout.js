@@ -196,6 +196,18 @@ export function splitShares(aSize, bSize, aPx, bPx, deltaPx, minPx = 160) {
   return [a, totalFr - a];
 }
 
+/**
+ * Columns for the grid layout: as square as the views allow (2 views side by side, 4 as 2×2, 6 as 3×2), never so many
+ * that a column is narrower than minPx. Every row then takes an equal share of the desk's height, so resizing the
+ * window grows every view by the same amount.
+ */
+export function gridColumns(cells, widthPx, minPx = 420, gapPx = 6) {
+  const n = Math.max(1, cells);
+  const wanted = n <= 3 ? n : Math.ceil(Math.sqrt(n));
+  const fit = widthPx > 0 ? Math.max(1, Math.floor((widthPx + gapPx) / (minPx + gapPx))) : wanted;
+  return Math.min(wanted, fit);
+}
+
 export function setLayout(state, layout) {
   if (!LAYOUT_IDS.has(layout)) return state;
   return updateCurrent(state, (w) => ({ ...w, layout, maximized: null }));

@@ -5,8 +5,8 @@ import { useApp } from '../store.jsx';
 import { StatusPill, Loading, PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
-import GridConfigFields from '../components/GridConfigFields.jsx';
-import { BLANK_FEED, definitionToForm, formToDefinition } from '../lib/outcomeForm.js';
+import OutcomeWizard from '../components/OutcomeWizard.jsx';
+import { definitionToForm } from '../lib/outcomeForm.js';
 
 function slaText(sla) {
   if (!sla) return '—';
@@ -31,6 +31,7 @@ export default function Configuration() {
   const [sel, setSel] = useState(null); // { type: 'outcome' | 'kit', id }
   const [kitDetail, setKitDetail] = useState(null);
   const [loadingKit, setLoadingKit] = useState(false);
+  const [editing, setEditing] = useState(false); // false | 'edit' | 'review'
 
   const loadCatalog = useCallback(async () => {
     const [k, gu] = await Promise.all([api.kits(), api.groupUnits().catch(() => [])]);
@@ -85,18 +86,32 @@ export default function Configuration() {
     <>
       <PageHeader icon="config" title="Configuration" context="Configuration · live registry"
         infoTitle="Configuration governs; Onboarding creates" infoWidth={360}
-        info={<>Pick a business outcome (or a console kit) on the left. <b>Edit</b> saves the live contract — question, feeds, SLA, on-ready, and lineage grids. To <b>create</b> a new outcome, use <b>Onboarding</b>.</>}>
-        <Link className="btn ghost" to="/onboarding"><Icon name="build" size={15} /> Onboard new</Link>
-        <button className="btn ghost" onClick={refresh}><Icon name="refresh" size={15} /> Refresh</button>
+        info={<>1. Pick a business outcome (or a console kit) on the left. 2. Review its live contract. 3. <b>Edit</b> walks the same
+          steps as Onboarding — outcome, feeds, SLA, when ready, grids. 4. Review and save: the change is live at once.
+          To <b>create</b> a new outcome, use <b>Onboarding</b>.</>}
+        summary="Pick → review → edit step by step → save">
+        <button className="btn ghost" onClick={refresh}><Icon name="refresh" size={14} /> Refresh</button>
       </PageHeader>
 
-      <div className="cfg-steps">
-        <span className="cfg-step"><span className="n">1</span> Pick an outcome or kit</span>
-        <Icon name="chevron" size={14} className="flip" />
-        <span className="cfg-step"><span className="n">2</span> Inspect or edit its configuration</span>
-        <Icon name="chevron" size={14} className="flip" />
-        <span className="cfg-step muted"><span className="n">+</span> Need a new one? <Link to="/onboarding">Onboard</Link></span>
-      </div>
+      <ol className="wiz-steps cfg-path" aria-label="How to configure">
+        {[
+          ['Pick an outcome or kit', 'The list on the left'],
+          ['Review its contract', 'Feeds, SLA, on-ready and grids'],
+          ['Edit it step by step', 'Outcome → feeds → SLA → when ready → grids'],
+          ['Review and save', 'It is live as soon as it is saved'],
+        ].map(([label, hint], i) => {
+          const at = !sel ? 0 : editing === 'review' ? 3 : editing ? 2 : 1;
+          return (
+            <li key={label} className={'wiz-step' + (i === at ? ' on' : '') + (i < at ? ' done' : '')}>
+              <button type="button" disabled title={hint}>
+                <span className="wiz-n">{i < at ? <Icon name="check" size={12} /> : i + 1}</span>
+                <span className="wiz-lbl">{label}</span>
+              </button>
+            </li>
+          );
+        })}
+        <li className="wiz-step cfg-new"><Link className="btn ghost" to="/onboarding"><Icon name="plus" size={14} /> New outcome</Link></li>
+      </ol>
 
       <div className="cfg-flow">
         {/* ---- master rail ---- */}
@@ -108,7 +123,7 @@ export default function Configuration() {
                 {defs.map((o) => {
                   const on = sel?.type === 'outcome' && sel.id === o.id;
                   return (
-                    <button key={o.id} className={'cfg-item' + (on ? ' on' : '')} onClick={() => setSel({ type: 'outcome', id: o.id })}>
+                    <button key={o.id} className={'cfg-item' + (on ? ' on' : '')} onClick={() => { setSel({ type: 'outcome', id: o.id }); setEditing(false); }}>
                       <span className="ci-main">
                         <span className="ci-name">{o.name}</span>
                         <span className="mono sec">{o.id}</span>
@@ -129,7 +144,7 @@ export default function Configuration() {
                 {kits.map((k) => {
                   const on = sel?.type === 'kit' && sel.id === k.kitId;
                   return (
-                    <button key={k.kitId} className={'cfg-item' + (on ? ' on' : '')} onClick={() => setSel({ type: 'kit', id: k.kitId })}>
+                    <button key={k.kitId} className={'cfg-item' + (on ? ' on' : '')} onClick={() => { setSel({ type: 'kit', id: k.kitId }); setEditing(false); }}>
                       <span className="ci-main">
                         <span className="ci-name">{k.kitId}</span>
                         <span className="mono sec">{k.renderer}</span>
@@ -155,7 +170,8 @@ export default function Configuration() {
 
         {/* ---- detail pane ---- */}
         <section className="panel cfg-detail">
-          {selOutcome ? <OutcomeDetail o={selOutcome} live={viewsByOutcome[selOutcome.id] || []} defs={defs} onSaved={loadOutcomes} />
+          {selOutcome ? <OutcomeDetail o={selOutcome} live={viewsByOutcome[selOutcome.id] || []} defs={defs} onSaved={loadOutcomes}
+            editing={editing} setEditing={setEditing} />
             : sel?.type === 'kit' ? <KitDetail loading={loadingKit} kit={kit} detail={kitDetail} embed={embed} />
               : <div className="panel-bd"><div className="empty">Select an outcome or kit to inspect.</div></div>}
         </section>
@@ -164,19 +180,13 @@ export default function Configuration() {
   );
 }
 
-function OutcomeDetail({ o, live, defs = [], onSaved }) {
+function OutcomeDetail({ o, live, defs = [], onSaved, editing, setEditing }) {
   const total = (o.dependencies || []).reduce((n, d) => n + (d.expectedCount || 0), 0);
   const command = o.onReady && o.onReady.action;
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState(() => definitionToForm(o));
   const [busy, setBusy] = useState(false);
   const [banner, setBanner] = useState(null);
 
-  useEffect(() => {
-    setForm(definitionToForm(o));
-    setEditing(false);
-    setBanner(null);
-  }, [o.id]);
+  useEffect(() => { setBanner(null); }, [o.id]);
 
   const knownSources = useMemo(() => {
     const set = new Set();
@@ -184,19 +194,11 @@ function OutcomeDetail({ o, live, defs = [], onSaved }) {
     return [...set].sort();
   }, [defs]);
 
-  function patch(p) { setForm((f) => ({ ...f, ...p })); }
-  function setFeed(i, p) {
-    setForm((f) => ({ ...f, feeds: f.feeds.map((fd, idx) => (idx === i ? { ...fd, ...p } : fd)) }));
-  }
-
-  async function save(e) {
-    e.preventDefault();
+  async function save(definition) {
     setBusy(true); setBanner(null);
     try {
-      const definition = formToDefinition({ ...form, id: o.id });
-      if (!definition.dependencies.length) throw new Error('Add at least one input feed with an event type.');
-      await outcomesApi.update(definition);
-      setBanner({ cls: 'ok', text: `${definition.name} saved — ${definition.grids.length} grid(s).` });
+      await outcomesApi.update({ ...definition, id: o.id });
+      setBanner({ cls: 'ok', text: `${definition.name} saved and live: ${definition.dependencies.length} feeds, ${definition.grids.length} grid(s).` });
       setEditing(false);
       if (onSaved) await onSaved();
     } catch (err) {
@@ -206,79 +208,12 @@ function OutcomeDetail({ o, live, defs = [], onSaved }) {
 
   if (editing) {
     return (
-      <form onSubmit={save}>
-        <div className="panel-hd">
-          <h2>Edit outcome</h2>
-          <span className="hint">PUT /api/outcomes/definitions/{o.id}</span>
-          <button className="btn ghost sm" type="button" onClick={() => { setForm(definitionToForm(o)); setEditing(false); setBanner(null); }}>Cancel</button>
-          <button className="btn sm" type="submit" disabled={busy}>{busy ? 'Saving…' : <><Icon name="check" size={15} /> Save configuration</>}</button>
-        </div>
-        <div className="panel-bd stack">
-          {banner && <div className={'banner ' + banner.cls}><div><b>{banner.text}</b></div></div>}
-          <div className="ob-row2">
-            <div className="field"><label>Outcome id</label>
-              <input className="inp mono" value={o.id} disabled /></div>
-            <div className="field"><label>Name</label>
-              <input className="inp" value={form.name} onChange={(e) => patch({ name: e.target.value })} required /></div>
-          </div>
-          <div className="field"><label>Business question</label>
-            <input className="inp" value={form.question} onChange={(e) => patch({ question: e.target.value })} required /></div>
-          <div className="ob-row2">
-            <div className="field"><label>Owner group</label>
-              <input className="inp" value={form.ownerGroup} onChange={(e) => patch({ ownerGroup: e.target.value })} /></div>
-            <div className="field"><label>Regions</label>
-              <input className="inp mono" value={form.regions} onChange={(e) => patch({ regions: e.target.value })} /></div>
-          </div>
-          <div className="field">
-            <label>SLA</label>
-            <div className="seg">
-              <button type="button" className={form.slaMode === 'within' ? 'on' : ''} onClick={() => patch({ slaMode: 'within' })}>Window from first event</button>
-              <button type="button" className={form.slaMode === 'cutoff' ? 'on' : ''} onClick={() => patch({ slaMode: 'cutoff' })}>Business cut-off</button>
-            </div>
-            {form.slaMode === 'within'
-              ? <div className="ob-inline"><span>Ready within</span><input className="inp mono sm" type="number" min="1" value={form.withinMinutes} onChange={(e) => patch({ withinMinutes: e.target.value })} /><span>minutes</span></div>
-              : <div className="ob-inline"><input className="inp mono sm" value={form.cutoff} onChange={(e) => patch({ cutoff: e.target.value })} /><span>on COB +</span><input className="inp mono sm" type="number" min="0" value={form.dayOffset} onChange={(e) => patch({ dayOffset: e.target.value })} /><span>day(s)</span></div>}
-          </div>
-          <div className="field">
-            <label>Input feeds</label>
-            <div className="ob-feeds">
-              <div className="ob-feed ob-feed-hd">
-                <span>Label</span><span>Event type</span><span>Source system</span><span>Expected</span><span />
-              </div>
-              {form.feeds.map((fd, i) => (
-                <div className="ob-feed" key={i}>
-                  <input className="inp" value={fd.label} onChange={(e) => setFeed(i, { label: e.target.value })} />
-                  <input className="inp mono" value={fd.eventType} onChange={(e) => setFeed(i, { eventType: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} />
-                  <input className="inp mono" value={fd.sourceSystem} onChange={(e) => setFeed(i, { sourceSystem: e.target.value.toUpperCase() })} list="cfg-known-sources" />
-                  <input className="inp mono sm" type="number" min="1" value={fd.expectedCount} onChange={(e) => setFeed(i, { expectedCount: e.target.value })} />
-                  <button type="button" className="ob-x" onClick={() => setForm((f) => ({ ...f, feeds: f.feeds.filter((_, idx) => idx !== i) }))} disabled={form.feeds.length === 1}><Icon name="x" size={13} /></button>
-                </div>
-              ))}
-              <datalist id="cfg-known-sources">{knownSources.map((s) => <option key={s} value={s} />)}</datalist>
-            </div>
-            <button type="button" className="btn ghost sm" onClick={() => setForm((f) => ({ ...f, feeds: [...f.feeds, { ...BLANK_FEED }] }))}><Icon name="plus" size={13} /> Add feed</button>
-          </div>
-          <GridConfigFields grids={form.grids || []} onChange={(grids) => patch({ grids })} />
-          <div className="field">
-            <label>When every feed is complete</label>
-            <div className="seg">
-              <button type="button" className={form.actionMode === 'notify' ? 'on' : ''} onClick={() => patch({ actionMode: 'notify' })}>Notify only</button>
-              <button type="button" className={form.actionMode === 'command' ? 'on' : ''} onClick={() => patch({ actionMode: 'command' })}>Command an engine</button>
-            </div>
-            {form.actionMode === 'command' && (
-              <div className="ob-row3" style={{ marginTop: 8 }}>
-                <div className="field"><label>Target</label><input className="inp mono" value={form.target} onChange={(e) => patch({ target: e.target.value })} /></div>
-                <div className="field"><label>Completion event</label><input className="inp mono" value={form.completionEvent} onChange={(e) => patch({ completionEvent: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} /></div>
-                <div className="field"><label>Action label</label><input className="inp" value={form.actionLabel} onChange={(e) => patch({ actionLabel: e.target.value })} /></div>
-              </div>
-            )}
-          </div>
-          <div className="ob-actions">
-            <button className="btn" type="submit" disabled={busy}>{busy ? 'Saving…' : <><Icon name="check" size={15} /> Save configuration</>}</button>
-            <button className="btn ghost" type="button" onClick={() => { setForm(definitionToForm(o)); setEditing(false); setBanner(null); }}>Cancel</button>
-          </div>
-        </div>
-      </form>
+      <div className="panel-bd">
+        {banner && <div className={'banner ' + banner.cls} style={{ marginBottom: 8 }}><div><b>{banner.text}</b></div></div>}
+        <OutcomeWizard key={o.id} mode="edit" initial={definitionToForm(o)} knownSources={knownSources} busy={busy}
+          onSubmit={save} onCancel={() => { setEditing(false); setBanner(null); }}
+          onStep={(_, atReview) => setEditing(atReview ? 'review' : 'edit')} />
+      </div>
     );
   }
 
@@ -287,7 +222,7 @@ function OutcomeDetail({ o, live, defs = [], onSaved }) {
       <div className="panel-hd">
         <h2>Business outcome</h2>
         <span className="hint">outcome_definition</span>
-        <button type="button" className="btn ghost sm" onClick={() => setEditing(true)}><Icon name="config" size={14} /> Edit</button>
+        <button type="button" className="btn sm" onClick={() => setEditing('edit')}><Icon name="config" size={13} /> Edit step by step</button>
       </div>
       <div className="panel-bd">
         {banner && <div className={'banner ' + banner.cls} style={{ marginBottom: 12 }}><div><b>{banner.text}</b></div></div>}

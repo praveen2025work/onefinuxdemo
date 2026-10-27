@@ -273,8 +273,8 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | REQ-ID | Requirement |
 | --- | --- |
 | `REQ-GOVERN-001` | POST /api/outcomes/definitions creates an OutcomeDefinition from question, regions, owner, SLA, feeds, on-ready, and optional grids. |
-| `REQ-GOVERN-002` | /onboarding is the create surface for OutcomeDefinition including optional lineage grids and is not the govern surface. |
-| `REQ-GOVERN-003` | /configuration is a master-detail govern surface for outcomes and kits. Edit on a selected outcome saves PUT /api/outcomes/definitions/{id} including grids. Configuration is not a create form. |
+| `REQ-GOVERN-002` | /onboarding is the create surface for OutcomeDefinition including optional lineage grids, walked as six numbered steps (outcome, input feeds, SLA, when ready, grids, review), and is not the govern surface. |
+| `REQ-GOVERN-003` | /configuration is a master-detail govern surface for outcomes and kits: pick, review, edit, save. Edit on a selected outcome walks the same numbered steps as Onboarding and saves PUT /api/outcomes/definitions/{id} including grids. Configuration is not a create form. |
 | `REQ-GOVERN-004` | POST /api/stitch/kits registers a kit with sources, destinations, embed, and userActions and does not require a new Java type. |
 | `REQ-GOVERN-005` | GET /api/outcomes/definitions and GET /api/stitch/kits populate Configuration lists. |
 | `REQ-GOVERN-006` | Configuration right pane shows anatomy and live state for the selected outcome or kit. |
@@ -1905,7 +1905,7 @@ The palette is `frontend/theme/onefinux-tokens.css`. Default: STEPS Banking Blue
 
 ### 19.3 Surfaces
 
-Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates an OutcomeDefinition including lineage grids. Configuration governs and edits the selected outcome.
+Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates an OutcomeDefinition including lineage grids, one numbered step at a time. Configuration governs and edits the selected outcome through the same steps.
 
 ### 19.4 Header and page header
 

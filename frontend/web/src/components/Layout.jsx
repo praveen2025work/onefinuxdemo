@@ -194,7 +194,7 @@ function Shell({ children }) {
             <ThemeMenu />
             <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={() => { setSettingsOpen(false); toggleNotifPanel(); }} title="Notifications"
               aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={notifPanelOpen}>
-              <Icon name="bell" size={17} />
+              <Icon name="bell" size={16} />
               {unread > 0 && <span className="dot-n">{unread > 99 ? '99+' : unread}</span>}
             </button>
             <button className="tb-icon" onClick={onRefresh} title="Refresh data" aria-label="Refresh data">

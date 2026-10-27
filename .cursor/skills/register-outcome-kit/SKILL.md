@@ -9,13 +9,13 @@ A product is **data**. Two registration paths, matching the two models.
 
 ## Outcome Engine (business question)
 
-Use **Onboarding** (`/onboarding`) or `POST /api/outcomes/definitions`.
+Use **Onboarding** (`/onboarding`) or `POST /api/outcomes/definitions`. Onboarding is six numbered steps, one at a time (`OUTCOME_STEPS` in `frontend/web/src/lib/outcomeForm.js`, rendered by `components/OutcomeWizard.jsx`): 1 outcome and question → 2 input feeds → 3 SLA → 4 when ready → 5 grids → 6 review and go live. `stepErrors(form, step)` says what blocks Next; keep a new field inside one of these steps rather than adding a long form.
 
 Required: `id`, `name`, `question`, at least one feed (`eventType`, `sourceSystem`, `expectedCount`, `label`). Optional: regions, ownerGroup, SLA (`withinMinutes` or `cutoff` + `dayOffset`), `onReady` (`NOTIFY_ONLY` or a registered `ActionExecutor` type such as `HTTP_COMMAND` / `LOG_COMMAND`), `grids` (`id`, `title`, `endpoint`, `method`, `params` with `from` or `value`).
 
 The instance appears on Board, Reports and Configuration for the given COB. No new Java type.
 
-To change a live definition (including grids): **Configuration → Edit**, which calls `PUT /api/outcomes/definitions/{id}`.
+To change a live definition (including grids): **Configuration** → pick it → review → **Edit step by step** (the same wizard) → save, which calls `PUT /api/outcomes/definitions/{id}`.
 
 ## Stitch console kit (human work)
 

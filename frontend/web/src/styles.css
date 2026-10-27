@@ -9,7 +9,7 @@
   --r-card: var(--ofx-r);
   --r-panel: var(--ofx-r-lg);
   --r-pill: 999px;
-  --ctl-h: 36px;
+  --ctl-h: 32px; /* every control in the top bar and a page toolbar */
   --gap: 16px;
 
   --canvas: var(--ofx-page);
@@ -92,7 +92,8 @@ p { text-wrap: pretty; }
 .rail-top { display: flex; align-items: center; gap: 8px; margin: -14px -10px 8px; padding: 14px 14px 13px; border-bottom: 1px solid var(--rail-line); }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .brand-mark { display: block; flex: none; border-radius: 22%; overflow: hidden; background: var(--surface); }
-.brand-mark img { width: 100%; height: 100%; object-fit: cover; object-position: center 44%; transform: scale(1.42); transform-origin: center 44%; }
+/* The app icon is the arrows over the wordmark: zoom just enough that the arrows fill the tile and the words fall off the bottom. */
+.brand-mark img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.38); transform-origin: center 20%; }
 .brand b { display: block; font-family: var(--display); font-size: 13.5px; letter-spacing: -0.02em; white-space: nowrap; color: var(--rail-ink); }
 .brand span { display: block; font-size: 10.5px; color: var(--rail-muted); white-space: nowrap; }
 .rail-toggle { margin-left: auto; width: 28px; height: 28px; display: grid; place-items: center; cursor: pointer;
@@ -187,6 +188,15 @@ p { text-wrap: pretty; }
 .ph-sum { margin: 0; min-width: 0; color: var(--muted); font-size: 12px; line-height: 1.3;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ph-tools { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+/* One control scale: buttons, selects and segmented groups in a page toolbar match the top bar — --ctl-h tall, 16px
+   icons on icon-only buttons, 14px next to a label. */
+.ph-tools .btn, .ph-tools .sel2-trig { height: var(--ctl-h); padding-top: 0; padding-bottom: 0; }
+.ph-tools .btn.sm { height: 28px; }
+.ph-tools .sel2.header .sel2-val { font-size: 12.5px; font-weight: 650; }
+.ph-tools .seg { height: var(--ctl-h); align-items: stretch; }
+.ph-tools .seg button, .ph-tools .seg a { padding-top: 0; padding-bottom: 0; }
+.tb-icon > svg, .sel2.icon .sel2-trig > svg { width: 16px; height: 16px; }
+.ph-tools .btn > svg, .ph-tools .seg svg, .sel2-ic, .tb-btn > svg { width: 14px; height: 14px; }
 .ph.in-view { min-height: 0; margin-bottom: 4px; }
 .ph-title { display: inline-flex; align-items: center; gap: 6px; }
 .ph-label { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -565,12 +575,10 @@ button.oc { width: 100%; text-align: left; font: inherit; color: inherit; }
 .stack > * + * { margin-top: 9px; }
 
 /* ---- configuration (user-driven master/detail) ---- */
-.cfg-steps { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; color: var(--muted); font-size: 12.5px; }
-.cfg-steps .icn { color: var(--faint); }
-.cfg-step { display: inline-flex; align-items: center; gap: 7px; }
-.cfg-step.muted { color: var(--faint); }
-.cfg-step .n { display: grid; place-items: center; width: 19px; height: 19px; border-radius: 50%; background: var(--accent); color: var(--on-accent); font-weight: 800; font-size: 11px; }
-.cfg-step.muted .n { background: var(--raised); color: var(--faint); border: 1px solid var(--stroke); }
+/* Configuration's path: where the user is in pick → review → edit → save (not clickable; the rail and buttons drive it). */
+.cfg-path .wiz-step button:disabled { opacity: 1; cursor: default; }
+.cfg-path .cfg-new { flex: none; }
+.cfg-path .cfg-new .btn { height: var(--ctl-h); }
 .cfg-flow { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 900px) { .cfg-flow { grid-template-columns: 1fr; } }
 .cfg-rail { display: flex; flex-direction: column; gap: 14px; position: sticky; top: 12px; }
@@ -748,6 +756,30 @@ button.oc { width: 100%; text-align: left; font: inherit; color: inherit; }
 .ob-param { display: grid; grid-template-columns: 1fr 1.3fr 1fr 30px; gap: 8px; align-items: center; }
 .ob-param .inp { padding: 6px 9px; font-size: 12.5px; }
 .ob-actions { display: flex; gap: 8px; align-items: center; margin-top: 4px; }
+/* Step-by-step outcome form (OutcomeWizard): a numbered stepper, one step's fields at a time, Back / Next. */
+.wiz-steps { list-style: none; margin: 0 0 8px; padding: 0; display: flex; gap: 4px; counter-reset: none; flex-wrap: wrap; }
+.wiz-step { flex: 1 1 120px; min-width: 0; position: relative; }
+.wiz-step button { width: 100%; display: flex; align-items: center; gap: 8px; height: var(--ctl-h); padding: 0 10px; cursor: pointer;
+  background: var(--surface); border: 1px solid var(--stroke); border-radius: var(--r-ctl); color: var(--muted); font-size: 12px; font-weight: 600; text-align: left; }
+.wiz-step button:hover:not(:disabled) { border-color: var(--stroke-2); color: var(--ink); }
+.wiz-step button:disabled { cursor: not-allowed; opacity: 0.6; }
+.wiz-step.on button { border-color: var(--accent); color: var(--ink); box-shadow: inset 0 -2px 0 var(--accent); }
+.wiz-step.done button { color: var(--ink); }
+.wiz-lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wiz-n { width: 20px; height: 20px; flex: none; display: inline-grid; place-items: center; border-radius: 50%; font-size: 11px; font-weight: 700;
+  background: var(--raised); color: var(--muted); border: 1px solid var(--stroke); }
+.wiz-n.sm { width: 18px; height: 18px; font-size: 10.5px; }
+.wiz-step.on .wiz-n { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+.wiz-step.done .wiz-n { background: var(--ofx-ok-bg); color: var(--ok); border-color: var(--ofx-ok-line); }
+.wiz-hint { margin: 0; color: var(--muted); font-size: 12.5px; }
+.wiz-errors { margin: 0; padding: 7px 10px 7px 26px; border: 1px solid var(--ofx-fail-line); background: var(--ofx-fail-bg); color: var(--fail); border-radius: var(--r-ctl); font-size: 12px; }
+.wiz-nav { display: flex; align-items: center; gap: 8px; padding-top: 8px; border-top: 1px solid var(--stroke); }
+.wiz-review { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px; }
+.wiz-rev { border: 1px solid var(--stroke); border-radius: var(--r-card); background: var(--surface); }
+.wiz-rev-hd { display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-bottom: 1px solid var(--stroke); background: var(--raised); font-size: 12px; }
+.wiz-rev-hd .btn { margin-left: auto; }
+.wiz-rev-bd { padding: 6px 10px; display: flex; flex-direction: column; gap: 3px; }
+@media (max-width: 760px) { .wiz-lbl { display: none; } .wiz-step { flex: 0 0 auto; } }
 .cfg-detail .panel-hd { flex-wrap: wrap; }
 
 /* ---- Close story (Home + Product) ---- */
@@ -1049,7 +1081,7 @@ a.story-row:hover { border-color: var(--stroke-2); }
 .embed-hd b { font-size: 13.5px; }
 
 /* Link channel picker (FDC3 user channels). */
-.chan-trig { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 8px; border-radius: var(--r-pill); cursor: pointer;
+.chan-trig { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 8px; border-radius: var(--r-pill); cursor: pointer;
   background: var(--raised); border: 1px solid var(--stroke); color: var(--muted); font-size: 11.5px; font-weight: 600; }
 .chan-trig:hover, .chan-trig.on { border-color: var(--stroke-2); color: var(--ink); }
 .chan-trig.linked { color: var(--ink); }
@@ -1091,20 +1123,24 @@ a.story-row:hover { border-color: var(--stroke-2); }
   border: 1px solid var(--stroke); border-bottom-color: transparent; border-radius: var(--r-card) var(--r-card) 0 0;
   background: var(--raised); color: var(--muted); }
 .ws-tab.on { background: var(--surface); color: var(--ink); border-color: var(--stroke); border-bottom-color: var(--surface); }
-.ws-area { display: grid; gap: 6px; position: relative; }
-.ws-area.grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 560px), 1fr)); grid-auto-rows: minmax(240px, calc((100dvh - 118px) / 2)); }
-.ws-area.columns { grid-auto-flow: column; grid-auto-columns: minmax(380px, 1fr); height: calc(100dvh - 300px); min-height: 460px; overflow-x: auto; }
-.ws-area.rows { grid-template-columns: 1fr; height: calc(100dvh - 300px); min-height: 560px; overflow-y: auto; }
-.ws-area.tabs { display: block; height: calc(100dvh - 320px); min-height: 480px; }
+/* The desk fills the window under its header (--ws-fill, measured by Desks.jsx). In the grid layout every row takes an
+   equal share of that height and every column an equal share of the width (--ws-cols, as square as the views allow),
+   so resizing the window grows each view by the same amount. More rows than fit keep 240px and the page scrolls. */
+.ws-area { display: grid; gap: 6px; position: relative; --ws-fill: calc(100dvh - 110px); }
+.ws-area.grid { grid-template-columns: repeat(var(--ws-cols, 2), minmax(0, 1fr)); grid-auto-rows: minmax(240px, 1fr); min-height: var(--ws-fill); }
+.ws-area.c1 .wsv.wide { grid-column: auto; }
+.ws-area.columns { grid-auto-flow: column; grid-auto-columns: minmax(380px, 1fr); height: var(--ws-fill); overflow-x: auto; }
+.ws-area.rows { grid-template-columns: 1fr; height: var(--ws-fill); overflow-y: auto; }
+.ws-area.tabs { display: block; height: var(--ws-fill); }
 .ws-area.tabs .wsv { height: 100%; border-top-left-radius: 0; }
-.ws-area.has-max { display: block; height: calc(100dvh - 300px); min-height: 480px; }
+.ws-area.has-max { display: block; height: var(--ws-fill); }
 .ws-area.has-max .wsv.max { height: 100%; }
 .wsv { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--surface); border: 1px solid var(--stroke);
   border-top: 3px solid var(--chan, transparent); border-radius: var(--r-panel); box-shadow: var(--shadow); overflow: hidden; }
 .wsv.wide { grid-column: span 2; }
 .wsv.hidden { display: none; }
 .wsv.dragging { opacity: 0.55; }
-.wsv-hd { display: flex; align-items: center; gap: 6px; padding: 3px 6px 3px 8px; border-bottom: 1px solid var(--stroke); background: var(--raised);
+.wsv-hd { display: flex; align-items: center; gap: 4px; min-height: 30px; padding: 2px 4px 2px 8px; border-bottom: 1px solid var(--stroke); background: var(--raised);
   font-size: 12px; cursor: default; user-select: none; transition: background 0.3s ease; }
 .wsv.flash .wsv-hd { background: color-mix(in srgb, var(--chan) 26%, var(--raised)); }
 .wsv-grip { color: var(--faint); cursor: grab; display: inline-flex; }
@@ -1116,7 +1152,7 @@ a.story-row:hover { border-color: var(--stroke-2); }
 @container (max-width: 380px) { .wsv-kind, .wsv-grip { display: none; } }
 @container (max-width: 300px) { .wsv-hd .wsv-btn[title="Reload view"] { display: none; } }
 .wsv-kind { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--faint); border: 1px solid var(--stroke); border-radius: var(--r-pill); padding: 0 6px; }
-.wsv-btn { width: 22px; height: 22px; display: grid; place-items: center; flex: none; cursor: pointer; border-radius: var(--r-ctl);
+.wsv-btn { width: 24px; height: 24px; display: grid; place-items: center; flex: none; cursor: pointer; border-radius: var(--r-ctl);
   background: transparent; border: 1px solid transparent; color: var(--muted); }
 .wsv-btn:hover { background: var(--surface); border-color: var(--stroke); color: var(--ink); }
 .wsv-bd { flex: 1; min-height: 0; position: relative; overflow: auto; }
@@ -1124,7 +1160,7 @@ a.story-row:hover { border-color: var(--stroke-2); }
 .ws-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 48px 20px; text-align: center; color: var(--muted); }
 .ws-empty b { color: var(--ink); font-size: 15px; }
 @media (max-width: 820px) {
-  .ws-area.grid { grid-template-columns: 1fr; grid-auto-rows: minmax(280px, calc(100dvh - 140px)); }
+  .ws-area.grid { grid-template-columns: 1fr; grid-auto-rows: minmax(280px, var(--ws-fill)); }
   .wsv.wide { grid-column: auto; }
   .ws-area.columns { grid-auto-columns: 88vw; }
 }
@@ -1169,6 +1205,9 @@ a.story-row:hover { border-color: var(--stroke-2); }
 .ctxi-send textarea { width: 100%; resize: vertical; font-size: 12px; margin-bottom: 6px; }
 .link-hint { display: inline-flex; align-items: center; gap: 6px; }
 .wait-card { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--muted); }
+/* On a desk the waiting viewer fills its card and centres the hint instead of leaving a strip at the top. */
+.embed .wait-panel { flex: 1; display: flex; }
+.embed .wait-panel .wait-card { flex: 1; flex-direction: column; justify-content: center; text-align: center; }
 
 /* DataGrid (Wijmo) */
 .datagrid { display: flex; flex-direction: column; gap: 4px; min-height: 0; }

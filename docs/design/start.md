@@ -20,8 +20,8 @@ Two models share one event backbone:
 1. `./scripts/run.sh` — hub **7070** (API only) + simulator **7081**. Do not open 7070 as the UI. Windows local: `scripts\run.cmd` starts Java **and** the console window (README §8). The prompt returning after **Hub is up** is success.
 2. Console **http://localhost:7091** — macOS/Linux: `cd frontend/web && npm install && npm run dev`. Windows: `run.cmd` already opened `onefinux-console`; to start it alone use `scripts\console.cmd` (do not `cd frontend\web` from inside `scripts\`).
 3. **Windows hosted demo** (IIS No Managed Code + NSSM Java services, no Vite): `scripts\windows\build-demo.cmd`, then elevated `install-nssm.ps1` and `install-iis-site.ps1`. Open **http://localhost:8080**. README §9.
-4. Left rail **Guide** — Product, Architecture, Developer guide. Or top bar → **View** → **Developer** if you want a shorter operate/build rail.
-5. **Onboarding** — submit the Month-end close example. That is `POST /api/outcomes/definitions`. No new Java type.
+4. Left rail **Guide** — Product, Architecture, Developer guide. Or Settings (top bar) → **View** → **Developer** if you want a shorter operate/build rail.
+5. **Onboarding** — walk the six numbered steps with the Month-end close example (outcome → feeds → SLA → when ready → grids → review), then **Go live**. That is `POST /api/outcomes/definitions`. No new Java type.
 6. **Drive** → Reset → one scenario. Watch **Monitoring**. Switch View to **BU head** and open Board; Drive leaves the rail on purpose.
 7. **Helix (real time):** set header COB to **today**, Drive **FOBO / Helix**, watch **Reports**. Stitch recs use COB **2026-09-12**. Write-up: [`helix-walkthrough.md`](helix-walkthrough.md).
 
@@ -32,7 +32,7 @@ Views hide nav. They are **not** entitlement. CEES still fail-closes unentitled 
 | Path | When you touch it |
 |---|---|
 | `frontend/web` | Screens, chrome, theme |
-| `onefinux-hub` | Ingest, both folds, REST + SSE, outbox, audit, `ActionExecutor` |
+| `onefinux-hub` | Ingest, both folds, REST, WebSocket + SSE, interop relay, activity, outbox, audit, `ActionExecutor` |
 | `source-simulator` | Stand-in origins; Drive scenarios |
 | `contracts/` | JSON Schema on ingest |
 | `docs/design/` | The only design folder |
@@ -51,7 +51,7 @@ Views hide nav. They are **not** entitlement. CEES still fail-closes unentitled 
 **No unused product screens.** Every page under `frontend/web/src/pages` is routed and has a job.
 
 - **Board** vs **My outcomes** — same instances, supervisor table vs doer cards.
-- **Onboarding** vs **Configuration** — create vs govern.
+- **Onboarding** vs **Configuration** — create vs govern. Both walk the same numbered steps; Configuration is pick → review → edit → save.
 - **Drive** — testing only; kept off Home and Reports on purpose.
 - **Instance detail** — drill-down only, no rail item.
 

@@ -5,8 +5,8 @@ import { useApp } from '../store.jsx';
 import { Loading, PageHeader } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
 import InfoHint from '../components/InfoHint.jsx';
-import GridConfigFields from '../components/GridConfigFields.jsx';
-import { EXAMPLE, BLANK_FEED, formToDefinition } from '../lib/outcomeForm.js';
+import OutcomeWizard from '../components/OutcomeWizard.jsx';
+import { EXAMPLE, BLANK_FEED } from '../lib/outcomeForm.js';
 
 export default function Onboarding() {
   const { filters } = useApp();
@@ -14,7 +14,7 @@ export default function Onboarding() {
   const [sources, setSources] = useState([]);
   const [banner, setBanner] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState(EXAMPLE);
+  const [round, setRound] = useState(0); // a fresh wizard after each outcome goes live
 
   const load = useCallback(async () => {
     const [d, s] = await Promise.all([
@@ -34,30 +34,19 @@ export default function Onboarding() {
     return [...set].sort();
   }, [defs, sources]);
 
-  function set(patch) { setForm((f) => ({ ...f, ...patch })); }
-  function setFeed(i, patch) {
-    setForm((f) => ({ ...f, feeds: f.feeds.map((fd, idx) => (idx === i ? { ...fd, ...patch } : fd)) }));
-  }
-  function addFeed() { setForm((f) => ({ ...f, feeds: [...f.feeds, { ...BLANK_FEED }] })); }
-  function removeFeed(i) { setForm((f) => ({ ...f, feeds: f.feeds.filter((_, idx) => idx !== i) })); }
-
-  const totalKeys = form.feeds.reduce((n, fd) => n + (Number(fd.expectedCount) || 0), 0);
-
-  async function submit(e) {
-    e.preventDefault();
+  async function submit(definition) {
     setBusy(true); setBanner(null);
     try {
-      const definition = formToDefinition(form);
-      if (!definition.dependencies.length) {
-        throw new Error('Add at least one input feed with an event type.');
-      }
+      if (defs.some((o) => o.id === definition.id)) throw new Error(`${definition.id} is already live. Pick another id, or edit it on Configuration.`);
       const created = await outcomesApi.register(definition, filters.cobDate || undefined);
+      const keys = definition.dependencies.reduce((n, d) => n + d.expectedCount, 0);
       setBanner({
         cls: 'ok',
-        text: `${definition.name} (${definition.id}) is live — ${definition.dependencies.length} feeds, `
-          + `${totalKeys} keys expected. It now folds on the Board and Reports.`,
+        text: `${definition.name} (${definition.id}) is live: ${definition.dependencies.length} feeds, ${keys} keys expected. It now folds on the Board and Reports.`,
         outcome: created,
+        id: definition.id,
       });
+      setRound((r) => r + 1);
       await load();
     } catch (err) {
       setBanner({ cls: 'fail', text: err.message });
@@ -71,104 +60,31 @@ export default function Onboarding() {
       <PageHeader icon="build" title="Onboard a business outcome" context="Build · onboard a new outcome"
         infoTitle="Onboarding vs Configuration" infoWidth={360}
         info={<>
-          <b>Onboarding creates.</b> Define a new business outcome here — its question, the feeds it depends on, its SLA and what to do when ready — and it goes live immediately.<br /><br />
-          <b>Configuration governs.</b> Once live, inspect or edit it on the Configuration screen — including lineage grids. New products are a kit of data, not a new app.
-        </>}>
-        <Link className="btn ghost" to="/configuration"><Icon name="config" size={15} /> Configuration (govern)</Link>
+          <b>Onboarding creates.</b> Walk the six steps: name the outcome and its question, list the feeds it depends on,
+          say when it is due, choose what happens when it is ready, add grids if you want them, then review and go live.
+          No code and no new screen.<br /><br />
+          <b>Configuration governs.</b> Once live, review or edit it on the Configuration screen, through the same steps.
+        </>}
+        summary="Six steps: outcome → feeds → SLA → when ready → grids → review">
+        <Link className="btn ghost" to="/configuration"><Icon name="config" size={14} /> Configuration</Link>
       </PageHeader>
-
-      <div className="banner plain" style={{ marginBottom: 16 }}>
-        <Icon name="info" size={16} />
-        <div><b>Onboarding creates a new outcome; Configuration inspects and edits it.</b>
-          <span className="mono-sm">Define the question, feeds, SLA, on-ready action, and optional lineage grids — no code, no new screen.</span></div>
-      </div>
 
       <div className="split">
         <div>
-          <form className="panel accent" onSubmit={submit}>
-            <div className="panel-hd"><h2>Define the outcome</h2><span className="hint">POST /api/outcomes/definitions</span></div>
-            <div className="panel-bd stack">
-              {banner && (
-                <div className={'banner ' + banner.cls}>
-                  <div>
-                    <b>{banner.text}</b>
-                    {banner.outcome && (
-                      <span className="mono-sm">Now live: <Link to="/reports">Reports</Link> · <Link to="/board">Board</Link> · <Link to="/configuration">Configuration</Link></span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              <div className="ob-row2">
-                <div className="field"><label>Outcome id</label>
-                  <input className="inp mono" value={form.id} onChange={(e) => set({ id: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} required /></div>
-                <div className="field"><label>Name</label>
-                  <input className="inp" value={form.name} onChange={(e) => set({ name: e.target.value })} required /></div>
-              </div>
-              <div className="field"><label>Business question <InfoHint title="The question" width={260}>Every outcome answers a plain business question, e.g. “Can I close the books?”.</InfoHint></label>
-                <input className="inp" value={form.question} onChange={(e) => set({ question: e.target.value })} required /></div>
-              <div className="ob-row2">
-                <div className="field"><label>Owner group</label>
-                  <input className="inp" value={form.ownerGroup} onChange={(e) => set({ ownerGroup: e.target.value })} /></div>
-                <div className="field"><label>Regions <span className="muted">(comma separated)</span></label>
-                  <input className="inp mono" value={form.regions} onChange={(e) => set({ regions: e.target.value })} /></div>
-              </div>
-
-              <div className="field">
-                <label>SLA</label>
-                <div className="seg">
-                  <button type="button" className={form.slaMode === 'within' ? 'on' : ''} onClick={() => set({ slaMode: 'within' })}>Window from first event</button>
-                  <button type="button" className={form.slaMode === 'cutoff' ? 'on' : ''} onClick={() => set({ slaMode: 'cutoff' })}>Business cut-off</button>
-                </div>
-                {form.slaMode === 'within'
-                  ? <div className="ob-inline"><span>Ready within</span><input className="inp mono sm" type="number" min="1" value={form.withinMinutes} onChange={(e) => set({ withinMinutes: e.target.value })} /><span>minutes</span></div>
-                  : <div className="ob-inline"><input className="inp mono sm" value={form.cutoff} onChange={(e) => set({ cutoff: e.target.value })} /><span>on COB +</span><input className="inp mono sm" type="number" min="0" value={form.dayOffset} onChange={(e) => set({ dayOffset: e.target.value })} /><span>day(s)</span></div>}
-              </div>
-
-              <div className="field">
-                <label>Input feeds <InfoHint title="The dependency mechanism" width={300}>These are the dependencies the outcome folds. It is READY only when every feed has all its expected keys; a failed key blocks it and is named.</InfoHint>
-                  <span className="muted"> — {form.feeds.length} feeds · {totalKeys} keys expected</span></label>
-                <div className="ob-feeds">
-                  <div className="ob-feed ob-feed-hd">
-                    <span>Label</span><span>Event type</span><span>Source system</span><span>Expected</span><span />
-                  </div>
-                  {form.feeds.map((fd, i) => (
-                    <div className="ob-feed" key={i}>
-                      <input className="inp" placeholder="SAP journals" value={fd.label} onChange={(e) => setFeed(i, { label: e.target.value })} />
-                      <input className="inp mono" placeholder="SAP_JOURNAL_POSTED" value={fd.eventType} onChange={(e) => setFeed(i, { eventType: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} />
-                      <input className="inp mono" placeholder="SAP" value={fd.sourceSystem} onChange={(e) => setFeed(i, { sourceSystem: e.target.value.toUpperCase() })} list="known-sources" />
-                      <input className="inp mono sm" type="number" min="1" value={fd.expectedCount} onChange={(e) => setFeed(i, { expectedCount: e.target.value })} />
-                      <button type="button" className="ob-x" title="Remove feed" aria-label="Remove feed" onClick={() => removeFeed(i)} disabled={form.feeds.length === 1}><Icon name="x" size={13} /></button>
-                    </div>
-                  ))}
-                  <datalist id="known-sources">{knownSources.map((s) => <option key={s} value={s} />)}</datalist>
-                </div>
-                <button type="button" className="btn ghost sm" onClick={addFeed}><Icon name="plus" size={13} /> Add feed</button>
-              </div>
-
-              <GridConfigFields grids={form.grids || []} onChange={(grids) => set({ grids })} />
-
-              <div className="field">
-                <label>When every feed is complete <InfoHint title="On-ready action" width={300}>Notify-only signals the milestone. A command has the hub call a downstream engine (with a run id) and wait for its completion event.</InfoHint></label>
-                <div className="seg">
-                  <button type="button" className={form.actionMode === 'notify' ? 'on' : ''} onClick={() => set({ actionMode: 'notify' })}>Notify only</button>
-                  <button type="button" className={form.actionMode === 'command' ? 'on' : ''} onClick={() => set({ actionMode: 'command' })}>Command an engine</button>
-                </div>
-                {form.actionMode === 'command' && (
-                  <div className="ob-row3" style={{ marginTop: 8 }}>
-                    <div className="field"><label>Target</label><input className="inp mono" placeholder="axiom" value={form.target} onChange={(e) => set({ target: e.target.value })} /></div>
-                    <div className="field"><label>Completion event</label><input className="inp mono" placeholder="REPORT_GENERATED" value={form.completionEvent} onChange={(e) => set({ completionEvent: e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })} /></div>
-                    <div className="field"><label>Action label</label><input className="inp" placeholder="Generate report" value={form.actionLabel} onChange={(e) => set({ actionLabel: e.target.value })} /></div>
-                  </div>
+          {banner && (
+            <div className={'banner ' + banner.cls} style={{ marginBottom: 8 }}>
+              <div>
+                <b>{banner.text}</b>
+                {banner.outcome && (
+                  <span className="mono-sm">Next: <Link to={`/reports/${banner.id}`}>its report</Link> · <Link to="/board">Board</Link> · <Link to={`/desks?outcome=${banner.id}`}>open a desk for it</Link> · <Link to="/configuration">Configuration</Link></span>
                 )}
               </div>
-
-              <div className="ob-actions">
-                <button className="btn" type="submit" disabled={busy}>{busy ? 'Onboarding…' : <><Icon name="check" size={15} /> Onboard outcome</>}</button>
-                <button className="btn ghost" type="button" onClick={() => setForm(EXAMPLE)}>Reset to example</button>
-              </div>
             </div>
-          </form>
+          )}
+          <OutcomeWizard key={round} initial={EXAMPLE} knownSources={knownSources} busy={busy} onSubmit={submit}
+            takenIds={defs.map((o) => o.id)}
+            onReset={() => ({ ...EXAMPLE, id: '', name: '', question: '', feeds: [{ ...BLANK_FEED }], grids: [] })}
+            sourcesHint={<span className="sec">Pick a source the platform already reads (list on the right), or type a new one.</span>} />
         </div>
 
         <div>
@@ -192,7 +108,7 @@ export default function Onboarding() {
           </div>
 
           <div className="panel">
-            <div className="panel-hd"><h2>Sources you can read from <InfoHint title="Sources are picked, not invented" width={280}>Feeds reference a source system. These are the origins the platform already ingests.</InfoHint></h2><span className="hint">source_system</span></div>
+            <div className="panel-hd"><h2>Sources you can read from <InfoHint title="Sources are picked, not invented" width={280}>Feeds reference a source system (step 2). These are the origins the platform already ingests.</InfoHint></h2><span className="hint">source_system</span></div>
             <div className="panel-bd tight">
               <table className="tbl">
                 <thead><tr><th>Source</th><th>Ingest</th><th>Topic / feed</th></tr></thead>

@@ -8,7 +8,7 @@ This is the document a developer picks up to make the console a real product. It
 
 | Module | Port | Responsibility |
 |---|---|---|
-| `onefinux-hub` | 7070 | Event ingest, translation, Outcome Engine fold, Stitch fold, REST + SSE, outbox, audit |
+| `onefinux-hub` | 7070 | Event ingest, translation, Outcome Engine fold, Stitch fold, REST, WebSocket + SSE, interop relay, activity, outbox, audit |
 | `source-simulator` | 7081 | Stubs systems of record and destinations. Drives Drive scenarios. |
 | `frontend/web` | 7091 (dev) | React console. The product UI. |
 

@@ -9,30 +9,36 @@ import dSequence from '@diagrams/03-event-sequence.mmd?raw';
 import dModel from '@diagrams/04-data-model.mmd?raw';
 import dStitch from '@diagrams/05-outcome-state.mmd?raw';
 import dEngine from '@diagrams/06-engine-stage.mmd?raw';
+import dDesks from '@diagrams/07-desks-live.mmd?raw';
 
 const SCREENS = [
-  { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold. View lives in the top bar.', creates: 'Nothing — read', not: 'Scenario buttons or a role picker' },
+  { to: '/', title: 'Home', who: 'Everyone', job: 'Today’s close in one paragraph, then the fold. Group unit, region and view live in Settings (top bar).', creates: 'Nothing — read', not: 'Scenario buttons or a role picker' },
   { to: '/product', title: 'Product', who: 'Everyone', job: 'Why this exists. The morning story a BU head and a controller both recognise.', creates: 'This guide', not: 'Live outcomes' },
-  { to: '/architecture', title: 'Architecture', who: 'Everyone', job: 'How facts become Ready or Blocked. Same diagrams as docs/design.', creates: 'This guide', not: 'Live outcomes' },
+  { to: '/architecture', title: 'Architecture', who: 'Everyone', job: 'How facts become Ready or Blocked, and how desks link screens live. Same diagrams as docs/design.', creates: 'This guide', not: 'Live outcomes' },
   { to: '/guide', title: 'Developer guide', who: 'Engineer', job: 'Run it, extend it with data, review a PR. First change is Onboarding, not a Java type.', creates: 'This guide', not: 'Live outcomes' },
-  { to: '/onboarding', title: 'Onboarding', who: 'Maker', job: 'Create a live outcome: question, feeds, SLA, on-ready action.', creates: 'A new outcome (data, not a release)', not: 'Inspecting every existing outcome' },
-  { to: '/configuration', title: 'Configuration', who: 'Owner / config', job: 'Govern the registry. Pick an outcome or kit on the left; anatomy on the right.', creates: 'Nothing — inspect and bind', not: 'A create form (that is Onboarding)' },
+  { to: '/lifecycle', title: 'Event lifecycle', who: 'Engineer / RTB', job: 'One fact end to end: the request, how it is saved, the state it moved, and who was told.', creates: 'A feed file (demo)', not: 'Business sign-off' },
+  { to: '/desks', title: 'Desks', who: 'Everyone', job: 'Many screens on one page: console screens, widgets, STEPS and partner apps. One desk per business outcome, or a blank one. Views link on the desk channel across tabs and browsers.', creates: 'Desks and views (saved in this browser)', not: 'A rebuild of a partner screen' },
+  { to: '/grids', title: 'Grid library', who: 'Engineer / analyst', job: 'Every read-only grid as a GridSpec. Edit, preview, save, put it on a desk, or copy the iframe / <ofx-grid> snippet for another app.', creates: 'Grids saved in this browser', not: 'A hand-coded grid per team' },
+  { to: '/onboarding', title: 'Onboarding', who: 'Maker / config', job: 'Create a live outcome in six numbered steps: outcome → feeds → SLA → when ready → grids → review.', creates: 'A new outcome (data, not a release)', not: 'Editing an existing outcome' },
+  { to: '/configuration', title: 'Configuration', who: 'Owner / config', job: 'Govern the registry: pick an outcome or kit → review its contract → edit it through the same steps → save.', creates: 'Edits to a live outcome', not: 'A second create form (that is Onboarding)' },
   { to: '/drive', title: 'Drive scenarios', who: 'Demo / QA', job: 'Reset and inject COB facts. Product pages stay view-only.', creates: 'Simulator events into the hub', not: 'Buttons on Home or Reports' },
-  { to: '/reports', title: 'Reports', who: 'Controller', job: 'Engine outcomes and the 15C3 five-stage pack. Normal, Compact, or Table — then open the produced report.', creates: 'Nothing — open the artifact', not: 'Scenario buttons' },
-  { to: '/board', title: 'Outcome board', who: 'CIO / MD / BU head', job: 'Traffic lights for the whole unit. Named blocker, SLA, escalation count.', creates: 'Nothing — read only', not: 'Sign-off or post' },
+  { to: '/reports', title: 'Reports', who: 'Controller', job: 'Engine outcomes and the 15C3 five-stage pack. /reports/:outcomeId opens one outcome with its grids.', creates: 'Nothing — open the artifact', not: 'Scenario buttons' },
+  { to: '/board', title: 'Outcome board', who: 'CIO / MD / BU head', job: 'Traffic lights for the whole unit. Named blocker, SLA, escalation count. A row pick links to the desk.', creates: 'Nothing — read only', not: 'Sign-off or post' },
   { to: '/outcomes', title: 'My outcomes', who: 'Outcome user', job: 'Doer worklist. Open a ready instance to sign off or post.', creates: 'Nothing until you open an instance', not: 'Head roll-ups or RTB queues' },
-  { to: '/instance/:id', title: 'Instance detail', who: 'Outcome user', job: 'Fold + embed + kit-declared actions. Drill-down only — no rail item.', creates: 'Sign-off / post / kit verb (audited)', not: 'A left-nav destination' },
+  { to: '/instance/:id', title: 'Instance detail', who: 'Outcome user', job: 'Fold + embed + kit-declared actions. Drill-down only — no rail item. On a desk it follows the linked board.', creates: 'Sign-off / post / kit verb (audited, sent as activity)', not: 'A left-nav destination' },
+  { to: '/finance', title: 'Finance dashboard', who: 'Head / controller', job: 'KPIs, charts and a pivot over the day’s outcomes (Wijmo).', creates: 'Nothing — read', not: 'Sign-off' },
   { to: '/operations', title: 'Operations', who: 'RTB', job: 'Escalations, watermarks, dead letters, dual-control replay.', creates: 'Replay / escalate (audited)', not: 'Business sign-off' },
   { to: '/monitoring', title: 'Monitoring', who: 'RTB / engineering', job: 'Received → persisted → propagated → audited.', creates: 'Nothing — observe the tape', not: 'Business sign-off' },
 ];
 
 const DIAGRAMS = [
   { source: dEnterprise, title: '1. Enterprise context', caption: 'Unchanged systems of record publish facts. The hub folds them. Entitled frontend/web is the only UX.' },
-  { source: dDeploy, title: '2. Deployment', caption: 'Three processes: console 7091, hub 7070 (REST + SSE), simulator 7081. Browser never touches a bus.' },
-  { source: dSequence, title: '3. Event sequence', caption: 'Fact → translate → deterministic fold → ActionExecutor → outbox → SSE back to the console.' },
+  { source: dDeploy, title: '2. Deployment', caption: 'Three processes: console 7091, hub 7070 (REST, WebSocket /api/ws with SSE fallback), simulator 7081. Browser never touches a bus.' },
+  { source: dSequence, title: '3. Event sequence', caption: 'Fact → translate → deterministic fold → ActionExecutor → outbox → live push (WebSocket, SSE fallback) back to the console.' },
   { source: dModel, title: '4. Data model', caption: 'Stitch kit (sources, destinations, embed, userActions) plus the engine projection on the same event store.' },
   { source: dStitch, title: '5. Stitch states', caption: 'Human kit: NOT_YET → READY → CLEARED (or BLOCKED / DELAYED / ESCALATED). Sign-off is audited.' },
   { source: dEngine, title: '6. Engine stages', caption: 'Report lifecycle: NOT_STARTED → FEEDS → READY → PROCESSING → GENERATED | AVAILABLE.' },
+  { source: dDesks, title: '7. Desks and live links', caption: 'A pick or an action on one screen reaches that outcome’s screens in every tab and browser: FDC3 in the page, BroadcastChannel across tabs, the hub (WebSocket, SSE fallback) across browsers. No polling, no private postMessage.' },
 ];
 
 export default function Product() {
@@ -56,7 +62,7 @@ export function ArchitecturePage() {
       <div className="grid g3" style={{ marginBottom: 16 }}>
         <div className="stat info"><div className="lbl">Origins</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Publish a fact</div><div className="foot">Motif, SAP, Helix, Axiom — or the simulator</div></div>
         <div className="stat ok"><div className="lbl">Hub</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Fold to Ready or Blocked</div><div className="foot">Deterministic. Named blocker when a required key fails.</div></div>
-        <div className="stat"><div className="lbl">Console</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Show the answer, then act</div><div className="foot">SSE. Sign-off lives on the instance, not on Home.</div></div>
+        <div className="stat"><div className="lbl">Console</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Show the answer, then act</div><div className="foot">Live over WebSocket (SSE fallback). Sign-off lives on the instance; desks link the screens.</div></div>
       </div>
 
       <div className="banner info" style={{ marginBottom: 16 }}>
@@ -228,14 +234,14 @@ function StartTab() {
       <div className="banner info" style={{ marginBottom: 16 }}>
         <Icon name="info" size={16} />
         <div>
-          <b>New to this repo? Read this page, then top bar → View → Developer if you want a shorter rail.</b>
+          <b>New to this repo? Read this page, then Settings (top bar) → View → Developer if you want a shorter rail.</b>
           <span className="mono-sm">Same write-up: docs/design/start.md · views are a nav filter, not security</span>
         </div>
       </div>
 
       <div className="grid g3" style={{ marginBottom: 16 }}>
         <div className="stat info"><div className="lbl">The idea</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Answer the close-of-business question, not “is Motif done?”</div><div className="foot">Ready / Blocked / Delayed per outcome, COB, region</div></div>
-        <div className="stat ok"><div className="lbl">How you extend it</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Add a row of data, not a Java product type</div><div className="foot">Onboarding form or POST /api/outcomes/definitions</div></div>
+        <div className="stat ok"><div className="lbl">How you extend it</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>Add a row of data, not a Java product type</div><div className="foot">Onboarding’s six steps or POST /api/outcomes/definitions</div></div>
         <div className="stat"><div className="lbl">What you never do</div><div className="num" style={{ fontSize: 16, lineHeight: 1.35 }}>if (FOBO) · Drive on Home · Kafka in the browser</div><div className="foot">see the never-list on a pull request</div></div>
       </div>
 
@@ -254,9 +260,10 @@ function StartTab() {
           <ol className="prod-ol">
             <li><b>API:</b> from the repo root run <span className="mono">./scripts/run.sh</span>. Hub is 7070, simulator is 7081. Do not open 7070 as the UI.</li>
             <li><b>Console:</b> <span className="mono">cd frontend/web && npm install && npm run dev</span>. Open http://localhost:7091.</li>
-            <li><b>Read the story:</b> <Link to="/product">Product</Link>, then <Link to="/architecture">Architecture</Link>. Then pick View → <b>Developer</b> if you want a shorter rail.</li>
-            <li><b>First change:</b> open <Link to="/onboarding">Onboarding</Link>, submit the Month-end close example. That is <span className="mono">POST /api/outcomes/definitions</span> — no Java class.</li>
-            <li><b>Prove it:</b> <Link to="/drive">Drive</Link> → Reset → one scenario. Watch <Link to="/monitoring">Monitoring</Link>. Switch View to <b>BU head</b> and open Board — Drive disappears from the rail on purpose.</li>
+            <li><b>Read the story:</b> <Link to="/product">Product</Link>, then <Link to="/architecture">Architecture</Link>. Then Settings → View → <b>Developer</b> if you want a shorter rail.</li>
+            <li><b>First change:</b> open <Link to="/onboarding">Onboarding</Link> and walk its six steps with the Month-end close example: outcome → feeds → SLA → when ready → grids → review → <b>Go live</b>. That is <span className="mono">POST /api/outcomes/definitions</span> — no Java class.</li>
+            <li><b>Prove it:</b> <Link to="/drive">Drive</Link> → Reset → one scenario. Watch <Link to="/monitoring">Monitoring</Link>. Settings → View → <b>BU head</b> and open Board — Drive disappears from the rail on purpose.</li>
+            <li><b>Put it on a desk:</b> from the success banner, open a desk for the new outcome (<Link to="/desks">Desks</Link> → New desk). Its views link on the outcome’s channel in every tab and browser.</li>
           </ol>
           <div className="wrapflex" style={{ marginTop: 12 }}>
             <Link className="btn" to="/onboarding">Open Onboarding</Link>
@@ -292,7 +299,10 @@ function StartTab() {
             <thead><tr><th>Path</th><th>When you touch it</th></tr></thead>
             <tbody>
               <tr><td className="mono">frontend/web</td><td>Screens, chrome, theme. Visual truth. Vite proxies /api → 7070 and /sim → 7081.</td></tr>
-              <tr><td className="mono">onefinux-hub</td><td>Ingest, both folds, REST + SSE, outbox, audit. Package <span className="mono">workflow/ActionExecutor</span> for a new on-ready type.</td></tr>
+              <tr><td className="mono">frontend/web/src/workspace</td><td>Desks (<span className="mono">layout.js</span>, <span className="mono">desks.js</span>), FDC3 (<span className="mono">fdc3.js</span>), cross-tab and hub relay (<span className="mono">interop.js</span>), widgets, the app directory.</td></tr>
+              <tr><td className="mono">frontend/web/src/grid</td><td>GridSpec (<span className="mono">spec.js</span>), built-in specs, <span className="mono">SpecGrid</span>, and the <span className="mono">&lt;ofx-grid&gt;</span> web component built to <span className="mono">dist/lib</span>.</td></tr>
+              <tr><td className="mono">frontend/theme</td><td>The design tokens and Wijmo skin every screen, STEPS and partners link from <span className="mono">/theme/*</span>.</td></tr>
+              <tr><td className="mono">onefinux-hub</td><td>Ingest, both folds, REST, WebSocket + SSE, interop relay and activity feed, outbox, audit. Package <span className="mono">workflow/ActionExecutor</span> for a new on-ready type.</td></tr>
               <tr><td className="mono">source-simulator</td><td>Stand-in origins and destinations. New Drive scenario = a simulator story, not a console button on Home.</td></tr>
               <tr><td className="mono">contracts/</td><td>JSON Schema the hub enforces on ingest.</td></tr>
               <tr><td className="mono">docs/design/</td><td>The only design folder. Keep it in sync when behaviour changes.</td></tr>
@@ -308,11 +318,11 @@ function StartTab() {
           <ol className="prod-ol">
             <li><b>Branch off main</b> with a conventional commit: <span className="mono">feat:</span>, <span className="mono">fix:</span>, <span className="mono">docs:</span>, <span className="mono">chore:</span>.</li>
             <li><b>Open a pull request.</b> There is no CODEOWNERS file. A human reviews against AGENTS.md and the skill for the job you touched.</li>
-            <li><b>CI must be green</b> (<span className="mono">.github/workflows/ci.yml</span>): <span className="mono">mvn -B verify</span> (Java 21 hub + simulator tests) and <span className="mono">frontend/web</span> <span className="mono">npm ci && npm run build</span>.</li>
-            <li><b>Reviewer checklist:</b> no <span className="mono">if (FOBO)</span>; no Drive / scenario buttons on Home or Reports; no frosted glass; Configuration is not a create form; LLM never sits on the fold; browser never talks to Kafka.</li>
-            <li><b>Local before you push:</b> <span className="mono">mvn -B test</span> and <span className="mono">cd frontend/web && npm run build</span>. Then click the screens you changed — a green build is not a demo.</li>
+            <li><b>CI must be green</b> (<span className="mono">.github/workflows/ci.yml</span>): <span className="mono">mvn -B verify</span> (Java 21 hub + simulator tests) and <span className="mono">frontend/web</span> <span className="mono">npm ci && npm test && npm run build</span>, plus the <span className="mono">scripts/check_*.py</span> guards.</li>
+            <li><b>Reviewer checklist:</b> no <span className="mono">if (FOBO)</span>; no Drive / scenario buttons on Home or Reports; no frosted glass; Configuration is not a create form; LLM never sits on the fold; browser never talks to Kafka; read-only data is a GridSpec, not a hand-built table; screens link by FDC3 and <span className="mono">activity</span>, never polling or a private postMessage.</li>
+            <li><b>Local before you push:</b> <span className="mono">mvn -B test</span> and <span className="mono">cd frontend/web && npm test && npm run build</span>. Then click the screens you changed — a green build is not a demo.</li>
           </ol>
-          <p className="muted" style={{ marginBottom: 0, marginTop: 12 }}>Skills are the review contract: <span className="mono">barclays-ib-console</span> (chrome), <span className="mono">register-outcome-kit</span> (onboard), <span className="mono">outcome-engine</span> (fold + ActionExecutor), <span className="mono">drive-and-demo</span> (scenarios).</p>
+          <p className="muted" style={{ marginBottom: 0, marginTop: 12 }}>Skills are the review contract: <span className="mono">barclays-ib-console</span> (chrome), <span className="mono">register-outcome-kit</span> (onboard), <span className="mono">outcome-engine</span> (fold + ActionExecutor), <span className="mono">drive-and-demo</span> (scenarios), <span className="mono">workspace-interop</span> (desks and links), <span className="mono">wijmo-outcome-grid</span> (grids).</p>
         </div>
       </div>
     </>
@@ -331,7 +341,8 @@ function WorksTab() {
             <li><b>Fold.</b> Outcome Engine matches <span className="mono">eventType + sourceSystem</span>. Stitch fold counts distinct keys. Status is a replay of the event store.</li>
             <li><b>Act.</b> When READY and on-ready is not NOTIFY_ONLY, ActionExecutor runs (HTTP_COMMAND to Helix / Axiom, or LOG_COMMAND).</li>
             <li><b>Echo.</b> Downstream completions must carry <span className="mono">runId</span>. Stale runs are ignored. A reportId attaches an artifact and the stage becomes AVAILABLE.</li>
-            <li><b>Notify.</b> SSE pushes outcome, notification and event to the console. Restarts rebuild the board; notifications are not re-sent.</li>
+            <li><b>Notify.</b> The hub pushes outcome, notification, event and <span className="mono">activity</span> over WebSocket (<span className="mono">/api/ws</span>, SSE fallback). One tab per browser holds the link and shares it with the others. Restarts rebuild the board; notifications are not re-sent.</li>
+            <li><b>Link.</b> On a desk, a pick or an action on one screen goes out on the outcome’s channel: FDC3 in the page, BroadcastChannel to other tabs, the hub to other browsers. Each screen applies it once.</li>
           </ol>
         </div>
       </div>
@@ -368,7 +379,7 @@ function WorksTab() {
           <table className="tbl">
             <thead><tr><th>Module</th><th>Port</th><th>Role</th></tr></thead>
             <tbody>
-              <tr><td className="mono">onefinux-hub</td><td>7070</td><td>Event hub, translation, both folds, REST + SSE, outbox, audit. Not the UI.</td></tr>
+              <tr><td className="mono">onefinux-hub</td><td>7070</td><td>Event hub, translation, both folds, REST, WebSocket + SSE, interop relay, activity, outbox, audit. Not the UI.</td></tr>
               <tr><td className="mono">source-simulator</td><td>7081</td><td>Stands in for Motif, SAP, Helix, Axiom. Drive scenarios land here.</td></tr>
               <tr><td className="mono">frontend/web</td><td>7091</td><td>This console. Vite proxies /api → 7070 and /sim → 7081.</td></tr>
             </tbody>
@@ -401,12 +412,12 @@ function ScreensTab() {
             <Link to="/onboarding" className="oc">
               <div className="oc-hd"><span className="pill bo">Create</span></div>
               <h3>Onboarding</h3>
-              <p className="q">Write the business question, feeds, SLA and on-ready. Submit calls POST /api/outcomes/definitions. The outcome appears on Configuration, Board and Reports for the selected COB.</p>
+              <p className="q">Six numbered steps, one at a time: 1 outcome and question, 2 input feeds, 3 SLA, 4 when ready, 5 grids (optional), 6 review. Next stays blocked until the step is complete and says why. Go live calls POST /api/outcomes/definitions; the outcome appears on Configuration, Board and Reports.</p>
             </Link>
             <Link to="/configuration" className="oc">
               <div className="oc-hd"><span className="pill info">Govern</span></div>
               <h3>Configuration</h3>
-              <p className="q">Master-detail registry. Pick an outcome or kit on the left; read the contract and live fold on the right. Do not treat this as a create form.</p>
+              <p className="q">1 pick an outcome or kit on the left, 2 review its contract and live fold, 3 edit it through the same six steps, 4 review and save (PUT). New outcomes start on Onboarding.</p>
             </Link>
           </div>
         </div>

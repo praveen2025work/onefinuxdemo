@@ -7,11 +7,12 @@ Live visual truth is `frontend/web`. The console at **`/architecture`** renders 
 | # | Diagram | What it shows |
 |---|---|---|
 | 1 | [Enterprise context](diagrams/01-enterprise-context.png) | Unchanged systems of record → hub → entitled `frontend/web` |
-| 2 | [Deployment](diagrams/02-deployment-containers.png) | Console · hub · simulator |
-| 3 | [Event sequence](diagrams/03-event-sequence.png) | Fact → fold → `ActionExecutor` → SSE |
+| 2 | [Deployment](diagrams/02-deployment-containers.png) | Console · hub (REST, `/api/ws`, `/api/stream`, interop) · simulator |
+| 3 | [Event sequence](diagrams/03-event-sequence.png) | Fact → fold → `ActionExecutor` → live push (WebSocket, SSE fallback) |
 | 4 | [Data model](diagrams/04-data-model.png) | Stitch kit + engine projection |
 | 5 | [Stitch states](diagrams/05-outcome-state.png) | Human kit: `NOT_YET` → `READY` → `CLEARED` |
 | 6 | [Engine stages](diagrams/06-engine-stage.png) | Report lifecycle: `NOT_STARTED` → `AVAILABLE` |
+| 7 | [Desks and live links](diagrams/07-desks-live.png) | A pick or action on one screen reaches the outcome's screens in every tab and browser (FDC3 → BroadcastChannel → hub) |
 
 ![Enterprise context](diagrams/01-enterprise-context.png)
 
@@ -24,3 +25,5 @@ Live visual truth is `frontend/web`. The console at **`/architecture`** renders 
 ![Stitch states](diagrams/05-outcome-state.png)
 
 ![Engine stages](diagrams/06-engine-stage.png)
+
+![Desks and live links](diagrams/07-desks-live.png)

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  addView, clampSize, createWorkspace, currentWorkspace, deleteWorkspace, deskFor, loadState, moveView, patchView,
+  addView, clampSize, createWorkspace, currentWorkspace, deleteWorkspace, deskFor, gridColumns, loadState, moveView, patchView,
   removeView, resizePair, seedState, setLayout, splitShares, toggleMaximized, viewsOnChannel,
 } from './layout.js';
 
@@ -142,4 +142,16 @@ test('viewsOnChannel lists the other views on a colour', () => {
   const w = currentWorkspace(withViews([view('a', { channel: 'blue' }), view('b', { channel: 'blue' }), view('c', { channel: 'red' })]));
   assert.deepEqual(viewsOnChannel(w, 'blue', 'a').map((v) => v.id), ['b']);
   assert.deepEqual(viewsOnChannel(w, null), []);
+});
+
+test('gridColumns keeps the grid square and every column at least the minimum width', () => {
+  assert.equal(gridColumns(1, 1600), 1);
+  assert.equal(gridColumns(2, 1600), 2);
+  assert.equal(gridColumns(3, 1600), 3);
+  assert.equal(gridColumns(4, 1600), 2);
+  assert.equal(gridColumns(4, 1900), 2);
+  assert.equal(gridColumns(6, 1600), 3);
+  assert.equal(gridColumns(3, 1000), 2);
+  assert.equal(gridColumns(4, 700), 1);
+  assert.equal(gridColumns(0, 0), 1);
 });

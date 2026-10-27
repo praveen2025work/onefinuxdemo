@@ -118,3 +118,57 @@ export function formToDefinition(form) {
     grids,
   };
 }
+
+/**
+ * The steps a config user walks through, in order, to make an outcome work for their use case. Onboarding (create)
+ * and Configuration (edit) share them, so both screens read 1 → 6 the same way.
+ */
+export const OUTCOME_STEPS = [
+  { id: 'outcome', label: 'Outcome', title: 'Name the outcome and its question', hint: 'Who owns it, which regions see it, and the business question it answers.' },
+  { id: 'feeds', label: 'Input feeds', title: 'List the feeds it depends on', hint: 'Each feed is an event type from a source system and how many keys must arrive. READY means every feed is complete.' },
+  { id: 'sla', label: 'SLA', title: 'Say when it is due', hint: 'A window from the first event, or a business cut-off on the COB date plus N days. Late instances turn amber, then breach.' },
+  { id: 'ready', label: 'When ready', title: 'Choose what happens when every feed is in', hint: 'Notify only, or have the hub command a downstream engine and wait for its completion event.' },
+  { id: 'grids', label: 'Grids', title: 'Add lineage grids (optional)', hint: 'Endpoints the console reads for the instance and report Grid view. Parameters bind to the business date, region and row.' },
+  { id: 'review', label: 'Review', title: 'Check the contract and go live', hint: 'This is the definition that is saved. Nothing is live until you press the button.' },
+];
+
+const ID_RE = /^[A-Z][A-Z0-9_]*$/;
+const CUTOFF_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** What blocks moving past a step, in words a config user can act on. An empty list means the step is complete. */
+export function stepErrors(form, stepId) {
+  const errs = [];
+  if (stepId === 'outcome') {
+    if (!ID_RE.test((form.id || '').trim())) errs.push('Outcome id: capitals, digits and _ only, starting with a letter (e.g. MEC_CLOSE).');
+    if (!(form.name || '').trim()) errs.push('Name the outcome.');
+    if (!(form.question || '').trim()) errs.push('Write the business question it answers.');
+  } else if (stepId === 'feeds') {
+    const feeds = (form.feeds || []).filter((fd) => (fd.eventType || '').trim());
+    if (!feeds.length) errs.push('Add at least one input feed with an event type.');
+    if (feeds.some((fd) => !(Number(fd.expectedCount) >= 1))) errs.push('Each feed expects at least 1 key.');
+    const types = feeds.map((fd) => fd.eventType.trim().toUpperCase());
+    if (new Set(types).size !== types.length) errs.push('Each event type appears once.');
+  } else if (stepId === 'sla') {
+    if (form.slaMode === 'within' && !(Number(form.withinMinutes) >= 1)) errs.push('The window is at least 1 minute.');
+    if (form.slaMode === 'cutoff' && !CUTOFF_RE.test(String(form.cutoff || ''))) errs.push('The cut-off is a time as HH:MM.');
+    if (form.slaMode === 'cutoff' && !(Number(form.dayOffset) >= 0)) errs.push('Days after COB is 0 or more.');
+  } else if (stepId === 'ready') {
+    if (form.actionMode === 'command' && !(form.target || '').trim()) errs.push('Name the engine to command (target).');
+    if (form.actionMode === 'command' && !(form.completionEvent || '').trim()) errs.push('Name the event the engine sends when it is done.');
+  } else if (stepId === 'grids') {
+    (form.grids || []).forEach((g, i) => {
+      const started = (g.id || '').trim() || (g.title || '').trim();
+      if (started && !(g.id || '').trim()) errs.push(`Grid ${i + 1}: give it an id.`);
+      if (started && !(g.endpoint || '').trim()) errs.push(`Grid ${i + 1}: give it an endpoint.`);
+    });
+  } else if (stepId === 'review') {
+    OUTCOME_STEPS.filter((s) => s.id !== 'review').forEach((s) => stepErrors(form, s.id).forEach((e) => errs.push(e)));
+  }
+  return errs;
+}
+
+/** The first step that still has errors (or the review step), where a wizard opens or jumps back to. */
+export function firstIncompleteStep(form) {
+  const i = OUTCOME_STEPS.findIndex((s) => s.id !== 'review' && stepErrors(form, s.id).length);
+  return i < 0 ? OUTCOME_STEPS.length - 1 : i;
+}

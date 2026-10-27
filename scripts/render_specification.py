@@ -180,8 +180,8 @@ CONSOLE_REQ = [
     ("REQ-CONSOLE-003", "The rail is an overlay that is closed when a page loads; a tab on the left edge opens it over the page, and the scrim, Escape, or a navigation closes it."),
     ("REQ-CONSOLE-004", "The top header is one row: the brand mark and wordmark appear once at its left, beside the business date, group unit, and region controls; the open rail shows the brand and one close control in its brand slot."),
     ("REQ-CONSOLE-005", "html[data-theme] is dark or light; the choice persists in localStorage ofx-theme and a URL theme= parameter overrides it."),
-    ("REQ-CONSOLE-006", "The top header always shows the business date, group unit, region, and the ready, blocked, and escalation counts; no separate context ribbon row is drawn. Each screen has a one-row page header whose explanation sits behind an info icon."),
-    ("REQ-CONSOLE-007", "Top-bar View values are all, developer, architect, controller, head, rtb, and maker; a view filters the rail and is not entitlement."),
+    ("REQ-CONSOLE-006", "The top header shows the business date and the ready, blocked, and escalation counts. Group unit, region, and view are together in the settings panel. No separate context ribbon row is drawn. Each screen has a one-row page header whose explanation sits behind an info icon."),
+    ("REQ-CONSOLE-007", "Settings panel View values are all, developer, architect, controller, head, rtb, and maker; a view filters the rail and is not entitlement."),
     ("REQ-CONSOLE-008", "Guide routes /product, /architecture, /guide, and /lifecycle remain on the rail in every view."),
     ("REQ-CONSOLE-009", "Home and Reports do not render Drive or scenario buttons."),
     ("REQ-CONSOLE-010", "Below 820px the rail is an overlay drawer, a hamburger opens it, and a labelled bottom nav of five primary destinations is the primary movement control."),
@@ -203,7 +203,7 @@ CONSOLE_AC = [
     ac("AC-CONSOLE-06", "REQ-CONSOLE-004", "the rail is open", "the operator inspects the rail top", "the brand slot shows the brand and one close control"),
     ac("AC-CONSOLE-07", "REQ-CONSOLE-005", "data-theme is dark", "the operator clicks the theme control", "data-theme becomes light and localStorage ofx-theme is light"),
     ac("AC-CONSOLE-08", "REQ-CONSOLE-005", "localStorage ofx-theme is light", "the operator opens /?theme=dark", "data-theme is dark"),
-    ac("AC-CONSOLE-09", "REQ-CONSOLE-006", "any product route is open", "the operator reads the top header", "business date, group unit, region, ready, blocked, and escalations are visible, the View icon tooltip names the current view, and clicking the blocked count opens Board filtered to BLOCKED"),
+    ac("AC-CONSOLE-09", "REQ-CONSOLE-006", "any product route is open", "the operator reads the top header", "business date, ready, blocked, and escalations are visible in the header, group unit, region, and view are in the settings panel, and clicking the blocked count opens Board filtered to BLOCKED"),
     ac("AC-CONSOLE-10", "REQ-CONSOLE-007", "View is set to head", "the rail renders", "Drive is absent and Board remains"),
     ac("AC-CONSOLE-11", "REQ-CONSOLE-007", "View is controller", "the operator opens an instance they are not entitled to by URL", "the hub still fail-closes that instance with 404"),
     ac("AC-CONSOLE-12", "REQ-CONSOLE-008", "View is rtb", "the rail renders", "/product, /architecture, /guide, and /lifecycle remain listed"),
@@ -261,8 +261,8 @@ REPORTS_AC = [
 
 GOVERN_REQ = [
     ("REQ-GOVERN-001", "POST /api/outcomes/definitions creates an OutcomeDefinition from question, regions, owner, SLA, feeds, on-ready, and optional grids."),
-    ("REQ-GOVERN-002", "/onboarding is the create surface for OutcomeDefinition including optional lineage grids and is not the govern surface."),
-    ("REQ-GOVERN-003", "/configuration is a master-detail govern surface for outcomes and kits. Edit on a selected outcome saves PUT /api/outcomes/definitions/{id} including grids. Configuration is not a create form."),
+    ("REQ-GOVERN-002", "/onboarding is the create surface for OutcomeDefinition including optional lineage grids, walked as six numbered steps (outcome, input feeds, SLA, when ready, grids, review), and is not the govern surface."),
+    ("REQ-GOVERN-003", "/configuration is a master-detail govern surface for outcomes and kits: pick, review, edit, save. Edit on a selected outcome walks the same numbered steps as Onboarding and saves PUT /api/outcomes/definitions/{id} including grids. Configuration is not a create form."),
     ("REQ-GOVERN-004", "POST /api/stitch/kits registers a kit with sources, destinations, embed, and userActions and does not require a new Java type."),
     ("REQ-GOVERN-005", "GET /api/outcomes/definitions and GET /api/stitch/kits populate Configuration lists."),
     ("REQ-GOVERN-006", "Configuration right pane shows anatomy and live state for the selected outcome or kit."),
@@ -725,7 +725,7 @@ def render() -> str:
     a("")
     a("### 17.2 View versus CEES")
     a("")
-    a("The top-bar View filters navigation. It does not grant access. CEES fail-closed 404 remains in force when an instance URL is opened.")
+    a("The settings-panel View filters navigation. It does not grant access. CEES fail-closed 404 remains in force when an instance URL is opened.")
     a("")
     a("### 17.3 Dual control")
     a("")
@@ -763,7 +763,7 @@ def render() -> str:
     a("")
     a("### 19.3 Surfaces")
     a("")
-    a("Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates an OutcomeDefinition including lineage grids. Configuration governs and edits the selected outcome.")
+    a("Home tells today's close. Board is the head table. My outcomes is the doer list. The instance page shows readiness fold and destinations first. A destination click opens a full-width stage; Close restores the split. Partner view frames the kit embed. Grid view opens lineage FlexGrids. Reports is the engine index plus document. Drive is testing. Onboarding creates an OutcomeDefinition including lineage grids, one numbered step at a time. Configuration governs and edits the selected outcome through the same steps.")
     a("")
     a("### 19.4 Header and page header")
     a("")

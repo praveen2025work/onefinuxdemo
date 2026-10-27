@@ -19,7 +19,7 @@ import { BUILTIN_INTENTS, setWorkspaceHost } from '../workspace/fdc3.js';
 import { subscribeLive } from '../live/liveLink.js';
 import {
   LAYOUTS, WS_KEY, addView, createWorkspace, currentWorkspace, deleteWorkspace, deskFor, loadState, moveView, newId,
-  patchView, removeView, renameWorkspace, resizePair, setActive, setLayout, splitShares, switchWorkspace, toggleMaximized,
+  gridColumns, patchView, removeView, renameWorkspace, resizePair, setActive, setLayout, splitShares, switchWorkspace, toggleMaximized,
 } from '../workspace/layout.js';
 import { broadcastContext, onAnyContext, onSystem, postSystem } from '../workspace/interop.js';
 import { partnerThemeParams } from '../lib/themes.js';
@@ -65,6 +65,7 @@ export default function Desks() {
   const [splits, setSplits] = useState([]);
   const [resizing, setResizing] = useState(false);
   const areaRef = useRef(null);
+  const [areaBox, setAreaBox] = useState({ w: 0, fill: 640 });
   const sectionRefs = useRef(new Map()); // viewId -> section element (splitter geometry)
 
   const apps = useMemo(() => [...BUILTIN_APPS, ...customApps], [customApps]);
@@ -435,11 +436,23 @@ export default function Desks() {
     setSplits(out);
   }, []);
 
-  useLayoutEffect(() => { measureSplits(); }, [measureSplits, ws.layout, ws.maximized, ws.views]);
+  // The desk fills the window below its header: views share that height, so resizing grows each one alike.
+  const measureArea = useCallback(() => {
+    const area = areaRef.current;
+    if (!area) return;
+    const scroller = area.closest('.body');
+    const top = area.getBoundingClientRect().top + (scroller?.scrollTop || 0);
+    const bottom = scroller ? parseFloat(getComputedStyle(scroller).paddingBottom) || 0 : 0;
+    const next = { w: Math.round(area.clientWidth), fill: Math.max(320, Math.round(window.innerHeight - top - bottom)) };
+    setAreaBox((b) => (b.w === next.w && b.fill === next.fill ? b : next));
+  }, []);
+
+  useLayoutEffect(() => { measureArea(); measureSplits(); }, [measureArea, measureSplits, ws.layout, ws.maximized, ws.views]);
   useEffect(() => {
-    window.addEventListener('resize', measureSplits);
-    return () => window.removeEventListener('resize', measureSplits);
-  }, [measureSplits]);
+    const on = () => { measureArea(); measureSplits(); };
+    window.addEventListener('resize', on);
+    return () => window.removeEventListener('resize', on);
+  }, [measureArea, measureSplits]);
 
   function startResize(e, split) {
     const a = sectionRefs.current.get(split.a);
@@ -495,6 +508,8 @@ export default function Desks() {
   const sized = ['columns', 'rows'].includes(ws.layout) && !ws.maximized;
   const tracks = ws.views.map((v) => `minmax(${ws.layout === 'columns' ? 240 : 160}px, ${v.size || 1}fr)`).join(' ');
   const sizedTracks = sized ? (ws.layout === 'columns' ? { gridTemplateColumns: tracks } : { gridTemplateRows: tracks }) : undefined;
+  const cols = gridColumns(ws.views.reduce((n, v) => n + (v.wide ? 2 : 1), 0), areaBox.w);
+  const areaStyle = { ...sizedTracks, '--ws-fill': areaBox.fill + 'px', '--ws-cols': cols };
 
   return (
     <>
@@ -517,13 +532,13 @@ export default function Desks() {
             label: `${w.name}${w.subject ? ' ◆' : ''}${unread[w.id] ? ` · ${unread[w.id]} new` : ''}` }))} />
         <div className="ws-btns">
           <button className="tb-icon" title="New desk — for a business outcome, or blank" aria-label="New desk"
-            onClick={() => setCreating(true)}><Icon name="plus" size={15} /></button>
+            onClick={() => setCreating(true)}><Icon name="plus" size={16} /></button>
           <button className="tb-icon" title="Save as a new desk" aria-label="Save desk as"
-            onClick={() => setNaming({ mode: 'copy', value: ws.name + ' copy' })}><Icon name="save" size={15} /></button>
+            onClick={() => setNaming({ mode: 'copy', value: ws.name + ' copy' })}><Icon name="save" size={16} /></button>
           <button className="tb-icon" title="Rename desk" aria-label="Rename desk"
-            onClick={() => setNaming({ mode: 'rename', value: ws.name })}><Icon name="config" size={15} /></button>
+            onClick={() => setNaming({ mode: 'rename', value: ws.name })}><Icon name="config" size={16} /></button>
           <button className="tb-icon" title="Delete desk" aria-label="Delete desk"
-            onClick={() => setState((s) => deleteWorkspace(s))} disabled={state.workspaces.length <= 1}><Icon name="trash" size={15} /></button>
+            onClick={() => setState((s) => deleteWorkspace(s))} disabled={state.workspaces.length <= 1}><Icon name="trash" size={16} /></button>
           {Object.entries(unread).some(([id, n]) => n && id !== ws.id) && (
             <span className="pill warn" title="Activity on other desks’ outcomes while you were here">
               {Object.entries(unread).filter(([id]) => id !== ws.id).reduce((n, [, c]) => n + c, 0)} new elsewhere
@@ -534,11 +549,11 @@ export default function Desks() {
           {LAYOUTS.map((l) => (
             <button key={l.id} className={ws.layout === l.id ? 'on' : ''} onClick={() => setState((s) => setLayout(s, l.id))}
               title={l.label + ' layout'} aria-label={l.label + ' layout'}>
-              <Icon name={l.icon} size={13} /> <span className="ws-lbl">{l.label}</span>
+              <Icon name={l.icon} size={14} /> <span className="ws-lbl">{l.label}</span>
             </button>
           ))}
         </div>
-        <button className="btn" onClick={() => setLauncher(true)}><Icon name="plus" size={15} /> Launch app</button>
+        <button className="btn" onClick={() => setLauncher(true)}><Icon name="plus" size={14} /> Launch app</button>
       </PageHeader>
 
       {ws.layout === 'tabs' && ws.views.length > 0 && (
@@ -564,8 +579,8 @@ export default function Desks() {
           <button className="btn" onClick={() => setLauncher(true)}><Icon name="plus" size={15} /> Launch app</button>
         </div></div>
       ) : (
-        <div ref={areaRef} className={'ws-area ' + ws.layout + (ws.maximized ? ' has-max' : '') + (resizing ? ' resizing' : '')}
-          style={sizedTracks}>
+        <div ref={areaRef} className={'ws-area ' + ws.layout + (ws.maximized ? ' has-max' : '') + (resizing ? ' resizing' : '') + (cols === 1 ? ' c1' : '')}
+          style={areaStyle}>
           {ordered.map((v) => {
             const app = appById(apps, v.appId);
             const chan = chanOf(v.channel);
@@ -580,28 +595,28 @@ export default function Desks() {
                   onDragStart={(e) => { setDragId(v.id); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', v.id); }}
                   onDragEnd={() => setDragId(null)}
                   onDoubleClick={() => setState((s) => toggleMaximized(s, v.id))}>
-                  {ws.layout !== 'tabs' && <span className="wsv-grip" title="Drag to move"><Icon name="grip" size={13} /></span>}
+                  {ws.layout !== 'tabs' && <span className="wsv-grip" title="Drag to move"><Icon name="grip" size={14} /></span>}
                   <Icon name={app?.icon || 'grid'} size={14} />
                   <span className="wsv-title" title={v.title}>{v.title}</span>
                   <span className="wsv-kind">{app?.kind === 'web' ? 'web' : app?.kind === 'widget' ? 'widget' : 'screen'}</span>
                   <span className="spacer" />
                   {app?.linkable && <ChannelPicker value={v.channel} onChange={(c) => setChannel(v, c)} compact desk={deskChan} />}
                   {app && app.kind !== 'widget' && (
-                    <button className="wsv-btn" title="Reload view" onClick={() => reload(v)}><Icon name="refresh" size={13} /></button>
+                    <button className="wsv-btn" title="Reload view" onClick={() => reload(v)}><Icon name="refresh" size={14} /></button>
                   )}
                   <button className="wsv-btn" title={app?.kind === 'web' ? 'Open in a new tab' : 'Tear out into its own window'} onClick={() => popOut(v)}>
-                    <Icon name="external" size={13} />
+                    <Icon name="external" size={14} />
                   </button>
                   {ws.layout === 'grid' && !ws.maximized && (
                     <button className="wsv-btn" title={v.wide ? 'Normal width' : 'Span two columns'} onClick={() => setState((s) => patchView(s, v.id, { wide: !v.wide }))}>
-                      <Icon name="columns" size={13} />
+                      <Icon name="columns" size={14} />
                     </button>
                   )}
                   <button className="wsv-btn" title={ws.maximized === v.id ? 'Restore' : 'Maximise'} onClick={() => setState((s) => toggleMaximized(s, v.id))}>
-                    <Icon name={ws.maximized === v.id ? 'minimize' : 'maximize'} size={13} />
+                    <Icon name={ws.maximized === v.id ? 'minimize' : 'maximize'} size={14} />
                   </button>
                   <button className="wsv-btn" title="Close view" onClick={() => { frames.current.delete(v.id); setState((s) => removeView(s, v.id)); }}>
-                    <Icon name="x" size={13} />
+                    <Icon name="x" size={14} />
                   </button>
                 </header>
                 <div className="wsv-bd">

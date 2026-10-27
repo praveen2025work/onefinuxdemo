@@ -11,7 +11,7 @@ export default function InstanceWaiting() {
         summary={EMBED
           ? 'Pick a row in a view on the same link colour — the Outcome board or the Instance grid — and it opens here.'
           : 'Open an instance from the Outcome board, or put this viewer on a desk and link it to a board.'} />
-      <div className="panel">
+      <div className="panel wait-panel">
         <div className="panel-bd wait-card">
           <Icon name="link" size={22} />
           <span>Linked context type <span className="mono">ofx.instance</span> → <span className="mono">/instance/:id</span></span>

@@ -27,7 +27,7 @@ The three outcomes are configured in `onefinux-hub/src/main/resources/applicatio
 
 ## Run it
 
-`./scripts/run.sh` starts the **API only** (hub + simulator). The product UI is the React console on **7091**. Do not open `http://localhost:7070` in a browser expecting a board — that port is REST + SSE.
+`./scripts/run.sh` starts the **API only** (hub + simulator). The product UI is the React console on **7091**. Do not open `http://localhost:7070` in a browser expecting a board — that port is REST, WebSocket and SSE.
 
 ### 1. Prerequisites
 
@@ -57,7 +57,7 @@ Wait until `run.cmd` prints **Hub is up**. The prompt coming back is success. Ja
 
 | Process | URL | What it is |
 |---|---|---|
-| `onefinux-hub` | http://localhost:7070 | API (REST + SSE). Not the UI. |
+| `onefinux-hub` | http://localhost:7070 | API (REST, WebSocket `/api/ws`, SSE). Not the UI. |
 | `source-simulator` | http://localhost:7081 | Motif / SAP / Helix / Axiom stand-in |
 | React console | http://localhost:7091 | Product UI (Windows: started by `run.cmd`) |
 
