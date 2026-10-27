@@ -2126,7 +2126,7 @@ Home tells today's close. Board is the head table. My outcomes is the doer list.
 
 ### 19.4 Header and page header
 
-The top header is one 48-pixel row. It carries the product mark, the page label (icon and title), the business date, fold counts, search, and quiet icon actions. Scope controls show values only; their captions are tooltips. Live status is a dot in the environment chip. PageHeader publishes the page label into the top bar and keeps the info icon, an optional one-line live summary, and the screen's tools on the page. On a desk view the lift is omitted because the view title bar names it.
+The top header is one 48-pixel row. It carries the product mark, the page label (icon and title), the business date, fold counts, search, and quiet icon actions. Scope controls show values only; their captions are tooltips. Live status is a dot in the environment chip. PageHeader publishes the page label into the top bar and keeps the info icon, an optional one-line live summary, and the screen's tools on the page. On a desk view the lift is omitted because the view title bar names it. Page content uses the full main column (no centred max-width); only the floating rail overlays it.
 
 ### 19.5 Desks and shared outcome channels
 

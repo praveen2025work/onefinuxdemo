@@ -192,8 +192,9 @@ p { text-wrap: pretty; }
 }
 @media (max-width: 900px) { .tb-page-ico { display: none; } }
 
-.body { padding: 6px 12px 10px; flex: 1; min-height: 0; overflow: auto; }
-.wrap { width: 100%; max-width: 1720px; margin: 0 auto; }
+/* Full-bleed page: no centred content column — the console uses the window width (STEPS). */
+.body { padding: 6px 10px 10px; flex: 1; min-height: 0; overflow: auto; }
+.wrap { width: 100%; max-width: none; margin: 0; }
 /* Page header: tools / summary only — the label lives in the top bar. */
 .ph { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px 8px; min-height: 0; margin-bottom: 4px; }
 .ph.tools-only { margin-bottom: 4px; }
