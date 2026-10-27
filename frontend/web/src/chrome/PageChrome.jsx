@@ -1,13 +1,12 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { EMPTY_CHROME } from './pageChrome.js';
 
 const PageChromeContext = createContext({ chrome: EMPTY_CHROME, setChrome: () => {} });
 
 export function PageChromeProvider({ children }) {
   const [chrome, setChrome] = useState(EMPTY_CHROME);
-  const location = useLocation();
-  useEffect(() => { setChrome(EMPTY_CHROME); }, [location.pathname]);
+  // Do not clear on pathname here: that effect runs after PageHeader's lift and would wipe the title.
+  // Unmount cleanup on useLiftPageChrome (all cleanups, then new lifts) is enough.
   const value = useMemo(() => ({ chrome, setChrome }), [chrome]);
   return <PageChromeContext.Provider value={value}>{children}</PageChromeContext.Provider>;
 }
