@@ -6,6 +6,7 @@ import Select from './Select.jsx';
 import DatePicker from './DatePicker.jsx';
 import ThemeMenu from './ThemeMenu.jsx';
 import ProfileMenu from './ProfileMenu.jsx';
+import ShellSearch from './ShellSearch.jsx';
 import NotificationsPanel from './NotificationsPanel.jsx';
 import EmbedShell from '../workspace/EmbedShell.jsx';
 import { VIEWS, filterNav } from '../views.js';
@@ -169,6 +170,7 @@ function Shell({ children }) {
               </button>
             </div>
           </div>
+          <ShellSearch />
           <div className="spacer" />
           <div className="tb-icons">
             <Select variant="icon" icon={view.icon || 'grid'} value={view.id} onChange={setView}

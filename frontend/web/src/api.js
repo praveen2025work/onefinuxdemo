@@ -44,6 +44,17 @@ export async function setActor(user) {
   return data;
 }
 
+export function searchAll({ q, groupUnit, cobDate }) {
+  const qs = new URLSearchParams({ q });
+  if (groupUnit) qs.set('groupUnit', groupUnit);
+  if (cobDate) qs.set('cobDate', cobDate);
+  return fetch('/api/search?' + qs.toString(), { headers: authHeaders() })
+    .then((res) => {
+      if (!res.ok) throw new Error(`${res.status} on /api/search`);
+      return res.json();
+    });
+}
+
 async function get(path, params, opts = {}) {
   const qs = params ? '?' + new URLSearchParams(clean(params)).toString() : '';
   const ctrl = opts.timeoutMs ? AbortSignal.timeout(opts.timeoutMs) : undefined;

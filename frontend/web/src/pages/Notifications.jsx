@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../store.jsx';
 import { PageHeader, Stat } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
@@ -17,9 +18,16 @@ const TABS = [
 /** STEPS NotificationsCenter on the hub inbox: tabs, search, expand, mark read, dismiss. */
 export default function Notifications() {
   const { notifications, unread, isRead, markRead, markAllRead, dismissNotification, refreshNotifications, liveStatus } = useApp();
+  const [searchParams] = useSearchParams();
+  const focus = searchParams.get('focus');
   const [tab, setTab] = useState('all');
   const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(null);
+  const [open, setOpen] = useState(() => focus || null);
+
+  useEffect(() => {
+    if (!focus) return;
+    if (notifications.some((n) => idOf(n) === focus)) setOpen(focus);
+  }, [focus, notifications]);
 
   const readIds = useMemo(() => new Set(notifications.filter((n) => isRead(n)).map(idOf)), [notifications, isRead]);
   const rows = filterNotifications(notifications, { tab, query, readIds });

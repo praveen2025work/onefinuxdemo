@@ -1152,6 +1152,22 @@ a.story-row:hover { border-color: var(--stroke-2); }
 .dg-title { font-size: 13px; }
 .dg-empty { margin: 0; font-size: 12.5px; }
 .search-inp.sm { height: 30px; min-width: 180px; }
+.shell-search { position: relative; flex: none; }
+.shell-search-menu {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 40; min-width: min(360px, 92vw);
+  max-height: min(320px, 50vh); overflow: auto; padding: 4px;
+  background: var(--surface); border: 1px solid var(--stroke); border-radius: var(--r-card);
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(15, 23, 42, 0.12));
+}
+.shell-search-hit {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%;
+  padding: 8px 10px; border: 0; border-radius: var(--r-ctl); cursor: pointer; text-align: left;
+  background: transparent; color: var(--ink); font-size: 13px;
+}
+.shell-search-hit:hover { background: var(--raised); }
+.shell-search-kind { font-size: 10px; font-weight: 700; letter-spacing: 0.4px; text-transform: uppercase; color: var(--faint); }
+.shell-search-title { font-weight: 600; }
+.shell-search-detail { font-size: 12px; color: var(--muted); }
 .datagrid .wijmo-host { flex: 1; min-height: 160px; }
 .datagrid.dense .wj-flexgrid .wj-cell { padding: 3px 8px; }
 .wj-flexgrid .wj-cell .pill { padding: 1px 7px; font-size: 10.5px; }
