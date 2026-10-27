@@ -11,8 +11,13 @@ export default function ShellSearch() {
   const [q, setQ] = useState('');
   const [hits, setHits] = useState([]);
   const [open, setOpen] = useState(false);
+  const dismissedRef = useRef(false);
   const latestRef = useRef({ q: '', groupUnit: filters.groupUnit, cobDate: filters.cobDate });
   latestRef.current = { q: q.trim(), groupUnit: filters.groupUnit, cobDate: filters.cobDate };
+
+  useEffect(() => {
+    dismissedRef.current = false;
+  }, [q, filters.groupUnit, filters.cobDate]);
 
   useEffect(() => {
     const trimmed = q.trim();
@@ -31,7 +36,7 @@ export default function ShellSearch() {
           const cur = latestRef.current;
           if (cur.q !== reqQ || cur.groupUnit !== reqGroupUnit || cur.cobDate !== reqCobDate || cur.q.length < 2) return;
           setHits(data.hits || []);
-          setOpen(true);
+          if (!dismissedRef.current) setOpen(true);
         })
         .catch(() => {
           if (cancelled) return;
@@ -49,7 +54,10 @@ export default function ShellSearch() {
   useEffect(() => {
     if (!open) return undefined;
     function onKey(e) {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {
+        dismissedRef.current = true;
+        setOpen(false);
+      }
     }
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
