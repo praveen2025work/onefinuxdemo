@@ -387,11 +387,11 @@ button.dest-open:hover { background: var(--raised); }
   .bottom-nav a.on { color: var(--rail-on); }
   .bottom-nav a.on .icn { color: var(--accent); }
   .topbar { padding: 6px 10px; flex-wrap: wrap; }
-  /* Phone: identity and icons on one row, the scope as one swipeable row under it. */
-  .tb-scope { order: 99; flex: 1 1 100%; overflow-x: auto; scrollbar-width: none; padding-right: 28px;
-    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent); }
-  .tb-scope::-webkit-scrollbar { display: none; }
-  .tb-scope > * { flex: none; }
+  /* Phone: identity and icons on one row; fold counts + date as a swipeable row under it. */
+  .tb-counts, .tb-date { order: 99; overflow-x: auto; scrollbar-width: none; }
+  .tb-counts { flex: 1 1 auto; min-width: 0; }
+  .tb-date { flex: none; }
+  .tb-counts::-webkit-scrollbar, .tb-date::-webkit-scrollbar { display: none; }
   .ph h1 { font-size: 17px; }
   .ph-tools { width: 100%; justify-content: flex-start; }
   .ph-actions, .ph-side { width: 100%; }
