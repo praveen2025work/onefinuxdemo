@@ -306,6 +306,8 @@ export const uxApi = {
   templates: (team, kind) => hubJson('/api/templates', { params: { team, kind } }),
   shareTemplate: (body) => hubJson('/api/templates', { method: 'POST', body }),
   removeTemplate: (id) => hubJson(`/api/templates/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+  /** Unit-shared GridSpecs + this user's saved grids for the catalogue (/grids). */
+  gridCatalogue: (groupUnit) => hubJson('/api/grids', { params: { groupUnit } }),
 };
 
 export const assistApi = {

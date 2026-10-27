@@ -4,7 +4,7 @@ export const NAV = [
     { to: '/', label: 'Home', short: 'Home', icon: 'home', end: true },
     { to: '/board', label: 'Outcome board', short: 'Board', icon: 'board' },
     { to: '/outcomes', label: 'My outcomes', short: 'Outcomes', icon: 'cards', badge: 'assigned' },
-    { to: '/finance', label: 'Finance dashboard', short: 'Finance', icon: 'dollar' },
+    { to: '/finance', label: 'Finance dashboards', short: 'Finance', icon: 'dollar' },
     { to: '/reports', label: 'Reports', short: 'Reports', icon: 'report' },
   ] },
   { grp: 'Collaborate', items: [

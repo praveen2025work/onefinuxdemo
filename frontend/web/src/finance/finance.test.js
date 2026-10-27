@@ -78,3 +78,12 @@ test('tile ids match STEPS, so an ofx.tile link opens the same tile in both dash
   for (const id of ['data-availability', 'fobo-review', 'pnl-analysis', 'fx-exposure', 'liquidity-status',
     'regulatory-reporting', 'risk-metrics', 'settlement-status', 'collateral-management']) assert.ok(ids.has(id), id);
 });
+
+test('transformTile preserves gridSpecId for the detail pane', async () => {
+  const { transformTile } = await import('./transform.js');
+  const def = financeBlueprint.tiles.find((t) => t.id === 'outcome-readiness');
+  const tile = transformTile(def, [], new Date('2026-09-12T10:00:00Z'));
+  assert.equal(tile.gridSpecId, 'instances');
+  const plain = transformTile(financeBlueprint.tiles.find((t) => t.id === 'pnl-analysis'), [], new Date());
+  assert.equal(plain.gridSpecId, undefined);
+});

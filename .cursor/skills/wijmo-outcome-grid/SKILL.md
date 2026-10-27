@@ -35,7 +35,7 @@ A read-only grid is a **GridSpec** (`src/grid/spec.js`), not a component. It is 
 | `SpecGrid`: fetch, live refresh, share on pick | `src/grid/SpecGrid.jsx` |
 | Resolve a spec id (`instances`, `outcome:…`, `my:…`) or an inline spec | `src/grid/useGridSpec.js` |
 | Desk view (`grid` widget, `view.config.spec` + `filter`) | `src/workspace/widgets.jsx` |
-| Grid library: browse, edit with live preview, save as yours, add to a desk, copy the embed snippet | `/grids` (`pages/GridLibrary.jsx`) |
+| Grid library: Platform · My unit · Mine; propose from a bound source; share with the unit; add to a desk; embed snippet | `/grids` (`pages/GridLibrary.jsx`), `grid/propose.js`, `GET /api/grids` |
 | Embed for any app: `/widget/grid?ofx-embed=1&spec=<id>` or `&def=<encodeJson(spec)>`; picks posted to the embedding page as `ofx.grid.select` | `pages/WidgetPage.jsx` |
 | `<ofx-grid>` web component (Angular, React, .NET Razor, plain HTML): `/lib/onefinux-grid.js` + `/lib/onefinux-grid.css`, built by `npm run build` (`vite.lib.config.js`); its CSS is generated from `styles.css`, scoped under `ofx-grid` (`grid-css.js`) | `src/grid/element.jsx` |
 

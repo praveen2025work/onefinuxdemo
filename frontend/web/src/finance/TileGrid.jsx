@@ -1,7 +1,14 @@
 import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import FinanceTile from './FinanceTile.jsx';
 import DataView from '../components/DataView.jsx';
+import SpecGrid from '../grid/SpecGrid.jsx';
+import { useGridSpec } from '../grid/useGridSpec.js';
+import { paramContext } from '../grid/spec.js';
+import { subscribeLive } from '../live/liveLink.js';
+import { useApp } from '../store.jsx';
 import { CHART } from './transform.js';
+import Icon from '../components/Icon.jsx';
 
 /** Rows behind a tile for the detail grid: its grid slide if it has one, else the richest slide. */
 export function detailRows(tile) {
@@ -14,7 +21,28 @@ export function detailRows(tile) {
   return { rows: slide.data || [], columns, title: slide.title || tile.title };
 }
 
-function DetailPanel({ tile }) {
+function SpecDetail({ gridSpecId }) {
+  const { filters } = useApp();
+  const { spec, loading, error } = useGridSpec(gridSpecId);
+  return (
+    <div className="panel fin-detail">
+      <div className="panel-hd">
+        <h2>Detailed data · GridSpec</h2>
+        <span className="hint">
+          <Link to={`/grids?spec=${encodeURIComponent(gridSpecId)}`} className="mono">{gridSpecId}</Link>
+          {' · '}desk / embed
+        </span>
+      </div>
+      <div className="panel-bd">
+        {loading && <div className="empty sm">Loading grid…</div>}
+        {error && <div className="empty sm">{error}</div>}
+        {spec && <SpecGrid spec={spec} context={paramContext(filters)} subscribe={subscribeLive} height={320} />}
+      </div>
+    </div>
+  );
+}
+
+function SlideDetail({ tile }) {
   const { rows, columns, title } = useMemo(() => detailRows(tile), [tile]);
   return (
     <div className="panel fin-detail">
@@ -26,9 +54,15 @@ function DetailPanel({ tile }) {
   );
 }
 
+function DetailPanel({ tile }) {
+  if (tile?.gridSpecId) return <SpecDetail gridSpecId={tile.gridSpecId} />;
+  return <SlideDetail tile={tile} />;
+}
+
 /**
  * STEPS TileGrid: tile view (2–5 columns), split view (60/40 with compact tiles on the right) and full view
- * (tile selector + one tile), with the Wijmo detail grid / pivot under the focused tile.
+ * (tile selector + one tile), with the Wijmo detail grid / pivot under the focused tile. When the tile
+ * declares gridSpecId, the detail pane is that GridSpec (library / desk / embed).
  */
 export default function TileGrid({ tiles, columns, viewMode, focusedId, onFocus, loading, liveIds, flashIds }) {
   const byId = useMemo(() => new Map(tiles.map((t) => [t.id, t])), [tiles]);
@@ -47,6 +81,7 @@ export default function TileGrid({ tiles, columns, viewMode, focusedId, onFocus,
           {tiles.map((t) => (
             <button key={t.id} className={'btn ghost sm' + (t.id === focused.id ? ' on' : '')} onClick={() => onFocus(t.id, 'full')}>
               <i className={'ftile-dot ' + ({ success: 'ok', warning: 'warn', error: 'fail' }[t.status] || 'info')} /> {t.title}
+              {t.gridSpecId && <Icon name="grid" size={11} title={t.gridSpecId} />}
             </button>
           ))}
         </div>

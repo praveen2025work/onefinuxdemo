@@ -1,8 +1,14 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import Select from '../components/Select.jsx';
 import { Stat } from '../components/bits.jsx';
 import Chart from '../components/Chart.jsx';
 import DataView from '../components/DataView.jsx';
+import SpecGrid from '../grid/SpecGrid.jsx';
+import { useGridSpec } from '../grid/useGridSpec.js';
+import { paramContext } from '../grid/spec.js';
+import { subscribeLive } from '../live/liveLink.js';
+import { useApp } from '../store.jsx';
 import { CHART, linearForecast } from './transform.js';
 import { detailRows } from './TileGrid.jsx';
 
@@ -14,15 +20,46 @@ function seriesOf(tile) {
   return { slide, key, label: slide.series[0].name || key, values: slide.data.map((d) => Number(d[key])) };
 }
 
+function AnalysisRows({ tile }) {
+  const { filters } = useApp();
+  const { spec, loading, error } = useGridSpec(tile?.gridSpecId || null);
+  const { rows, columns } = useMemo(() => detailRows(tile), [tile]);
+
+  if (tile?.gridSpecId) {
+    return (
+      <div className="panel">
+        <div className="panel-hd">
+          <h2>Rows behind the tile</h2>
+          <span className="hint">
+            GridSpec <Link to={`/grids?spec=${encodeURIComponent(tile.gridSpecId)}`} className="mono">{tile.gridSpecId}</Link>
+          </span>
+        </div>
+        <div className="panel-bd">
+          {loading && <div className="empty sm">Loading grid…</div>}
+          {error && <div className="empty sm">{error}</div>}
+          {spec && <SpecGrid spec={spec} context={paramContext(filters)} subscribe={subscribeLive} height={300} />}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-hd"><h2>Rows behind the tile</h2><span className="hint">Wijmo grid · pivot · chart</span></div>
+      <div className="panel-bd"><DataView rows={rows} columns={columns} height={300} exportName={`${tile?.id}-analysis`} defaultView="pivot" /></div>
+    </div>
+  );
+}
+
 /**
  * STEPS FinanceAnalysis, without the invented insights: summary statistics, the trend with a least-squares
- * projection (advisory, never on the readiness path, not an LLM) and the rows in a Wijmo grid.
+ * projection (advisory, never on the readiness path, not an LLM) and the rows in a Wijmo grid — or a named
+ * GridSpec when the tile declares gridSpecId.
  */
 export default function FinanceAnalysis({ tiles, selectedId, onSelect }) {
   const tile = tiles.find((t) => t.id === selectedId) || tiles.find((t) => seriesOf(t)) || tiles[0];
   const [ahead, setAhead] = useState(5);
   const s = seriesOf(tile);
-  const { rows, columns } = useMemo(() => detailRows(tile), [tile]);
 
   const stats = useMemo(() => {
     if (!s) return null;
@@ -75,10 +112,7 @@ export default function FinanceAnalysis({ tiles, selectedId, onSelect }) {
           ) : <p className="muted">This tile has no time series. Pick P&amp;L Analysis, Liquidity or Risk Metrics for a trend.</p>}
         </div>
       </div>
-      <div className="panel">
-        <div className="panel-hd"><h2>Rows behind the tile</h2><span className="hint">Wijmo grid · pivot · chart</span></div>
-        <div className="panel-bd"><DataView rows={rows} columns={columns} height={300} exportName={`${tile?.id}-analysis`} defaultView="pivot" /></div>
-      </div>
+      <AnalysisRows tile={tile} />
     </div>
   );
 }

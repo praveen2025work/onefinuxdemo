@@ -184,6 +184,7 @@ export function transformTile(tileDef, raw, now = new Date()) {
     title: tileDef.title,
     description: tileDef.description,
     group: tileDef.group || 'finance',
+    ...(typeof tileDef.gridSpecId === 'string' && tileDef.gridSpecId ? { gridSpecId: tileDef.gridSpecId } : {}),
     status: deriveStatus(tileDef.statusRule, rowsForStatus),
     alert: deriveAlert(tileDef.statusRule, rowsForStatus),
     lastUpdated: now.toLocaleTimeString('en-GB'),

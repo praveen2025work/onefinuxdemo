@@ -32,7 +32,7 @@ export const financeBlueprint = {
     /* ── One Finance live tiles (hub data, refreshed on every push) ─────────────────────── */
     {
       id: 'outcome-readiness', group: 'live', title: 'Outcome readiness', description: 'Stitch instances for this unit, COB and region',
-      dataSourceId: 'instances',
+      dataSourceId: 'instances', gridSpecId: 'instances',
       statusRule: { field: 'status', errorWhen: 'someEqual:BLOCKED', warningWhen: 'someEqual:NOT_YET', alertWhen: 'someEqual:BLOCKED', default: 'success' },
       slides: [
         { id: 'readiness-status', chartType: CHART.status, source: 'One Finance hub · /api/stitch/instances',
@@ -47,7 +47,7 @@ export const financeBlueprint = {
     },
     {
       id: 'report-readiness', group: 'live', title: 'Report readiness', description: 'Can I produce it? Engine outcomes for today',
-      dataSourceId: 'engine',
+      dataSourceId: 'engine', gridSpecId: 'outcomes',
       statusRule: { field: 'status', errorWhen: 'someEqual:BLOCKED', successWhen: 'allEqual:COMPLETED', default: 'info' },
       slides: [
         { id: 'report-progress', chartType: CHART.progress, source: 'Outcome engine · /api/outcomes',
@@ -62,7 +62,7 @@ export const financeBlueprint = {
     },
     {
       id: 'alerts', group: 'live', title: 'Alerts by severity', description: 'Notification inbox, pushed over the WebSocket',
-      dataSourceId: 'inbox',
+      dataSourceId: 'inbox', gridSpecId: 'notifications',
       statusRule: { field: 'severity', errorWhen: 'someEqual:CRITICAL', warningWhen: 'someEqual:WARN', default: 'success' },
       slides: [
         { id: 'alerts-pie', chartType: CHART.pie, source: 'One Finance hub · /api/notifications',

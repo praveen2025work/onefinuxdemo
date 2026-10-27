@@ -15,7 +15,7 @@ subsystem ONEUX in `docs/design/specification.md`.
 | Search across apps | `search/` (`/api/search`), `onefinux.ux.search-providers` | `components/ShellSearch.jsx`, `search/providers.js` |
 | Assistant | `assist/` (`/api/assist`, Anthropic Java SDK) | `components/AssistantPanel.jsx`, `ux/bus.js openAssistant()` |
 | Usage, feedback, experiments, recommendations | `ux/UxController` (`/api/ux/*`), table `ux_event` | `ux/track.js`, `ux/experiments.js`, `components/FeedbackDialog.jsx`, `components/TeamPicks.jsx`, `pages/Usage.jsx` |
-| Saved prefs, team templates | `/api/prefs/{desks,grids,settings}`, `/api/templates` | `ux/prefs.js` (newer copy wins), Desks share / New desk |
+| Saved prefs, team templates | `/api/prefs/{desks,grids,settings}`, `/api/templates` (kind desk\|grid\|finance), `/api/grids?groupUnit=` | `ux/prefs.js` (newer copy wins), Desks share / New desk, Grid library Unit shelf, Finance unit dashboards |
 | Grid write-back | `writeback/` (`/api/writeback`), `onefinux.writeback.targets` | GridSpec `edit` → `grid/writeback.js`, `SpecGrid`, `DataGrid edit` |
 | Access, roles, sign-in | `security/` (`AccessRegistry`, `AccessController`, `CurrentUser`, `SecurityConfig`) | `pages/Access.jsx`, `auth/SessionGate.jsx`, `auth/oidc.js`, `auth/idle.js` |
 
