@@ -5,6 +5,8 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 | Document | Audience | What it is |
 |---|---|---|
 | [`specification.md`](specification.md) | Implementers / reviewers | Spec-driven contract: REQ-IDs, 23 Given/When/Then per subsystem, AC mapping |
+| [`unified-ui-waves.md`](unified-ui-waves.md) | Implementers / reviewers | Organisation UI waves: Wave 1 search and entitlement, Wave 3 shared desk, Wave 4 folded-fact search. Wave 2 stays parked |
+| [`unified-ui-wave1-plan.md`](unified-ui-wave1-plan.md) | Implementers | Task plan for the Wave 1 build |
 | [`instance-surface.md`](instance-surface.md) | Controller | Click-to-expand feed history, in-shell iframe, generic GRID |
 | [`step-grid.md`](step-grid.md) | Controller | Outcome.grids: MESCIUS Wijmo FlexGrid, endpoint and request parameters |
 | [`start.md`](start.md) | New developers | Plain-language idea, how to run it, first change, how we review PRs |
