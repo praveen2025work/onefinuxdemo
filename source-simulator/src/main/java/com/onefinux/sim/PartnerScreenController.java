@@ -32,14 +32,14 @@ public class PartnerScreenController {
                   <title>Helix FOBO</title>
                   <link rel="stylesheet" href="/theme/onefinux-tokens.css"/>
                   <style>
-                  body { margin: 0; padding: 14px 16px; background: transparent; color: var(--ofx-ink, #0f172a);
-                  font-family: var(--ofx-font, system-ui, sans-serif); font-size: 13px; }
-                  .k { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ofx-ink-2, #64748b); }
-                  h1 { font-size: 16px; margin: 4px 0 10px; font-weight: 650; }
+                  body { margin: 0; padding: 6px 8px; background: transparent; color: var(--ofx-ink, #0f172a);
+                  font-family: var(--ofx-font, system-ui, sans-serif); font-size: 12px; line-height: 1.35; }
+                  .k { font-size: 10px; letter-spacing: .06em; text-transform: uppercase; color: var(--ofx-ink-2, #64748b); }
+                  h1 { font-size: 13px; margin: 2px 0 4px; font-weight: 650; }
                   table { width: 100%%; border-collapse: collapse; }
-                  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--ofx-ink-2, #64748b);
-                  background: var(--ofx-surface-2, #f1f5f9); padding: 8px; border-bottom: 1px solid var(--ofx-line, #e2e8f0); }
-                  td { padding: 8px; border-bottom: 1px solid var(--ofx-line, #e2e8f0); }
+                  th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--ofx-ink-2, #64748b);
+                  background: var(--ofx-surface-2, #f1f5f9); padding: 3px 6px; border-bottom: 1px solid var(--ofx-line, #e2e8f0); }
+                  td { padding: 3px 6px; border-bottom: 1px solid var(--ofx-line, #e2e8f0); }
                   tr.on td { background: var(--ofx-info-bg, #eff6ff); }
                   .ok { color: var(--ofx-ok, #059669); } .fail { color: var(--ofx-fail, #dc2626); }
                   .mono { font-family: var(--ofx-mono, ui-monospace, monospace); font-size: 12px; }
@@ -56,7 +56,7 @@ public class PartnerScreenController {
                       <tr data-instance="R-2031"><td class="mono">BK-4420</td><td>MB014</td><td>12,450,000</td><td class="fail">material</td></tr>
                     </tbody>
                   </table>
-                  <p class="k" style="margin-top:14px">Partner screen. No second masthead. Follows its link channel (FDC3).</p>
+                  <p class="k" style="margin-top:8px">Partner screen. No second masthead. Follows its link channel (FDC3).</p>
                   <script src="/ofx-interop.js"></script>
                   <script>
                     window.addEventListener('fdc3Ready', function () {

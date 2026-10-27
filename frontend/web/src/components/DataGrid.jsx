@@ -18,7 +18,7 @@ export const PILL_TONE = {
   'In Progress': 'warn', Submitted: 'ok', Delayed: 'warn',
 };
 
-const HEADER_H = 36;
+const HEADER_H = 26;
 
 function keyOf(row) {
   if (!row || typeof row !== 'object') return null;
@@ -38,7 +38,7 @@ function esc(text) {
  * height:  px, '100%', or 'auto' (fits the rows up to maxHeight).
  * onSelect(item) fires when a row is selected — Workspace views share that row on their link channel.
  */
-export default function DataGrid({ rows = [], columns, height = 360, maxHeight = 520, rowHeight = 34, onSelect,
+export default function DataGrid({ rows = [], columns, height = 360, maxHeight = 520, rowHeight = 28, onSelect,
   title, exportName = 'grid', toolbar = true, search = true, empty = 'No rows.', dense = false, actions, frozen = 0 }) {
   const [query, setQuery] = useState('');
   const queryRef = useRef('');
@@ -75,7 +75,7 @@ export default function DataGrid({ rows = [], columns, height = 360, maxHeight =
   // 'auto' fits the rows (capped); '100%' fills a flex parent (Workspace views); a number is fixed pixels.
   const fill = height === '100%';
   const px = height === 'auto'
-    ? Math.min(maxHeight, Math.max(HEADER_H + rowHeight * 3, HEADER_H + rowHeight * rows.length + 2))
+    ? Math.min(maxHeight, HEADER_H + rowHeight * Math.max(rows.length, 1) + 2)
     : height;
 
   function formatItem(grid, e) {

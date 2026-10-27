@@ -17,14 +17,15 @@
   color: var(--ofx-ink);
   border: 1px solid var(--ofx-line);
   border-radius: var(--ofx-r);
-  font-size: 13px;
+  font-size: 12px;
 }
 .wj-flexgrid .wj-cell {
   background: var(--ofx-card);
   color: var(--ofx-ink);
   border-right: 0;
   border-bottom: 1px solid var(--ofx-line);
-  padding: 6px 10px;
+  padding: 2px 6px;
+  line-height: 1.25;
 }
 .wj-flexgrid .wj-cell.wj-header,
 .wj-flexgrid .wj-topleft .wj-cell.wj-header {

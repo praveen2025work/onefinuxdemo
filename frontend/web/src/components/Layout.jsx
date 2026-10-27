@@ -148,7 +148,7 @@ function Shell({ children }) {
             <Icon name="menu" size={16} />
           </button>
           <div className="brand top-brand" title={`One Finance · UAT · ${live ? `live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'reconnecting…'}`}>
-            <BrandMark size={32} />
+            <BrandMark size={36} />
             <span className="brand-copy">
               <b className="txt">One Finance</b>
               <span className="env"><span className={'live-dot' + (live ? '' : ' off')} />UAT</span>

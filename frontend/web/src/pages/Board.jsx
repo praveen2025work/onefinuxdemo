@@ -6,6 +6,7 @@ import { StatusPill, Meter, PageHeader, formatAmount } from '../components/bits.
 import Icon from '../components/Icon.jsx';
 import { useLinkChannel, useShareInstance } from '../workspace/useLink.js';
 import { channelById } from '../workspace/channels.js';
+import { EMBED } from '../embed.js';
 
 const STATUSES = ['', 'READY', 'BLOCKED', 'NOT_YET', 'SIGNED', 'CLEARED'];
 
@@ -53,14 +54,14 @@ export default function Board() {
         </div>
       </PageHeader>
 
-      <div className="panel">
+      <div className={'panel' + (EMBED ? ' fill-card' : '')}>
         <div className="panel-hd"><h2>{filters.groupUnit} · COB {filters.cobDate} · {filters.region || 'all regions'}</h2>
           {channel
             ? <span className="hint link-hint"><i className="chan-dot" style={{ background: channel.color }} /> select a row to share it{picked ? ' · shared' : ''}</span>
             : <span className="hint">v_head_board</span>}
         </div>
         <div className="panel-bd">
-          <DataView rows={rows} columns={columns} height="auto" rowHeight={56} exportName={`board-${filters.cobDate || 'cob'}`}
+          <DataView rows={rows} columns={columns} height={EMBED ? '100%' : 'auto'} rowHeight={36} exportName={`board-${filters.cobDate || 'cob'}`}
             empty="No instances match this filter." onSelect={channel ? share : undefined}
             pivot={{ rowFields: ['region'], columnFields: ['status'], valueFields: ['amount'] }} chart={{ x: 'status', y: 'amount' }} />
         </div>
