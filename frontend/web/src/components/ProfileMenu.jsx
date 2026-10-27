@@ -15,7 +15,7 @@ function initials(label) {
  * STEPS profile menu: the avatar in the header; name, "Last updated", live link and identity in the dropdown.
  * "Act as" (demo identity for dual sign-off) lives here so the header stays one clean row.
  */
-export default function ProfileMenu() {
+export default function ProfileMenu({ onOpenSettings }) {
   const { filters, lastUpdated, refreshInstances, liveStatus } = useApp();
   const [actor, setActorState] = useState(() => currentActor());
   const [actors, setActors] = useState([]);
@@ -68,6 +68,9 @@ export default function ProfileMenu() {
             ))}
           </div>
           <div className="menu-sec">
+            <button type="button" className="menu-item" onClick={() => { onOpenSettings?.(); close(); }}>
+              <Icon name="config" size={14} /><span className="menu-txt">Settings</span>
+            </button>
             <button type="button" className="menu-item" onClick={() => { navigate('/notifications'); close(); }}>
               <Icon name="bell" size={14} /><span className="menu-txt">Notifications</span>
             </button>

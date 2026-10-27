@@ -240,8 +240,8 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-CONSOLE-003` | The rail is an overlay that is closed when a page loads; a tab on the left edge opens it over the page, and the scrim, Escape, or a navigation closes it. |
 | `REQ-CONSOLE-004` | The top header is one row: the brand mark and wordmark appear once at its left, beside the business date, group unit, and region controls; the open rail shows the brand and one close control in its brand slot. |
 | `REQ-CONSOLE-005` | html[data-theme] is dark or light; the choice persists in localStorage ofx-theme and a URL theme= parameter overrides it. |
-| `REQ-CONSOLE-006` | The top header always shows the business date, group unit, region, and the ready, blocked, and escalation counts; no separate context ribbon row is drawn. Each screen has a one-row page header whose explanation sits behind an info icon. |
-| `REQ-CONSOLE-007` | Top-bar View values are all, developer, architect, controller, head, rtb, and maker; a view filters the rail and is not entitlement. |
+| `REQ-CONSOLE-006` | The top header shows the business date and the ready, blocked, and escalation counts. Group unit, region, and view are together in the settings panel. No separate context ribbon row is drawn. Each screen has a one-row page header whose explanation sits behind an info icon. |
+| `REQ-CONSOLE-007` | Settings panel View values are all, developer, architect, controller, head, rtb, and maker; a view filters the rail and is not entitlement. |
 | `REQ-CONSOLE-008` | Guide routes /product, /architecture, /guide, and /lifecycle remain on the rail in every view. |
 | `REQ-CONSOLE-009` | Home and Reports do not render Drive or scenario buttons. |
 | `REQ-CONSOLE-010` | Below 820px the rail is an overlay drawer, a hamburger opens it, and a labelled bottom nav of five primary destinations is the primary movement control. |
@@ -1040,7 +1040,7 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 - Maps to: `REQ-CONSOLE-006`
 - Given any product route is open
 - When the operator reads the top header
-- Then business date, group unit, region, ready, blocked, and escalations are visible, the View icon tooltip names the current view, and clicking the blocked count opens Board filtered to BLOCKED
+- Then business date, ready, blocked, and escalations are visible in the header, group unit, region, and view are in the settings panel, and clicking the blocked count opens Board filtered to BLOCKED
 
 #### AC-CONSOLE-10
 
@@ -1869,7 +1869,7 @@ The demo console uses the current product user Praveen Kumar. `/api/auth/whoami`
 
 ### 17.2 View versus CEES
 
-The top-bar View filters navigation. It does not grant access. CEES fail-closed 404 remains in force when an instance URL is opened.
+The settings-panel View filters navigation. It does not grant access. CEES fail-closed 404 remains in force when an instance URL is opened.
 
 ### 17.3 Dual control
 

@@ -2,14 +2,14 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useApp } from '../store.jsx';
 import Icon, { BrandMark } from './Icon.jsx';
-import Select from './Select.jsx';
 import DatePicker from './DatePicker.jsx';
 import ThemeMenu from './ThemeMenu.jsx';
 import ProfileMenu from './ProfileMenu.jsx';
 import ShellSearch from './ShellSearch.jsx';
+import SettingsPanel from './SettingsPanel.jsx';
 import NotificationsPanel from './NotificationsPanel.jsx';
 import EmbedShell from '../workspace/EmbedShell.jsx';
-import { VIEWS, filterNav } from '../views.js';
+import { filterNav } from '../views.js';
 import { EMBED } from '../embed.js';
 import { useInstallPrompt } from '../pwa.js';
 
@@ -53,12 +53,13 @@ export default function Layout({ children }) {
 }
 
 function Shell({ children }) {
-  const { context, filters, setFilters, instances, unread, live, liveStatus, desktopAlerts, allowDesktopAlerts, view, setView,
+  const { context, filters, setFilters, instances, unread, live, liveStatus, desktopAlerts, allowDesktopAlerts, view,
     notifPanelOpen, toggleNotifPanel, setNotifPanelOpen, refreshAll } = useApp();
   const nav = filterNav(NAV, view);
   // STEPS left panel: hidden by default so the page gets the full width; a tab on the left edge opens it
   // over the content, and an outside click, Escape or a navigation closes it again.
   const [railOpen, setRailOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -91,8 +92,11 @@ function Shell({ children }) {
   const ready = instances.filter((i) => i.status === 'READY').length;
   const blocked = instances.filter((i) => i.status === 'BLOCKED').length;
   const esc = instances.reduce((n, i) => n + (i.openEscalations || 0), 0);
-  const regions = context?.regions || [];
-  const groupUnits = context?.groupUnits || [];
+
+  function openSettings() {
+    setNotifPanelOpen(false);
+    setSettingsOpen(true);
+  }
 
   const railItems = nav.flatMap((section) => section.items);
   const bottomPref = ['/', '/board', '/finance', '/desks', '/reports'];
@@ -149,12 +153,6 @@ function Shell({ children }) {
           </div>
           <div className="tb-scope" aria-label="Current scope">
             <DatePicker value={filters.cobDate} cobDates={context?.cobDates} onChange={(v) => setFilters({ cobDate: v })} />
-            <Select variant="header" icon="tower" title="Group unit" value={filters.groupUnit}
-              onChange={(v) => setFilters({ groupUnit: v })}
-              options={groupUnits.length ? groupUnits.map((g) => ({ value: g.groupUnitId, label: g.name }))
-                : [{ value: filters.groupUnit, label: filters.groupUnit }]} />
-            <Select variant="header" icon="globe" title="Region" value={filters.region} onChange={(v) => setFilters({ region: v })}
-              options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
             <div className="tb-counts" role="group" aria-label={`${instances.length} instances`}>
               <button type="button" className={'tb-count' + (ready ? ' ok' : '')} onClick={() => openBoard('READY')}
                 title={`${ready} ready of ${instances.length} instances — open on the board`}>
@@ -173,9 +171,6 @@ function Shell({ children }) {
           <ShellSearch />
           <div className="spacer" />
           <div className="tb-icons">
-            <Select variant="icon" icon={view.icon || 'grid'} value={view.id} onChange={setView}
-              title={`View: ${view.label} — filters the menu for this session. Not entitlement.`}
-              options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
             {canInstall && !standalone && (
               <button className="tb-icon" type="button" onClick={install} title="Install One Finance as a desktop app (PWA)" aria-label="Install app">
                 <Icon name="install" size={16} />
@@ -194,7 +189,7 @@ function Shell({ children }) {
               </button>
             )}
             <ThemeMenu />
-            <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={toggleNotifPanel} title="Notifications"
+            <button className={'tb-icon' + (notifPanelOpen ? ' on' : '')} onClick={() => { setSettingsOpen(false); toggleNotifPanel(); }} title="Notifications"
               aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'} aria-expanded={notifPanelOpen}>
               <Icon name="bell" size={17} />
               {unread > 0 && <span className="dot-n">{unread > 99 ? '99+' : unread}</span>}
@@ -202,7 +197,11 @@ function Shell({ children }) {
             <button className="tb-icon" onClick={onRefresh} title="Refresh data" aria-label="Refresh data">
               <Icon name="refresh" size={16} className={spinning ? 'spin-ic' : ''} />
             </button>
-            <ProfileMenu />
+            <button type="button" className={'tb-icon' + (settingsOpen ? ' on' : '')} onClick={openSettings}
+              title="Settings — group unit, region and view" aria-label="Settings" aria-expanded={settingsOpen}>
+              <Icon name="config" size={16} />
+            </button>
+            <ProfileMenu onOpenSettings={openSettings} />
             <span className="env" title={`UAT · ${live ? `live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'reconnecting…'}`}>
               <span className={'live-dot' + (live ? '' : ' off')} />UAT
             </span>
@@ -212,6 +211,7 @@ function Shell({ children }) {
         <div className="main-row">
           <main className="body"><div className="wrap">{children}</div></main>
           <NotificationsPanel />
+          <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </div>
       </div>
 

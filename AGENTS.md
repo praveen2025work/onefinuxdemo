@@ -41,7 +41,7 @@ New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and consol
 
 ## Views
 
-The top-bar **View** icon (its tooltip names the current view) persists `localStorage['ofx-view']`. Options: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail. It is **not** CEES and it is not a Home screen. Instance detail stays reachable from a row.
+The **Settings** panel (group unit, region, and view) persists `localStorage['ofx-view']`. Options: `all`, `developer`, `architect`, `controller`, `head`, `rtb`, `maker`. A view filters the rail. It is **not** CEES and it is not a Home screen. Instance detail stays reachable from a row.
 
 ## Code review
 

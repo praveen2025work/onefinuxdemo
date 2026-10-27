@@ -913,11 +913,15 @@ a.story-row:hover { border-color: var(--stroke-2); }
   .panel-hd .hint { display: none; }
 }
 
-/* MITR thin scrollbars — no frost. */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+/* Vertical bars stay hidden. Horizontal bars remain for wide tables. */
+::-webkit-scrollbar { width: 0; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--faint) 45%, transparent); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--faint) 70%, transparent); }
+* { scrollbar-width: none; }
+
+.set-sec { padding: 4px 8px 10px; }
+.set-sec + .set-sec { border-top: 1px solid var(--stroke); }
 
 /* ================================================================ STEPS shell: header, menus, notifications */
 .tb-icon.on { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--raised)); }
