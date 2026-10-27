@@ -16,11 +16,13 @@ import { filterNav } from '../views.js';
 import { NAV } from '../nav.js';
 import { EMBED } from '../embed.js';
 import { useInstallPrompt } from '../pwa.js';
+import { PageChromeProvider, usePageChrome } from '../chrome/PageChrome.jsx';
+import { resolveTopTitle } from '../chrome/pageChrome.js';
 
 
 export default function Layout({ children }) {
   if (EMBED) return <EmbedShell>{children}</EmbedShell>;
-  return <Shell>{children}</Shell>;
+  return <PageChromeProvider><Shell>{children}</Shell></PageChromeProvider>;
 }
 
 function Shell({ children }) {
@@ -37,6 +39,8 @@ function Shell({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { canInstall, standalone, install } = useInstallPrompt();
+  const { chrome, setInfoSlot } = usePageChrome();
+  const page = resolveTopTitle(chrome, location.pathname);
 
   useEffect(() => { setRailOpen(false); }, [location.pathname]);
   useEffect(() => { trackOpen(location.pathname); }, [location.pathname]);
@@ -131,38 +135,44 @@ function Shell({ children }) {
       </aside>
 
       <div className="main">
-        {/* One compact row: scope (the stitch keys) and fold counts on the left, icons on the right. Details live in
-            tooltips and menus, so the page keeps its height for content. */}
+        {/* One compact row: brand + page label + fold counts + search on the left; business date and icons on the right. */}
         <header className="topbar">
           <button className="rail-toggle solo" onClick={toggleRail} title="Open menu" aria-label="Open menu">
             <Icon name="menu" size={16} />
           </button>
           <div className="brand top-brand" title={`One Finance · UAT · ${live ? `live over ${liveStatus.transport === 'ws' ? 'WebSocket' : 'SSE'} (${liveStatus.role})` : 'reconnecting…'}`}>
-            <BrandMark size={36} />
+            <BrandMark size={32} />
             <span className="brand-copy">
               <b className="txt">One Finance</b>
               <span className="env"><span className={'live-dot' + (live ? '' : ' off')} />UAT</span>
             </span>
           </div>
-          <div className="tb-scope" aria-label="Current scope">
-            <DatePicker value={filters.cobDate} cobDates={context?.cobDates} onChange={(v) => setFilters({ cobDate: v })} />
-            <div className="tb-counts" role="group" aria-label={`${instances.length} instances`}>
-              <button type="button" className={'tb-count' + (ready ? ' ok' : '')} onClick={() => openBoard('READY')}
-                title={`${ready} ready of ${instances.length} instances — open on the board`}>
-                <i className="ctx-dot" />{ready}<span className="tb-count-k">ready</span>
-              </button>
-              <button type="button" className={'tb-count' + (blocked ? ' fail' : '')} onClick={() => openBoard('BLOCKED')}
-                title={`${blocked} blocked — open on the board`}>
-                <i className="ctx-dot" />{blocked}<span className="tb-count-k">blocked</span>
-              </button>
-              <button type="button" className={'tb-count' + (esc ? ' warn' : '')} onClick={() => navigate('/operations')}
-                title={`${esc} open escalations — open Operations`}>
-                <i className="ctx-dot" />{esc}<span className="tb-count-k">esc</span>
-              </button>
+          {page && (
+            <div className="tb-page" title={[page.title, page.context].filter(Boolean).join(' · ')}>
+              {page.icon && <span className="tb-page-ico" aria-hidden><Icon name={page.icon} size={15} /></span>}
+              <h1 className="tb-page-title">{page.title}</h1>
+              <span className="tb-page-info" ref={setInfoSlot} />
             </div>
+          )}
+          <div className="tb-counts" role="group" aria-label={`${instances.length} instances`}>
+            <button type="button" className={'tb-count' + (ready ? ' ok' : '')} onClick={() => openBoard('READY')}
+              title={`${ready} ready of ${instances.length} instances — open on the board`}>
+              <i className="ctx-dot" />{ready}<span className="tb-count-k">ready</span>
+            </button>
+            <button type="button" className={'tb-count' + (blocked ? ' fail' : '')} onClick={() => openBoard('BLOCKED')}
+              title={`${blocked} blocked — open on the board`}>
+              <i className="ctx-dot" />{blocked}<span className="tb-count-k">blocked</span>
+            </button>
+            <button type="button" className={'tb-count' + (esc ? ' warn' : '')} onClick={() => navigate('/operations')}
+              title={`${esc} open escalations — open Operations`}>
+              <i className="ctx-dot" />{esc}<span className="tb-count-k">esc</span>
+            </button>
           </div>
           <ShellSearch />
           <div className="spacer" />
+          <div className="tb-date" aria-label="Business date">
+            <DatePicker value={filters.cobDate} cobDates={context?.cobDates} onChange={(v) => setFilters({ cobDate: v })} />
+          </div>
           <div className="tb-icons">
             {canInstall && !standalone && (
               <button className="tb-icon" type="button" onClick={install} title="Install One Finance as a desktop app (PWA)" aria-label="Install app">
