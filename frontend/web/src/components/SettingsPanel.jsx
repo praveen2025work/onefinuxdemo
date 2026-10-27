@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import Icon from './Icon.jsx';
+import Select from './Select.jsx';
 import { useApp } from '../store.jsx';
 import { VIEWS } from '../views.js';
 
@@ -32,45 +33,27 @@ export default function SettingsPanel({ open, onClose }) {
             </button>
           </div>
         </div>
-        <div className="np-list">
-          <section className="set-sec">
-            <div className="menu-lbl">Group unit</div>
-            {units.map((g) => (
-              <button key={g.groupUnitId} type="button" role="menuitemradio"
-                aria-checked={g.groupUnitId === filters.groupUnit}
-                className={'menu-item' + (g.groupUnitId === filters.groupUnit ? ' on' : '')}
-                onClick={() => setFilters({ groupUnit: g.groupUnitId })}>
-                <Icon name="tower" size={14} />
-                <span className="menu-txt">{g.name || g.groupUnitId}</span>
-                {g.groupUnitId === filters.groupUnit && <Icon name="check" size={14} />}
-              </button>
-            ))}
-          </section>
-          <section className="set-sec">
-            <div className="menu-lbl">Region</div>
-            {[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))].map((r) => (
-              <button key={r.value || 'all'} type="button" role="menuitemradio"
-                aria-checked={(filters.region || '') === r.value}
-                className={'menu-item' + ((filters.region || '') === r.value ? ' on' : '')}
-                onClick={() => setFilters({ region: r.value })}>
-                <Icon name="globe" size={14} />
-                <span className="menu-txt">{r.label}</span>
-                {(filters.region || '') === r.value && <Icon name="check" size={14} />}
-              </button>
-            ))}
-          </section>
-          <section className="set-sec">
-            <div className="menu-lbl">View <span className="muted">· filters the menu, not access</span></div>
-            {VIEWS.map((v) => (
-              <button key={v.id} type="button" role="menuitemradio" aria-checked={v.id === view.id}
-                className={'menu-item' + (v.id === view.id ? ' on' : '')}
-                onClick={() => setView(v.id)}>
-                <Icon name={v.icon} size={14} />
-                <span className="menu-txt">{v.label}</span>
-                {v.id === view.id && <Icon name="check" size={14} />}
-              </button>
-            ))}
-          </section>
+        <div className="np-list set-form">
+          <div className="field">
+            <label id="set-unit-lbl">Group unit</label>
+            <Select labelledBy="set-unit-lbl" variant="block" icon="tower" value={filters.groupUnit || ''}
+              placeholder="Group unit"
+              onChange={(id) => setFilters({ groupUnit: id })}
+              options={units.map((g) => ({ value: g.groupUnitId, label: g.name || g.groupUnitId }))} />
+          </div>
+          <div className="field">
+            <label id="set-region-lbl">Region</label>
+            <Select labelledBy="set-region-lbl" variant="block" icon="globe" value={filters.region || ''}
+              placeholder="Region"
+              onChange={(region) => setFilters({ region })}
+              options={[{ value: '', label: 'All regions' }, ...regions.map((r) => ({ value: r, label: r }))]} />
+          </div>
+          <div className="field">
+            <label id="set-view-lbl">View <span className="muted">· filters the menu, not access</span></label>
+            <Select labelledBy="set-view-lbl" variant="block" value={view.id}
+              onChange={setView}
+              options={VIEWS.map((v) => ({ value: v.id, label: v.label }))} />
+          </div>
         </div>
       </div>
     </aside>
