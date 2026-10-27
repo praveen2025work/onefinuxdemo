@@ -1,8 +1,9 @@
+import { createPortal } from 'react-dom';
 import { formatClock, etaCaption, hasPrediction } from '../eta.js';
 import Icon from './Icon.jsx';
 import InfoHint from './InfoHint.jsx';
 import { EMBED } from '../embed.js';
-import { useLiftPageChrome } from '../chrome/PageChrome.jsx';
+import { useLiftPageChrome, usePageChrome } from '../chrome/PageChrome.jsx';
 
 const PILL = {
   READY: 'ok', CLEARED: 'ok', SIGNED: 'bo', BLOCKED: 'fail', DELAYED: 'warn', NOT_YET: 'plain',
@@ -34,12 +35,13 @@ export function PageTitle({ icon, children }) {
 }
 
 /**
- * Screen chrome: the page label (title + icon + context string) lifts into the top bar. On the page this
- * draws the info icon (explanation stays off-screen until asked), an optional live summary, and tools.
+ * Screen chrome: the page label lifts into the top bar; the info icon portals beside that title so the
+ * page itself keeps only tools / an optional live summary (no content wasted on chrome).
  * In an embedded desk view the lift is skipped (unless `keepTitle`) and an empty header is not drawn.
  */
 export function PageHeader({ icon, title, context, info, infoTitle, infoWidth = 320, summary, keepTitle = false, children }) {
   const lift = !EMBED;
+  const { infoSlot } = usePageChrome();
   useLiftPageChrome({
     title: typeof title === 'string' ? title : null,
     icon: typeof icon === 'string' ? icon : null,
@@ -53,18 +55,25 @@ export function PageHeader({ icon, title, context, info, infoTitle, infoWidth = 
       {info}
     </InfoHint>
   ) : null;
-  if (!showEmbedTitle && !summary && !children && !hint) return null;
+  const pageHint = EMBED ? hint : null;
+  const topHint = lift && hint && infoSlot ? createPortal(hint, infoSlot) : null;
+  if (!showEmbedTitle && !summary && !children && !pageHint) {
+    return topHint;
+  }
   return (
-    <div className={'ph' + (EMBED ? ' in-view' : ' tools-only') + (!showEmbedTitle && !summary ? ' ph-tools-row' : '')}>
-      {(showEmbedTitle || summary || (!EMBED && hint)) && (
-        <div className="ph-main">
-          {showEmbedTitle && <PageTitle icon={icon}>{title}</PageTitle>}
-          {hint}
-          {summary && <p className="ph-sum" title={typeof summary === 'string' ? summary : undefined}>{summary}</p>}
-        </div>
-      )}
-      {children && <div className="ph-tools">{children}</div>}
-    </div>
+    <>
+      {topHint}
+      <div className={'ph' + (EMBED ? ' in-view' : ' tools-only') + (!showEmbedTitle && !summary ? ' ph-tools-row' : '')}>
+        {(showEmbedTitle || summary || pageHint) && (
+          <div className="ph-main">
+            {showEmbedTitle && <PageTitle icon={icon}>{title}</PageTitle>}
+            {pageHint}
+            {summary && <p className="ph-sum" title={typeof summary === 'string' ? summary : undefined}>{summary}</p>}
+          </div>
+        )}
+        {children && <div className="ph-tools">{children}</div>}
+      </div>
+    </>
   );
 }
 

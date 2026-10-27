@@ -139,8 +139,11 @@ p { text-wrap: pretty; }
 .tb-page-ico { display: grid; place-items: center; flex: none; color: var(--accent); }
 .tb-page-title { margin: 0; min-width: 0; font-family: var(--ofx-font); font-size: 14px; font-weight: 650;
   letter-spacing: -0.01em; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tb-page-info { display: inline-flex; align-items: center; flex: none; min-width: 0; }
+.tb-page-info:empty { display: none; }
 .tb-page .infohint-btn { width: 20px; height: 20px; background: transparent; border-color: transparent; }
 .tb-page .infohint-btn:hover { background: var(--raised); border-color: var(--stroke); }
+.tb-page .infohint-pop { z-index: 80; }
 .spacer { flex: 1; }
 .tb-date { display: flex; align-items: center; flex: none; }
 .topbar .sel2-trig { height: var(--ctl-h); padding: 0 9px; gap: 6px; }

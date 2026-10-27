@@ -39,7 +39,7 @@ function Shell({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { canInstall, standalone, install } = useInstallPrompt();
-  const { chrome } = usePageChrome();
+  const { chrome, setInfoSlot } = usePageChrome();
   const page = resolveTopTitle(chrome, location.pathname);
 
   useEffect(() => { setRailOpen(false); }, [location.pathname]);
@@ -151,6 +151,7 @@ function Shell({ children }) {
             <div className="tb-page" title={[page.title, page.context].filter(Boolean).join(' · ')}>
               {page.icon && <span className="tb-page-ico" aria-hidden><Icon name={page.icon} size={15} /></span>}
               <h1 className="tb-page-title">{page.title}</h1>
+              <span className="tb-page-info" ref={setInfoSlot} />
             </div>
           )}
           <div className="tb-counts" role="group" aria-label={`${instances.length} instances`}>

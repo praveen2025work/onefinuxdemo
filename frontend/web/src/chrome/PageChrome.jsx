@@ -1,13 +1,20 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { EMPTY_CHROME } from './pageChrome.js';
 
-const PageChromeContext = createContext({ chrome: EMPTY_CHROME, setChrome: () => {} });
+const PageChromeContext = createContext({
+  chrome: EMPTY_CHROME,
+  setChrome: () => {},
+  infoSlot: null,
+  setInfoSlot: () => {},
+});
 
 export function PageChromeProvider({ children }) {
   const [chrome, setChrome] = useState(EMPTY_CHROME);
-  // Do not clear on pathname here: that effect runs after PageHeader's lift and would wipe the title.
-  // Unmount cleanup on useLiftPageChrome (all cleanups, then new lifts) is enough.
-  const value = useMemo(() => ({ chrome, setChrome }), [chrome]);
+  const [infoSlot, setInfoSlotNode] = useState(null);
+  // Callback ref so Layout can mount the top-bar info portal target without storing React nodes in chrome state.
+  const setInfoSlot = useCallback((node) => { setInfoSlotNode(node); }, []);
+  // Do not clear chrome on pathname here: that effect runs after PageHeader's lift and would wipe the title.
+  const value = useMemo(() => ({ chrome, setChrome, infoSlot, setInfoSlot }), [chrome, infoSlot, setInfoSlot]);
   return <PageChromeContext.Provider value={value}>{children}</PageChromeContext.Provider>;
 }
 
