@@ -64,7 +64,8 @@ export function scopeSelector(selector, scope) {
   if (!classes.length || !classes.every(gridClass) || !classes.some((c) => !['on', 'open', 'flip', 'ok', 'warn', 'fail', 'info', 'plain', 'bo', 'sm', 'ghost', 'fill', 'static'].includes(c))) return null;
   if (/^(html|body|:root|\*)\b/.test(selector) && !/^html\[/.test(selector)) return null;
   // Skin / theme variants: the console sets these on <html>; on a host page the element carries them.
-  const themed = selector.match(/^(?:html)?((?:\[[^\]]+\])+)\s+(.*)$/);
+  // `:is([data-skin="steps"], [data-skin="barclays"]) .btn` (the STEPS look, shared by both skins) is one of them.
+  const themed = selector.match(/^(?:html)?((?:\[[^\]]+\]|:is\((?:\s*\[[^\]]+\]\s*,?)+\))+)\s+(.*)$/);
   if (themed) return `${scope}${themed[1]} ${themed[2]}`;
   const first = selector.split(/[\s>+~]/)[0];
   if (PORTAL_CLASSES.some((c) => first.includes('.' + c))) return selector;

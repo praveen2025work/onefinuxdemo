@@ -35,7 +35,7 @@ export default function GridConfigFields({ grids = [], onChange }) {
         <span className="muted"> — optional · {grids.length} configured</span></label>
       <div className="ob-feeds">
         {grids.length === 0 && (
-          <div className="ob-feed" style={{ color: 'var(--muted)', fontSize: 12.5 }}>
+          <div className="ob-feed" style={{ color: 'var(--muted)', fontSize: 12 }}>
             No grids. Grid view stays hidden for this outcome until you add one.
           </div>
         )}

@@ -12,6 +12,8 @@ test('scopeSelector keeps grid component rules, scoped; drops the shell', () => 
   assert.equal(scopeSelector('.dg-bar .sec', 'ofx-grid'), 'ofx-grid .dg-bar .sec');
   assert.equal(scopeSelector('.seg button.on', 'ofx-grid'), 'ofx-grid .seg button.on');
   assert.equal(scopeSelector('[data-skin="steps"] .btn', 'ofx-grid'), 'ofx-grid[data-skin="steps"] .btn');
+  assert.equal(scopeSelector(':is([data-skin="steps"], [data-skin="barclays"]) .btn', 'ofx-grid'),
+    'ofx-grid:is([data-skin="steps"], [data-skin="barclays"]) .btn', 'the STEPS look shared by two skins');
   assert.equal(scopeSelector('html[data-theme="dark"] .pill.ok', 'ofx-grid'), 'ofx-grid[data-theme="dark"] .pill.ok');
   assert.equal(scopeSelector('.sel2-menu', 'ofx-grid'), '.sel2-menu', 'the dropdown renders into <body>');
   assert.equal(scopeSelector('.nav-a .tag', 'ofx-grid'), null);

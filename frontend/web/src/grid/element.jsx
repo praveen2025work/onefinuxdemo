@@ -36,7 +36,7 @@ class OfxGridElement extends HTMLElement {
   }
 
   connectedCallback() {
-    if (!this.hasAttribute('data-skin')) this.setAttribute('data-skin', document.documentElement.getAttribute('data-skin') || 'steps');
+    if (!this.hasAttribute('data-skin')) this.setAttribute('data-skin', document.documentElement.getAttribute('data-skin') || 'barclays');
     if (!this.root) this.root = createRoot(this);
     this.load();
   }

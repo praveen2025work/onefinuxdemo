@@ -11,8 +11,10 @@ async function getMermaid() {
   return mermaidMod;
 }
 
+/** Mode plus skin: a diagram re-renders when either changes (its colours are the skin's tokens). */
 function currentMode() {
-  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  const html = document.documentElement;
+  return `${html.getAttribute('data-theme') === 'light' ? 'light' : 'dark'}-${html.getAttribute('data-skin') || 'barclays'}`;
 }
 
 export default function MermaidFig({ source, title }) {
@@ -25,7 +27,7 @@ export default function MermaidFig({ source, title }) {
     const html = document.documentElement;
     const sync = () => setMode(currentMode());
     const obs = new MutationObserver(sync);
-    obs.observe(html, { attributes: true, attributeFilter: ['data-theme'] });
+    obs.observe(html, { attributes: true, attributeFilter: ['data-theme', 'data-skin'] });
     return () => obs.disconnect();
   }, []);
 
@@ -33,7 +35,7 @@ export default function MermaidFig({ source, title }) {
     const el = hostRef.current;
     if (!el) return undefined;
     let cancelled = false;
-    const dark = mode !== 'light';
+    const dark = !mode.startsWith('light');
     const id = `ofx-mmd-${uid}-${mode}`;
 
     const job = async () => {

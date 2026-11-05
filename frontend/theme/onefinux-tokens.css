@@ -1,26 +1,128 @@
 /**
- * One Finance design standard — the one palette every accounting screen uses.
+ * One Finance design standard v2 — the one palette, type scale and page kit every accounting screen uses.
  *
  * Who loads it
  *   - The One Finance console imports it; its own tokens (styles.css) are derived from these.
- *   - Partner screens framed in One Finance link it and use --ofx-* only:
+ *   - Partner screens framed in One Finance link it and use --ofx-* plus the .ofx-* page kit below:
  *       <link rel="stylesheet" href="https://<one-finance-host>/theme/onefinux-tokens.css">
- *       <html data-skin="steps" data-theme="light|dark" data-ofx-embedded="1">  (from the iframe query)
- *   - shadcn / Tailwind apps (STEPS) framed with data-ofx-embedded="1" also get the shadcn HSL variables
- *     below, so their components paint with the same palette without a code change.
- *   - The MITR chatbot (support-bot) framed with data-ofx-vars="mitr" gets its own variable names (MITR bridge).
+ *       <html data-skin="barclays" data-theme="light|dark" data-ofx-embedded="1">  (skin / theme from the iframe query)
+ *   - shadcn / Tailwind apps (STEPS v3) get their HSL variables from the shadcn bridge: framed (data-ofx-embedded="1")
+ *     or standalone with data-ofx-vars="shadcn". Their hard-coded Tailwind blue / slate / gray classes follow the
+ *     brand through the --ofx-tw-* ramps (onefinux-tailwind-preset.cjs maps them).
+ *   - MITR AI (support-bot) sets data-ofx-vars="mitr" and gets its own variable names (MITR bridge).
  *
- * Skins
- *   steps (default) — the STEPS look: shadcn tokens, Banking Blue primary, white cards, system type.
- *   ofx             — the earlier MITR indigo look, kept as a selectable theme.
- * Modes: data-theme="light" (default) | "dark".
+ * Skins (html[data-skin])
+ *   barclays (default) — Barclays brand colours on the STEPS v3 structure: Royal Blue #006de3 for everything
+ *                        interactive, Sky #00aeef for the brand mark only, Midnight #1a2142 for dark surfaces,
+ *                        charcoal ink, white cards on a light grey page.
+ *   steps              — STEPS Banking Blue (#2563eb on slate), the previous standard.
+ *   ofx                — the MITR indigo look, kept as a selectable theme.
+ * Modes (html[data-theme]): light (default) | dark.
  *
- * Solid surfaces only: no frosted glass, no backdrop-filter. Wijmo grids, pivots and charts take their
- * skin from onefinux-wijmo.css, which reads these tokens.
+ * Structure is the same in every skin: STEPS v3 type scale (--ofx-text-*), control scale (--ofx-ctl-*), shell
+ * (--ofx-header-h …), radii and spacing. Text colours meet WCAG 2.1 AA (4.5:1) on cards, the page and their status
+ * tints in every skin and mode (frontend/web/src/lib/tokens.test.js checks it).
+ *
+ * Solid surfaces only: no frosted glass, no backdrop-filter, no radial washes. Wijmo grids, pivots and charts take
+ * their skin from onefinux-wijmo.css, which reads these tokens.
+ *
+ * Barclays Effra is the brand typeface. It is licensed: no font file ships here. Machines that have it installed
+ * render it; everyone else gets the STEPS system stack, in every app alike.
  */
 
-/* ---------------------------------------------------------------- STEPS light (default) */
+/* ---------------------------------------------------------------- Barclays light (default) */
 :root,
+html[data-skin="barclays"] {
+  color-scheme: light;
+  --ofx-page: #f6f6f6;
+  --ofx-surface-3: #f6f6f6;
+  --ofx-card: #ffffff;
+  --ofx-surface-2: #f0f0f0;
+  --ofx-line: #e2e2e2;
+  --ofx-line-2: #cfcfcf;
+  --ofx-ink: #272727;
+  --ofx-ink-2: #515151;
+  --ofx-ink-3: #6b6b6b;
+  --ofx-accent: #006de3;
+  --ofx-accent-2: #005bbe;
+  --ofx-on-accent: #ffffff;
+  --ofx-ok: #077a1d;
+  --ofx-warn: #9a5b00;
+  --ofx-fail: #c8000d;
+  --ofx-bo: #7c3aed;
+  --ofx-gold: #ffba00;
+  --ofx-navy: #1a2142;
+  --ofx-sky: #00aeef;
+  --ofx-rail: #ffffff;
+  --ofx-rail-line: #e2e2e2;
+  --ofx-rail-hover: #f0f0f0;
+  --ofx-rail-active: rgba(0, 109, 227, 0.10);
+  --ofx-rail-ink: #272727;
+  --ofx-rail-muted: #6b6b6b;
+  --ofx-rail-on: #ffffff;
+  --ofx-nav-on: #006de3;
+  --ofx-brand-a: #006de3;
+  --ofx-brand-b: #00aeef;
+  --ofx-sh-1: 0 1px 3px rgba(39, 39, 39, 0.06), 0 1px 2px rgba(39, 39, 39, 0.04);
+  --ofx-sh-2: 0 12px 32px -12px rgba(26, 33, 66, 0.20), 0 4px 10px rgba(26, 33, 66, 0.06);
+  --ofx-font: "Barclays Effra", "Effra", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --ofx-display: var(--ofx-font);
+  --ofx-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --ofx-r-ctl: 10px;
+  --ofx-r: 10px;
+  --ofx-r-lg: 12px;
+  --ofx-chart-1: #006de3;
+  --ofx-chart-2: #00aeef;
+  --ofx-chart-3: #1a2142;
+  --ofx-chart-4: #ffba00;
+  --ofx-chart-5: #077a1d;
+  --ofx-chart-6: #7c3aed;
+}
+
+/* ---------------------------------------------------------------- Barclays dark (Midnight) */
+html[data-skin="barclays"][data-theme="dark"],
+html:not([data-skin])[data-theme="dark"] {
+  color-scheme: dark;
+  --ofx-page: #161b2f;
+  --ofx-surface-3: #121729;
+  --ofx-card: #1a2142;
+  --ofx-surface-2: #232b52;
+  --ofx-line: #2e3866;
+  --ofx-line-2: #3d4880;
+  --ofx-ink: #f5f6fa;
+  --ofx-ink-2: #cbccd1;
+  --ofx-ink-3: #9a9fb5;
+  --ofx-accent: #3696fc;
+  --ofx-accent-2: #6cb3fd;
+  --ofx-on-accent: #0b1020;
+  --ofx-ok: #34c759;
+  --ofx-warn: #ffba00;
+  --ofx-fail: #ff6b6b;
+  --ofx-bo: #a78bfa;
+  --ofx-gold: #ffba00;
+  --ofx-navy: #93c5fd;
+  --ofx-sky: #00aeef;
+  --ofx-rail: #1a2142;
+  --ofx-rail-line: #2e3866;
+  --ofx-rail-hover: #232b52;
+  --ofx-rail-active: rgba(54, 150, 252, 0.16);
+  --ofx-rail-ink: #f5f6fa;
+  --ofx-rail-muted: #9a9fb5;
+  --ofx-rail-on: #0b1020;
+  --ofx-nav-on: #3696fc;
+  --ofx-brand-a: #3696fc;
+  --ofx-brand-b: #00aeef;
+  --ofx-sh-1: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --ofx-sh-2: 0 24px 64px -16px rgba(0, 0, 0, 0.7), 0 8px 18px rgba(0, 0, 0, 0.45);
+  --ofx-chart-1: #3696fc;
+  --ofx-chart-2: #00aeef;
+  --ofx-chart-3: #cbccd1;
+  --ofx-chart-4: #ffba00;
+  --ofx-chart-5: #34c759;
+  --ofx-chart-6: #a78bfa;
+}
+
+/* ---------------------------------------------------------------- STEPS light (Banking Blue) */
 html[data-skin="steps"] {
   color-scheme: light;
   --ofx-page: #f8fafc;
@@ -36,11 +138,12 @@ html[data-skin="steps"] {
   --ofx-accent-2: #1d4ed8;
   --ofx-on-accent: #ffffff;
   --ofx-ok: #047857;
-  --ofx-warn: #d97706;
+  --ofx-warn: #92400e;
   --ofx-fail: #b91c1c;
   --ofx-bo: #7c3aed;
   --ofx-gold: #f59e0b;
   --ofx-navy: #1e40af;
+  --ofx-sky: #0ea5e9;
   --ofx-rail: #ffffff;
   --ofx-rail-line: #e2e8f0;
   --ofx-rail-hover: #f1f5f9;
@@ -59,11 +162,16 @@ html[data-skin="steps"] {
   --ofx-r-ctl: 10px;
   --ofx-r: 10px;
   --ofx-r-lg: 12px;
+  --ofx-chart-1: #2563eb;
+  --ofx-chart-2: #10b981;
+  --ofx-chart-3: #f59e0b;
+  --ofx-chart-4: #ef4444;
+  --ofx-chart-5: #8b5cf6;
+  --ofx-chart-6: #0ea5e9;
 }
 
 /* ---------------------------------------------------------------- STEPS dark */
-html[data-skin="steps"][data-theme="dark"],
-html:not([data-skin])[data-theme="dark"] {
+html[data-skin="steps"][data-theme="dark"] {
   color-scheme: dark;
   --ofx-page: #0b111e;
   --ofx-surface-3: #0e1525;
@@ -73,15 +181,17 @@ html:not([data-skin])[data-theme="dark"] {
   --ofx-line-2: #3a4d6b;
   --ofx-ink: #f8fafc;
   --ofx-ink-2: #94a3b8;
-  --ofx-ink-3: #64748b;
+  --ofx-ink-3: #8592a6;
   --ofx-accent: #3b83f6;
   --ofx-accent-2: #60a5fa;
+  --ofx-on-accent: #0b111e;
   --ofx-ok: #34d399;
   --ofx-warn: #fbbf24;
   --ofx-fail: #f87171;
   --ofx-bo: #a78bfa;
   --ofx-gold: #fbbf24;
   --ofx-navy: #93c5fd;
+  --ofx-sky: #38bdf8;
   --ofx-rail: #10192d;
   --ofx-rail-line: #2b3b55;
   --ofx-rail-hover: #1d2839;
@@ -91,9 +201,10 @@ html:not([data-skin])[data-theme="dark"] {
   --ofx-nav-on: #3b83f6;
   --ofx-sh-1: 0 2px 8px rgba(0, 0, 0, 0.4);
   --ofx-sh-2: 0 24px 64px -16px rgba(0, 0, 0, 0.7), 0 8px 18px rgba(0, 0, 0, 0.45);
+  --ofx-chart-1: #3b83f6;
 }
 
-/* ---------------------------------------------------------------- One Finance MITR (legacy skin) */
+/* ---------------------------------------------------------------- One Finance MITR (classic indigo skin) */
 html[data-skin="ofx"] {
   color-scheme: dark;
   --ofx-page: #090d1c;
@@ -104,22 +215,23 @@ html[data-skin="ofx"] {
   --ofx-line-2: #2e3958;
   --ofx-ink: #e6e8ee;
   --ofx-ink-2: #c7cad6;
-  --ofx-ink-3: #7e85a3;
+  --ofx-ink-3: #8a91ad;
   --ofx-accent: #818cf8;
   --ofx-accent-2: #a5b4fc;
-  --ofx-on-accent: #ffffff;
+  --ofx-on-accent: #0b1020;
   --ofx-ok: #34d399;
   --ofx-warn: #fbbf24;
   --ofx-fail: #f87171;
   --ofx-bo: #a78bfa;
   --ofx-gold: #fbbf24;
   --ofx-navy: #a5b4fc;
+  --ofx-sky: #38bdf8;
   --ofx-rail: #090d1c;
   --ofx-rail-line: #232b48;
   --ofx-rail-hover: #131a2e;
   --ofx-rail-active: rgba(129, 140, 248, 0.16);
   --ofx-rail-ink: #e6e8ee;
-  --ofx-rail-muted: #7e85a3;
+  --ofx-rail-muted: #8a91ad;
   --ofx-rail-on: #ffffff;
   --ofx-nav-on: #818cf8;
   --ofx-brand-a: #6366f1;
@@ -128,9 +240,16 @@ html[data-skin="ofx"] {
   --ofx-sh-2: 0 24px 64px -16px rgba(0, 0, 0, 0.7), 0 8px 18px rgba(0, 0, 0, 0.45);
   --ofx-font: "Inter", system-ui, -apple-system, Helvetica, Arial, sans-serif;
   --ofx-display: "Sora", "Inter", system-ui, sans-serif;
+  --ofx-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --ofx-r-ctl: 8px;
   --ofx-r: 10px;
   --ofx-r-lg: 14px;
+  --ofx-chart-1: #818cf8;
+  --ofx-chart-2: #34d399;
+  --ofx-chart-3: #fbbf24;
+  --ofx-chart-4: #f87171;
+  --ofx-chart-5: #c084fc;
+  --ofx-chart-6: #38bdf8;
 }
 html[data-skin="ofx"][data-theme="light"] {
   color-scheme: light;
@@ -143,14 +262,16 @@ html[data-skin="ofx"][data-theme="light"] {
   --ofx-ink: #0f172a;
   --ofx-ink-2: #475569;
   --ofx-ink-3: #5b6779;
-  --ofx-accent: #6366f1;
-  --ofx-accent-2: #4f46e5;
+  --ofx-accent: #4f46e5;
+  --ofx-accent-2: #4338ca;
+  --ofx-on-accent: #ffffff;
   --ofx-ok: #047857;
-  --ofx-warn: #d97706;
+  --ofx-warn: #92400e;
   --ofx-fail: #b91c1c;
   --ofx-bo: #7c3aed;
   --ofx-gold: #f59e0b;
   --ofx-navy: #4338ca;
+  --ofx-sky: #0ea5e9;
   --ofx-rail: #ffffff;
   --ofx-rail-line: #e2e8f0;
   --ofx-rail-hover: #f1f5f9;
@@ -161,16 +282,74 @@ html[data-skin="ofx"][data-theme="light"] {
   --ofx-nav-on: #6366f1;
   --ofx-sh-1: 0 8px 24px -8px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.04);
   --ofx-sh-2: 0 16px 48px -16px rgba(15, 23, 42, 0.18), 0 4px 12px rgba(15, 23, 42, 0.08);
+  --ofx-chart-1: #4f46e5;
+  --ofx-chart-2: #10b981;
+  --ofx-chart-3: #f59e0b;
+  --ofx-chart-4: #ef4444;
+  --ofx-chart-5: #8b5cf6;
+  --ofx-chart-6: #0ea5e9;
 }
 
 /* ---------------------------------------------------------------- derived (every skin) */
 :root {
-  /* One control scale for every app (values from STEPS v3: Button size sm, Input, SelectTrigger, Label, Wijmo). */
-  --ofx-ctl-h: 32px;                                  /* buttons, inputs, selects, drop-downs */
-  --ofx-ctl-h-sm: 28px;                               /* toolbar icon buttons, chips */
+  /* Type scale: the STEPS v3 steps (Tailwind text-xs … text-3xl, plus the 10px / 11px badge sizes STEPS uses).
+     Every size of text in every app is one of these; the parity audit (frontend/web/parity) fails anything else. */
+  --ofx-text-micro: 10px;                             /* counters, tags on dense rows */
+  --ofx-text-2xs: 11px;                               /* badges, eyebrows, row actions */
+  --ofx-text-xs: 12px;                                /* meta, captions, toolbar buttons, grid headers */
+  --ofx-text-sm: 14px;                                /* body text, fields, labels, nav, tabs */
+  --ofx-text-base: 16px;                              /* card and section titles */
+  --ofx-text-lg: 18px;                                /* the app title in the header */
+  --ofx-text-xl: 20px;                                /* dialog titles, the brand name */
+  --ofx-text-2xl: 24px;                               /* page titles, KPI values */
+  --ofx-text-3xl: 30px;                               /* hero numbers */
+  --ofx-leading-xs: 16px;
+  --ofx-leading-sm: 20px;
+  --ofx-leading-base: 24px;
+  --ofx-leading-lg: 28px;
+  --ofx-leading-xl: 28px;
+  --ofx-leading-2xl: 32px;
+  --ofx-leading-3xl: 36px;
+  /* Roles (what to use the steps for). */
+  --ofx-fs-body: var(--ofx-text-sm);
+  --ofx-fs-meta: var(--ofx-text-xs);
+  --ofx-fs-section: var(--ofx-text-base);             /* STEPS SectionCard title: text-base font-semibold */
+  --ofx-fw-section: 600;
+  --ofx-fs-app-title: var(--ofx-text-lg);             /* STEPS header h1: text-lg font-bold */
+  --ofx-fw-app-title: 700;
+  --ofx-fs-page-title: var(--ofx-text-2xl);           /* STEPS PageHeader h1: text-2xl font-bold tracking-tight */
+  --ofx-fw-page-title: 700;
+  --ofx-fs-kpi: var(--ofx-text-2xl);                  /* STEPS KPIStat value: text-2xl font-semibold */
+  --ofx-fw-kpi: 600;
+
+  /* Shell: STEPS DashboardLayout. One header row, a 256px side panel, 36px nav items. */
+  --ofx-header-h: 64px;
+  --ofx-sidebar-w: 256px;
+  --ofx-nav-h: 36px;
+  --ofx-nav-fs: var(--ofx-text-sm);
+  --ofx-nav-fw: 500;
+  /* Layout: 16px gutters, 24px between page sections (STEPS space-y-6), 24px card padding (p-6), 340px detail rail. */
+  --ofx-page-px: 16px;
+  --ofx-page-py: 16px;
+  --ofx-embed-p: 12px;
+  --ofx-gap: 16px;
+  --ofx-section-gap: 24px;
+  --ofx-card-p: 24px;
+  --ofx-rail-w: 340px;
+  --ofx-bp-md: 768px;                                 /* breakpoints, for reference: 640 / 768 / 1024 / 1280 */
+
+  /* Controls: STEPS v3 Button and fields. Two sizes, as STEPS uses them:
+       compact (toolbars, filters, card and grid tools) = Button size sm: 32px, 12px / 500 text
+       default (forms, dialogs, page actions)          = Button default, Input, SelectTrigger: 36px, 14px text */
+  --ofx-ctl-h: 32px;                                  /* compact buttons, filter fields and drop-downs */
+  --ofx-ctl-h-sm: 28px;                               /* toolbar icon buttons, chips, row actions */
+  --ofx-ctl-h-lg: 36px;                               /* default buttons */
+  --ofx-field-h: 36px;                                /* form inputs and selects */
   --ofx-ctl-px: 12px;
+  --ofx-ctl-px-lg: 16px;
   --ofx-ctl-fs: 14px;                                 /* text typed or picked: inputs, selects */
-  --ofx-btn-fs: 12px;
+  --ofx-btn-fs: 12px;                                 /* compact button text */
+  --ofx-btn-fs-lg: 14px;                              /* default button text */
   --ofx-btn-fw: 500;
   --ofx-label-fs: 14px;
   --ofx-label-fw: 500;
@@ -178,8 +357,10 @@ html[data-skin="ofx"][data-theme="light"] {
   --ofx-ctl-line: var(--ofx-line);
   --ofx-ctl-sh: 0 1px 2px 0 rgba(0, 0, 0, 0.05);      /* STEPS shadow-sm */
   --ofx-focus: 0 0 0 1px var(--ofx-accent);           /* STEPS ring-1 ring-ring */
-  --ofx-grid-fs: 13px;
+  --ofx-grid-fs: 13px;                                /* Wijmo cells (the STEPS grid) */
   --ofx-grid-hd-fs: 12px;
+  --ofx-grid-row-h: 33px;
+
   --ofx-info: var(--ofx-accent-2);
   --ofx-ok-bg: color-mix(in srgb, var(--ofx-ok) 12%, var(--ofx-card));
   --ofx-ok-line: color-mix(in srgb, var(--ofx-ok) 40%, var(--ofx-line));
@@ -198,19 +379,100 @@ html[data-skin="ofx"][data-theme="light"] {
   --ofx-navy-800: var(--ofx-card);
   --ofx-navy-900: var(--ofx-surface-2);
   --ofx-ink-4: var(--ofx-ink-3);
-  --ofx-chart-1: var(--ofx-accent);
-  --ofx-chart-2: #10b981;
-  --ofx-chart-3: #f59e0b;
-  --ofx-chart-4: #ef4444;
-  --ofx-chart-5: #8b5cf6;
-  --ofx-chart-6: #0ea5e9;
 }
 
-/* ---------------------------------------------------------------- shadcn bridge (framed apps, e.g. STEPS)
-   HSL triplets in the shadcn convention: hsl(var(--primary)). Only when framed, so a standalone app keeps its
-   own theme switcher. Values for the steps skin are STEPS' own globals.css values. */
+/* ---------------------------------------------------------------- Barclays ramps for Tailwind palettes
+   RGB triplets ("0 109 227"), so Tailwind can add opacity: rgb(var(--ofx-tw-blue-600) / 0.5). Only the barclays
+   skin defines them; under any other skin an app's blue / slate / gray classes keep Tailwind's own values (the
+   preset and the MITR bridge fall back to them). Royal Blue is blue-600, Midnight is blue-950; the greys are the
+   Barclays neutrals (#f6f6f6 page, #e2e2e2 hairline, #515151 body, #272727 ink). */
+html[data-skin="barclays"] {
+  --ofx-tw-blue-50: 231 240 251;
+  --ofx-tw-blue-100: 208 227 250;
+  --ofx-tw-blue-200: 166 203 246;
+  --ofx-tw-blue-300: 110 170 241;
+  --ofx-tw-blue-400: 54 150 252;
+  --ofx-tw-blue-500: 26 130 238;
+  --ofx-tw-blue-600: 0 109 227;
+  --ofx-tw-blue-700: 0 91 190;
+  --ofx-tw-blue-800: 0 74 154;
+  --ofx-tw-blue-900: 0 58 120;
+  --ofx-tw-blue-950: 26 33 66;
+  --ofx-tw-gray-50: 246 246 246;
+  --ofx-tw-gray-100: 240 240 240;
+  --ofx-tw-gray-200: 226 226 226;
+  --ofx-tw-gray-300: 207 207 207;
+  --ofx-tw-gray-400: 163 163 163;
+  --ofx-tw-gray-500: 115 115 115;
+  --ofx-tw-gray-600: 81 81 81;
+  --ofx-tw-gray-700: 63 63 63;
+  --ofx-tw-gray-800: 39 39 39;
+  --ofx-tw-gray-900: 28 28 28;
+  --ofx-tw-gray-950: 15 15 15;
+  --ofx-tw-slate-50: var(--ofx-tw-gray-50);
+  --ofx-tw-slate-100: var(--ofx-tw-gray-100);
+  --ofx-tw-slate-200: var(--ofx-tw-gray-200);
+  --ofx-tw-slate-300: var(--ofx-tw-gray-300);
+  --ofx-tw-slate-400: var(--ofx-tw-gray-400);
+  --ofx-tw-slate-500: var(--ofx-tw-gray-500);
+  --ofx-tw-slate-600: var(--ofx-tw-gray-600);
+  --ofx-tw-slate-700: var(--ofx-tw-gray-700);
+  --ofx-tw-slate-800: var(--ofx-tw-gray-800);
+  --ofx-tw-slate-900: var(--ofx-tw-gray-900);
+  --ofx-tw-slate-950: var(--ofx-tw-gray-950);
+}
+
+/* ---------------------------------------------------------------- shadcn bridge (STEPS v3 and any shadcn / Tailwind app)
+   HSL triplets in the shadcn convention: hsl(var(--primary)). Framed (data-ofx-embedded="1"), or standalone with
+   data-ofx-vars="shadcn" when the app paints from the standard on its own. An app that sets neither keeps its own
+   theme switcher and values. Body type follows the standard font in both cases. */
 html[data-ofx-embedded="1"],
-html[data-ofx-embedded="1"][data-skin="steps"] {
+html[data-ofx-vars="shadcn"] {
+  --background: 0 0% 96.5%;
+  --foreground: 0 0% 15.3%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 15.3%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 15.3%;
+  --primary: 211.2 100% 44.5%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 94.1%;
+  --secondary-foreground: 0 0% 15.3%;
+  --muted: 0 0% 94.1%;
+  --muted-foreground: 0 0% 42%;
+  --accent: 211.2 100% 44.5%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 356 100% 44.5%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 88.6%;
+  --input: 0 0% 88.6%;
+  --ring: 211.2 100% 44.5%;
+  --radius: 0.75rem;
+}
+html[data-ofx-embedded="1"][data-theme="dark"],
+html[data-ofx-vars="shadcn"][data-theme="dark"] {
+  --background: 228 36.2% 13.5%;
+  --foreground: 228 33.3% 97.1%;
+  --card: 229.5 43.5% 18%;
+  --card-foreground: 228 33.3% 97.1%;
+  --popover: 229.5 43.5% 18%;
+  --popover-foreground: 228 33.3% 97.1%;
+  --primary: 210.9 97.1% 60%;
+  --primary-foreground: 225.7 48.8% 8.4%;
+  --secondary: 229.8 40.2% 22.9%;
+  --secondary-foreground: 228 33.3% 97.1%;
+  --muted: 229.8 40.2% 22.9%;
+  --muted-foreground: 228.9 15.4% 65.7%;
+  --accent: 210.9 97.1% 60%;
+  --accent-foreground: 225.7 48.8% 8.4%;
+  --destructive: 0 100% 71%;
+  --destructive-foreground: 225.7 48.8% 8.4%;
+  --border: 229.3 37.8% 29%;
+  --input: 229.8 40.2% 22.9%;
+  --ring: 210.9 97.1% 60%;
+}
+html[data-ofx-embedded="1"][data-skin="steps"],
+html[data-ofx-vars="shadcn"][data-skin="steps"] {
   --background: 210 40% 98%;
   --foreground: 222.2 84% 4.9%;
   --card: 0 0% 100%;
@@ -232,8 +494,8 @@ html[data-ofx-embedded="1"][data-skin="steps"] {
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.75rem;
 }
-html[data-ofx-embedded="1"][data-theme="dark"],
-html[data-ofx-embedded="1"][data-skin="steps"][data-theme="dark"] {
+html[data-ofx-embedded="1"][data-skin="steps"][data-theme="dark"],
+html[data-ofx-vars="shadcn"][data-skin="steps"][data-theme="dark"] {
   --background: 222.2 47% 8%;
   --foreground: 210 40% 98%;
   --card: 222.2 47% 12%;
@@ -254,7 +516,8 @@ html[data-ofx-embedded="1"][data-skin="steps"][data-theme="dark"] {
   --input: 217.2 32.6% 16%;
   --ring: 217 91.2% 59.8%;
 }
-html[data-ofx-embedded="1"][data-skin="ofx"] {
+html[data-ofx-embedded="1"][data-skin="ofx"],
+html[data-ofx-vars="shadcn"][data-skin="ofx"] {
   --background: 227.4 51.4% 7.3%;
   --foreground: 225 19% 91.8%;
   --card: 225.5 39.7% 14.3%;
@@ -274,8 +537,10 @@ html[data-ofx-embedded="1"][data-skin="ofx"] {
   --border: 227 34.6% 21%;
   --input: 224.3 31.3% 26.3%;
   --ring: 234.5 89.5% 73.9%;
+  --radius: 0.75rem;
 }
-html[data-ofx-embedded="1"][data-skin="ofx"][data-theme="light"] {
+html[data-ofx-embedded="1"][data-skin="ofx"][data-theme="light"],
+html[data-ofx-vars="shadcn"][data-skin="ofx"][data-theme="light"] {
   --background: 230 42.9% 97.3%;
   --foreground: 222.2 47.4% 11.2%;
   --card: 0 0% 100%;
@@ -296,10 +561,12 @@ html[data-ofx-embedded="1"][data-skin="ofx"][data-theme="light"] {
   --input: 212.7 26.8% 83.9%;
   --ring: 238.7 83.5% 66.7%;
 }
+html[data-ofx-embedded="1"] body,
+html[data-ofx-vars="shadcn"] body { font-family: var(--ofx-font); }
 
-/* ---------------------------------------------------------------- MITR bridge (framed support-bot / MITR AI)
-   The chatbot paints with its own variable names (--brand, --bg-*, --text-*, --border as a colour). When it is
-   framed it sets <html data-ofx-vars="mitr" data-skin data-theme> from the iframe query and these names follow the
+/* ---------------------------------------------------------------- MITR bridge (support-bot / MITR AI)
+   The chatbot paints with its own variable names (--brand, --bg-*, --text-*, --border as a colour). It sets
+   <html data-ofx-vars="mitr" data-skin data-theme> (from the iframe query when framed) and these names follow the
    One Finance palette in every skin and mode. Not combined with data-ofx-embedded: --border and --accent mean
    colours here, HSL triplets in the shadcn bridge. */
 html[data-ofx-vars="mitr"] {
@@ -340,10 +607,80 @@ html[data-ofx-vars="mitr"] {
   --font-sans: var(--ofx-font);
   --font-display: var(--ofx-display);
   --font-mono: var(--ofx-mono);
+  --topbar-height: var(--ofx-header-h);
 }
-/* Fixed Tailwind palette classes in the bot (text-gray-500, bg-indigo-600, …) take the STEPS palette under the steps
-   skin: greys become STEPS slate and the indigo / violet / purple brand hues become STEPS blue. Values are Tailwind's
-   own slate and blue, which STEPS uses. The ofx (indigo) skin keeps the bot's original hues. */
+/* Fixed Tailwind palette classes in the bot (text-gray-500, bg-indigo-600, …) follow the brand under the Barclays and
+   STEPS skins: greys become the skin's neutrals and the indigo / violet / purple / blue brand hues its interactive
+   blue. The ofx (indigo) skin keeps the bot's original hues. */
+html[data-ofx-vars="mitr"][data-skin="barclays"] {
+  --color-gray-50: rgb(var(--ofx-tw-gray-50));
+  --color-gray-100: rgb(var(--ofx-tw-gray-100));
+  --color-gray-200: rgb(var(--ofx-tw-gray-200));
+  --color-gray-300: rgb(var(--ofx-tw-gray-300));
+  --color-gray-400: rgb(var(--ofx-tw-gray-400));
+  --color-gray-500: rgb(var(--ofx-tw-gray-500));
+  --color-gray-600: rgb(var(--ofx-tw-gray-600));
+  --color-gray-700: rgb(var(--ofx-tw-gray-700));
+  --color-gray-800: rgb(var(--ofx-tw-gray-800));
+  --color-gray-900: rgb(var(--ofx-tw-gray-900));
+  --color-gray-950: rgb(var(--ofx-tw-gray-950));
+  --color-slate-50: rgb(var(--ofx-tw-slate-50));
+  --color-slate-100: rgb(var(--ofx-tw-slate-100));
+  --color-slate-200: rgb(var(--ofx-tw-slate-200));
+  --color-slate-300: rgb(var(--ofx-tw-slate-300));
+  --color-slate-400: rgb(var(--ofx-tw-slate-400));
+  --color-slate-500: rgb(var(--ofx-tw-slate-500));
+  --color-slate-600: rgb(var(--ofx-tw-slate-600));
+  --color-slate-700: rgb(var(--ofx-tw-slate-700));
+  --color-slate-800: rgb(var(--ofx-tw-slate-800));
+  --color-slate-900: rgb(var(--ofx-tw-slate-900));
+  --color-slate-950: rgb(var(--ofx-tw-slate-950));
+  --color-blue-50: rgb(var(--ofx-tw-blue-50));
+  --color-blue-100: rgb(var(--ofx-tw-blue-100));
+  --color-blue-200: rgb(var(--ofx-tw-blue-200));
+  --color-blue-300: rgb(var(--ofx-tw-blue-300));
+  --color-blue-400: rgb(var(--ofx-tw-blue-400));
+  --color-blue-500: rgb(var(--ofx-tw-blue-500));
+  --color-blue-600: rgb(var(--ofx-tw-blue-600));
+  --color-blue-700: rgb(var(--ofx-tw-blue-700));
+  --color-blue-800: rgb(var(--ofx-tw-blue-800));
+  --color-blue-900: rgb(var(--ofx-tw-blue-900));
+  --color-blue-950: rgb(var(--ofx-tw-blue-950));
+  --color-indigo-50: var(--color-blue-50);
+  --color-indigo-100: var(--color-blue-100);
+  --color-indigo-200: var(--color-blue-200);
+  --color-indigo-300: var(--color-blue-300);
+  --color-indigo-400: var(--color-blue-400);
+  --color-indigo-500: var(--color-blue-500);
+  --color-indigo-600: var(--color-blue-600);
+  --color-indigo-700: var(--color-blue-700);
+  --color-indigo-800: var(--color-blue-800);
+  --color-indigo-900: var(--color-blue-900);
+  --color-indigo-950: var(--color-blue-950);
+  --color-violet-50: var(--color-blue-50);
+  --color-violet-100: var(--color-blue-100);
+  --color-violet-200: var(--color-blue-200);
+  --color-violet-300: var(--color-blue-300);
+  --color-violet-400: var(--color-blue-400);
+  --color-violet-500: var(--color-blue-500);
+  --color-violet-600: var(--color-blue-600);
+  --color-violet-700: var(--color-blue-700);
+  --color-violet-800: var(--color-blue-800);
+  --color-violet-900: var(--color-blue-900);
+  --color-violet-950: var(--color-blue-950);
+  --color-purple-50: var(--color-blue-50);
+  --color-purple-100: var(--color-blue-100);
+  --color-purple-200: var(--color-blue-200);
+  --color-purple-300: var(--color-blue-300);
+  --color-purple-400: var(--color-blue-400);
+  --color-purple-500: var(--color-blue-500);
+  --color-purple-600: var(--color-blue-600);
+  --color-purple-700: var(--color-blue-700);
+  --color-purple-800: var(--color-blue-800);
+  --color-purple-900: var(--color-blue-900);
+  --color-purple-950: var(--color-blue-950);
+}
+/* Under the STEPS skin: Tailwind's own slate and blue, which STEPS uses. */
 html[data-ofx-vars="mitr"][data-skin="steps"] {
   --color-gray-50: #f8fafc;
   --color-gray-100: #f1f5f9;
@@ -391,22 +728,52 @@ html[data-ofx-vars="mitr"][data-skin="steps"] {
   --color-purple-950: #172554;
 }
 
-/* ---------------------------------------------------------------- partner components (plain CSS screens) */
+/* ---------------------------------------------------------------- base and type (plain CSS screens) */
 .ofx-app {
   margin: 0;
   background: var(--ofx-page);
   color: var(--ofx-ink);
-  font-family: var(--ofx-font);
-  font-size: 13.5px;
-  line-height: 1.5;
+  font: 400 var(--ofx-text-sm)/var(--ofx-leading-sm) var(--ofx-font);
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
 }
 .ofx-app[data-ofx-embedded="1"],
 html[data-ofx-embedded="1"] .ofx-app { background: transparent; }
 html[data-ofx-embedded="1"] .ofx-masthead,
+html[data-ofx-embedded="1"] [data-ofx-chrome],
 .ofx-app[data-ofx-embedded="1"] .ofx-masthead { display: none !important; }
 
+.ofx-text-micro { font-size: var(--ofx-text-micro); line-height: var(--ofx-leading-xs); }
+.ofx-text-2xs { font-size: var(--ofx-text-2xs); line-height: var(--ofx-leading-xs); }
+.ofx-text-xs { font-size: var(--ofx-text-xs); line-height: var(--ofx-leading-xs); }
+.ofx-text-sm { font-size: var(--ofx-text-sm); line-height: var(--ofx-leading-sm); }
+.ofx-text-base { font-size: var(--ofx-text-base); line-height: var(--ofx-leading-base); }
+.ofx-text-lg { font-size: var(--ofx-text-lg); line-height: var(--ofx-leading-lg); }
+.ofx-text-xl { font-size: var(--ofx-text-xl); line-height: var(--ofx-leading-xl); }
+.ofx-text-2xl { font-size: var(--ofx-text-2xl); line-height: var(--ofx-leading-2xl); }
+/* STEPS header h1 (text-lg font-bold), PageHeader h1 (text-2xl font-bold tracking-tight), SectionCard title. */
+.ofx-title-app { margin: 0; font: var(--ofx-fw-app-title) var(--ofx-fs-app-title)/var(--ofx-leading-lg) var(--ofx-display); color: var(--ofx-ink); }
+.ofx-title-page { margin: 0; font: var(--ofx-fw-page-title) var(--ofx-fs-page-title)/var(--ofx-leading-2xl) var(--ofx-display); letter-spacing: -0.025em; color: var(--ofx-ink); }
+.ofx-title-section { margin: 0; font: var(--ofx-fw-section) var(--ofx-fs-section)/var(--ofx-leading-base) var(--ofx-font); color: var(--ofx-ink); }
+.ofx-desc { margin: 0; font-size: var(--ofx-text-sm); line-height: var(--ofx-leading-sm); color: var(--ofx-ink-2); }
+.ofx-meta { font-size: var(--ofx-text-xs); line-height: var(--ofx-leading-xs); color: var(--ofx-ink-2); }
+.ofx-mono { font-family: var(--ofx-mono); font-size: var(--ofx-text-xs); }
+.ofx-muted { color: var(--ofx-ink-2); }
+.ofx-eyebrow { font-size: var(--ofx-text-2xs); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ofx-ink-2); }
+
+/* ---------------------------------------------------------------- app header (a standalone app's own masthead)
+   STEPS DashboardLayout header: one 64px row, the app name and the page title (text-lg font-bold) on the left, the
+   business date and quiet icon buttons on the right. Hidden when framed: the host's header names the page. */
+.ofx-header {
+  display: flex; align-items: center; gap: 16px;
+  height: var(--ofx-header-h); padding: 0 var(--ofx-page-px);
+  background: var(--ofx-card); border-bottom: 1px solid var(--ofx-line);
+}
+.ofx-header-brand { display: flex; align-items: center; gap: 8px; font: 700 var(--ofx-text-xl)/var(--ofx-leading-xl) var(--ofx-display); color: var(--ofx-accent); }
+.ofx-header-tools { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+html[data-ofx-embedded="1"] .ofx-header { display: none; }
+
+/* ---------------------------------------------------------------- cards */
 .ofx-card {
   background: var(--ofx-card);
   border: 1px solid var(--ofx-line);
@@ -414,15 +781,23 @@ html[data-ofx-embedded="1"] .ofx-masthead,
   box-shadow: var(--ofx-sh-1);
   overflow: hidden;
 }
+/* STEPS SectionCard: header with a 16px / 600 title and its tools on the right; 24px padding. */
 .ofx-card-hd {
   display: flex; align-items: center; gap: 10px;
-  padding: 12px 16px;
+  padding: 16px var(--ofx-card-p);
   border-bottom: 1px solid var(--ofx-line);
-  font-weight: 600;
+  font: var(--ofx-fw-section) var(--ofx-fs-section)/var(--ofx-leading-base) var(--ofx-font);
   color: var(--ofx-ink);
 }
-.ofx-card-bd { padding: 16px; }
+.ofx-card-hd .ofx-card-tools { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: var(--ofx-text-sm); font-weight: 400; }
+.ofx-card-bd { padding: var(--ofx-card-p); }
+.ofx-card-bd.ofx-flush { padding: 0; }
 
+/* ---------------------------------------------------------------- buttons
+   .ofx-btn       compact: STEPS Button size sm (32px, 12px / 500) — toolbars, filters, card and grid tools
+   .ofx-btn-lg    default: STEPS Button (36px, 14px / 500)         — forms, dialogs, page actions
+   .ofx-btn-xs    28px                                             — row actions, chips
+   .ofx-btn-2 outline, .ofx-btn-ghost ghost, .ofx-btn-danger destructive */
 .ofx-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   height: var(--ofx-ctl-h); padding: 0 var(--ofx-ctl-px);
@@ -435,8 +810,10 @@ html[data-ofx-embedded="1"] .ofx-masthead,
   white-space: nowrap;
   cursor: pointer;
 }
+.ofx-btn.ofx-btn-lg { height: var(--ofx-ctl-h-lg); padding: 0 var(--ofx-ctl-px-lg); font-size: var(--ofx-btn-fs-lg); }
+.ofx-btn.ofx-btn-xs { height: var(--ofx-ctl-h-sm); padding: 0 10px; }
 .ofx-btn:hover { background: color-mix(in srgb, var(--ofx-accent) 90%, var(--ofx-card)); }
-.ofx-btn:focus-visible, .ofx-input:focus-visible, .ofx-select:focus-visible { outline: none; box-shadow: var(--ofx-focus); }
+.ofx-btn:focus-visible, .ofx-input:focus-visible, .ofx-select:focus-visible, .ofx-tab:focus-visible { outline: none; box-shadow: var(--ofx-focus); }
 .ofx-btn-2 {
   background: var(--ofx-ctl-bg);
   color: var(--ofx-ink);
@@ -444,9 +821,12 @@ html[data-ofx-embedded="1"] .ofx-masthead,
 }
 .ofx-btn-2:hover, .ofx-btn-ghost:hover { background: var(--ofx-surface-2); color: var(--ofx-ink); }
 .ofx-btn-ghost { background: transparent; color: var(--ofx-ink); border-color: transparent; box-shadow: none; }
+.ofx-btn-danger { background: var(--ofx-fail); color: #ffffff; }
+.ofx-btn-danger:hover { background: color-mix(in srgb, var(--ofx-fail) 90%, var(--ofx-card)); }
 .ofx-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Text fields and selects: STEPS Input / SelectTrigger. */
+/* ---------------------------------------------------------------- fields
+   Filter and toolbar fields are 32px (STEPS filter selects); fields in a form are 36px (STEPS Input, SelectTrigger). */
 .ofx-input, .ofx-select {
   height: var(--ofx-ctl-h); padding: 0 var(--ofx-ctl-px);
   background: var(--ofx-ctl-bg);
@@ -456,12 +836,16 @@ html[data-ofx-embedded="1"] .ofx-masthead,
   box-shadow: var(--ofx-ctl-sh);
   font: 400 var(--ofx-ctl-fs)/1.2 var(--ofx-font);
 }
+.ofx-form .ofx-input, .ofx-form .ofx-select { height: var(--ofx-field-h); width: 100%; }
+textarea.ofx-input { height: auto; min-height: 72px; padding: 8px var(--ofx-ctl-px); line-height: var(--ofx-leading-sm); }
 .ofx-input::placeholder { color: var(--ofx-ink-3); }
 .ofx-input:disabled, .ofx-select:disabled { opacity: 0.5; cursor: not-allowed; }
 /* STEPS Label: text-sm font-medium. */
 .ofx-label { display: block; font: var(--ofx-label-fw) var(--ofx-label-fs)/1 var(--ofx-font); color: var(--ofx-ink); }
-.ofx-field { display: flex; flex-direction: column; gap: 8px; }
+.ofx-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.ofx-field .ofx-meta { margin: 0; }
 
+/* ---------------------------------------------------------------- status: pills and badges */
 .ofx-pill {
   display: inline-flex; align-items: center; gap: 6px;
   height: 22px; padding: 0 9px;
@@ -469,14 +853,36 @@ html[data-ofx-embedded="1"] .ofx-masthead,
   border-radius: 999px;
   background: var(--ofx-surface-2);
   color: var(--ofx-ink-2);
-  font: 600 11px/1 var(--ofx-font);
+  font: 600 var(--ofx-text-2xs)/1 var(--ofx-font);
 }
 .ofx-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .ofx-pill-ok { color: var(--ofx-ok); background: var(--ofx-ok-bg); border-color: var(--ofx-ok-line); }
 .ofx-pill-warn { color: var(--ofx-warn); background: var(--ofx-warn-bg); border-color: var(--ofx-warn-line); }
 .ofx-pill-fail { color: var(--ofx-fail); background: var(--ofx-fail-bg); border-color: var(--ofx-fail-line); }
 .ofx-pill-info { color: var(--ofx-info); background: var(--ofx-info-bg); border-color: var(--ofx-info-line); }
+/* STEPS Badge: rounded-md border px-2.5 py-0.5 text-xs font-semibold. */
+.ofx-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border: 1px solid transparent; border-radius: calc(var(--ofx-r-ctl) - 2px);
+  background: var(--ofx-accent); color: var(--ofx-on-accent);
+  font: 600 var(--ofx-text-xs)/var(--ofx-leading-xs) var(--ofx-font);
+}
+.ofx-badge-2 { background: var(--ofx-surface-2); color: var(--ofx-ink); }
+.ofx-badge-outline { background: transparent; color: var(--ofx-ink); border-color: var(--ofx-line); }
+.ofx-badge-ok { background: var(--ofx-ok-bg); color: var(--ofx-ok); border-color: var(--ofx-ok-line); }
+.ofx-badge-warn { background: var(--ofx-warn-bg); color: var(--ofx-warn); border-color: var(--ofx-warn-line); }
+.ofx-badge-fail { background: var(--ofx-fail-bg); color: var(--ofx-fail); border-color: var(--ofx-fail-line); }
 
+/* ---------------------------------------------------------------- tabs (STEPS Tabs) */
+.ofx-tabs { display: inline-flex; align-items: center; gap: 4px; height: var(--ofx-ctl-h-lg); padding: 4px; border-radius: var(--ofx-r-lg); background: var(--ofx-surface-2); color: var(--ofx-ink-2); }
+.ofx-tab {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 100%; padding: 0 12px;
+  border: 0; border-radius: var(--ofx-r-ctl); background: transparent; color: inherit; cursor: pointer;
+  font: 500 var(--ofx-text-sm)/1 var(--ofx-font); white-space: nowrap;
+}
+.ofx-tab[aria-selected="true"], .ofx-tab.ofx-on { background: var(--ofx-card); color: var(--ofx-ink); box-shadow: var(--ofx-ctl-sh); }
+
+/* ---------------------------------------------------------------- tables (read-only grids belong in Wijmo: onefinux-wijmo.css) */
 .ofx-tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: var(--ofx-grid-fs); }
 .ofx-tbl thead th {
   position: sticky; top: 0; z-index: 2;
@@ -491,9 +897,80 @@ html[data-ofx-embedded="1"] .ofx-masthead,
 .ofx-tbl tbody tr:hover td { background: var(--ofx-surface-2); }
 .ofx-tbl .ofx-num { text-align: right; font-variant-numeric: tabular-nums; }
 
-.ofx-mono { font-family: var(--ofx-mono); font-size: 12px; }
-.ofx-muted { color: var(--ofx-ink-2); }
-.ofx-eyebrow { font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ofx-ink-2); }
+/* ---------------------------------------------------------------- page templates
+   Every team screen is one of five templates, built from these classes in React, Angular, Razor or plain HTML.
+     list       .ofx-page > .ofx-page-header + .ofx-toolbar + .ofx-card (a Wijmo grid)
+     dashboard  .ofx-page > .ofx-page-header + .ofx-kpis (.ofx-kpi …) + .ofx-grid-12 of .ofx-card
+     detail     .ofx-page > .ofx-page-header + .ofx-split (content | 340px facts rail)
+     form       .ofx-page > .ofx-page-header + .ofx-card > .ofx-form (.ofx-form-grid of .ofx-field) + .ofx-form-actions
+     workload   the same, framed: the host's header names the page, so .ofx-page-header keeps only its tools
+   The live catalogue is the console's Design standard page (/standards). */
+.ofx-page { display: flex; flex-direction: column; gap: var(--ofx-section-gap); min-width: 0; padding: var(--ofx-page-py) var(--ofx-page-px); }
+html[data-ofx-embedded="1"] .ofx-page { padding: var(--ofx-embed-p); gap: var(--ofx-gap); }
+/* STEPS PageHeader: title and description on the left, actions on the right; stacks on small screens. */
+.ofx-page-header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.ofx-page-heading { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.ofx-page-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+html[data-ofx-embedded="1"] .ofx-page-heading { display: none; }
+/* STEPS ActionBar: filters on the left, tools on the right. */
+.ofx-toolbar {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px;
+  background: color-mix(in srgb, var(--ofx-surface-2) 30%, var(--ofx-card));
+  border: 1px solid color-mix(in srgb, var(--ofx-line) 60%, transparent);
+  border-radius: var(--ofx-r-lg);
+}
+.ofx-toolbar .ofx-spacer { flex: 1 1 auto; }
+/* KPI tiles (STEPS KPIStat): label 14 / 500 muted, value 24 / 600, helper 14 muted; status colours the value. */
+.ofx-kpis { display: grid; gap: var(--ofx-gap); grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.ofx-kpi {
+  display: flex; flex-direction: column; gap: 4px; min-width: 0; padding: var(--ofx-card-p);
+  background: var(--ofx-card); border: 1px solid var(--ofx-line); border-radius: var(--ofx-r-lg); box-shadow: var(--ofx-sh-1);
+}
+.ofx-kpi-label { font: 500 var(--ofx-text-sm)/var(--ofx-leading-sm) var(--ofx-font); color: var(--ofx-ink-2); }
+.ofx-kpi-value { font: var(--ofx-fw-kpi) var(--ofx-fs-kpi)/var(--ofx-leading-2xl) var(--ofx-font); color: var(--ofx-ink); font-variant-numeric: tabular-nums; }
+.ofx-kpi-help { font-size: var(--ofx-text-sm); line-height: var(--ofx-leading-sm); color: var(--ofx-ink-2); }
+.ofx-kpi.ofx-ok .ofx-kpi-value { color: var(--ofx-ok); }
+.ofx-kpi.ofx-warn .ofx-kpi-value { color: var(--ofx-warn); }
+.ofx-kpi.ofx-fail .ofx-kpi-value { color: var(--ofx-fail); }
+.ofx-kpi.ofx-info .ofx-kpi-value { color: var(--ofx-accent); }
+/* 12-column layout grid: 6 columns on tablets, one column on phones. */
+.ofx-grid-12 { display: grid; gap: var(--ofx-gap); grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.ofx-grid-12 > * { grid-column: span 12; min-width: 0; }
+.ofx-grid-12 > .ofx-col-1 { grid-column: span 1; }
+.ofx-grid-12 > .ofx-col-2 { grid-column: span 2; }
+.ofx-grid-12 > .ofx-col-3 { grid-column: span 3; }
+.ofx-grid-12 > .ofx-col-4 { grid-column: span 4; }
+.ofx-grid-12 > .ofx-col-5 { grid-column: span 5; }
+.ofx-grid-12 > .ofx-col-6 { grid-column: span 6; }
+.ofx-grid-12 > .ofx-col-7 { grid-column: span 7; }
+.ofx-grid-12 > .ofx-col-8 { grid-column: span 8; }
+.ofx-grid-12 > .ofx-col-9 { grid-column: span 9; }
+.ofx-grid-12 > .ofx-col-10 { grid-column: span 10; }
+.ofx-grid-12 > .ofx-col-11 { grid-column: span 11; }
+.ofx-grid-12 > .ofx-col-12 { grid-column: span 12; }
+@media (max-width: 1024px) {
+  .ofx-grid-12 > [class*="ofx-col-"] { grid-column: span 6; }
+  .ofx-grid-12 > .ofx-col-12 { grid-column: span 12; }
+}
+@media (max-width: 640px) {
+  .ofx-grid-12 > [class*="ofx-col-"] { grid-column: span 12; }
+}
+/* Detail: content beside a 340px facts rail (event trail, rules, owner); the rail drops below on tablets. */
+.ofx-split { display: grid; gap: var(--ofx-gap); grid-template-columns: minmax(0, 1fr) var(--ofx-rail-w); align-items: start; }
+@media (max-width: 1024px) { .ofx-split { grid-template-columns: minmax(0, 1fr); } }
+/* Forms: STEPS Label over a 36px field, two columns, actions bottom right. */
+.ofx-form { display: flex; flex-direction: column; gap: var(--ofx-gap); }
+.ofx-form-grid { display: grid; gap: var(--ofx-gap); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ofx-form-grid > .ofx-wide { grid-column: 1 / -1; }
+@media (max-width: 640px) { .ofx-form-grid { grid-template-columns: minmax(0, 1fr); } }
+.ofx-form-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding-top: 8px; }
+/* Empty state (STEPS EmptyState): a dashed well with a 14 / 600 title and a muted line. */
+.ofx-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 32px 24px;
+  border: 1px dashed var(--ofx-line-2); border-radius: var(--ofx-r-lg); text-align: center;
+  color: var(--ofx-ink-2); font-size: var(--ofx-text-sm);
+}
+.ofx-empty b, .ofx-empty strong { color: var(--ofx-ink); font-weight: 600; }
 
 /* ---------------------------------------------------------------- Chat (assistant and framed chatbots)
    One look for every conversational surface: the console's built-in assistant uses these classes, and a chatbot
@@ -509,24 +986,24 @@ html[data-ofx-embedded="1"] .ofx-masthead,
        <form class="ofx-chat-compose"><input class="ofx-chat-input"><button class="ofx-btn">Send</button></form>
      </div>                                                                                                      */
 .ofx-chat { display: flex; flex-direction: column; min-height: 0; height: 100%; background: var(--ofx-card);
-  color: var(--ofx-ink); font: 400 13px/1.5 var(--ofx-font); }
+  color: var(--ofx-ink); font: 400 var(--ofx-text-sm)/var(--ofx-leading-sm) var(--ofx-font); }
 .ofx-chat-list { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 .ofx-chat-msg { max-width: 92%; padding: 8px 11px; border-radius: var(--ofx-r); white-space: pre-wrap; overflow-wrap: anywhere; }
 .ofx-chat-user { align-self: flex-end; background: var(--ofx-accent); color: var(--ofx-on-accent); }
 .ofx-chat-bot { align-self: flex-start; background: var(--ofx-surface-2); border: 1px solid var(--ofx-line); }
 .ofx-chat-bot.ofx-chat-error { border-color: var(--ofx-fail-line); color: var(--ofx-fail); }
 .ofx-chat-pending { color: var(--ofx-ink-2); }
-.ofx-chat-note { margin-top: 4px; font-size: 11.5px; color: var(--ofx-ink-2); }
+.ofx-chat-note { margin-top: 4px; font-size: var(--ofx-text-xs); color: var(--ofx-ink-2); }
 .ofx-chat-actions { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 7px; }
 .ofx-chat-action, .ofx-chat-chip { display: inline-flex; align-items: center; gap: 5px; min-height: 26px; padding: 3px 10px;
   border: 1px solid var(--ofx-line); border-radius: 999px; background: var(--ofx-card); color: var(--ofx-ink);
-  font: 500 12px/1.3 var(--ofx-font); text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04); }
+  font: 500 var(--ofx-text-xs)/1.3 var(--ofx-font); text-align: left; cursor: pointer; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04); }
 .ofx-chat-action:hover, .ofx-chat-chip:hover { border-color: var(--ofx-accent); }
-.ofx-chat-empty { display: flex; flex-direction: column; gap: 8px; color: var(--ofx-ink-2); font-size: 12.5px; }
+.ofx-chat-empty { display: flex; flex-direction: column; gap: 8px; color: var(--ofx-ink-2); font-size: var(--ofx-text-sm); }
 .ofx-chat-starters { display: flex; flex-direction: column; align-items: stretch; gap: 5px; }
 .ofx-chat-compose { display: flex; gap: 6px; padding: 8px 10px; border-top: 1px solid var(--ofx-line); background: var(--ofx-card); }
 .ofx-chat-input { flex: 1; min-width: 0; height: var(--ofx-ctl-h); padding: 0 var(--ofx-ctl-px); border: 1px solid var(--ofx-ctl-line);
   border-radius: var(--ofx-r-ctl); background: var(--ofx-ctl-bg); box-shadow: var(--ofx-ctl-sh); color: var(--ofx-ink);
   font: 400 var(--ofx-ctl-fs) var(--ofx-font); }
 .ofx-chat-input:focus { outline: none; box-shadow: var(--ofx-focus); }
-.ofx-chat-foot { margin: 0; padding: 0 12px 8px; font-size: 11px; color: var(--ofx-ink-3); background: var(--ofx-card); }
+.ofx-chat-foot { margin: 0; padding: 0 12px 8px; font-size: var(--ofx-text-2xs); color: var(--ofx-ink-3); background: var(--ofx-card); }

@@ -1,8 +1,27 @@
-/** Dashboard tokens for live Mermaid on Architecture. Matches `styles.css` dark/light. */
+/** Mermaid colours for the live diagrams on Architecture: the design standard's --ofx-* tokens of the current skin
+ * and mode (Barclays, STEPS or MITR), read from the page. Outside a browser (node --test) the MITR palette below. */
 
-const FONT = '"Inter", system-ui, -apple-system, sans-serif';
+const FALLBACK_FONT = '"Inter", system-ui, -apple-system, sans-serif';
+const FONT = (() => {
+  try { return getComputedStyle(document.documentElement).getPropertyValue('--ofx-font').trim() || FALLBACK_FONT; } catch { return FALLBACK_FONT; }
+})();
 
+const LIVE = { canvas: '--ofx-page', canvas2: '--ofx-surface-3', surface: '--ofx-card', raised: '--ofx-surface-2', stroke: '--ofx-line',
+  stroke2: '--ofx-line-2', ink: '--ofx-ink', muted: '--ofx-ink-2', faint: '--ofx-ink-3', accent: '--ofx-accent', cyan: '--ofx-accent-2',
+  ok: '--ofx-ok', warn: '--ofx-warn', fail: '--ofx-fail', bo: '--ofx-bo' };
+
+/** The current skin's palette from the page; any token that is not a plain #hex keeps the fallback value. */
 export function themeTokens(dark) {
+  const fallback = fallbackTokens(dark);
+  if (typeof document === 'undefined' || typeof getComputedStyle !== 'function') return fallback;
+  const cs = getComputedStyle(document.documentElement);
+  return Object.fromEntries(Object.entries(fallback).map(([k, v]) => {
+    const live = LIVE[k] ? cs.getPropertyValue(LIVE[k]).trim() : '';
+    return [k, /^#[0-9a-f]{3,8}$/i.test(live) ? live : v];
+  }));
+}
+
+function fallbackTokens(dark) {
   if (dark) {
     return {
       canvas: '#090d1c',

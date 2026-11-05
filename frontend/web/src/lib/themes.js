@@ -1,20 +1,25 @@
 // Console themes. `mode` drives html[data-theme]; `skin` drives html[data-skin]. Both select a palette in the
-// design standard (frontend/theme/onefinux-tokens.css). "steps" — the STEPS (stepsv3) look, Banking Blue — is the
-// standard and the default; "ofx" is the earlier MITR indigo look, still selectable.
-// Pure data + lookups so node --test can load it.
+// design standard (frontend/theme/onefinux-tokens.css). "barclays" — Barclays brand colours on the STEPS (stepsv3)
+// structure — is the standard and the default; "steps" (STEPS Banking Blue) and "ofx" (the earlier MITR indigo look)
+// stay selectable. Pure data + lookups so node --test can load it.
 
 export const THEME_KEY = 'ofx-theme';
-export const DEFAULT_THEME = 'steps';
+export const DEFAULT_THEME = 'barclays';
 
 export const THEMES = [
-  { id: 'steps', label: 'STEPS Banking Blue', family: 'STEPS standard', mode: 'light', skin: 'steps', icon: 'palette', chrome: '#ffffff' },
-  { id: 'steps-dark', label: 'STEPS dark', family: 'STEPS standard', mode: 'dark', skin: 'steps', icon: 'moon', chrome: '#0b111e' },
+  { id: 'barclays', label: 'Barclays', family: 'Barclays standard', mode: 'light', skin: 'barclays', icon: 'palette', chrome: '#ffffff' },
+  { id: 'barclays-dark', label: 'Barclays dark', family: 'Barclays standard', mode: 'dark', skin: 'barclays', icon: 'moon', chrome: '#161b2f' },
+  { id: 'steps', label: 'STEPS Banking Blue', family: 'STEPS', mode: 'light', skin: 'steps', icon: 'palette', chrome: '#ffffff' },
+  { id: 'steps-dark', label: 'STEPS dark', family: 'STEPS', mode: 'dark', skin: 'steps', icon: 'moon', chrome: '#0b111e' },
   { id: 'dark', label: 'One Finance dark', family: 'One Finance (MITR)', mode: 'dark', skin: 'ofx', icon: 'moon', chrome: '#090d1c' },
   { id: 'light', label: 'One Finance light', family: 'One Finance (MITR)', mode: 'light', skin: 'ofx', icon: 'sun', chrome: '#ffffff' },
 ];
 
-// Names STEPS persisted under localStorage['theme'] map onto the closest console theme.
-const ALIASES = { 'banking-blue': 'steps', 'steps-light': 'steps', 'regulatory-green': 'steps', blue: 'steps', 'dark-blue': 'steps-dark' };
+// Names STEPS and MITR AI persisted map onto the closest console theme.
+const ALIASES = {
+  'barclays-light': 'barclays', midnight: 'barclays-dark',
+  'banking-blue': 'steps', 'steps-light': 'steps', 'regulatory-green': 'steps', blue: 'steps', 'dark-blue': 'steps-dark',
+};
 
 export function themeById(id) {
   const key = ALIASES[id] || id;

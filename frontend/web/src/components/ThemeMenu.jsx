@@ -2,13 +2,14 @@ import Menu from './Menu.jsx';
 import Icon from './Icon.jsx';
 import { THEMES } from '../theme.js';
 import { useApp } from '../store.jsx';
+import tokensCss from '@theme/onefinux-tokens.css?raw';
+import { palette } from '../lib/tokens.js';
 
-const SWATCH = {
-  dark: ['#090d1c', '#818cf8'],
-  light: ['#f5f6fb', '#6366f1'],
-  steps: ['#f8fafc', '#2563eb'],
-  'steps-dark': ['#0b111e', '#3b83f6'],
-};
+// Each theme's page and accent colour, read from the design standard itself (no second copy of the palette).
+const SWATCH = Object.fromEntries(THEMES.map((t) => {
+  const p = palette(tokensCss, t.skin, t.mode);
+  return [t.id, [p['--ofx-page'], p['--ofx-accent']]];
+}));
 
 /** STEPS ThemeSwitcher: one icon button, a menu of themes grouped by family. */
 export default function ThemeMenu() {
