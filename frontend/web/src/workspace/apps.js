@@ -11,6 +11,11 @@ import { encodeJson } from '../grid/spec.js';
 // VITE_STEPS_URL at the deployed STEPS for a real host.
 const ENV = (typeof import.meta !== 'undefined' && import.meta.env) || {};
 export const STEPS_URL = ENV.VITE_STEPS_URL || 'http://localhost:3000/finance?ofx-embed=1';
+/** The STEPS app root (its other screens frame from here too). */
+export const STEPS_ORIGIN = (() => { try { return new URL(STEPS_URL).origin; } catch { return 'http://localhost:3000'; } })();
+// MITR AI (support-bot) pages framed on a desk the same way: ?ofx-embed=1 drops MITR's sidebar and title bar, and the
+// console's theme repaints it. MITR AI must list the console in NEXT_PUBLIC_ONEFINUX_ORIGIN and allow it to frame.
+export const MITR_URL = String(ENV.VITE_MITR_URL || 'http://localhost:3001').replace(/\/$/, '');
 
 export const BUILTIN_APPS = [
   { appId: 'board', title: 'Outcome board', icon: 'board', kind: 'route', path: '/board', linkable: true,
@@ -47,6 +52,14 @@ export const BUILTIN_APPS = [
     desc: 'A partner page that joins link channels with ofx-interop.js (postMessage).' },
   { appId: 'steps', title: 'STEPS (workflow & finance)', icon: 'layers', kind: 'web', url: STEPS_URL, linkable: true,
     desc: 'The STEPS app in embedded mode: same theme, FDC3 links to the other views on the desk.' },
+  { appId: 'steps-tasks', title: 'STEPS Task Center', icon: 'checks', kind: 'web', url: `${STEPS_ORIGIN}/?ofx-embed=1`, linkable: true,
+    desc: 'STEPS tasks for the business date — sign off, attest, re-run — in embedded mode.' },
+  { appId: 'mitr-dashboard', title: 'MITR AI dashboards', icon: 'pie', kind: 'web', url: `${MITR_URL}/dashboard?ofx-embed=1`, linkable: false,
+    desc: 'Pinned queries and KPI strips from MITR AI, in the console look.' },
+  { appId: 'mitr-gridboard', title: 'MITR AI grid board', icon: 'grid', kind: 'web', url: `${MITR_URL}/gridboard?ofx-embed=1`, linkable: false,
+    desc: 'Saved MITR AI grids side by side.' },
+  { appId: 'mitr-explorer', title: 'MITR AI data explorer', icon: 'compass', kind: 'web', url: `${MITR_URL}/data-explorer?ofx-embed=1`, linkable: false,
+    desc: 'Browse and filter a MITR AI data source.' },
 ];
 
 const BLOCKED_SCHEMES = /^(javascript|data|vbscript|file|blob|about):/i;

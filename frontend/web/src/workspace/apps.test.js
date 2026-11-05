@@ -67,3 +67,14 @@ test('viewSrc gives a web app the embed contract, theme included', () => {
   });
   assert.match(viewSrc({ id: 'v2' }, appById(BUILTIN_APPS, 'helix'), { pageOrigin: ORIGIN }), /^\/sim\/screens\/helix\?ofxView=v2$/);
 });
+
+test('MITR AI pages and the STEPS Task Center frame with the embed flag and the Barclays theme', () => {
+  for (const id of ['steps-tasks', 'mitr-dashboard', 'mitr-gridboard', 'mitr-explorer']) {
+    const app = appById(BUILTIN_APPS, id);
+    assert.equal(app?.kind, 'web', id);
+    const url = new URL(viewSrc({ id: 'v1' }, app, { theme: { theme: 'light', skin: 'barclays' }, pageOrigin: ORIGIN }));
+    assert.equal(url.searchParams.get('ofx-embed'), '1', id);
+    assert.equal(url.searchParams.get('skin'), 'barclays', id);
+  }
+  assert.equal(new URL(appById(BUILTIN_APPS, 'mitr-dashboard').url).pathname, '/dashboard');
+});

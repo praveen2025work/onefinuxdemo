@@ -13,8 +13,17 @@
  *   });
  *   ofx.addLiveListener('notification', (n) => …);   // hub WebSocket events, relayed by the host
  *
+ * Embedded mode for any stack (Angular, .NET Razor, Java templates, plain HTML) — list the One Finance origins that may
+ * frame the page:
+ *   <script src="https://<one-finance-host>/ofx-interop.js" data-ofx-hosts="https://onefinance.bank.com"></script>
+ * Framed by one of them with ?ofx-embed=1, the page gets <html data-ofx-embedded="1" data-skin data-theme>, the host's
+ * design standard is linked (/theme/onefinux-tokens.css; add data-ofx-wijmo for the Wijmo skin), elements marked
+ * data-ofx-chrome hide (the host draws the masthead) and the theme follows the host. A reload inside the frame keeps
+ * the mode. Without data-ofx-hosts nothing changes. ofx.getEmbed() says what was applied.
+ *
  * Security: the host only accepts messages from the origin it framed; this client only accepts messages from the
- * host origin (document.referrer, or ofx.connect({ hostOrigin })). Nothing is ever posted to '*'.
+ * host origin (document.referrer, or ofx.connect({ hostOrigin })) — with data-ofx-hosts, only a listed one. Nothing is
+ * ever posted to '*'.
  * Context types: ofx.instance { id }, ofx.outcome { outcomeId, cobDate, region }, ofx.tile { tileId },
  * ofx.scope { groupUnit, cobDate, region }; any FDC3 type ({ type: 'fdc3.instrument', … }) is relayed untouched.
  */
@@ -36,6 +45,10 @@
   var pendingRaises = {}; // raiseId -> { resolve, reject, timer, intent }
   var waiting = [];
   var seq = 0;
+  var SKIN = /^[a-z][a-z0-9-]{0,20}$/;
+  var EMBED_NAME = 'ofx-embedded|';
+  var script = document.currentScript;
+  var embed = { embedded: false, hostOrigin: null, theme: null, skin: null };
 
   function referrerOrigin() {
     try { return document.referrer ? new URL(document.referrer).origin : null; } catch (e) { return null; }
@@ -93,7 +106,7 @@
     } else if (data.type === 'ofx.theme' && (data.theme === 'light' || data.theme === 'dark')) {
       // The host switched theme: repaint from the same tokens (html[data-theme] / html[data-skin]).
       document.documentElement.setAttribute('data-theme', data.theme);
-      if (data.skin === 'steps' || data.skin === 'ofx') document.documentElement.setAttribute('data-skin', data.skin);
+      if (typeof data.skin === 'string' && SKIN.test(data.skin)) document.documentElement.setAttribute('data-skin', data.skin);
       global.dispatchEvent(new CustomEvent('ofx-theme', { detail: { theme: data.theme, skin: data.skin } }));
     } else if (data.type === 'ofx.live' && typeof data.name === 'string') {
       each(liveListeners[data.name] || [], data.data);
@@ -244,10 +257,59 @@
     getCurrentChannel: function () { return state.channel; },
     getCurrentContext: function () { return state.lastContext[state.channel] || null; },
     getScope: function () { return state.scope; },
+    /** { embedded, hostOrigin, theme, skin }: what embedded mode applied to this page (see data-ofx-hosts above). */
+    getEmbed: function () { return embed; },
   };
+
+  /** The One Finance origins listed on the script tag (data-ofx-hosts, comma separated). */
+  function allowedHosts() {
+    var raw = script && script.getAttribute ? script.getAttribute('data-ofx-hosts') : null;
+    if (!raw) return [];
+    return String(raw).split(',').map(function (h) { return h.trim().replace(/\/+$/, ''); })
+      .filter(function (h) { return /^https?:\/\/[^/\s]+$/.test(h); });
+  }
+
+  function linkOnce(href) {
+    if (document.querySelector('link[data-ofx="' + href + '"]')) return;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.setAttribute('data-ofx', href);
+    document.head.appendChild(link);
+  }
+
+  /** Embedded when flagged (?ofx-embed=1, or remembered in window.name) and framed by a listed host. */
+  function readEmbed(hosts) {
+    if (!hosts.length || global.parent === global) return null;
+    var q = new URLSearchParams(global.location.search);
+    var name = String(global.name || '');
+    var remembered = name.indexOf(EMBED_NAME) === 0 ? name.slice(EMBED_NAME.length) : null;
+    if (q.get('ofx-embed') !== '1' && !remembered) return null;
+    var host = [referrerOrigin(), remembered].filter(function (o) { return o && hosts.indexOf(o) >= 0; })[0];
+    if (!host) return null;
+    var theme = q.get('theme') === 'dark' ? 'dark' : q.get('theme') === 'light' ? 'light' : null;
+    return { hostOrigin: host, theme: theme, skin: SKIN.test(q.get('skin') || '') ? q.get('skin') : null };
+  }
+
+  function applyEmbed(info) {
+    var html = document.documentElement;
+    html.setAttribute('data-ofx-embedded', '1');
+    if (info.skin || !html.getAttribute('data-skin')) html.setAttribute('data-skin', info.skin || 'barclays');
+    if (info.theme) html.setAttribute('data-theme', info.theme);
+    linkOnce(info.hostOrigin + '/theme/onefinux-tokens.css');
+    if (script && script.hasAttribute && script.hasAttribute('data-ofx-wijmo')) linkOnce(info.hostOrigin + '/theme/onefinux-wijmo.css');
+    try { global.name = EMBED_NAME + info.hostOrigin; } catch (e) { /* sandboxed frame */ }
+    embed = { embedded: true, hostOrigin: info.hostOrigin, theme: info.theme, skin: html.getAttribute('data-skin') };
+    hostOrigin = hostOrigin || info.hostOrigin;
+  }
 
   global.ofx = ofx;
   if (!global.fdc3) global.fdc3 = fdc3;
-  // Connect as soon as the page is framed; apps can still call ofx.connect({ hostOrigin }) explicitly.
-  if (global.parent !== global && referrerOrigin()) ofx.connect().catch(function () {});
+  var hosts = allowedHosts();
+  var info = readEmbed(hosts);
+  if (info) applyEmbed(info);
+  // Connect as soon as the page is framed (by a listed host when data-ofx-hosts is set); apps can still call
+  // ofx.connect({ hostOrigin }) explicitly.
+  var framer = referrerOrigin();
+  if (global.parent !== global && (embed.embedded || (framer && (!hosts.length || hosts.indexOf(framer) >= 0)))) ofx.connect().catch(function () {});
 })(window);
