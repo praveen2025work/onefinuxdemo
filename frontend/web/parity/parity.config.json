@@ -1,0 +1,360 @@
+{
+  "$comment": "UI parity audit: every app framed in One Finance is measured against STEPS v3 (the reference). Base URLs can be overridden with PARITY_<APP>_URL (e.g. PARITY_STEPS_URL). Add a team's app by listing its pages and the selector of each standard role.",
+  "reference": "steps",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "theme": {
+    "skin": "barclays",
+    "mode": "light"
+  },
+  "rules": {
+    "appTitle": {
+      "props": [
+        "fontSize",
+        "fontWeight",
+        "platformFont"
+      ]
+    },
+    "header": {
+      "props": [
+        "height",
+        "backgroundColor"
+      ]
+    },
+    "navItem": {
+      "props": [
+        "height",
+        "fontSize",
+        "fontWeight"
+      ]
+    },
+    "buttonPrimary": {
+      "props": [
+        "height",
+        "fontSize",
+        "fontWeight",
+        "borderRadius",
+        "backgroundColor",
+        "color"
+      ],
+      "pairs": [
+        [
+          36,
+          14
+        ],
+        [
+          32,
+          12
+        ],
+        [
+          28,
+          12
+        ]
+      ]
+    },
+    "buttonOutline": {
+      "props": [
+        "height",
+        "fontSize",
+        "fontWeight",
+        "borderRadius",
+        "borderTopWidth"
+      ],
+      "pairs": [
+        [
+          36,
+          14
+        ],
+        [
+          32,
+          12
+        ],
+        [
+          28,
+          12
+        ]
+      ]
+    },
+    "select": {
+      "props": [
+        "height",
+        "fontSize",
+        "borderRadius",
+        "borderTopWidth"
+      ],
+      "pairs": [
+        [
+          36,
+          14
+        ],
+        [
+          32,
+          14
+        ]
+      ]
+    },
+    "input": {
+      "props": [
+        "height",
+        "fontSize",
+        "borderRadius",
+        "borderTopWidth"
+      ],
+      "pairs": [
+        [
+          36,
+          14
+        ],
+        [
+          32,
+          14
+        ]
+      ]
+    },
+    "tab": {
+      "props": [
+        "fontSize",
+        "fontWeight"
+      ]
+    },
+    "chip": {
+      "props": [
+        "fontSize",
+        "fontWeight",
+        "borderRadius"
+      ]
+    },
+    "card": {
+      "props": [
+        "borderRadius",
+        "borderTopWidth",
+        "borderTopColor",
+        "backgroundColor"
+      ]
+    },
+    "cardTitle": {
+      "props": [
+        "fontSize",
+        "fontWeight"
+      ]
+    },
+    "gridHeader": {
+      "props": [
+        "fontSize",
+        "fontWeight"
+      ]
+    },
+    "gridCell": {
+      "props": [
+        "fontSize"
+      ]
+    },
+    "page": {
+      "props": [
+        "backgroundColor",
+        "color",
+        "platformFont"
+      ]
+    }
+  },
+  "apps": {
+    "steps": {
+      "label": "STEPS v3",
+      "url": "http://localhost:3000",
+      "themes": {
+        "barclays-light": {
+          "localStorage": {
+            "theme": "barclays"
+          }
+        },
+        "barclays-dark": {
+          "localStorage": {
+            "theme": "barclays-dark"
+          }
+        },
+        "steps-light": {
+          "localStorage": {
+            "theme": "banking-blue"
+          }
+        },
+        "steps-dark": {
+          "localStorage": {
+            "theme": "dark"
+          }
+        }
+      },
+      "pages": [
+        "/",
+        "/admin",
+        "/finance",
+        "/dashboard"
+      ],
+      "roles": {
+        "page": "body",
+        "header": "header",
+        "appTitle": "header h1",
+        "navItem": "nav a[href][class~=\"text-muted-foreground\"]",
+        "buttonPrimary": "button[class~=\"bg-primary\"][class~=\"rounded-md\"]",
+        "buttonOutline": "button[class~=\"border-input\"][class~=\"bg-background\"][class~=\"rounded-md\"]:not([role=\"combobox\"]):not([aria-haspopup])",
+        "select": "button[role=\"combobox\"]",
+        "input": "input[class~=\"border-input\"]",
+        "tab": "[role=\"tab\"]",
+        "card": "div[class~=\"bg-card\"][class~=\"border\"]",
+        "cardTitle": "div[class~=\"rounded-lg\"][class~=\"bg-card\"] h3",
+        "gridHeader": ".wj-flexgrid .wj-colheaders .wj-cell",
+        "gridCell": ".wj-flexgrid .wj-cells .wj-cell",
+        "chip": "button[class~=\"rounded-full\"][class~=\"text-xs\"][class~=\"border\"]"
+      }
+    },
+    "ofx": {
+      "label": "One Finance",
+      "url": "http://localhost:7091",
+      "themes": {
+        "barclays-light": {
+          "query": "theme=barclays"
+        },
+        "barclays-dark": {
+          "query": "theme=barclays-dark"
+        },
+        "steps-light": {
+          "query": "theme=steps"
+        },
+        "steps-dark": {
+          "query": "theme=steps-dark"
+        }
+      },
+      "pages": [
+        "/",
+        "/board",
+        "/grids",
+        "/reports",
+        "/onboarding",
+        "/standards"
+      ],
+      "roles": {
+        "page": "body",
+        "header": ".topbar",
+        "appTitle": ".tb-page-title",
+        "navItem": ".nav-a:not(.on)",
+        "buttonPrimary": ".btn:not(.ghost):not(.sm)",
+        "buttonOutline": ".btn.ghost:not(.sm)",
+        "select": ".sel2-trig",
+        "input": "input.inp:not(.sm)",
+        "tab": ".tab, .ws-tab",
+        "card": ".panel",
+        "cardTitle": ".panel-hd h2",
+        "gridHeader": ".wj-flexgrid .wj-colheaders .wj-cell",
+        "gridCell": ".wj-flexgrid .wj-cells .wj-cell",
+        "chip": ".seg button"
+      }
+    },
+    "mitr": {
+      "label": "MITR AI",
+      "url": "http://localhost:3001",
+      "themes": {
+        "barclays-light": {
+          "localStorage": {
+            "chatbot-skin": "barclays",
+            "chatbot-theme": "light"
+          }
+        },
+        "barclays-dark": {
+          "localStorage": {
+            "chatbot-skin": "barclays",
+            "chatbot-theme": "dark"
+          }
+        },
+        "steps-light": {
+          "localStorage": {
+            "chatbot-skin": "steps",
+            "chatbot-theme": "light"
+          }
+        },
+        "steps-dark": {
+          "localStorage": {
+            "chatbot-skin": "steps",
+            "chatbot-theme": "dark"
+          }
+        }
+      },
+      "pages": [
+        "/",
+        "/dashboard",
+        "/catalog",
+        "/admin",
+        "/gridboard"
+      ],
+      "roles": {
+        "page": "body",
+        "header": "header.sticky",
+        "appTitle": "header.sticky h1",
+        "navItem": "nav[data-testid=\"sidebar\"] button.group",
+        "buttonPrimary": ".btn-primary",
+        "buttonOutline": ".btn-secondary",
+        "select": "select",
+        "input": "input[type=\"text\"], input:not([type])",
+        "tab": "[role=\"tab\"]",
+        "card": "div[class~=\"rounded-[var(--radius-lg)]\"][class~=\"border\"]",
+        "cardTitle": "div[class~=\"rounded-[var(--radius-lg)]\"] h3",
+        "gridHeader": ".wj-flexgrid .wj-colheaders .wj-cell",
+        "gridCell": ".wj-flexgrid .wj-cells .wj-cell"
+      }
+    }
+  },
+  "embedded": [
+    {
+      "label": "STEPS framed in One Finance",
+      "app": "steps",
+      "path": "/finance?ofx-embed=1&theme=light&skin=barclays",
+      "host": "ofx",
+      "expect": {
+        "attrs": {
+          "data-ofx-embedded": "1",
+          "data-skin": "barclays",
+          "data-theme": "light"
+        },
+        "absent": [
+          "header",
+          "aside"
+        ],
+        "stylesheet": "/theme/onefinux-tokens.css"
+      }
+    },
+    {
+      "label": "MITR AI chat framed in One Finance",
+      "app": "mitr",
+      "path": "/widget?group=finance&ofx-embed=1&theme=light&skin=barclays",
+      "host": "ofx",
+      "expect": {
+        "attrs": {
+          "data-ofx-vars": "mitr",
+          "data-skin": "barclays",
+          "data-theme": "light"
+        },
+        "absent": [
+          "nav[data-testid=\"sidebar\"]"
+        ],
+        "stylesheet": "/theme/onefinux-tokens.css"
+      }
+    },
+    {
+      "label": "MITR AI dashboard framed in One Finance",
+      "app": "mitr",
+      "path": "/dashboard?ofx-embed=1&theme=light&skin=barclays",
+      "host": "ofx",
+      "expect": {
+        "attrs": {
+          "data-ofx-vars": "mitr",
+          "data-skin": "barclays"
+        },
+        "absent": [
+          "nav[data-testid=\"sidebar\"]",
+          "header.sticky"
+        ],
+        "stylesheet": "/theme/onefinux-tokens.css"
+      }
+    }
+  ]
+}

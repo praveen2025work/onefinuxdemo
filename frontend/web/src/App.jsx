@@ -28,6 +28,7 @@ const GridLibrary = lazy(() => import('./pages/GridLibrary.jsx'));
 const OutcomeReport = lazy(() => import('./pages/OutcomeReport.jsx'));
 const Usage = lazy(() => import('./pages/Usage.jsx'));
 const Access = lazy(() => import('./pages/Access.jsx'));
+const Standards = lazy(() => import('./pages/Standards.jsx'));
 
 /** Lets window.fdc3 open a route for a built-in intent (ViewInstance, ViewReport) in this document. */
 function Fdc3Bridge() {
@@ -50,6 +51,7 @@ export default function App() {
           <Route path="/product" element={<Product />} />
           <Route path="/architecture" element={<ArchitecturePage />} />
           <Route path="/guide" element={<GuidePage />} />
+          <Route path="/standards" element={<Standards />} />
           <Route path="/lifecycle" element={<Lifecycle />} />
           <Route path="/board" element={<Board />} />
           <Route path="/outcomes" element={<Outcomes />} />
