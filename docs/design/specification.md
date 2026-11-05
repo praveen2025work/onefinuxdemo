@@ -329,8 +329,8 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-ONEUX-022` | CI runs browser journeys and WCAG 2.1 AA checks; a critical or serious accessibility finding fails the build. |
 | `REQ-ONEUX-023` | A chatbot set in onefinux.ux.chatbot is framed in the assistant panel and as a desk widget; the console sends it ofx.theme and ofx.context, and acts only on ofx.chat.ready, ofx.chat.open with a same-origin route, and ofx.chat.share, from the configured origin and that frame. |
 | `REQ-ONEUX-024` | The console's built-in assistant and every framed chatbot style conversations with the .ofx-chat classes in frontend/theme/onefinux-tokens.css. |
-| `REQ-ONEUX-025` | Under the STEPS skin the console uses white cards with a 1px border and no tinted tile fills, ghost header icons, counts as coloured text, and rounded filter chips. |
-| `REQ-ONEUX-026` | Buttons, inputs, drop-downs, labels and Wijmo grids in the console, in STEPS and in MITR AI take one control scale from frontend/theme (--ofx-ctl-* and onefinux-wijmo.css): 32px controls with 10px corners, 12px/500 button text, 14px typed text, 14px/500 labels, and 33px grid rows under a 12px semibold uppercase header. |
+| `REQ-ONEUX-025` | Under the Barclays (default) and STEPS skins the console uses the STEPS v3 structure: white cards with a 1px border and no tinted tile fills, ghost header icons, counts as coloured text, and rounded filter chips. |
+| `REQ-ONEUX-026` | Buttons, inputs, drop-downs, labels and Wijmo grids in the console, in STEPS and in MITR AI take one control scale from frontend/theme (--ofx-ctl-*, --ofx-field-h and onefinux-wijmo.css), the two STEPS Button sizes: compact 32px controls with 12px/500 text for toolbars and filters, default 36px buttons and fields with 14px text for forms and dialogs; 10px corners, 14px typed text, 14px/500 labels, and 33px grid rows under a 12px semibold uppercase header. |
 
 ### 11.9 Quality attributes (NFR)
 
@@ -340,8 +340,13 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-NFR-002` | The console builds with npm ci && npm run build in frontend/web in CI. |
 | `REQ-NFR-003` | Phase 1 persistence is the hub store (H2 in the local demo) and does not require Kafka, Redis, or a cloud bus. |
 | `REQ-NFR-004` | The console uses REST plus the hub live link (WebSocket, with SSE as the fallback) only; it never connects to a message bus. |
-| `REQ-NFR-005` | Theme tokens live in frontend/web/src/styles.css and frontend/theme/onefinux-tokens.css. |
+| `REQ-NFR-005` | Theme tokens live in frontend/theme/onefinux-tokens.css; frontend/web/src/styles.css only aliases them. |
 | `REQ-NFR-006` | Partner embeds import --ofx-* tokens and omit their own masthead. |
+| `REQ-NFR-007` | The Barclays skin (Royal Blue #006de3 on the Barclays neutrals, Midnight #1a2142 in dark mode) is the default in the console, STEPS v3 and MITR AI; STEPS Banking Blue and the MITR indigo skin stay selectable. Every text token meets WCAG 2.1 AA (4.5:1) on cards, the page and its own status tint in every skin and mode. |
+| `REQ-NFR-008` | Every text size the console, STEPS v3 and MITR AI render is a STEPS v3 step: 10, 11, 12, 14, 16, 18, 20, 24, 30 or 36px (--ofx-text-*), with 13px only inside a data grid; body text is 14px. |
+| `REQ-NFR-009` | The three apps share the STEPS v3 shell metrics: a 64px header with an 18px/700 app title, 36px nav items with 14px/500 labels (the active item filled with the accent), 16px/600 card titles and 14px/500 tabs. |
+| `REQ-NFR-010` | Framed by an allow-listed One Finance origin with ofx-embed=1, STEPS v3 (any page), MITR AI (any page) and a partner page that loads /ofx-interop.js with data-ofx-hosts set data-ofx-embedded, data-skin and data-theme from the host, link its /theme/onefinux-tokens.css, draw no masthead or side panel, and follow ofx.theme messages; any other framer gets the app unstyled by the host. |
+| `REQ-NFR-011` | STEPS v3 and MITR AI hold byte-identical copies of frontend/theme (npm run sync:ofx-theme) locked by SHA-256 in ofx-theme.lock.json; an edited copy fails their unit tests. |
 
 ## 12. Acceptance criteria
 
@@ -1972,6 +1977,11 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-NFR-004` | Browser network panel shows HTTP and SSE only |
 | `REQ-NFR-005` | Theme edits land in the two token files |
 | `REQ-NFR-006` | Partner skill `embed-partner-screen` |
+| `REQ-NFR-007` | `frontend/web/src/lib/tokens.test.js` (palette completeness and WCAG AA per skin and mode); `themes.test.js` default |
+| `REQ-NFR-008` | `npm run parity` in `frontend/web` (type scale ≥ 98% of characters per page in all three apps); `tokens.test.js` (no px font size in the standard) |
+| `REQ-NFR-009` | `npm run parity` role comparison against STEPS v3 (app title, header, nav item, card title, tab) |
+| `REQ-NFR-010` | `frontend/web/ofx-interop.test.js`; STEPS `src/lib/ofx-embed.test.ts`; MITR `src/__tests__/ofx-embed.test.ts`; `npm run parity` embedded checks |
+| `REQ-NFR-011` | STEPS `src/lib/ofx-theme.test.ts`; MITR `src/__tests__/ofx-theme.test.ts` |
 
 ### 13.3 Completeness counts
 

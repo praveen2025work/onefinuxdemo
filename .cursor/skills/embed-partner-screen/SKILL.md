@@ -24,7 +24,22 @@ Link the host's design standard; do not copy colours into your app:
 <link rel="stylesheet" href="https://<one-finance>/theme/onefinux-wijmo.css"> <!-- if you use Wijmo -->
 ```
 
-Set `html[data-ofx-embedded="1"]` and draw **no** masthead. Take `theme=light|dark` and `skin=steps|ofx` from the iframe URL into `html[data-theme]` / `html[data-skin]`, then follow `ofx.theme` messages. Tailwind/shadcn apps get their HSL variables from the bridge in the tokens file. **REQUIRED:** `barclays-ib-console`.
+Set `html[data-ofx-embedded="1"]` and draw **no** masthead or side panel (mark them `data-ofx-chrome`; the tokens hide them). Take `theme=light|dark` and `skin=barclays|steps|ofx` from the iframe URL into `html[data-theme]` / `html[data-skin]` — accept any short lower-case skin, Barclays when none — then follow `ofx.theme` messages. Tailwind/shadcn apps get their HSL variables from the bridge in the tokens file. **REQUIRED:** `barclays-ib-console`.
+
+Any stack (Angular, .NET Razor, Java templates, plain HTML) gets all of that from the SDK with an allow-list:
+
+```html
+<script src="https://<one-finance>/ofx-interop.js" data-ofx-hosts="https://<one-finance>" data-ofx-wijmo></script>
+```
+
+Framed by a listed origin with `?ofx-embed=1`, it sets the attributes, links the host's tokens (and Wijmo skin), remembers the host across in-frame reloads (`window.name`) and connects FDC3; any other framer gets nothing. `ofx.getEmbed()` says what it applied.
+
+| App | Embedded pages | Its settings |
+|---|---|---|
+| STEPS v3 | any (`?ofx-embed=1`); desk apps `steps`, `steps-tasks` | `NEXT_PUBLIC_OFX_HOST_ORIGINS`, `OFX_HOST_ORIGINS` / `-OfxHostOrigins` (frame-ancestors) |
+| MITR AI | any: chat widget (assistant panel, Chat widget), `/dashboard`, `/gridboard`, `/data-explorer` (desk apps `mitr-*`) | `NEXT_PUBLIC_ONEFINUX_ORIGIN`; nginx / IIS `frame-ancestors` |
+
+The console's side: `VITE_STEPS_URL`, `VITE_MITR_URL` and `BUILTIN_APPS` in `src/workspace/apps.js`; desks append the contract (scope, `ofxView`, `theme`, `skin`).
 
 ## Kit
 
@@ -76,4 +91,5 @@ Kit embeds may also post `{ type: "ofx.height", px }`, `{ type: "ofx.signedOff" 
 - Rebuild FOBO or STEPS inside `frontend/web` when the team already has the screen
 - Let the partner draw a second One Finance masthead
 - Copy the palette "because our app is already blue": link the tokens
+- Whitelist only `steps|ofx` skins: the standard is `barclays`, and later skins are data
 - Invent a private postMessage protocol between screens: FDC3 channels and intents

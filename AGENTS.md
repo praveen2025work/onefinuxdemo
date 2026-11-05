@@ -2,7 +2,7 @@
 
 Umbrella for **group units** and their business outcomes. FOBO Helix is one `HELIX_RECON` kit, not the app. Products are data.
 
-Visual truth: `frontend/web` (live React console). One design standard for every accounting-space screen, framed STEPS and partners included: the STEPS look (Banking Blue `#2563eb`, page `#f8fafc`, white cards) from [`frontend/theme/`](frontend/theme/onefinux-tokens.css), served at `/theme/*`. MITR indigo stays selectable.  
+Visual truth: `frontend/web` (live React console). One design standard for every accounting-space screen, framed STEPS, MITR AI and partners included: **Barclays brand colours on the STEPS v3 structure** (Royal Blue `#006de3`, page `#f6f6f6`, white cards, Midnight `#1a2142` dark mode, the STEPS type scale and control scale) from [`frontend/theme/`](frontend/theme/onefinux-tokens.css), served at `/theme/*`. STEPS Banking Blue and MITR indigo stay selectable. Team contract: [`docs/design/design-standard.md`](docs/design/design-standard.md); live page: console **`/standards`**; check with `npm run parity` (frontend/web).  
 Screens: read-only data is Wijmo, described as a **GridSpec** (`/grids`; `SpecGrid`, `DataView`, `Chart`), and many screens share one page on a **desk** (`/desks`), one desk per business outcome or a blank one. Screens link with FDC3 (`window.fdc3`); outcome desk channels and `activity` reach every tab and browser through the hub (`/api/ws`, SSE fallback).  
 One UX platform: search across apps, an advisory assistant (`/api/assist`), usage and feedback (`/usage`), A-B experiments, per-user and per-team saved desks, grid write-back with maker-checker, and access (`/access`: role structure, requests, reviews, inactivity). Map: [`docs/design/one-ux.md`](docs/design/one-ux.md).  
 Design folder (only one): [`docs/design/`](docs/design/README.md).  
@@ -36,6 +36,8 @@ New developer on-ramp: [`docs/design/start.md`](docs/design/start.md) and consol
 - LLM on the readiness path
 - Kafka in the browser
 - Colours outside `frontend/theme` tokens, or a second stylesheet per screen / team
+- A text size off the STEPS type scale (10, 11, 12, 14, 16, 18, 20, 24, 30px; 13px only in a data grid): no `12.5px`, `13px`, `text-[13px]`
+- Editing a synced copy of the standard in STEPS or MITR AI (edit `frontend/theme`, then `npm run sync:ofx-theme` there)
 - An HTML data table or another chart library where `DataGrid` / `DataView` / `Chart` fits
 - A private postMessage protocol between screens (FDC3 channels and intents)
 - Polling or a side channel to tell other screens about an action (publish `activity` / share on the outcome channel)

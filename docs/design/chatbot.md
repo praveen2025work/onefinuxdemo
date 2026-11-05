@@ -32,8 +32,9 @@ Link the console's tokens and use the `.ofx-chat` classes:
 </div>
 ```
 
-The URL the console opens carries `?ofx-embed=1&theme=light|dark&skin=steps|ofx&groupUnit=&cobDate=&region=`. Set
-`html[data-theme]` and `html[data-skin]` from them and the tokens do the rest, in light and dark.
+The URL the console opens carries `?ofx-embed=1&theme=light|dark&skin=barclays|steps|ofx&groupUnit=&cobDate=&region=`.
+Set `html[data-theme]` and `html[data-skin]` from them (Barclays when no skin is given) and the tokens do the rest, in
+light and dark.
 
 ## 3. The contract
 
@@ -74,5 +75,7 @@ and hides its own title bar and sidebar when it sees `ofx-embed=1` and its `NEXT
 Keep both on the same parent domain so the bot's sign-in cookies stay first-party inside the frame.
 
 MITR AI also carries a copy of both theme files (`apps/web/src/styles/ofx`, refreshed with `npm run sync:ofx-theme`), so
-it looks like STEPS on its own too: the STEPS look is its default, with "MITR classic" (the indigo `ofx` skin) in its
-theme menu. Its own buttons, fields, labels and Wijmo grids follow the shared control scale (REQ-ONEUX-026).
+it looks like the console on its own too: the Barclays standard is its default, with STEPS Banking Blue and "MITR
+classic" (the indigo `ofx` skin) in its theme menu. Its own buttons, fields, labels, nav, header and Wijmo grids follow
+the shared control scale and type scale (REQ-ONEUX-026, REQ-NFR-008). Every MITR page — not only the widget — can be framed
+on a desk (`mitr-*` apps); framed, it drops its sidebar and title bar and keeps the page's tools.
