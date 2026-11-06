@@ -84,6 +84,14 @@ if ($site) {
     Write-Check ($clr -eq '') "IIS app pool OneFinUxConsole CLR is No Managed Code (value='$clr')"
     Write-Check (Test-Url "http://localhost:$SitePort/") "IIS console  http://localhost:$SitePort/"
     Write-Check (Test-Url "http://localhost:$SitePort/api/outcomes") "IIS same-origin /api  http://localhost:$SitePort/api/outcomes"
+    try {
+        $page = Invoke-WebRequest -Uri "http://localhost:$SitePort/board" -UseBasicParsing -TimeoutSec 5
+        $widget = Invoke-WebRequest -Uri "http://localhost:$SitePort/widget/grid" -UseBasicParsing -TimeoutSec 5
+        Write-Check ([string]$page.Headers['Content-Security-Policy'] -match "frame-ancestors 'self'") "IIS console sends a Content-Security-Policy (frame-ancestors 'self')"
+        Write-Check ([string]$widget.Headers['Content-Security-Policy'] -match 'frame-ancestors \*') "IIS /widget/ may be framed by other apps (frame-ancestors *)"
+    } catch {
+        Write-Check $false "IIS security headers could not be read"
+    }
 } else {
     Write-Host '  SKIP  IIS site OneFinUxConsole is not installed (use Vite on 7091 for local)'
 }
