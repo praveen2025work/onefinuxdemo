@@ -48,7 +48,7 @@ This section bounds phase 1. Work outside these bounds needs a new REQ-ID before
 
 ### 3.1 In scope
 
-HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, MITR chrome, One Finance wordmark, Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, outcome.grids with MESCIUS Wijmo FlexGrid after Grid view, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.
+HTTP ingest, feed-folder watch, JSON Schema validation, translation, Outcome Engine, Stitch fold, ActionExecutor registry, kit `userActions` including ADJUST and COUNTERSIGN, REST, WebSocket and SSE, outbox, audit, React console routes listed in this document, Drive scenarios on `/drive`, the One Finance design standard (STEPS Banking Blue default, MITR indigo selectable), One Finance wordmark, the One UX platform (subsystem ONEUX), Reports Normal/Compact/Table, accounting item attributes on stitch instances, instance step-view GRID or IFRAME, outcome.grids with MESCIUS Wijmo FlexGrid after Grid view, in-shell partner iframe, Event lifecycle page, and fail-closed 404 on unentitled stitch instances.
 
 ### 3.2 Out of scope
 
@@ -237,7 +237,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | REQ-ID | Requirement |
 | --- | --- |
 | `REQ-CONSOLE-001` | The product wordmark is One Finance with no UX suffix on the rail, the document title, and the collapsed top header. |
-| `REQ-CONSOLE-002` | The brand mark is a briefcase on a tile in the current skin's brand colours (STEPS blue, or MITR indigo-lavender). |
+| `REQ-CONSOLE-002` | The brand mark is the One Finance app icon, in its light or dark variant to match the current mode. |
 | `REQ-CONSOLE-003` | The rail is an overlay that is closed when a page loads; a tab on the left edge opens it over the page, and the scrim, Escape, or a navigation closes it. |
 | `REQ-CONSOLE-004` | The top header is one row: the brand mark and wordmark appear once at its left, beside the business date, group unit, and region controls; the open rail shows the brand and one close control in its brand slot. |
 | `REQ-CONSOLE-005` | html[data-theme] is dark or light; the choice persists in localStorage ofx-theme and a URL theme= parameter overrides it. |
@@ -340,7 +340,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-NFR-002` | The console builds with npm ci && npm run build in frontend/web in CI. |
 | `REQ-NFR-003` | Phase 1 persistence is the hub store (H2 in the local demo) and does not require Kafka, Redis, or a cloud bus. |
 | `REQ-NFR-004` | The console uses REST plus the hub live link (WebSocket, with SSE as the fallback) only; it never connects to a message bus. |
-| `REQ-NFR-005` | Theme tokens live in frontend/web/src/styles.css and frontend/theme/onefinux-tokens.css. |
+| `REQ-NFR-005` | Colours, type and weights are defined only in frontend/theme/onefinux-tokens.css; frontend/web/src/styles.css only aliases those tokens. |
 | `REQ-NFR-006` | Partner embeds import --ofx-* tokens and omit their own masthead. |
 
 ## 12. Acceptance criteria
@@ -1007,6 +1007,13 @@ These 23 criteria lock ACTION behaviour. Each Maps-to line names one REQ-ID.
 - When gla.reviewer posts COUNTERSIGN
 - Then status becomes CLEARED
 
+#### AC-ACTION-24
+
+- Maps to: `REQ-ACTION-013`
+- Given a MOTIF LEDGER_POSTED event for MB014 carries journalId JE-8801 and amount 12450000
+- When GET /api/stitch/instances and GET /api/stitch/instance are called for that instance
+- Then both answers carry journalId JE-8801 and amount 12450000 on the instance
+
 ### 12.5 Console chrome (CONSOLE)
 
 These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
@@ -1028,9 +1035,9 @@ These 23 criteria lock CONSOLE behaviour. Each Maps-to line names one REQ-ID.
 #### AC-CONSOLE-03
 
 - Maps to: `REQ-CONSOLE-002`
-- Given the rail is expanded
-- When the operator inspects the rail brand mark
-- Then the mark is a briefcase on the brand tile of the current skin
+- Given the console is in dark mode
+- When the operator inspects the header brand mark
+- Then the mark is the dark variant of the One Finance app icon, and in light mode it is the light variant
 
 #### AC-CONSOLE-04
 
@@ -1832,6 +1839,55 @@ These 23 criteria lock ONEUX behaviour. Each Maps-to line names one REQ-ID.
 - When CI runs the accessibility checks
 - Then the e2e job fails naming the rule and element
 
+#### AC-ONEUX-24
+
+- Maps to: `REQ-ONEUX-019`
+- Given idle-lock-minutes is 15 and the console is not framed
+- When there is no keyboard, pointer or touch input for 15 minutes
+- Then the Locked screen covers the console, and with SSO on, Unlock starts a new sign-in
+
+#### AC-ONEUX-25
+
+- Maps to: `REQ-ONEUX-020`
+- Given the console is served by nginx.conf or public/web.config
+- When any console route other than /widget/ is fetched
+- Then the response carries a Content-Security-Policy with connect-src 'self' and frame-ancestors 'self', and a /widget/ route carries frame-ancestors for embedding
+
+#### AC-ONEUX-26
+
+- Maps to: `REQ-ONEUX-021`
+- Given the Break register GridSpec has an edit block
+- When /widget/grid?spec=breaks is framed by a page on another origin
+- Then the grid shows no Edit, Submit or Approve control
+
+#### AC-ONEUX-27
+
+- Maps to: `REQ-ONEUX-023`
+- Given onefinux.ux.chatbot names an origin and the chatbot frame posts ofx.chat.open with route https://evil.example/x
+- When the console receives the message
+- Then the console does not navigate, and ofx.chat.open with route /instance/R-2031 from the configured origin opens that route
+
+#### AC-ONEUX-28
+
+- Maps to: `REQ-ONEUX-024`
+- Given the assistant panel is open
+- When the operator asks a question
+- Then the conversation renders with .ofx-chat, .ofx-chat-msg and .ofx-chat-compose from frontend/theme/onefinux-tokens.css
+
+#### AC-ONEUX-29
+
+- Maps to: `REQ-ONEUX-025`
+- Given html data-skin is steps
+- When the operator opens Home
+- Then KPI tiles are white with a 1px border and no tinted fill, and header counts render as coloured text without a chip
+
+#### AC-ONEUX-30
+
+- Maps to: `REQ-ONEUX-026`
+- Given html data-skin is steps
+- When the operator inspects a primary button, a text input and a Wijmo column header
+- Then the button and input are 32px high with 10px corners, button text is 12px at weight 500, and the header is 12px uppercase at weight 500
+
 ## 13. Traceability
 
 This section maps every subsystem REQ-ID to AC-IDs and records NFR verification.
@@ -1885,7 +1941,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ACTION-010` | `AC-ACTION-16` |
 | `REQ-ACTION-011` | `AC-ACTION-22` |
 | `REQ-ACTION-012` | `AC-ACTION-18`, `AC-ACTION-20`, `AC-ACTION-23` |
-| `REQ-ACTION-013` |  |
+| `REQ-ACTION-013` | `AC-ACTION-24`, `AC-CONSOLE-23` |
 | `REQ-CONSOLE-001` | `AC-CONSOLE-01`, `AC-CONSOLE-02` |
 | `REQ-CONSOLE-002` | `AC-CONSOLE-03` |
 | `REQ-CONSOLE-003` | `AC-CONSOLE-04` |
@@ -1953,14 +2009,14 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ONEUX-016` | `AC-ONEUX-20` |
 | `REQ-ONEUX-017` | `AC-ONEUX-21` |
 | `REQ-ONEUX-018` | `AC-ONEUX-22` |
-| `REQ-ONEUX-019` |  |
-| `REQ-ONEUX-020` |  |
-| `REQ-ONEUX-021` |  |
+| `REQ-ONEUX-019` | `AC-ONEUX-24` |
+| `REQ-ONEUX-020` | `AC-ONEUX-25` |
+| `REQ-ONEUX-021` | `AC-ONEUX-26` |
 | `REQ-ONEUX-022` | `AC-ONEUX-23` |
-| `REQ-ONEUX-023` |  |
-| `REQ-ONEUX-024` |  |
-| `REQ-ONEUX-025` |  |
-| `REQ-ONEUX-026` |  |
+| `REQ-ONEUX-023` | `AC-ONEUX-27` |
+| `REQ-ONEUX-024` | `AC-ONEUX-28` |
+| `REQ-ONEUX-025` | `AC-ONEUX-29` |
+| `REQ-ONEUX-026` | `AC-ONEUX-30` |
 
 ### 13.2 Quality-attribute coverage
 
@@ -1970,7 +2026,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-NFR-002` | CI job `npm ci && npm run build` in `frontend/web` |
 | `REQ-NFR-003` | Local `./scripts/run.sh` starts without Kafka or Redis |
 | `REQ-NFR-004` | Browser network panel shows HTTP and SSE only |
-| `REQ-NFR-005` | Theme edits land in the two token files |
+| `REQ-NFR-005` | `theme-files.test.js` (no literal weights; one font stack) and review against the `barclays-ib-console` skill |
 | `REQ-NFR-006` | Partner skill `embed-partner-screen` |
 
 ### 13.3 Completeness counts
@@ -1980,12 +2036,12 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | INGEST | 11 | 23 |
 | FOLD | 10 | 23 |
 | ENGINE | 10 | 23 |
-| ACTION | 13 | 23 |
+| ACTION | 13 | 24 |
 | CONSOLE | 17 | 23 |
 | REPORTS | 10 | 23 |
 | GOVERN | 10 | 23 |
 | OPERATE | 12 | 23 |
-| ONEUX | 26 | 23 |
+| ONEUX | 26 | 30 |
 
 ## 14. Data contracts
 

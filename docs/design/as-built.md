@@ -1,6 +1,6 @@
-# Product as built — 14 September 2026
+# Product as built — 6 November 2026
 
-Status: current design truth for One Finance after Drive, Configuration master-detail, Barclays theme, 15C3 report flow, and pluggable capability registries.
+Status: current design truth for One Finance after Drive, Configuration master-detail, the STEPS Banking Blue standard with Barclays Effra type, 15C3 report flow, pluggable capability registries, and the One UX platform (search, assistant, desks, write-back, access, sign-in).
 
 ## Intent
 
@@ -24,6 +24,13 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/instance/:id` | Fold + destinations first; dest click opens full-width stage; Close restores the split; Partner view and Grid view on demand; accounting item + kit-declared actions | Invent verbs not on the kit; open Helix in a new tab; mount embed or grids on page open |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | Sign off a rec or publish a kit |
 | `/monitoring` | Ingest / outbox / audit | Business sign-off |
+| `/desks` | Many screens on one page, one desk per business outcome or blank; FDC3 links and outcome channels | A private postMessage protocol between screens |
+| `/grids` | Grid library: GridSpecs (Platform · Unit · Mine), live preview, propose from a source, write-back with maker-checker | A hand-coded grid per screen |
+| `/finance` | STEPS-style finance dashboards: live readiness tiles next to seeded finance datasets | Another chart library |
+| `/notifications` | Notification inbox, live over the hub link | Notify on progress ticks |
+| `/access` | What you hold, role-structure verbs, access requests, approvals, periodic reviews | A role check in code |
+| `/usage` | Screens and views opened, features used, feedback, A-B experiment results | Track outside the hub |
+| `/guide` | Developer on-ramp | Live outcomes or Drive |
 
 ## Capability registries
 
@@ -32,7 +39,7 @@ A group unit answers one business question per outcome. The platform is a thin o
 
 ## Brand
 
-Wordmark is **One Finance**. Brand mark is a generic briefcase on the MITR tile. When the left rail is collapsed, that mark appears once — in the top header beside Group unit — and the rail keeps only the expand control in the brand slot. MITR indigo-lavender accent (`#818cf8` dark / `#6366f1` light). Canvas `#090d1c` dark / `#f5f6fb` light, opaque cards. Left rail follows the theme (navy `#090d1c` dark / white `#ffffff` light). Status colour on KPI tiles (ready / blocked / delayed). Barclays Effra (Source Sans 3 where Effra is not installed) + JetBrains Mono at light weights, Lucide icons. No frosted glass.
+Wordmark is **One Finance**. Brand mark is the One Finance app icon (a light and a dark variant that follow the mode), shown once in the top header; the rail is a floating overlay opened from an edge tab. Default theme is **STEPS Banking Blue**: accent `#2563eb`, page `#f8fafc`, white cards with 1px slate borders; **STEPS dark** is its peer (accent `#3b83f6`, page `#0b111e`). The earlier MITR indigo-lavender themes stay selectable from the theme menu. Status colour on KPI tiles (ready / blocked / delayed). Barclays Effra (Source Sans 3 where Effra is not installed) + JetBrains Mono at light weights, Lucide icons. No frosted glass.
 
 ## Mobile
 
@@ -47,4 +54,4 @@ Below 820px the left rail is an overlay drawer (hamburger). A labelled bottom na
 - Treat a View as entitlement (that is CEES; a view only hides nav).
 - Put the ETA on the readiness fold. Predictions are advisory.
 - Jump screens in an exec demo — hold each surface long enough to read.
-- Ship a day-one Analyst explorer (that is later, Wijmo).
+- Build a React report per analyst ask: analysts compose GridSpecs in the grid library (`/grids`), or the partner screen is framed.

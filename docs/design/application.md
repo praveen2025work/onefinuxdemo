@@ -1,6 +1,6 @@
 # BRD — One Finance application build
 
-Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `architecture-group.md` and `README.md`.
+Owner: Praveen Kumar · Status: current as of 6 November 2026 · Companion to `architecture-group.md` and `README.md`.
 
 This is the document a developer picks up to make the console a real product. It covers the two models, who calls whom, when we decide an event, the API surface, how to onboard an outcome, which skill owns which part, and exactly what is in the demo build versus later.
 
@@ -91,6 +91,12 @@ Never notify on: raw facts, PROGRESS ticks, or LLM/advisory output.
 | `/instance/:id` | Fold and destinations first; dest click opens full-width stage; Close restores the split; Partner view and Grid view on demand; sign-off / post / kit-declared actions | Outcome user |
 | `/operations` | Escalations, watermarks, dead letters, dual-control replay | RTB |
 | `/monitoring` | Received → persisted → propagated → audited | RTB / engineering |
+| `/desks` | Many screens on one page, one desk per business outcome; screens link over FDC3 and the outcome channel | Everyone |
+| `/grids` | Grid library: GridSpecs, live preview, propose from a source, write-back with maker-checker | Analyst / controller |
+| `/finance` | Finance dashboards: live readiness tiles beside finance datasets | Head / controller |
+| `/notifications` | Notification inbox | Everyone |
+| `/access` | Holdings, role-structure verbs, access requests, approvals, reviews | Everyone / approver |
+| `/usage` | Usage, feedback, A-B experiment results | Product owner |
 
 **Outcome board vs My outcomes.** Same tenant-scoped instance list. Board is the supervisor table (status filter, blockers, escalation counts). My outcomes is the doer's card worklist. Both drill to Instance detail.
 
@@ -142,9 +148,9 @@ Full operator steps: `onboarding.md`.
 
 ## 8. Demo build vs later
 
-**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`, `ADJUST`, `COUNTERSIGN`); accounting item on Board; RTB operations; monitoring + outbox + audit; solid finance-dashboard theme (MITR indigo-lavender); pluggable action registries.
+**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`, `ADJUST`, `COUNTERSIGN`); accounting item on Board; RTB operations; monitoring + outbox + audit; STEPS Banking Blue design standard with Barclays Effra type (MITR indigo selectable); pluggable action registries; desks and FDC3 links; grid library with maker-checker write-back; search, assistant, usage and feedback; access requests and reviews; OIDC sign-in.
 
-**Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; Wijmo analyst studio; native mobile app wrapping the same responsive shell.
+**Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; native mobile app wrapping the same responsive shell.
 
 ## 9. Run and verify
 

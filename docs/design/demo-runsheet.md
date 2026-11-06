@@ -8,8 +8,9 @@ Facilitator script. Two tracks: a **2–3 minute narrated MD / CIO story** (male
 
 1. `./scripts/run.sh` — hub API `http://localhost:7070`, simulator `http://localhost:7081`. Do not open 7070 as the product UI.
 2. Separate terminal: `cd frontend/web && npm install && npm run dev` — console `http://localhost:7091`.
-3. Theme: dark (indigo-slate dashboard + MITR accent) for exec rooms.
-4. Open `/drive`, click **Reset**. Do **not** pre-run the day's scenario — Drive it live.
+3. Theme: the default **STEPS Banking Blue** (light) for the Barclays look; switch to **STEPS dark** from the header theme menu in a dark room. Leave the MITR indigo themes for MITR audiences.
+4. Optional: set `VITE_WIJMO_LICENSE` before `npm run dev` so grids show no Wijmo evaluation banner.
+5. Open `/drive`, click **Reset**. Do **not** pre-run the day's scenario — Drive it live.
 
 Worked examples:
 

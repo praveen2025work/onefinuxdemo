@@ -15,7 +15,7 @@
 - Unentitled instance reads return 404, never 403.
 - The View menu is not entitlement.
 - No LLM on the readiness path. Wave 1 adds no assistant.
-- Wave 2 is parked: no IdP login screen, no server-saved theme, no sign-in log.
+- Wave 2 was parked during this plan (no IdP login screen, no server-saved theme, no sign-in log); it later shipped as the One UX platform, see `unified-ui-waves.md` section 3.2.
 - Search query shorter than 2 characters returns `{ "hits": [] }` and the console does not call the API.
 - Outcome definitions are platform metadata. A non-denied caller may see a matching definition. Instance and notification hits require `canSeeGroupUnit`.
 - Colours stay in `frontend/theme` tokens. The search field uses the existing top-bar input styles.

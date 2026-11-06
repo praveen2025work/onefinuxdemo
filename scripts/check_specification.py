@@ -83,13 +83,17 @@ def main() -> int:
     for sys_name in SUBSYSTEMS:
         sys_reqs = sorted(r for r in reqs if r.startswith(f"REQ-{sys_name}-"))
         sys_acs = sorted(a for a in acs if a.startswith(f"AC-{sys_name}-"))
-        if len(sys_acs) != 23:
-            errors.append(f"{sys_name} has {len(sys_acs)} ACs, expected 23")
+        if len(sys_acs) < 23:
+            errors.append(f"{sys_name} has {len(sys_acs)} ACs, expected at least 23")
+        missing = [n for n in range(1, len(sys_acs) + 1) if f"AC-{sys_name}-{n:02d}" not in acs]
+        if missing:
+            errors.append(f"{sys_name} AC numbering has gaps: {missing}")
         if not sys_reqs:
             errors.append(f"{sys_name} has no REQ-IDs")
 
-    # Each AC block must contain Given / When / Then and a REQ map.
-    ac_blocks = re.split(r"(?=^#### AC-[A-Z]+-\d{2})", text, flags=re.M)
+    # Each AC block must contain Given / When / Then and a REQ map. A block ends at the next heading of any level,
+    # so the last AC does not swallow the traceability table and "map" every REQ-ID listed there.
+    ac_blocks = re.split(r"(?=^#{1,6} )", text, flags=re.M)
     mapped_req: dict[str, set[str]] = defaultdict(set)
     seen_ac: set[str] = set()
     for block in ac_blocks:

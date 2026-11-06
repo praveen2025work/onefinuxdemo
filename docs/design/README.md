@@ -6,7 +6,7 @@ This is the only design folder. Live visual truth is `frontend/web`. Console **G
 |---|---|---|
 | [`specification.md`](specification.md) | Implementers / reviewers | Spec-driven contract: REQ-IDs, 23 Given/When/Then per subsystem, AC mapping |
 | [`one-ux.md`](one-ux.md) | Architects / product | One UX capability map (39 L4 capabilities): what the console does, where, and its configuration |
-| [`unified-ui-waves.md`](unified-ui-waves.md) | Implementers / reviewers | Organisation UI waves: Wave 1 search and entitlement, Wave 3 shared desk, Wave 4 folded-fact search. Wave 2 stays parked |
+| [`unified-ui-waves.md`](unified-ui-waves.md) | Implementers / reviewers | Organisation UI waves: Wave 1 search and entitlement, Wave 3 shared desk, Wave 4 folded-fact search. Wave 2 (sign-in, access) shipped as the One UX platform |
 | [`unified-ui-wave1-plan.md`](unified-ui-wave1-plan.md) | Implementers | Task plan for the Wave 1 build |
 | [`instance-surface.md`](instance-surface.md) | Controller | Click-to-expand feed history, in-shell iframe, generic GRID |
 | [`step-grid.md`](step-grid.md) | Controller | Outcome.grids: MESCIUS Wijmo FlexGrid, endpoint and request parameters |
@@ -46,4 +46,6 @@ At close of business a group unit answers one question per outcome. One Finance 
 | RTB | `rtb-support-view` |
 | Bind source / destination | `bind-source-destination` |
 | Partner iframe | `embed-partner-screen` |
-| Analyst studio (later) | `wijmo-outcome-grid` |
+| Grids, grid library, pivots, charts | `wijmo-outcome-grid` |
+| Desks, FDC3 links, outcome channels | `workspace-interop` |
+| Search, assistant, usage, write-back, access | `one-ux-platform` |
