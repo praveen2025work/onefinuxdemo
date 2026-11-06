@@ -25,6 +25,8 @@ jobs:
         run: mvn -B verify
       - name: CORS origins are an exact allowlist
         run: python3 scripts/check_cors.py
+      - name: Specification gate (every REQ-ID has an acceptance criterion)
+        run: python3 scripts/check_specification.py
       - name: Publish test report
         if: always()
         uses: actions/upload-artifact@v4
