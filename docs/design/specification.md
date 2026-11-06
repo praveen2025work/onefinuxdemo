@@ -330,7 +330,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-ONEUX-023` | A chatbot set in onefinux.ux.chatbot is framed in the assistant panel and as a desk widget; the console sends it ofx.theme and ofx.context, and acts only on ofx.chat.ready, ofx.chat.open with a same-origin route, and ofx.chat.share, from the configured origin and that frame. |
 | `REQ-ONEUX-024` | The console's built-in assistant and every framed chatbot style conversations with the .ofx-chat classes in frontend/theme/onefinux-tokens.css. |
 | `REQ-ONEUX-025` | Under the STEPS skin the console uses white cards with a 1px border and no tinted tile fills, ghost header icons, counts as coloured text, and rounded filter chips. |
-| `REQ-ONEUX-026` | Buttons, inputs, drop-downs, labels and Wijmo grids in the console, in STEPS and in MITR AI take one control scale from frontend/theme (--ofx-ctl-* and onefinux-wijmo.css): 32px controls with 10px corners, 12px/500 button text, 14px typed text, 14px/500 labels, and 33px grid rows under a 12px semibold uppercase header. |
+| `REQ-ONEUX-026` | Buttons, inputs, drop-downs, labels and Wijmo grids in the console, in STEPS and in MITR AI take one control scale from frontend/theme (--ofx-ctl-* and onefinux-wijmo.css): 32px controls with 10px corners, 12px/500 button text, 14px typed text, 14px/500 labels, and 33px grid rows under a 12px medium (500) uppercase header over a 1px rule. |
 
 ### 11.9 Quality attributes (NFR)
 
@@ -2126,7 +2126,7 @@ Wordmark: One Finance. Mark: briefcase on the accent tile. The rail is a closed 
 
 ### 19.2 Theme
 
-The palette is `frontend/theme/onefinux-tokens.css`. Default: STEPS Banking Blue (page `#f8fafc`, accent `#2563eb`); STEPS dark is its peer; the MITR indigo themes stay selectable. Opaque cards. No `backdrop-filter`. Lucide stroke icons. System UI type with JetBrains Mono for ids and numbers.
+The palette is `frontend/theme/onefinux-tokens.css`. Default: STEPS Banking Blue (page `#f8fafc`, accent `#2563eb`); STEPS dark is its peer; the MITR indigo themes stay selectable. Opaque cards. No `backdrop-filter`. Lucide stroke icons. Type is the Barclays brand face, Barclays Effra, where it is installed, with self-hosted Source Sans 3 (SIL OFL) in its place elsewhere; JetBrains Mono for ids and numbers. Weights are light: 400 text, 500 emphasis and grid headers, 600 only for titles, 300 for large figures (`--ofx-fw-*`).
 
 ### 19.3 Surfaces
 

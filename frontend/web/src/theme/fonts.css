@@ -1,4 +1,14 @@
-/* Self-hosted MITR type: Inter, Sora, JetBrains Mono (SIL OFL). */
+/* Self-hosted type (SIL OFL): Source Sans 3 stands in for Barclays Effra where the licensed brand face is not
+   installed; Inter and Sora for framed MITR screens; JetBrains Mono for ids. */
+
+@font-face {
+  font-family: "Source Sans 3";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 900;
+  src: url("./fonts/source-sans-3/source-sans-3-latin-wght-normal.woff2") format("woff2-variations"),
+       url("./fonts/source-sans-3/source-sans-3-latin-wght-normal.woff2") format("woff2");
+}
 
 :root {
   --font-inter: "Inter", system-ui, -apple-system, sans-serif;
