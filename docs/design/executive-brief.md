@@ -71,7 +71,7 @@ The full, editable diagram set (Mermaid source + SVG/PNG exports) lives in **[`a
 |---|---|
 | **Now (demonstrable today)** | Working event hub, outcome engine, RTB ops, entitlement-scoped console, **monitoring + outbox propagation + audit log**, FOBO/15C3/PnL worked examples, onboarding-as-data. |
 | **Next** | Real CEES entitlements (fail-closed), effective-dated reference data, Oracle persistence, the enterprise event bus, and NFR hardening (throughput/latency/DR evidence). Dual sign-off is live on stitch kits that declare `COUNTERSIGN`. |
-| **Later** | Analyst explorer at scale, AI assistance (agents read the event store to predict ETAs and explain bottlenecks; the engine stays deterministic). |
+| **Later** | Analyst exploration at scale on the grid library, deeper AI assistance (agents read the event store to predict ETAs and explain bottlenecks; the engine stays deterministic). |
 
 Details: `architecture-group.md` (scope line §6, non-functionals §7).
 
@@ -86,5 +86,5 @@ Details: `architecture-group.md` (scope line §6, non-functionals §7).
 - **"How does a custom system like Helix integrate?"** It publishes a fact to `POST /api/events` and echoes command completions the same way; heavy recon data stays in Helix, we hold the fact + a deep-link. (See `application.md` §3.)
 - **"What if a downstream system is down?"** The outbox holds the fact and the relay retries; failed rows are visible and re-queueable on the Monitoring screen. Delivery is at-least-once; subscribers de-dupe on event id.
 - **"How do we prove what happened?"** Append-only audit log (who/when/what/why) plus the immutable event store; replay rebuilds state from history.
-- **"Security?"** Entitlement fail-closed contract; the local demo ships a fail-open stub for convenience only.
+- **"Security?"** Fail-closed scoping is live: an unentitled instance answers 404 and a verb outside the role structure answers 403. Sign-in is OIDC with PKCE against the bank IdP (second factor enforceable). Only the local demo runs with a default user, switched off by one setting in production.
 - **"Scale?"** Architecture is bus-ready and stateless-per-fold; production NFR evidence (throughput/latency/DR) is the next hardening step.

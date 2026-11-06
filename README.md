@@ -34,7 +34,7 @@ The three outcomes are configured in `onefinux-hub/src/main/resources/applicatio
 | Need | Notes |
 |---|---|
 | **Java 21** | Hub and simulator. On Windows set `JAVA_HOME` and put `%JAVA_HOME%\bin` on `PATH` |
-| **Maven 3.9+** | Build + the 7 engine tests |
+| **Maven 3.9+** | Build + the hub and simulator tests |
 | **Node.js 18+** | React console (`frontend/web`) |
 | Disk | No database or broker to install. H2 is a local file in `./data` |
 | **Windows local demo** | The three tools above. Numbered steps: [§8](#8-windows-local-demo-vite) |
@@ -45,7 +45,7 @@ The three outcomes are configured in `onefinux-hub/src/main/resources/applicatio
 ```bash
 # macOS / Linux
 chmod +x scripts/*.sh    # first clone only
-./scripts/run.sh         # build, run engine tests, start hub 7070 + simulator 7081
+./scripts/run.sh         # build, run the tests, start hub 7070 + simulator 7081
 ```
 
 ```bat
@@ -355,6 +355,8 @@ cd frontend/web && npm run e2e   # with the hub and simulator running: browser j
 - Stale run ids being ignored.
 - A manual override.
 - A silent replay.
+- A predicted ready time that stays advisory and never sets readiness.
+- Grids replaced on a live definition.
 
 ## From POC to production (summary; details in `docs/design/`)
 
@@ -365,7 +367,7 @@ The as-built product, architecture diagrams, and demo-vs-later line are in [`doc
 | H2 file DB | Oracle 19c (event store, outcome registry, notifications) |
 | In-process event publishing | Kafka or the enterprise event bus, with source adapters (CDC/MQ) for systems that cannot publish |
 | `application.yml` outcomes | Outcome registry tables with maker-checker |
-| No auth | Enterprise SSO and the Central Enterprise Entitlement System |
+| Demo identities (Act as) with a default user; OIDC sign-in built, off by default | OIDC against the bank IdP on, default user off, entitlements from the Central Enterprise Entitlement System |
 | Log email, webhook | Corporate SMTP relay, Teams, ServiceNow for breaches |
 | Single instance | Active/active with partitioning by `(cobDate, region)` |
 

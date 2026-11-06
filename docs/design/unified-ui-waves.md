@@ -1,6 +1,6 @@
 # Unified UI waves
 
-The organisation taxonomy is one console, not a second portal. This document is the build contract for that console after Wave 0 (the shell, desks, grids, charts, and FDC3 links already in `frontend/web`). Wave 2 is parked. The first build is Wave 1. Waves 3 and 4 follow, each as its own plan.
+The organisation taxonomy is one console, not a second portal. This document is the build contract for that console after Wave 0 (the shell, desks, grids, charts, and FDC3 links already in `frontend/web`). Wave 2 was parked here and later shipped as the One UX platform (section 3.2). The first build is Wave 1. Waves 3 and 4 follow, each as its own plan.
 
 Assessed 26 October 2026 against the live console, `StitchService` entitlement checks, the header Act as menu, and the desk app directory.
 
@@ -31,7 +31,9 @@ A group unit works in one browser shell. People find an instance, an outcome, or
 | 3 | Desk layout stored for the group unit. App directory filtered by `ceesProducts`. A usage row when a desk view or grid opens. A feedback note on the current route. A count of routes that unit opened, with no model. |
 | 4 | The same search box also matches named blockers and readiness-key text already stored on entitled instances. An advisory summary of those hits and the open instance. The summary has no write path into status, sign-off, post, or the fold. |
 
-### 3.2 Parked — Wave 2
+### 3.2 Wave 2 — delivered through the One UX platform
+
+Status, 6 November 2026: Wave 2 is no longer parked. It shipped as subsystem ONEUX in `specification.md`: OIDC sign-in with PKCE (REQ-ONEUX-018), a required second factor from the IdP (`require-mfa`), entitlement request and grant (REQ-ONEUX-016), reviews (REQ-ONEUX-017), settings saved on the hub (REQ-ONEUX-009) and the access log on `/usage` (REQ-ONEUX-006). Grid cell editing, listed as out in 3.3, also shipped as write-back with maker-checker (REQ-ONEUX-011 to 013). The text below is the original parked scope, kept for history.
 
 Bank single sign-on, two-factor authentication, entitlement request and grant, a server copy of theme and view, and a sign-in access log. The header Act as menu stays. It mints a dev token from `POST /api/auth/dev-token` for the users in `application.yml` (`praveen.kumar`, `alice.revacc`, `gla.reviewer`, `bob.markets`, `auditor`). Production sign-in remains the `issuer-uri` switch already described on `onefinux.security` and is not part of these waves.
 

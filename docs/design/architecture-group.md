@@ -1,6 +1,6 @@
 # BRD — One Finance (for the architecture group)
 
-Owner: Praveen Kumar · Status: current as of 14 September 2026 · Companion to `README.md` and `application.md`.
+Owner: Praveen Kumar · Status: current as of 6 November 2026 · Companion to `README.md` and `application.md`.
 
 This is the short version. Three pages. It says what we are solving, what we unify, what the CEO-level sees, what the developers build, and how we keep everyone agreeing on the same design.
 
@@ -66,7 +66,7 @@ The same shell is **mobile-friendly** (rail collapses, grids stack, tables scrol
 
 - **Facts on the bus.** Every state change is an event. In production the bus is Kafka (or the bank's Solace/MQ). In the POC and the demo it is HTTP into the hub, driven by a **stub simulator** that plays the systems of record.
 - **Fold in the hub.** Readiness counts **distinct** `(instance, source, source_key)`. `FAILED` blocks. `REVOKED` withdraws. Downstream completions must echo the `runId`.
-- **Browser never touches the bus.** Reads are REST snapshots; live updates are Server-Sent Events; writes are audited REST commands that become workflow events.
+- **Browser never touches the bus.** Reads are REST snapshots; live updates arrive over the hub's WebSocket (`/api/ws`, Server-Sent Events as the fallback); writes are audited REST commands that become workflow events.
 - **Products are data, never code.** A kit is a set of rows / YAML. Onboarding a second kit adds no Java type. There is no `if (product == FOBO)`.
 - **Heavy screens are partner iframes.** Helix's own screen is embedded with the shared theme, not cloned in this repo.
 - **LLM is advisory only.** Agent commentary never sits on the readiness fold.
@@ -75,7 +75,7 @@ The same shell is **mobile-friendly** (rail collapses, grids stack, tables scrol
 
 Two artefacts are the single source of truth, and every team measures against them:
 
-- **Visual truth** — `frontend/web/` (the live React console; solid finance dashboard, MITR indigo-lavender accent).
+- **Visual truth** — `frontend/web/` (the live React console; solid finance dashboard in the STEPS Banking Blue standard from `frontend/theme`, Barclays Effra type).
 - **Data truth** — Flyway schema under `onefinux-hub/src/main/resources/db/migration/` plus the Outcome Engine definitions (`application.yml` and `POST /api/outcomes/definitions`).
 
 And one worked example that must be identical in every screen, query and event:
@@ -91,18 +91,19 @@ If a mock, a table, or an event does not use these exact keys, it is wrong.
 
 **In the demo build (a real, working slice):**
 
-- React console at `frontend/web` — Home, Product, Onboarding, Configuration, Drive, Reports, Outcome board, My outcomes, Operations, Monitoring.
+- React console at `frontend/web` — Home, Product, Onboarding, Configuration, Drive, Reports, Outcome board, My outcomes, Operations, Monitoring, Desks, Grid library, Finance dashboards, Access, Usage.
 - Outcome Engine with runtime onboard; 15C3 report lifecycle (feeds → ready → processing → generated → available).
 - REV-ACC + FOBO kit + two instances, driven live from **Drive** (product pages stay view-only).
 - Sign-off / post / escalate / kit-declared verbs (e.g. AMEND) that persist and change the fold.
 - Pluggable capabilities: `ActionExecutor` registry on outcomes; generic stitch action gated by `userActions`.
-- Working COB date, region, filters, notification inbox, live activity over SSE.
-- Barclays brand theme; mobile-collapsing shell.
+- Working COB date, region, filters, notification inbox, live activity over the hub link (WebSocket, SSE fallback).
+- Desks, FDC3 screen-to-screen links, the grid library with write-back (maker-checker), search across apps, the advisory assistant, usage and feedback, and access (requests, reviews, OIDC sign-in).
+- STEPS Banking Blue standard with Barclays Effra type; mobile-collapsing shell.
 
 **Deferred, but designed here:**
 
 - Real Kafka / Solace and FEED watermarks against production topics.
-- Real CEES entitlements (the demo ships a fail-open local stub; the contract is fail-closed).
+- Real CEES entitlements. Today the hub reads users, group units and roles from `application.yml` (or the IdP token when OIDC is on). Scoping is already fail-closed (an unentitled instance answers 404, a verb outside the role structure answers 403); the only open door is the local demo default user (`ONEFINUX_DEV_DEFAULT_USER=true`), which production turns off.
 - Live Helix / FAS / Axiom (the demo keeps the mocks on port 7081).
 - Barclays Now channel and a native mobile wrapper of the same shell.
 

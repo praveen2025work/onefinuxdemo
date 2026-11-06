@@ -139,7 +139,7 @@ Helix does **not** decide READY. The fold does. The controller does not re-run H
 | Simulator POSTs facts | Motif / CATS / MBR on Kafka / MQ / CDC → same `POST /api/events` (or a thin adapter) |
 | `http://localhost:7081/helix/analysis` | Real Helix command URL in `application.yml` `action-targets.helix.url` |
 | 6s fake work | Helix job; completion is still an event with `runId` |
-| Entitlement fail-open | CEES fail-closed; unentitled instance = **404** |
+| Entitlements from `application.yml`; demo default user on (`ONEFINUX_DEV_DEFAULT_USER=true`) | CEES-backed entitlements and OIDC sign-in, default user off; unentitled instance = **404** (already the rule today) |
 | Drive buttons | Batch / bus only. Never put scenario buttons on Home or Reports |
 
 Do **not** add `if (FOBO)` or a Helix-specific Java type. The next analysis product is another outcome row: feeds + `HTTP_COMMAND` + `completionEvent`.
