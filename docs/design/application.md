@@ -116,7 +116,13 @@ Events (`/api/events`) — ingest (JSON Schema validated). Stream (`/api/stream`
 
 Workflow (`/api/workflow/.../run`) — re-run an on-ready action.
 
-Simulator (`/sim/scenarios/{name}`) — `fobo`, `helix`, `15c3`, `pnl`, `restate`, `all`, `cancel`.
+Evidence (`/api/evidence`) — `GET /instance?id=`, `GET /outcome/{id}/{cob}/{region}` (JSON, or `format=html` to print), `POST /verify`. Verb `EVIDENCE_EXPORT`.
+
+Platform (`/api/platform/settings`) — the running configuration as rows for `/platform`. Verb `PLATFORM_VIEW`.
+
+Simulator (`/sim/scenarios/{name}`) — `fobo`, `helix`, `15c3`, `pnl`, `monthend` (`?failure=true` for a break), `restate`, `all`, `cancel`. ServiceNow mock: `/sim/servicenow/api/now/table/{table}`, `GET /sim/servicenow/incidents`.
+
+Load check: `python3 scripts/load_ingest.py` measures ingest throughput, p95 latency, fold-to-ready and idempotency against REQ-NFR-007 to 010 (also run in CI).
 
 ## 6. Onboard a product (ready-to-use)
 
@@ -148,9 +154,9 @@ Full operator steps: `onboarding.md`.
 
 ## 8. Demo build vs later
 
-**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`, `ADJUST`, `COUNTERSIGN`); accounting item on Board; RTB operations; monitoring + outbox + audit; STEPS Banking Blue design standard with Barclays Effra type (MITR indigo selectable); pluggable action registries; desks and FDC3 links; grid library with maker-checker write-back; search, assistant, usage and feedback; access requests and reviews; OIDC sign-in.
+**In (working product slice):** React console; Outcome Engine with runtime onboard; Drive; Configuration master-detail; 15C3 report flow; FOBO stitch console with kit-declared actions (`AMEND`, `ADJUST`, `COUNTERSIGN`); accounting item on Board; RTB operations; monitoring + outbox + audit; STEPS Banking Blue design standard with Barclays Effra type (MITR indigo selectable); pluggable action registries; desks and FDC3 links; grid library with maker-checker write-back; search, assistant, usage and feedback; access requests and reviews; OIDC sign-in; close evidence packs with a verifiable digest; per-region close calendar (zones, business days, holidays) with stitch DELAYED; Month-End Close as data; SMTP email and ServiceNow incident channels (config-gated); Platform settings; Oracle 19c profile (portable SQL, `db/oracle`, checked on H2 Oracle mode).
 
-**Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; native mobile app wrapping the same responsive shell.
+**Later:** bank Kafka/Solace and real FEED watermarks; live CEES; live Helix/FAS/Axiom; Barclays Now; a run on a real Oracle instance; native mobile app wrapping the same responsive shell.
 
 ## 9. Run and verify
 

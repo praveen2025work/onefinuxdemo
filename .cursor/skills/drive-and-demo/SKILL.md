@@ -11,8 +11,10 @@ Drive (`/drive`) is the **only** place scenario buttons live. Home and Reports s
 
 1. Set group unit / COB / region in the header.
 2. Open `/drive`. Reset if the day is dirty.
-3. Run the named scenario (`fobo`, `15c3`, `helix`, `pnl`, `accounting`, `all`).
+3. Run the named scenario (`fobo`, `15c3`, `helix`, `pnl`, `monthend`, `accounting`, `all`). Month-end has two cards: **Month-end close** and **Month-end with break** (`/sim/scenarios/monthend?failure=true`). Use a fresh COB for each; a re-run on the same COB revokes rather than blocks.
 4. Watch Board / Reports / Instance update over SSE.
+
+The seeded FOBO COB (2026-09-12) is past its 19:00 cutoff, so a re-driven instance shows **DELAYED** (WARN, DELAY escalation, ServiceNow incident in the simulator) before READY. That is the calendar working. For a demo that should show NOT_YET, start the hub with `ONEFINUX_STITCH_DELAYS=false`. Incidents raised locally: `http://localhost:7081/sim/servicenow/incidents`.
 
 ## Exec narration (2–3 minutes, male voice, normal pace)
 
@@ -26,6 +28,8 @@ Hold each screen 15–25 seconds. Do not click mid-sentence.
 6. Blocked instance — bad case
 7. Board, then phone width — CIO / MD
 8. Operations — what RTB can do (replay, not sign-off)
+
+Deep-dive extras: **Evidence pack** on an instance or report (printable, SHA-256 digest) and **Platform settings** (role structure, close calendar, deadline rules).
 
 Speak to a CIO or MD. Peer explanation: control, time, named blockers, who signs vs who replays. Human, not slang. No greeting. No slogan.
 

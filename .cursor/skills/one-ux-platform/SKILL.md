@@ -18,6 +18,7 @@ subsystem ONEUX in `docs/design/specification.md`.
 | Usage, feedback, experiments, recommendations | `ux/UxController` (`/api/ux/*`), table `ux_event` | `ux/track.js`, `ux/experiments.js`, `components/FeedbackDialog.jsx`, `components/TeamPicks.jsx`, `pages/Usage.jsx` |
 | Saved prefs, team templates | `/api/prefs/{desks,grids,settings}`, `/api/templates` (kind desk\|grid\|finance), `/api/grids?groupUnit=` | `ux/prefs.js` (newer copy wins), Desks share / New desk, Grid library Unit shelf, Finance unit dashboards |
 | Grid write-back | `writeback/` (`/api/writeback`), `onefinux.writeback.targets` | GridSpec `edit` → `grid/writeback.js`, `SpecGrid`, `DataGrid edit` |
+| Platform settings (read-only) | `platform/PlatformController` (`/api/platform/settings`, verb `PLATFORM_VIEW`) | `pages/Platform.jsx` (GridSpecs with inline rows) |
 | Access, roles, sign-in | `security/` (`AccessRegistry`, `AccessController`, `CurrentUser`, `SecurityConfig`) | `pages/Access.jsx`, `auth/SessionGate.jsx`, `auth/oidc.js`, `auth/idle.js` |
 
 ## Rules

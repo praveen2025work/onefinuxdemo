@@ -273,7 +273,11 @@ The POC validates required fields. The JSON schema is the *target* governed cont
 | POST | `/api/admin/announce` | Demo / RTB: a platform announcement to every console and the inbox |
 | GET | `/api/config` | Loaded outcomes, mappings, targets |
 | POST | `/api/admin/reset` | Clear everything (demo only) |
-| POST | `:7081/sim/scenarios/{helix,15c3,pnl,restate,all,cancel}` | Drive the simulator |
+| GET | `/api/evidence/instance?id=&format=json\|html`, `/api/evidence/outcome/{id}/{cobDate}/{region}` | Close evidence pack with SHA-256 digest (verb `EVIDENCE_EXPORT`, audited) |
+| POST | `/api/evidence/verify` | Re-check a pack's digest |
+| GET | `/api/platform/settings` | Running configuration as rows for `/platform` (verb `PLATFORM_VIEW`) |
+| POST | `:7081/sim/scenarios/{helix,15c3,pnl,monthend,restate,all,cancel}` | Drive the simulator (`monthend?failure=true` for a break) |
+| GET | `:7081/sim/servicenow/incidents` | Incidents the hub raised in the mock ServiceNow |
 
 ## Notification channels
 
@@ -281,7 +285,9 @@ Every notification is persisted once, then fanned out:
 
 - **Desktop card (outside the browser):** the same live payload as a Windows / macOS system card — One Finance icon, title, preview, **Open** / **Dismiss**, and **X**. Keep the One Finance tab loaded. Click **Desktop alerts** once if the browser asks. Drive a scenario. Closing the browser cannot deliver a card.
 - **In-app inbox:** the bell still lists history. It is not the toast.
-- **Email (simulated):** `notification.email` logger. Swap `LogEmailChannel` for Spring Mail against Exchange for real Outlook mail.
+- **Email (simulated):** `notification.email` logger.
+- **Email (SMTP):** `onefinux.channels.email.enabled=true` plus `spring.mail.host`; recipients per audience in `onefinux.channels.email.audiences`, at or above `min-severity`.
+- **ServiceNow incident:** `onefinux.channels.servicenow` (`enabled`, `url`, credentials from the environment). One incident per subject and transition (BLOCKED, DELAYED, SLA_BREACHED, ACTION_FAILED, ESCALATED), assignment group by audience. `./scripts/run.sh` points it at the simulator's mock instance.
 - **Teams webhook:** set `onefinux.notifications.webhook-url`.
 - **On screen, live:** every console gets the notification over the WebSocket `/api/ws` (SSE fallback). One tab per browser holds the socket and shares it with the other tabs, so the bell, the notifications panel and `/notifications` update without a refresh. `VITE_NOTIF_WS_URL` adds an external socket that sends STEPS-shaped payloads.
 
@@ -344,6 +350,7 @@ Design rules the code keeps:
 mvn test
 cd frontend/web && npm test   # workspace model, FDC3 channels, app directory, themes, finance blueprint, live link
 cd frontend/web && npm run e2e   # with the hub and simulator running: browser journeys + WCAG 2.1 AA checks
+python3 scripts/load_ingest.py   # with the hub running: ingest throughput, p95, fold-to-ready, idempotency (REQ-NFR-007 to 010)
 ```
 
 `OutcomeEngineTest` covers these cases:
@@ -364,11 +371,11 @@ The as-built product, architecture diagrams, and demo-vs-later line are in [`doc
 
 | POC | Production |
 |---|---|
-| H2 file DB | Oracle 19c (event store, outcome registry, notifications) |
+| H2 file DB | Oracle 19c: `mvn -B -Poracle package`, run with `spring.profiles.active=oracle` and `ORACLE_JDBC_URL` / `ORACLE_USER` / `ORACLE_PASSWORD`; Flyway applies `db/oracle`. Checked on H2 Oracle mode; run it once on a real instance before go-live |
 | In-process event publishing | Kafka or the enterprise event bus, with source adapters (CDC/MQ) for systems that cannot publish |
 | `application.yml` outcomes | Outcome registry tables with maker-checker |
 | Demo identities (Act as) with a default user; OIDC sign-in built, off by default | OIDC against the bank IdP on, default user off, entitlements from the Central Enterprise Entitlement System |
-| Log email, webhook | Corporate SMTP relay, Teams, ServiceNow for breaches |
+| Log email, webhook, mock ServiceNow | Corporate SMTP relay (`onefinux.channels.email`), Teams, the bank ServiceNow instance (`onefinux.channels.servicenow`) |
 | Single instance | Active/active with partitioning by `(cobDate, region)` |
 
 ## Working with git

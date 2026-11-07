@@ -1,6 +1,6 @@
 # Product as built — 6 November 2026
 
-Status: current design truth for One Finance after Drive, Configuration master-detail, the STEPS Banking Blue standard with Barclays Effra type, 15C3 report flow, pluggable capability registries, and the One UX platform (search, assistant, desks, write-back, access, sign-in).
+Status: current design truth for One Finance after Drive, Configuration master-detail, the STEPS Banking Blue standard with Barclays Effra type, 15C3 report flow, pluggable capability registries, the One UX platform (search, assistant, desks, write-back, access, sign-in), close evidence packs, the per-region close calendar, Month-End Close, external notification channels, Platform settings and the Oracle persistence profile.
 
 ## Intent
 
@@ -30,12 +30,18 @@ A group unit answers one business question per outcome. The platform is a thin o
 | `/notifications` | Notification inbox, live over the hub link | Notify on progress ticks |
 | `/access` | What you hold, role-structure verbs, access requests, approvals, periodic reviews | A role check in code |
 | `/usage` | Screens and views opened, features used, feedback, A-B experiment results | Track outside the hub |
+| `/platform` | Read-only platform settings: verbs per role, close calendar per region, outcome deadlines, notification channels, action and write-back targets, search providers, experiments (`PLATFORM_VIEW`) | Edit configuration or show a secret |
 | `/guide` | Developer on-ramp | Live outcomes or Drive |
 
 ## Capability registries
 
 - Outcome: `ActionExecutor` beans keyed by `onReady.action`. Built-in: `HTTP_COMMAND`, `LOG_COMMAND`. New type = new bean + config.
 - Stitch: `POST /api/stitch/instance/action` gated by kit `userActions`. Rich verbs: `SIGN_OFF`, `POST`, `ESCALATE`, `ADJUST`, `COUNTERSIGN`. Other verbs are generic. New verb = add it to the kit. `GET /api/stitch/instance/step-view` returns GRID of event-store rows or IFRAME for a feed or destination. Outcome `grids` open after Grid view on the instance and the report document. The console fetches the configured endpoint.
+
+- Close evidence: `GET /api/evidence/instance?id=` and `GET /api/evidence/outcome/{id}/{cob}/{region}` return a pack (`onefinux-evidence/1`: facts, decisions, command runs, escalations, notifications) with a SHA-256 digest over canonical JSON; `format=html` is the printable page, `POST /api/evidence/verify` re-checks a pack. Verb `EVIDENCE_EXPORT`; every export is audited. Buttons on the instance and the report document.
+- Close calendar: `onefinux.calendar` gives each region a zone, a weekend and holidays. Outcome deadlines are the SLA cutoff in the region's zone on COB + day-offset business days. Stitch instances still waiting past the kit's `sla_cutoff` turn **DELAYED**, notify WARN and open a DELAY escalation (`ONEFINUX_STITCH_DELAYS=false` turns that off).
+- Notification channels: `NotificationChannel` beans. Built-in: in-app, email (SMTP, `onefinux.channels.email`), ServiceNow incident (`onefinux.channels.servicenow`, one incident per subject and transition), webhook. Off unless enabled; the local run points ServiceNow at the simulator (`GET /sim/servicenow/incidents`).
+- Persistence: H2 in the demo (`db/migration`); Oracle 19c with `mvn -Poracle` and `spring.profiles.active=oracle` (`db/oracle`, same versions). Runtime SQL runs on both (`PortableSql`); checked on H2 in Oracle mode, not yet on a real Oracle instance.
 
 ## Brand
 
