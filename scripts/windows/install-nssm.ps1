@@ -118,7 +118,8 @@ $logs = Join-Path $RepoRoot 'logs'
 New-Item -ItemType Directory -Force -Path $logs | Out-Null
 New-Item -ItemType Directory -Force -Path (Join-Path $RepoRoot 'data') | Out-Null
 
-$hubParams = "-Dserver.port=$HubPort -Donefinux.public-url=http://localhost:$HubPort -Donefinux.simulator-url=http://localhost:$SimPort -jar `"$hubJar`""
+# Demo: ServiceNow incidents go to the simulator's mock instance. Point onefinux.channels.servicenow.url at the real one.
+$hubParams = "-Dserver.port=$HubPort -Donefinux.public-url=http://localhost:$HubPort -Donefinux.simulator-url=http://localhost:$SimPort -Donefinux.channels.servicenow.enabled=true -Donefinux.channels.servicenow.url=http://localhost:$SimPort/sim/servicenow -jar `"$hubJar`""
 $simParams = "-Dserver.port=$SimPort -Dsim.hub-url=http://localhost:$HubPort -jar `"$simJar`""
 
 Set-NssmService -NssmExe $nssmExe -Name 'OneFinUxHub' `

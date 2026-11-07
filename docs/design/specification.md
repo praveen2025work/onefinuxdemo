@@ -308,6 +308,9 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-OPERATE-010` | The hub does not notify on raw facts, PROGRESS ticks, or advisory model output. |
 | `REQ-OPERATE-011` | Board is the supervisor table; My outcomes is the doer card worklist; both drill to /instance/:id. |
 | `REQ-OPERATE-012` | Operations does not sign off a rec or publish a kit. |
+| `REQ-OPERATE-013` | The email channel sends notifications at or above onefinux.channels.email.min-severity over SMTP (spring.mail.host) to the addresses configured for the notification's audience; it is off unless onefinux.channels.email.enabled is true and an SMTP sender exists. |
+| `REQ-OPERATE-014` | The ServiceNow channel raises an incident through POST {url}/api/now/table/{table} for the configured transitions (default BLOCKED, DELAYED, SLA_BREACHED, ACTION_FAILED, ESCALATED), with assignment group by audience, urgency and impact from severity, and correlation_id of subject and transition; a repeat of the same subject and transition is not raised again; it is off unless enabled with a URL. |
+| `REQ-OPERATE-015` | Stitch notifications (fold transitions, escalations, sign-offs and kit verbs) are delivered to the enabled external channels as well as stored for the inbox; the local demo points ServiceNow at the simulator's mock instance (GET /sim/servicenow/incidents). |
 
 ### 11.9 One UX platform: search, assistant, telemetry, personalisation, write-back, access (ONEUX)
 
@@ -1794,6 +1797,41 @@ These 23 criteria lock OPERATE behaviour. Each Maps-to line names one REQ-ID.
 - When notification inbox is fetched
 - Then no notification is created for that advisory comment
 
+#### AC-OPERATE-24
+
+- Maps to: `REQ-OPERATE-013`
+- Given email is enabled with REV-ACC mapped to rev-acc@bank.example and min-severity WARN
+- When a CRITICAL REV-ACC, an INFO REV-ACC and a CRITICAL MARKETS notification are delivered
+- Then exactly one mail goes to rev-acc@bank.example with subject [One Finance · CRITICAL] and the title
+
+#### AC-OPERATE-25
+
+- Maps to: `REQ-OPERATE-013`
+- Given email is not enabled, or no SMTP host is configured
+- When the channel list is built
+- Then the email channel reports disabled
+
+#### AC-OPERATE-26
+
+- Maps to: `REQ-OPERATE-014`
+- Given ServiceNow is enabled with an integration user and REV-ACC mapped to Revenue Accounting Controllers
+- When the same BLOCKED notification is delivered twice and a READY once
+- Then one incident is posted with basic auth, urgency 1, that assignment group and correlation_id ending |BLOCKED
+
+#### AC-OPERATE-27
+
+- Maps to: `REQ-OPERATE-015`
+- Given an enabled channel, a disabled channel and the browser channel
+- When a stitch notification is dispatched
+- Then only the enabled external channel receives it
+
+#### AC-OPERATE-28
+
+- Maps to: `REQ-OPERATE-014`
+- Given the shipped application.yml
+- When onefinux.channels is bound
+- Then email and ServiceNow are off, and audience keys with dots and spaces bind
+
 ### 12.9 One UX platform: search, assistant, telemetry, personalisation, write-back, access (ONEUX)
 
 These 23 criteria lock ONEUX behaviour. Each Maps-to line names one REQ-ID.
@@ -2119,6 +2157,9 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-OPERATE-010` | `AC-OPERATE-14`, `AC-OPERATE-23` |
 | `REQ-OPERATE-011` | `AC-OPERATE-15`, `AC-OPERATE-16`, `AC-OPERATE-17` |
 | `REQ-OPERATE-012` | `AC-OPERATE-18` |
+| `REQ-OPERATE-013` | `AC-OPERATE-24`, `AC-OPERATE-25` |
+| `REQ-OPERATE-014` | `AC-OPERATE-26`, `AC-OPERATE-28` |
+| `REQ-OPERATE-015` | `AC-OPERATE-27` |
 | `REQ-ONEUX-001` | `AC-ONEUX-01`, `AC-ONEUX-02` |
 | `REQ-ONEUX-002` | `AC-ONEUX-03` |
 | `REQ-ONEUX-003` | `AC-ONEUX-04` |
@@ -2168,7 +2209,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | CONSOLE | 17 | 23 |
 | REPORTS | 10 | 23 |
 | GOVERN | 14 | 32 |
-| OPERATE | 12 | 23 |
+| OPERATE | 15 | 28 |
 | ONEUX | 26 | 30 |
 
 ## 14. Data contracts

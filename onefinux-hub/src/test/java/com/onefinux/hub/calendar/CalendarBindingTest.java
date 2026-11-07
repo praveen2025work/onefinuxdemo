@@ -58,6 +58,17 @@ class CalendarBindingTest {
     }
 
     @Test
+    @DisplayName("AC-OPERATE-28 application.yml binds the channels off by default, with dotted and spaced audience keys")
+    void shipped_channels_bind() throws Exception {
+        var channels = binder().bind("onefinux.channels", com.onefinux.hub.notification.ChannelProperties.class).get();
+        assertThat(channels.email().enabled()).isFalse();
+        assertThat(channels.servicenow().enabled()).isFalse();
+        assertThat(channels.email().audiences()).containsKeys("REV-ACC", "platform.support", "Financial Control");
+        assertThat(channels.servicenow().assignmentGroups()).containsEntry("platform.support", "RTB Finance Platforms");
+        assertThat(channels.servicenow().transitions()).contains("BLOCKED", "DELAYED", "SLA_BREACHED", "ESCALATED");
+    }
+
+    @Test
     @DisplayName("AC-ENGINE-28 the shipped MONTH_END_CLOSE blocks on an intercompany break and is ready once it re-matches")
     void month_end_close_folds_from_shipped_definition() throws Exception {
         Binder binder = binder();

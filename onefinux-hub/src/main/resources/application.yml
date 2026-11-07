@@ -190,6 +190,34 @@ onefinux:
     log-channel-enabled: true
     webhook-url: ""        # e.g. a Teams Workflows webhook; empty = disabled
 
+  # External channels. Email needs an SMTP relay (spring.mail.host / SPRING_MAIL_HOST); ServiceNow needs the
+  # instance URL and an integration user. scripts/run.sh points ServiceNow at the simulator's mock instance.
+  channels:
+    email:
+      enabled: ${ONEFINUX_EMAIL_ENABLED:false}
+      from: ${ONEFINUX_EMAIL_FROM:onefinance-noreply@bank.example}
+      min-severity: WARN
+      default-to: []
+      audiences:
+        REV-ACC: [rev-acc-controllers@bank.example]
+        MARKETS: [markets-controllers@bank.example]
+        "[platform.support]": [rtb-finance-platforms@bank.example]
+        "[US Regulatory Reporting]": [us-reg-reporting@bank.example]
+        "[Financial Control]": [emea-financial-control@bank.example]
+    servicenow:
+      enabled: ${ONEFINUX_SNOW_ENABLED:false}
+      url: ${ONEFINUX_SNOW_URL:}
+      table: incident
+      username: ${ONEFINUX_SNOW_USER:}
+      password: ${ONEFINUX_SNOW_PASSWORD:}
+      transitions: [BLOCKED, DELAYED, SLA_BREACHED, ACTION_FAILED, ESCALATED]
+      default-group: One Finance Support
+      assignment-groups:
+        "[platform.support]": RTB Finance Platforms
+        REV-ACC: Revenue Accounting Controllers
+        "[US Regulatory Reporting]": US Regulatory Reporting
+        "[Financial Control]": EMEA Financial Control
+
   # ---------------------------------------------------------------- close calendar
   # Each region's business zone and holidays. An outcome SLA "day-offset" counts business days in the outcome's
   # region and its "cutoff" is that region's wall clock; a kit's SLA cutoff applies on the COB date the same way.

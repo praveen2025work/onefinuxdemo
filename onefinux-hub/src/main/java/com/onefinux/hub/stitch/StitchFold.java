@@ -4,6 +4,7 @@ import com.onefinux.hub.calendar.CloseCalendar;
 import com.onefinux.hub.event.BusinessEvent;
 import com.onefinux.hub.event.EventIngested;
 import com.onefinux.hub.event.EventStatus;
+import com.onefinux.hub.notification.ChannelDispatcher;
 import com.onefinux.hub.stream.StreamHub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,17 +43,24 @@ public class StitchFold {
     private final StreamHub stream;
     private final CloseCalendar calendar;
     private final Clock clock;
+    private final ChannelDispatcher channels;
 
     public StitchFold(StitchRepository repo, StreamHub stream) {
-        this(repo, stream, null, null);
+        this(repo, stream, null, null, null);
+    }
+
+    public StitchFold(StitchRepository repo, StreamHub stream, CloseCalendar calendar, Clock clock) {
+        this(repo, stream, calendar, clock, null);
     }
 
     @Autowired
-    public StitchFold(StitchRepository repo, StreamHub stream, CloseCalendar calendar, Clock clock) {
+    public StitchFold(StitchRepository repo, StreamHub stream, CloseCalendar calendar, Clock clock,
+                      ChannelDispatcher channels) {
         this.repo = repo;
         this.stream = stream;
         this.calendar = calendar;
         this.clock = clock;
+        this.channels = channels;
     }
 
     /** NOT_YET instances whose deadline has passed become DELAYED; returns how many moved. */
@@ -217,6 +225,10 @@ public class StitchFold {
         stream.broadcast("notification", Map.of(
                 "severity", severity, "transition", status, "title", title,
                 "message", message, "instanceId", instanceId));
+        if (channels != null) {
+            channels.dispatch(severity, status, instanceId, String.valueOf(inst.get("question")),
+                    String.valueOf(inst.get("groupUnitId")), title, message);
+        }
     }
 
     /** Push the fresh instance summary so open boards re-render without polling. */

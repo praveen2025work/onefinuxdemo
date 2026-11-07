@@ -83,6 +83,11 @@
             <artifactId>anthropic-java</artifactId>
             <version>3.2.0</version>
         </dependency>
+        <!-- Email notifications over SMTP. Off unless onefinux.channels.email.enabled and spring.mail.host are set. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
