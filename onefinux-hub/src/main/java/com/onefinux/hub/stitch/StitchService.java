@@ -5,6 +5,7 @@ import com.onefinux.hub.activity.ActivityFeed;
 import com.onefinux.hub.config.OneFinUxProperties;
 import com.onefinux.hub.event.EventHubService;
 import com.onefinux.hub.event.EventStatus;
+import com.onefinux.hub.notification.ChannelDispatcher;
 import com.onefinux.hub.security.CurrentUser;
 import com.onefinux.hub.stream.StreamHub;
 import org.slf4j.Logger;
@@ -43,16 +44,19 @@ public class StitchService {
     private final DownstreamPoster poster;
     private final OneFinUxProperties properties;
     private final ActivityFeed activity;
+    private final ChannelDispatcher channels;
 
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
                          StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser) {
-        this(repo, fold, hub, stream, mapper, clock, currentUser, (url, body) -> {}, null, null);
+        this(repo, fold, hub, stream, mapper, clock, currentUser, (url, body) -> {}, null, null, null);
     }
 
     @Autowired
     public StitchService(StitchRepository repo, StitchFold fold, EventHubService hub,
                          StreamHub stream, ObjectMapper mapper, Clock clock, CurrentUser currentUser,
-                         DownstreamPoster poster, OneFinUxProperties properties, ActivityFeed activity) {
+                         DownstreamPoster poster, OneFinUxProperties properties, ActivityFeed activity,
+                         ChannelDispatcher channels) {
+        this.channels = channels;
         this.repo = repo;
         this.fold = fold;
         this.hub = hub;
@@ -85,6 +89,15 @@ public class StitchService {
         if (!currentUser.entitlements().canAct(verb)) {
             repo.insertAudit(currentUser.actor(), verb, null, "DENY", json(Map.of("reason", "role does not allow " + verb)));
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Your role does not allow " + verb);
+        }
+    }
+
+    /** Store the notification for the inbox, then hand it to the external channels (email, ServiceNow, webhook). */
+    private void notify(String severity, String transition, String kitId, String question, String audience, String title,
+                        String message, String via, String instanceId, String groupUnitId) {
+        repo.insertNotification(severity, transition, kitId, question, audience, title, message, via, instanceId, groupUnitId);
+        if (channels != null) {
+            channels.dispatch(severity, transition, instanceId, question, audience, title, message);
         }
     }
 
@@ -271,7 +284,7 @@ public class StitchService {
             repo.insertAudit(actor, "SIGN_OFF", instanceId, "OK",
                     json(Map.of("from", inst.get("status"), "to", "SIGNED")));
             publishWorkflow("OUTCOME_SIGNED", instanceId, inst, Map.of("by", actor));
-            repo.insertNotification("INFO", "SIGNED", str(inst, "kitId"), str(inst, "question"),
+            notify("INFO", "SIGNED", str(inst, "kitId"), str(inst, "question"),
                     str(inst, "groupUnitId"), inst.get("kitId") + " " + inst.get("sliceKey") + " signed — countersign open",
                     "Instance " + instanceId + " signed off by " + actor + "; GLA countersign required",
                     "SSE", instanceId, str(inst, "groupUnitId"));
@@ -284,7 +297,7 @@ public class StitchService {
         repo.updateInstanceStatus(instanceId, "CLEARED", null, null);
         repo.insertAudit(actor, "SIGN_OFF", instanceId, "OK", json(Map.of("from", inst.get("status"), "to", "CLEARED")));
         publishWorkflow("OUTCOME_SIGNED_OFF", instanceId, inst, Map.of("by", actor));
-        repo.insertNotification("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
+        notify("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
                 str(inst, "groupUnitId"), inst.get("kitId") + " " + inst.get("sliceKey") + " cleared",
                 "Instance " + instanceId + " signed off by " + actor,
                 "SSE", instanceId, str(inst, "groupUnitId"));
@@ -312,7 +325,7 @@ public class StitchService {
         repo.insertAudit(actor, "COUNTERSIGN", instanceId, "OK",
                 json(Map.of("from", "SIGNED", "to", "CLEARED", "signedBy", signedBy == null ? "" : signedBy)));
         publishWorkflow("OUTCOME_COUNTERSIGNED", instanceId, inst, Map.of("by", actor, "signedBy", signedBy == null ? "" : signedBy));
-        repo.insertNotification("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
+        notify("SUCCESS", "CLEARED", str(inst, "kitId"), str(inst, "question"),
                 str(inst, "groupUnitId"), inst.get("kitId") + " " + inst.get("sliceKey") + " cleared",
                 "Instance " + instanceId + " countersigned by " + actor,
                 "SSE", instanceId, str(inst, "groupUnitId"));
@@ -363,7 +376,7 @@ public class StitchService {
                 json(Map.of("escalationId", escalationId, "reason", reason == null ? "" : reason)));
         publishWorkflow("ESCALATION_RAISED", instanceId, inst,
                 Map.of("escalationId", escalationId, "reason", reason == null ? "" : reason));
-        repo.insertNotification("WARN", "ESCALATED", str(inst, "kitId"), str(inst, "question"),
+        notify("WARN", "ESCALATED", str(inst, "kitId"), str(inst, "question"),
                 "platform.support", "Escalation " + escalationId + " raised on " + inst.get("sliceKey"),
                 reason == null ? "Human escalation to RTB" : reason, "SSE", instanceId, str(inst, "groupUnitId"));
         stream.broadcast("notification", Map.of("severity", "WARN", "transition", "ESCALATED",
@@ -405,7 +418,7 @@ public class StitchService {
         repo.insertAudit(actor, action, instanceId, "OK", json(Map.of("note", note == null ? "" : note)));
         publishWorkflow("WORKFLOW_" + action, instanceId, inst, Map.of("by", actor, "note", note == null ? "" : note));
         String headline = inst.get("kitId") + " " + inst.get("sliceKey") + " " + action.toLowerCase();
-        repo.insertNotification("INFO", action, str(inst, "kitId"), str(inst, "question"),
+        notify("INFO", action, str(inst, "kitId"), str(inst, "question"),
                 str(inst, "groupUnitId"), headline,
                 actor + " performed " + action + (note == null || note.isBlank() ? "" : ": " + note),
                 "SSE", instanceId, str(inst, "groupUnitId"));

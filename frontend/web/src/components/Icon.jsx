@@ -503,6 +503,7 @@ export const ROUTE_ICON = {
   '/grids': 'grid',
   '/finance': 'dollar',
   '/notifications': 'bell',
+  '/platform': 'wrench',
 };
 
 export function iconForRoute(to = '/') {

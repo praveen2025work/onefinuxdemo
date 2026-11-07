@@ -105,11 +105,11 @@ onefinux:
     # Role structure: the verbs each role may perform. Roles outside this list are ignored, superuser needs ADMIN,
     # and a role change in the IdP changes what the user can do on their next request.
     role-actions:
-      ADMIN: [SIGN_OFF, COUNTERSIGN, POST, AMEND, ADJUST, ESCALATE, REPLAY, WRITEBACK, WRITEBACK_APPROVE, ACCESS_APPROVE, ACCESS_REVIEW]
-      CONTROLLER: [SIGN_OFF, POST, AMEND, ADJUST, ESCALATE, WRITEBACK]
-      GLA: [COUNTERSIGN, ESCALATE, WRITEBACK_APPROVE]
-      RTB: [REPLAY, ESCALATE]
-      AUDIT: [ACCESS_REVIEW]
+      ADMIN: [SIGN_OFF, COUNTERSIGN, POST, AMEND, ADJUST, ESCALATE, REPLAY, WRITEBACK, WRITEBACK_APPROVE, ACCESS_APPROVE, ACCESS_REVIEW, EVIDENCE_EXPORT, PLATFORM_VIEW]
+      CONTROLLER: [SIGN_OFF, POST, AMEND, ADJUST, ESCALATE, WRITEBACK, EVIDENCE_EXPORT]
+      GLA: [COUNTERSIGN, ESCALATE, WRITEBACK_APPROVE, EVIDENCE_EXPORT]
+      RTB: [REPLAY, ESCALATE, PLATFORM_VIEW]
+      AUDIT: [ACCESS_REVIEW, EVIDENCE_EXPORT, PLATFORM_VIEW]
     users:
       # Bracket-quoted keys so dotted usernames bind as literal map keys (not nested paths).
       "[praveen.kumar]": { superuser: true, roles: [ADMIN] }
@@ -164,6 +164,7 @@ onefinux:
       FINSTORE: FEED
       AXIOM: REPORT_SCHEDULE
       HELIX: ANALYSIS_RUN
+      RECFACTORY: REC_PAIR
       ONEFINUX: WORKFLOW
     # Sample reference data. Production: effective-dated hierarchy tables owned by reference data.
     cross-references:
@@ -180,12 +181,58 @@ onefinux:
       url: http://localhost:7081/helix/analysis
     axiom:
       url: http://localhost:7081/axiom/reports/15c3
+    closepack:
+      url: http://localhost:7081/axiom/reports/close-pack
 
   # ---------------------------------------------------------------- Component 5: notifications
   notifications:
     milestones: [50, 90]
     log-channel-enabled: true
     webhook-url: ""        # e.g. a Teams Workflows webhook; empty = disabled
+
+  # External channels. Email needs an SMTP relay (spring.mail.host / SPRING_MAIL_HOST); ServiceNow needs the
+  # instance URL and an integration user. scripts/run.sh points ServiceNow at the simulator's mock instance.
+  channels:
+    email:
+      enabled: ${ONEFINUX_EMAIL_ENABLED:false}
+      from: ${ONEFINUX_EMAIL_FROM:onefinance-noreply@bank.example}
+      min-severity: WARN
+      default-to: []
+      audiences:
+        REV-ACC: [rev-acc-controllers@bank.example]
+        MARKETS: [markets-controllers@bank.example]
+        "[platform.support]": [rtb-finance-platforms@bank.example]
+        "[US Regulatory Reporting]": [us-reg-reporting@bank.example]
+        "[Financial Control]": [emea-financial-control@bank.example]
+    servicenow:
+      enabled: ${ONEFINUX_SNOW_ENABLED:false}
+      url: ${ONEFINUX_SNOW_URL:}
+      table: incident
+      username: ${ONEFINUX_SNOW_USER:}
+      password: ${ONEFINUX_SNOW_PASSWORD:}
+      transitions: [BLOCKED, DELAYED, SLA_BREACHED, ACTION_FAILED, ESCALATED]
+      default-group: One Finance Support
+      assignment-groups:
+        "[platform.support]": RTB Finance Platforms
+        REV-ACC: Revenue Accounting Controllers
+        "[US Regulatory Reporting]": US Regulatory Reporting
+        "[Financial Control]": EMEA Financial Control
+
+  # ---------------------------------------------------------------- close calendar
+  # Each region's business zone and holidays. An outcome SLA "day-offset" counts business days in the outcome's
+  # region and its "cutoff" is that region's wall clock; a kit's SLA cutoff applies on the COB date the same way.
+  # A region not listed runs in onefinux.zone with weekends only. The holidays are a 2026 demo set: load the
+  # bank's holiday calendar here.
+  calendar:
+    weekend: [SATURDAY, SUNDAY]
+    # Stitch instances still waiting after their kit's cutoff turn DELAYED. The seeded demo COB (2026-09-12) is
+    # past its cutoff, so a re-driven seeded instance shows DELAYED before READY; false narrates NOT_YET instead.
+    stitch-delays: ${ONEFINUX_STITCH_DELAYS:true}
+    regions:
+      AMRS:   { zone: America/New_York, holidays: [2026-01-01, 2026-01-19, 2026-02-16, 2026-04-03, 2026-05-25, 2026-06-19, 2026-07-03, 2026-09-07, 2026-11-26, 2026-12-25] }
+      EMEA:   { zone: Europe/London,    holidays: [2026-01-01, 2026-04-03, 2026-04-06, 2026-05-04, 2026-05-25, 2026-08-31, 2026-12-25, 2026-12-28] }
+      APAC:   { zone: Asia/Singapore,   holidays: [2026-01-01, 2026-02-17, 2026-02-18, 2026-04-03, 2026-05-01, 2026-08-10, 2026-12-25] }
+      GLOBAL: { zone: America/New_York }
 
   # ---------------------------------------------------------------- Component 3: business outcomes
   # SLA: use "cutoff" + "day-offset" for real cut-offs (e.g. 07:30 on COB+1),
@@ -269,6 +316,38 @@ onefinux:
         target: axiom
         completion-event: REG_REPORT_GENERATED
         action-label: 15C3 report generation
+
+    # Month-end close: a real cutoff, three EMEA business days after the COB at 18:00 London (close calendar).
+    - id: MONTH_END_CLOSE
+      name: Month-end close
+      question: Can I close the month for EMEA?
+      regions: [EMEA]
+      owner-group: Financial Control
+      sla:
+        cutoff: "18:00"
+        day-offset: 3
+      dependencies:
+        - event-type: SUBLEDGER_CLOSED
+          source-system: SAP
+          expected-count: 4
+          label: Sub-ledgers closed
+        - event-type: ACCRUALS_POSTED
+          source-system: MOTIF
+          expected-count: 3
+          label: Accruals posted
+        - event-type: INTERCO_MATCHED
+          source-system: RECFACTORY
+          expected-count: 2
+          label: Intercompany matched
+        - event-type: FX_REVALUED
+          source-system: SAP
+          expected-count: 1
+          label: FX revaluation
+      on-ready:
+        action: HTTP_COMMAND
+        target: closepack
+        completion-event: CLOSE_PACK_GENERATED
+        action-label: Month-end close pack
 
     - id: PNL_REPORTING
       name: PnL reporting

@@ -1,5 +1,6 @@
 package com.onefinux.hub.outcome;
 
+import com.onefinux.hub.calendar.CloseCalendar;
 import com.onefinux.hub.config.OneFinUxProperties;
 import com.onefinux.hub.config.OneFinUxProperties.DependencyDefinition;
 import com.onefinux.hub.config.OneFinUxProperties.OutcomeDefinition;
@@ -9,6 +10,7 @@ import com.onefinux.hub.event.EventStatus;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
@@ -52,10 +54,18 @@ public class OutcomeEngine {
     private final ZoneId zone;
     private final DateTimeFormatter timeFormat;
     private final MeterRegistry metrics;
+    private final CloseCalendar calendar;
     private final Map<String, OutcomeInstance> instances = new LinkedHashMap<>();
 
     public OutcomeEngine(OneFinUxProperties properties, ApplicationEventPublisher publisher, Clock clock,
                          MeterRegistry metrics) {
+        this(properties, publisher, clock, metrics, CloseCalendar.uniform(clock.getZone()));
+    }
+
+    @Autowired
+    public OutcomeEngine(OneFinUxProperties properties, ApplicationEventPublisher publisher, Clock clock,
+                         MeterRegistry metrics, CloseCalendar calendar) {
+        this.calendar = calendar;
         this.definitions = new ArrayList<>(properties.outcomes());
         this.milestones = properties.notifications().milestones().stream().sorted(Comparator.reverseOrder()).toList();
         this.publisher = publisher;
@@ -419,7 +429,7 @@ public class OutcomeEngine {
 
     private OutcomeInstance getOrCreate(OutcomeDefinition definition, LocalDate cobDate, String region) {
         return instances.computeIfAbsent(OutcomeInstance.key(definition.id(), cobDate, region),
-                k -> new OutcomeInstance(definition, cobDate, region, zone));
+                k -> new OutcomeInstance(definition, cobDate, region, calendar));
     }
 
     private void emit(OutcomeInstance instance, Transition transition, String title, String message, boolean replay) {

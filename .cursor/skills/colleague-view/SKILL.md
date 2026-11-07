@@ -23,6 +23,7 @@ Buttons come from the kit `userActions`. Call `POST /api/stitch/instance/action`
 - User does not re-run Helix to discover status. Status is the fold.
 - Sign off / Post disabled until Ready **and** CEES + federated ACL.
 - Agent text is advisory. Sign-off is the fact.
+- **Evidence pack** on the instance and the report document (verb `EVIDENCE_EXPORT`): facts, decisions, command runs, escalations and notifications with a SHA-256 digest. Export is audited; the pack is read-only.
 - **REQUIRED:** `barclays-ib-console`. Partner body: `embed-partner-screen`.
 
 ## Do not

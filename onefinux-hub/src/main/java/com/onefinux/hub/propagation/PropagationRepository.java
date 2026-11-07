@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +51,7 @@ public class PropagationRepository {
                 p().addValue("outboxId", outboxId).addValue("eventId", eventId).addValue("routeId", routeId)
                         .addValue("subscriber", subscriber).addValue("eventType", eventType)
                         .addValue("sourceId", sourceId).addValue("targetUrl", targetUrl)
-                        .addValue("payload", payloadJson).addValue("now", now));
+                        .addValue("payload", payloadJson).addValue("now", Timestamp.from(now)));
     }
 
     /** Rows due for a delivery attempt: never-sent (PENDING) or previously-failed whose backoff has elapsed. */
@@ -62,14 +63,14 @@ public class PropagationRepository {
                 WHERE status IN ('PENDING','FAILED')
                   AND (next_attempt_at IS NULL OR next_attempt_at <= :now)
                 ORDER BY created_at FETCH FIRST :limit ROWS ONLY""",
-                p().addValue("now", Instant.now()).addValue("limit", Math.max(1, limit)));
+                p().addValue("now", Timestamp.from(Instant.now())).addValue("limit", Math.max(1, limit)));
     }
 
     public void markDispatched(String outboxId) {
         jdbc.update("""
                 UPDATE event_outbox SET status = 'DISPATCHED', attempts = attempts + 1,
                        dispatched_at = :now, next_attempt_at = NULL, last_error = NULL WHERE outbox_id = :id""",
-                p().addValue("id", outboxId).addValue("now", Instant.now()));
+                p().addValue("id", outboxId).addValue("now", Timestamp.from(Instant.now())));
     }
 
     /**
@@ -85,7 +86,7 @@ public class PropagationRepository {
                 p().addValue("id", outboxId)
                         .addValue("status", dead ? "DEAD" : "FAILED")
                         .addValue("err", error == null ? "error" : error.substring(0, Math.min(error.length(), 390)))
-                        .addValue("next", dead ? null : nextAttemptAt));
+                        .addValue("next", dead || nextAttemptAt == null ? null : Timestamp.from(nextAttemptAt)));
     }
 
     /** Operator redrive: return a FAILED or dead-lettered row to the queue for immediate delivery. */
@@ -93,7 +94,7 @@ public class PropagationRepository {
         return jdbc.update("""
                 UPDATE event_outbox SET status = 'PENDING', last_error = NULL, next_attempt_at = :now
                 WHERE outbox_id = :id AND status IN ('FAILED','DEAD')""",
-                p().addValue("id", outboxId).addValue("now", Instant.now()));
+                p().addValue("id", outboxId).addValue("now", Timestamp.from(Instant.now())));
     }
 
     /** Dead-letter queue: rows that exhausted their retries and await an operator. */
@@ -112,7 +113,7 @@ public class PropagationRepository {
                 SELECT outbox_id AS "outboxId", event_id AS "eventId", route_id AS "routeId",
                        subscriber AS "subscriber", event_type AS "eventType", source_id AS "sourceId",
                        target_url AS "targetUrl", status AS "status", attempts AS "attempts",
-                       CAST(created_at AS VARCHAR) AS "createdAt", CAST(dispatched_at AS VARCHAR) AS "dispatchedAt",
+                       TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "createdAt", TO_CHAR(dispatched_at, 'YYYY-MM-DD HH24:MI:SS') AS "dispatchedAt",
                        last_error AS "lastError"
                 FROM event_outbox """ + filter + " ORDER BY created_at DESC FETCH FIRST :limit ROWS ONLY";
         return jdbc.queryForList(sql, params);

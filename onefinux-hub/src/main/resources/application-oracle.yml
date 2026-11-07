@@ -1,12 +1,10 @@
 # Production persistence profile: Oracle 19c.
-#   run with: --spring.profiles.active=oracle  (plus the env vars below)
+#   build with:  mvn -B -Poracle package        (adds ojdbc11 and flyway-database-oracle)
+#   run with:    --spring.profiles.active=oracle  (plus the env vars below)
 #
-# The POC runs on H2 (default profile) with the Flyway baseline in db/migration. For Oracle, keep the
-# schema in a vendor-specific migration set (VARCHAR2 / TIMESTAMP / sequences instead of H2 IDENTITY and
-# MERGE ... KEY) under db/migration/oracle and point Flyway at it. Add the driver + Flyway Oracle module
-# to the build for this profile:
-#     runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
-#     runtimeOnly 'org.flywaydb:flyway-database-oracle'
+# The POC runs on H2 (default profile) with the Flyway set in db/migration. db/oracle mirrors it
+# version for version (VARCHAR2, NUMBER(1) booleans, CLOB over 4000 bytes, plain INSERT seeds); add every new
+# migration to both. Runtime SQL is written to run on both stores (see PortableSql).
 spring:
   datasource:
     url: ${ORACLE_JDBC_URL:jdbc:oracle:thin:@//db:1521/ONEFINUX}
@@ -25,8 +23,8 @@ spring:
         dialect: org.hibernate.dialect.OracleDialect
   flyway:
     enabled: true
-    # {vendor} resolves to 'oracle' here; the H2 default profile keeps using db/migration.
-    locations: classpath:db/migration/oracle
+    # Not under db/migration: Flyway scans a location recursively, and the H2 profile uses db/migration.
+    locations: classpath:db/oracle
     baseline-on-migrate: true
     baseline-version: 0
   h2:

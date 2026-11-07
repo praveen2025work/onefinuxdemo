@@ -4,6 +4,7 @@ import com.onefinux.hub.event.EventHubService;
 import com.onefinux.hub.event.EventStatus;
 import com.onefinux.hub.outcome.OutcomeEngine;
 import com.onefinux.hub.outcome.OutcomeView;
+import com.onefinux.hub.stitch.StitchFold;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -22,11 +23,13 @@ class SlaMonitor {
 
     private final OutcomeEngine engine;
     private final EventHubService hub;
+    private final StitchFold fold;
     private final AtomicBoolean live = new AtomicBoolean(false);
 
-    SlaMonitor(OutcomeEngine engine, EventHubService hub) {
+    SlaMonitor(OutcomeEngine engine, EventHubService hub, StitchFold fold) {
         this.engine = engine;
         this.hub = hub;
+        this.fold = fold;
     }
 
     /** Start checking only after the startup replay has rebuilt state. */
@@ -45,6 +48,15 @@ class SlaMonitor {
             hub.publishInternal(OutcomeEngine.SLA_BREACHED_EVENT, "SLA-" + overdue.outcomeId(), overdue.cobDate(),
                     overdue.region(), EventStatus.FAILED,
                     Map.of("outcomeId", overdue.outcomeId(), "deadline", String.valueOf(overdue.deadline())));
+        }
+    }
+
+    /** Stitch instances that pass their kit's cutoff with no new fact still turn DELAYED. */
+    @Scheduled(fixedDelay = 30_000, initialDelay = 15_000)
+    @SchedulerLock(name = "stitch-delay-sweep", lockAtLeastFor = "PT5S", lockAtMostFor = "PT60S")
+    void sweepStitchDelays() {
+        if (live.get()) {
+            fold.sweepDelayed();
         }
     }
 }

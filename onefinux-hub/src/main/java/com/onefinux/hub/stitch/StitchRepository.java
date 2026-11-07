@@ -1,5 +1,8 @@
 package com.onefinux.hub.stitch;
 
+import static com.onefinux.hub.db.PortableSql.cols;
+import static com.onefinux.hub.db.PortableSql.upsert;
+
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -100,7 +103,7 @@ public class StitchRepository {
 
     public List<Map<String, Object>> distinctCobDates() {
         return jdbc.queryForList(
-                "SELECT DISTINCT CAST(cob_date AS VARCHAR) AS \"cobDate\" FROM outcome_instance ORDER BY 1 DESC", p());
+                "SELECT DISTINCT TO_CHAR(cob_date, 'YYYY-MM-DD') AS \"cobDate\" FROM outcome_instance ORDER BY 1 DESC", p());
     }
 
     public List<Map<String, Object>> distinctRegions() {
@@ -114,7 +117,7 @@ public class StitchRepository {
         StringBuilder sql = new StringBuilder("""
                 SELECT i.instance_id AS "instanceId", i.kit_id AS "kitId", k.question AS "question",
                        i.group_unit_id AS "groupUnitId", i.slice_key AS "sliceKey", i.region AS "region",
-                       CAST(i.cob_date AS VARCHAR) AS "cobDate", i.status AS "status", i.run_id AS "runId",
+                       TO_CHAR(i.cob_date, 'YYYY-MM-DD') AS "cobDate", i.status AS "status", i.run_id AS "runId",
                        i.named_blocker AS "namedBlocker", i.account AS "account", i.journal_id AS "journalId",
                        i.amount AS "amount", i.fs_line AS "fsLine", i.signed_by AS "signedBy",
                        k.renderer AS "renderer", k.user_actions AS "userActions",
@@ -125,7 +128,7 @@ public class StitchRepository {
                 WHERE 1 = 1""");
         MapSqlParameterSource ps = p();
         if (has(groupUnit)) { sql.append(" AND i.group_unit_id = :gu"); ps.addValue("gu", groupUnit); }
-        if (has(cobDate))   { sql.append(" AND CAST(i.cob_date AS VARCHAR) = :cob"); ps.addValue("cob", cobDate); }
+        if (has(cobDate))   { sql.append(" AND TO_CHAR(i.cob_date, 'YYYY-MM-DD') = :cob"); ps.addValue("cob", cobDate); }
         if (has(region))    { sql.append(" AND i.region = :region"); ps.addValue("region", region); }
         if (has(status))    { sql.append(" AND i.status = :status"); ps.addValue("status", status); }
         sql.append(" ORDER BY i.status, i.instance_id");
@@ -136,7 +139,7 @@ public class StitchRepository {
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT i.instance_id AS "instanceId", i.kit_id AS "kitId", k.question AS "question",
                        i.group_unit_id AS "groupUnitId", i.slice_key AS "sliceKey", i.region AS "region",
-                       CAST(i.cob_date AS VARCHAR) AS "cobDate", i.status AS "status", i.run_id AS "runId",
+                       TO_CHAR(i.cob_date, 'YYYY-MM-DD') AS "cobDate", i.status AS "status", i.run_id AS "runId",
                        i.named_blocker AS "namedBlocker", i.account AS "account", i.journal_id AS "journalId",
                        i.amount AS "amount", i.fs_line AS "fsLine", i.signed_by AS "signedBy",
                        k.renderer AS "renderer", k.user_actions AS "userActions",
@@ -168,7 +171,7 @@ public class StitchRepository {
                        kd.grid_endpoint AS "gridEndpoint", kd.grid_method AS "gridMethod",
                        kd.grid_params_json AS "gridParamsJson",
                        (SELECT cr.echo_ok FROM command_run cr WHERE cr.instance_id = :id AND cr.dest_id = d.dest_id
-                        ORDER BY cr.commanded_at DESC LIMIT 1) AS "echoOk"
+                        ORDER BY cr.commanded_at DESC FETCH FIRST 1 ROWS ONLY) AS "echoOk"
                 FROM outcome_instance i
                 JOIN kit_destination kd ON kd.kit_id = i.kit_id
                 JOIN destination_system d ON d.dest_id = kd.dest_id
@@ -179,8 +182,8 @@ public class StitchRepository {
     public List<Map<String, Object>> eventsForInstance(String instanceId) {
         return jdbc.queryForList("""
                 SELECT event_id AS "eventId", event_type AS "eventType", source_system AS "sourceSystem",
-                       source_key AS "sourceKey", status AS "status", CAST(cob_date AS VARCHAR) AS "cobDate", region AS "region",
-                       CAST(occurred_at AS VARCHAR) AS "occurredAt", ingest_offset AS "ingestOffset",
+                       source_key AS "sourceKey", status AS "status", TO_CHAR(cob_date, 'YYYY-MM-DD') AS "cobDate", region AS "region",
+                       TO_CHAR(occurred_at, 'YYYY-MM-DD HH24:MI:SS') AS "occurredAt", ingest_offset AS "ingestOffset",
                        attributes_json AS "attributesJson"
                 FROM event_store WHERE instance_id = :id ORDER BY occurred_at DESC, event_id""",
                 p().addValue("id", instanceId));
@@ -202,6 +205,20 @@ public class StitchRepository {
         return r.isEmpty() ? null : r.get(0);
     }
 
+    /** What the deadline is computed from: the instance's COB and region, and its kit's SLA cutoff. */
+    public Map<String, Object> slaOf(String instanceId) {
+        List<Map<String, Object>> r = jdbc.queryForList("""
+                SELECT TO_CHAR(i.cob_date, 'YYYY-MM-DD') AS "cobDate", i.region AS "region", k.sla_cutoff AS "slaCutoff"
+                FROM outcome_instance i JOIN product_kit k ON k.kit_id = i.kit_id
+                WHERE i.instance_id = :id""", p().addValue("id", instanceId));
+        return r.isEmpty() ? null : r.get(0);
+    }
+
+    public List<String> instanceIdsWithStatus(String status) {
+        return jdbc.queryForList("SELECT instance_id FROM outcome_instance WHERE status = :st",
+                p().addValue("st", status), String.class);
+    }
+
     public List<String> requiredSources(String kitId) {
         return jdbc.queryForList(
                 "SELECT source_id FROM kit_source WHERE kit_id = :kit AND required = 'Y'",
@@ -210,9 +227,8 @@ public class StitchRepository {
 
     public void upsertReadinessKey(String instanceId, String sourceId, String sourceKey,
                                    String keyStatus, String lastEventId) {
-        jdbc.update("""
-                MERGE INTO readiness_key KEY (instance_id, source_id, source_key)
-                VALUES (:id, :src, :key, :st, :evt)""",
+        upsert(jdbc, "readiness_key", List.of("instance_id", "source_id", "source_key"),
+                cols("instance_id", ":id", "source_id", ":src", "source_key", ":key", "key_status", ":st", "last_event_id", ":evt"),
                 p().addValue("id", instanceId).addValue("src", sourceId).addValue("key", sourceKey)
                         .addValue("st", keyStatus).addValue("evt", lastEventId));
     }
@@ -232,9 +248,9 @@ public class StitchRepository {
     }
 
     public void insertPendingCommandRun(String runId, String instanceId, String destId) {
-        jdbc.update("""
-                MERGE INTO command_run KEY (run_id) VALUES
-                (:run, :id, :dest, CURRENT_TIMESTAMP, NULL, NULL, NULL)""",
+        upsert(jdbc, "command_run", List.of("run_id"),
+                cols("run_id", ":run", "instance_id", ":id", "dest_id", ":dest", "commanded_at", "CURRENT_TIMESTAMP",
+                        "completed_at", "NULL", "result_locator", "NULL", "echo_ok", "NULL"),
                 p().addValue("run", runId).addValue("id", instanceId).addValue("dest", destId));
     }
 
@@ -283,10 +299,10 @@ public class StitchRepository {
 
     public List<Map<String, Object>> notifications(int limit) {
         return jdbc.queryForList("""
-                SELECT id AS "id", CAST(created_at AS VARCHAR) AS "createdAt", severity AS "severity", transition AS "transition",
+                SELECT id AS "id", TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "createdAt", severity AS "severity", transition AS "transition",
                        outcome_key AS "kitId", outcome_name AS "question", audience AS "audience", title AS "title",
                        message AS "message", channels AS "channels", instance_id AS "instanceId", group_unit_id AS "groupUnitId"
-                FROM notification ORDER BY id DESC LIMIT :lim""", p().addValue("lim", limit));
+                FROM notification ORDER BY id DESC FETCH FIRST :lim ROWS ONLY""", p().addValue("lim", limit));
     }
 
     // ---------------------------------------------------------------- run-the-bank
@@ -294,7 +310,7 @@ public class StitchRepository {
     public List<Map<String, Object>> escalations() {
         return jdbc.queryForList("""
                 SELECT e.escalation_id AS "escalationId", e.instance_id AS "instanceId", e.kind AS "kind",
-                       CAST(e.opened_at AS VARCHAR) AS "openedAt", e.status AS "status", i.slice_key AS "sliceKey", i.region AS "region"
+                       TO_CHAR(e.opened_at, 'YYYY-MM-DD HH24:MI:SS') AS "openedAt", e.status AS "status", i.slice_key AS "sliceKey", i.region AS "region"
                 FROM escalation e LEFT JOIN outcome_instance i ON i.instance_id = e.instance_id
                 ORDER BY e.status, e.opened_at DESC""", p());
     }
@@ -324,8 +340,8 @@ public class StitchRepository {
     public List<Map<String, Object>> recentEvents(int limit) {
         return jdbc.queryForList("""
                 SELECT event_id AS "eventId", event_type AS "eventType", source_system AS "sourceSystem",
-                       source_key AS "sourceKey", status AS "status", CAST(cob_date AS VARCHAR) AS "cobDate",
-                       region AS "region", CAST(received_at AS VARCHAR) AS "receivedAt", instance_id AS "instanceId"
+                       source_key AS "sourceKey", status AS "status", TO_CHAR(cob_date, 'YYYY-MM-DD') AS "cobDate",
+                       region AS "region", TO_CHAR(received_at, 'YYYY-MM-DD HH24:MI:SS') AS "receivedAt", instance_id AS "instanceId"
                 FROM event_store ORDER BY received_at DESC, event_id FETCH FIRST :limit ROWS ONLY""",
                 p().addValue("limit", Math.max(1, Math.min(limit, 500))));
     }
@@ -338,7 +354,7 @@ public class StitchRepository {
     public List<Map<String, Object>> eventCountsBySource() {
         return jdbc.queryForList("""
                 SELECT source_system AS "sourceSystem", COUNT(*) AS "n",
-                       CAST(MAX(received_at) AS VARCHAR) AS "lastReceivedAt"
+                       TO_CHAR(MAX(received_at), 'YYYY-MM-DD HH24:MI:SS') AS "lastReceivedAt"
                 FROM event_store GROUP BY source_system ORDER BY source_system""", p());
     }
 
@@ -366,7 +382,7 @@ public class StitchRepository {
 
     public void insertAudit(String actor, String action, String resource, String decision, String detailJson) {
         jdbc.update("""
-                INSERT INTO audit_log (at, actor, action, resource, decision, detail_json)
+                INSERT INTO audit_log (at, actor, action, "RESOURCE", decision, detail_json)
                 VALUES (CURRENT_TIMESTAMP, :actor, :action, :resource, :decision, :detail)""",
                 p().addValue("actor", actor == null ? "system" : actor).addValue("action", action)
                         .addValue("resource", resource).addValue("decision", decision == null ? "OK" : decision)
@@ -375,8 +391,8 @@ public class StitchRepository {
 
     public List<Map<String, Object>> auditLog(int limit) {
         return jdbc.queryForList("""
-                SELECT id AS "id", CAST(at AS VARCHAR) AS "at", actor AS "actor", action AS "action",
-                       resource AS "resource", decision AS "decision", detail_json AS "detailJson"
+                SELECT id AS "id", TO_CHAR(at, 'YYYY-MM-DD HH24:MI:SS') AS "at", actor AS "actor", action AS "action",
+                       "RESOURCE" AS "resource", decision AS "decision", detail_json AS "detailJson"
                 FROM audit_log ORDER BY at DESC, id DESC FETCH FIRST :limit ROWS ONLY""",
                 p().addValue("limit", Math.max(1, Math.min(limit, 500))));
     }
@@ -386,23 +402,24 @@ public class StitchRepository {
     }
 
     public void insertEscalation(String escalationId, String instanceId, String kind) {
-        jdbc.update("""
-                MERGE INTO escalation KEY (escalation_id)
-                VALUES (:id, :inst, :kind, CURRENT_TIMESTAMP, 'OPEN')""",
+        upsert(jdbc, "escalation", List.of("escalation_id"),
+                cols("escalation_id", ":id", "instance_id", ":inst", "kind", ":kind", "opened_at", "CURRENT_TIMESTAMP", "status", "'OPEN'"),
                 p().addValue("id", escalationId).addValue("inst", instanceId).addValue("kind", kind));
     }
 
     // ---------------------------------------------------------------- onboarding writes
 
     public void insertKit(Map<String, Object> kit) {
-        jdbc.update("""
-                MERGE INTO product_kit KEY (kit_id) VALUES
-                (:kitId, :groupUnitId, :domain, :question, :renderer, :userActions, :ceesProduct, :slaCutoff, 1, 'LIVE')""",
+        upsert(jdbc, "product_kit", List.of("kit_id"),
+                cols("kit_id", ":kitId", "group_unit_id", ":groupUnitId", "domain", ":domain", "question", ":question",
+                        "renderer", ":renderer", "user_actions", ":userActions", "cees_product", ":ceesProduct",
+                        "sla_cutoff", ":slaCutoff", "version", "1", "status", "'LIVE'"),
                 new MapSqlParameterSource(kit));
     }
 
     public void insertKitSource(String kitId, String sourceId, boolean required) {
-        jdbc.update("MERGE INTO kit_source KEY (kit_id, source_id) VALUES (:kit, :src, :req)",
+        upsert(jdbc, "kit_source", List.of("kit_id", "source_id"),
+                cols("kit_id", ":kit", "source_id", ":src", "required", ":req"),
                 p().addValue("kit", kitId).addValue("src", sourceId).addValue("req", required ? "Y" : "N"));
     }
 
@@ -412,9 +429,9 @@ public class StitchRepository {
 
     public void insertKitDestination(String kitId, String destId, int stepOrder,
                                      String gridEndpoint, String gridMethod, String gridParamsJson) {
-        jdbc.update("""
-                MERGE INTO kit_destination KEY (kit_id, dest_id) VALUES
-                (:kit, :dest, :step, :endpoint, :method, :params)""",
+        upsert(jdbc, "kit_destination", List.of("kit_id", "dest_id"),
+                cols("kit_id", ":kit", "dest_id", ":dest", "step_order", ":step", "grid_endpoint", ":endpoint",
+                        "grid_method", ":method", "grid_params_json", ":params"),
                 p().addValue("kit", kitId).addValue("dest", destId).addValue("step", stepOrder)
                         .addValue("endpoint", gridEndpoint)
                         .addValue("method", gridMethod == null || gridMethod.isBlank() ? "GET" : gridMethod)
@@ -422,7 +439,8 @@ public class StitchRepository {
     }
 
     public void insertKitEmbed(String kitId, String url, String allowedOrigin, String chrome) {
-        jdbc.update("MERGE INTO kit_embed KEY (kit_id) VALUES (:kit, :url, :origin, :chrome)",
+        upsert(jdbc, "kit_embed", List.of("kit_id"),
+                cols("kit_id", ":kit", "embed_url", ":url", "allowed_origin", ":origin", "chrome", ":chrome"),
                 p().addValue("kit", kitId).addValue("url", url).addValue("origin", allowedOrigin)
                         .addValue("chrome", chrome == null ? "HOST" : chrome));
     }
@@ -444,7 +462,7 @@ public class StitchRepository {
     public List<Map<String, Object>> instanceLookup() {
         return jdbc.queryForList("""
                 SELECT instance_id AS "instanceId", kit_id AS "kitId", group_unit_id AS "groupUnitId",
-                       CAST(cob_date AS VARCHAR) AS "cobDate", region, slice_key AS "sliceKey"
+                       TO_CHAR(cob_date, 'YYYY-MM-DD') AS "cobDate", region, slice_key AS "sliceKey"
                 FROM outcome_instance""", p());
     }
 

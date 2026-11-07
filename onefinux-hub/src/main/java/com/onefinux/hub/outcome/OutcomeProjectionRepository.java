@@ -1,9 +1,11 @@
 package com.onefinux.hub.outcome;
 
+import com.onefinux.hub.db.PortableSql;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -24,11 +26,9 @@ public class OutcomeProjectionRepository {
     }
 
     public void upsert(OutcomeView v, String viewJson) {
-        jdbc.update("""
-                MERGE INTO outcome_projection
-                    (instance_key, outcome_id, cob_date, region, status, view_json, updated_at)
-                KEY (instance_key)
-                VALUES (:key, :outcomeId, :cob, :region, :status, :json, :now)""",
+        PortableSql.upsert(jdbc, "outcome_projection", List.of("instance_key"),
+                PortableSql.cols("instance_key", ":key", "outcome_id", ":outcomeId", "cob_date", ":cob", "region", ":region",
+                        "status", ":status", "view_json", ":json", "updated_at", ":now"),
                 new MapSqlParameterSource()
                         .addValue("key", v.key())
                         .addValue("outcomeId", v.outcomeId())
@@ -36,13 +36,13 @@ public class OutcomeProjectionRepository {
                         .addValue("region", v.region())
                         .addValue("status", v.status() == null ? "UNKNOWN" : v.status().name())
                         .addValue("json", viewJson)
-                        .addValue("now", Instant.now()));
+                        .addValue("now", Timestamp.from(Instant.now())));
     }
 
     public List<Map<String, Object>> all() {
         return jdbc.queryForList("""
-                SELECT instance_key AS "key", outcome_id AS "outcomeId", CAST(cob_date AS VARCHAR) AS "cobDate",
-                       region AS "region", status AS "status", CAST(updated_at AS VARCHAR) AS "updatedAt"
+                SELECT instance_key AS "key", outcome_id AS "outcomeId", TO_CHAR(cob_date, 'YYYY-MM-DD') AS "cobDate",
+                       region AS "region", status AS "status", TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt"
                 FROM outcome_projection
                 ORDER BY cob_date DESC, outcome_id, region""",
                 new MapSqlParameterSource());

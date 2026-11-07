@@ -14,6 +14,10 @@ if [[ "${1:-}" != "--no-build" ]]; then
   mvn -q -DskipTests=false package
 fi
 
+# Local demo: incidents go to the simulator's mock ServiceNow (GET /sim/servicenow/incidents). Set these to a real instance.
+export ONEFINUX_SNOW_ENABLED="${ONEFINUX_SNOW_ENABLED:-true}"
+export ONEFINUX_SNOW_URL="${ONEFINUX_SNOW_URL:-http://localhost:$SIM_PORT/sim/servicenow}"
+
 java -Dserver.port="$HUB_PORT" -Donefinux.public-url="http://localhost:$HUB_PORT" -Donefinux.simulator-url="http://localhost:$SIM_PORT" -jar onefinux-hub/target/onefinux-hub-0.1.0-SNAPSHOT.jar > logs/hub.log 2>&1 &
 echo $! > logs/hub.pid
 java -Dserver.port="$SIM_PORT" -Dsim.hub-url="http://localhost:$HUB_PORT" -jar source-simulator/target/source-simulator-0.1.0-SNAPSHOT.jar > logs/sim.log 2>&1 &

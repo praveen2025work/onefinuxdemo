@@ -159,6 +159,42 @@ public class ScenarioService {
                         + "Run alone, it goes at risk and then breaches its 1 minute SLA.");
     }
 
+    /**
+     * Month-end close for EMEA: four sub-ledgers close, accruals post, intercompany matches and FX revalues (10 inputs).
+     * With a failure, the UK-US intercompany match breaks and is re-matched 12s later.
+     */
+    public ScenarioRun monthEnd(boolean withFailure) {
+        LocalDate cob = today();
+        List<String[]> inputs = new ArrayList<>();
+        for (String ledger : List.of("AP", "AR", "FA", "PAYROLL")) {
+            inputs.add(new String[]{"SUBLEDGER_CLOSED", "SAP", ledger});
+        }
+        for (String accrual : List.of("ACR-OPEX", "ACR-BONUS", "ACR-RENT")) {
+            inputs.add(new String[]{"ACCRUALS_POSTED", "MOTIF", accrual});
+        }
+        inputs.add(new String[]{"INTERCO_MATCHED", "RECFACTORY", "IC-UK-US"});
+        inputs.add(new String[]{"INTERCO_MATCHED", "RECFACTORY", "IC-UK-SG"});
+        inputs.add(new String[]{"FX_REVALUED", "SAP", "FXR-EOM"});
+        Collections.shuffle(inputs, random);
+        int seconds = inputs.size() * 2;
+        for (int slot = 0; slot < inputs.size(); slot++) {
+            String[] in = inputs.get(slot);
+            long delay = (slot + 1) * 2000L;
+            boolean failThisOne = withFailure && "IC-UK-US".equals(in[2]);
+            at(delay, () -> event(in[0], in[1], in[2], cob, "EMEA", failThisOne ? "FAILED" : "COMPLETED",
+                    failThisOne ? Map.of("error", "Intercompany break GBP 1.2m UK-US") : Map.of()));
+            if (failThisOne) {
+                at(delay + 12_000, () -> event(in[0], in[1], in[2], cob, "EMEA", "COMPLETED",
+                        Map.of("note", "Re-matched after the US entity booked its side")));
+                seconds = Math.max(seconds, (int) ((delay + 12_000) / 1000));
+            }
+        }
+        return new ScenarioRun(withFailure ? "monthend-with-failure" : "monthend", cob, inputs.size() + (withFailure ? 1 : 0),
+                seconds, withFailure
+                        ? "The UK-US intercompany match breaks (month-end close blocked, Financial Control alerted), then re-matches 12s later."
+                        : "10 EMEA inputs: sub-ledgers, accruals, intercompany and FX revaluation; at 100% the hub asks for the close pack.");
+    }
+
     /** A controller reruns SAP TB for one cost centre after the fact: every outcome using it loses readiness. */
     public ScenarioRun restateSapTrialBalance() {
         LocalDate cob = today();

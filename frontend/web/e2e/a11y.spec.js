@@ -3,7 +3,7 @@ import AxeBuilder from '@axe-core/playwright';
 
 // WCAG 2.1 A/AA checks on the main screens. Critical and serious findings fail the build; the Wijmo evaluation
 // banner (shown until a licence key is set) and framed third-party screens are out of scope.
-const SCREENS = ['/', '/board', '/desks', '/grids', '/onboarding', '/configuration', '/access', '/usage', '/product'];
+const SCREENS = ['/', '/board', '/desks', '/grids', '/onboarding', '/configuration', '/access', '/usage', '/platform', '/product'];
 
 for (const path of SCREENS) {
   test(`accessibility: ${path}`, async ({ page }) => {

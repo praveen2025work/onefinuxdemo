@@ -1,13 +1,12 @@
 package com.onefinux.hub.outcome;
 
+import com.onefinux.hub.calendar.CloseCalendar;
 import com.onefinux.hub.config.OneFinUxProperties.DependencyDefinition;
 import com.onefinux.hub.config.OneFinUxProperties.OutcomeDefinition;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -25,7 +24,7 @@ class OutcomeInstance {
     private OutcomeDefinition definition;
     private final LocalDate cobDate;
     private final String region;
-    private final ZoneId zone;
+    private final CloseCalendar calendar;
     private final Map<String, DependencyProgress> dependencies = new LinkedHashMap<>();
     private final Set<Integer> milestonesAnnounced = new HashSet<>();
 
@@ -47,11 +46,11 @@ class OutcomeInstance {
     private ReportArtifact report;
     private String lastMessage;
 
-    OutcomeInstance(OutcomeDefinition definition, LocalDate cobDate, String region, ZoneId zone) {
+    OutcomeInstance(OutcomeDefinition definition, LocalDate cobDate, String region, CloseCalendar calendar) {
         this.definition = definition;
         this.cobDate = cobDate;
         this.region = region;
-        this.zone = zone;
+        this.calendar = calendar;
         for (DependencyDefinition dep : definition.dependencies()) {
             dependencies.put(dep.eventType().toUpperCase(), new DependencyProgress(dep));
         }
@@ -262,11 +261,7 @@ class OutcomeInstance {
         if (within != null) {
             return firstEventAt == null ? null : firstEventAt.plus(Duration.ofMinutes(within));
         }
-        String cutoff = definition.sla().cutoff();
-        if (cutoff == null || cutoff.isBlank()) {
-            return null;
-        }
-        return cobDate.plusDays(definition.sla().dayOffset()).atTime(LocalTime.parse(cutoff)).atZone(zone).toInstant();
+        return calendar.deadline(region, cobDate, definition.sla().dayOffset(), definition.sla().cutoff());
     }
 
     String pendingSummary() {

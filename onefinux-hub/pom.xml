@@ -83,6 +83,11 @@
             <artifactId>anthropic-java</artifactId>
             <version>3.2.0</version>
         </dependency>
+        <!-- Email notifications over SMTP. Off unless onefinux.channels.email.enabled and spring.mail.host are set. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -103,4 +108,24 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Production persistence: mvn -Poracle package, then run with spring.profiles.active=oracle
+             (application-oracle.yml, migrations in db/oracle). -->
+        <profile>
+            <id>oracle</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle.database.jdbc</groupId>
+                    <artifactId>ojdbc11</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-database-oracle</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

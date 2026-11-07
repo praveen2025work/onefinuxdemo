@@ -158,11 +158,11 @@ Motif, SAP, Helix, Axiom, CATS, MBR, FAS, and Kafka remain origins or destinatio
 | ACTION | Actions and executors | ActionExecutor, kit verbs, runId |
 | CONSOLE | Console chrome | Brand, theme, rail, views, ribbon |
 | REPORTS | Reports | Layouts, document route, stage flow |
-| GOVERN | Onboarding and configuration | Create vs govern |
+| GOVERN | Onboarding, configuration and close evidence | Create vs govern, evidence packs, platform settings view |
 | OPERATE | Drive, RTB, monitor, notify | Scenarios, replay, SSE, inbox |
 | ONEUX | One UX platform | Search across apps, assistant, usage and feedback, experiments, saved desks and team templates, grid write-back, access register, sign-in |
 
-Each subsystem has numbered REQ-IDs and exactly 23 AC-IDs.
+Each subsystem has numbered REQ-IDs and at least 23 AC-IDs, numbered without gaps.
 
 ## 11. Functional requirements
 
@@ -198,6 +198,8 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-FOLD-008` | There is no product-specific branch on kitId FOBO or any other kit id; FOBO is kit data. |
 | `REQ-FOLD-009` | GET /api/stitch/instances returns tenant-scoped instances for the selected group unit, COB, and region filters. |
 | `REQ-FOLD-010` | An unknown or unentitled instance id on stitch instance reads and actions returns HTTP 404. |
+| `REQ-FOLD-011` | The stitch deadline is the kit's SLA cutoff on the COB date in the instance region's zone (the close calendar); a sweep every 30 seconds moves NOT_YET instances past that deadline to DELAYED, raises a DELAY escalation, and notifies WARN. |
+| `REQ-FOLD-012` | onefinux.calendar.stitch-delays false (ONEFINUX_STITCH_DELAYS) keeps stitch instances NOT_YET past their cutoff, for a demo on a past COB. |
 
 ### 11.3 Outcome Engine (ENGINE)
 
@@ -213,6 +215,8 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-ENGINE-008` | Predicted-ready clocks are advisory and are not inputs to the readiness fold. |
 | `REQ-ENGINE-009` | Seeded definitions include FOBO_HELIX, REPORT_15C3, and PNL_REPORTING in application.yml. |
 | `REQ-ENGINE-010` | POST /api/outcomes/definitions creates a live OutcomeDefinition without a new Java product type. |
+| `REQ-ENGINE-011` | An outcome SLA with cutoff and day-offset sets its deadline from the close calendar (onefinux.calendar): day-offset counts business days in the outcome's region, skipping the weekend and that region's holidays, and the cutoff is that region's wall clock; a region not listed uses onefinux.zone with weekends only. |
+| `REQ-ENGINE-012` | MONTH_END_CLOSE ships as an OutcomeDefinition in application.yml (EMEA; sub-ledgers, accruals, intercompany and FX revaluation; cutoff 18:00 three business days after the COB; HTTP_COMMAND closepack) with no new Java type; the simulator scenario POST /sim/scenarios/monthend drives it and Drive offers it with and without an intercompany break. |
 
 ### 11.4 Actions and executors (ACTION)
 
@@ -269,7 +273,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-REPORTS-009` | Reports does not render Drive or scenario buttons. |
 | `REQ-REPORTS-010` | The five-stage flow uses Feeds in, Ready, Processing, Generated, and Available. |
 
-### 11.7 Onboarding and configuration (GOVERN)
+### 11.7 Onboarding, configuration and close evidence (GOVERN)
 
 | REQ-ID | Requirement |
 | --- | --- |
@@ -283,6 +287,11 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-GOVERN-008` | A created definition appears on Board, Reports, and Configuration for the given COB once instances exist. |
 | `REQ-GOVERN-009` | Kit create remains available on POST /api/stitch/kits; the console does not add a second kit-create screen in this phase. |
 | `REQ-GOVERN-010` | Configuration links makers to /onboarding when they need to create an outcome. |
+| `REQ-GOVERN-011` | GET /api/evidence/instance?id= and GET /api/evidence/outcome/{outcomeId}/{cobDate}/{region} return a close evidence pack (format onefinux-evidence/1): subject, readiness, facts, decisions (audit log), downstream commands, escalations, notifications, and for an engine outcome its report artifact. |
+| `REQ-GOVERN-012` | Every evidence pack carries a SHA-256 digest over the canonical JSON of every other field; POST /api/evidence/verify recomputes it and answers valid true or false. |
+| `REQ-GOVERN-013` | Exporting a pack needs the EVIDENCE_EXPORT verb from the role structure and the group-unit fence of the instance (404 outside it, 403 without the verb); every export and every refusal is written to the audit log with the digest. |
+| `REQ-GOVERN-014` | format=html returns the printable pack painted only from the shared partner classes in /theme/onefinux-tokens.css; instance detail and the report document offer Evidence pack (printable) and JSON (download). |
+| `REQ-GOVERN-015` | The hub shall return its running configuration at GET /api/platform/settings as rows — verbs per role, the close calendar per region, each outcome's deadline rule and zone, notification channels, action and write-back targets, search providers and experiments — to a caller whose role grants PLATFORM_VIEW, with no password, key or token in the response; the console shall show those rows read-only on /platform through GridSpecs. |
 
 ### 11.8 Drive, operations, monitoring, notifications (OPERATE)
 
@@ -300,6 +309,10 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-OPERATE-010` | The hub does not notify on raw facts, PROGRESS ticks, or advisory model output. |
 | `REQ-OPERATE-011` | Board is the supervisor table; My outcomes is the doer card worklist; both drill to /instance/:id. |
 | `REQ-OPERATE-012` | Operations does not sign off a rec or publish a kit. |
+| `REQ-OPERATE-013` | The email channel sends notifications at or above onefinux.channels.email.min-severity over SMTP (spring.mail.host) to the addresses configured for the notification's audience; it is off unless onefinux.channels.email.enabled is true and an SMTP sender exists. |
+| `REQ-OPERATE-014` | The ServiceNow channel raises an incident through POST {url}/api/now/table/{table} for the configured transitions (default BLOCKED, DELAYED, SLA_BREACHED, ACTION_FAILED, ESCALATED), with assignment group by audience, urgency and impact from severity, and correlation_id of subject and transition; a repeat of the same subject and transition is not raised again; it is off unless enabled with a URL. |
+| `REQ-OPERATE-015` | Stitch notifications (fold transitions, escalations, sign-offs and kit verbs) are delivered to the enabled external channels as well as stored for the inbox; the local demo points ServiceNow at the simulator's mock instance (GET /sim/servicenow/incidents). |
+| `REQ-OPERATE-016` | The hub runs on Oracle 19c with the oracle Maven profile and the oracle Spring profile: Flyway applies db/oracle, which carries one migration for every version in db/migration, and the runtime SQL in main code uses only syntax that both H2 and Oracle accept (no MERGE ... KEY, LIMIT, CAST AS VARCHAR, boolean literals or DATEADD). |
 
 ### 11.9 One UX platform: search, assistant, telemetry, personalisation, write-back, access (ONEUX)
 
@@ -342,6 +355,10 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-NFR-004` | The console uses REST plus the hub live link (WebSocket, with SSE as the fallback) only; it never connects to a message bus. |
 | `REQ-NFR-005` | Colours, type and weights are defined only in frontend/theme/onefinux-tokens.css; frontend/web/src/styles.css only aliases those tokens. |
 | `REQ-NFR-006` | Partner embeds import --ofx-* tokens and omit their own masthead. |
+| `REQ-NFR-007` | The single-node hub on the demo store accepts at least 100 completion events per second on POST /api/events from 8 concurrent producers, with zero errors. |
+| `REQ-NFR-008` | The single-node hub answers POST /api/events within 250 ms at the 95th percentile under the REQ-NFR-007 load. |
+| `REQ-NFR-009` | An outcome instance leaves IN_PROGRESS within 2000 ms after its last expected input is accepted. |
+| `REQ-NFR-010` | Every event re-sent with an eventId already accepted is answered DUPLICATE and changes no state. |
 
 ## 12. Acceptance criteria
 
@@ -677,6 +694,20 @@ These 23 criteria lock FOLD behaviour. Each Maps-to line names one REQ-ID.
 - When the user opens either surface
 - Then both show READY for that instance id
 
+#### AC-FOLD-24
+
+- Maps to: `REQ-FOLD-011`
+- Given instance R-2031 is NOT_YET with Motif WAITING and its 19:00 London cutoff has passed
+- When the sweep runs with no new fact
+- Then the instance is DELAYED
+
+#### AC-FOLD-25
+
+- Maps to: `REQ-FOLD-012`
+- Given stitch-delays is false and the cutoff of a NOT_YET instance has passed
+- When the sweep runs
+- Then the instance stays NOT_YET
+
 ### 12.3 Outcome Engine (ENGINE)
 
 These 23 criteria lock ENGINE behaviour. Each Maps-to line names one REQ-ID.
@@ -841,6 +872,41 @@ These 23 criteria lock ENGINE behaviour. Each Maps-to line names one REQ-ID.
 - Given two definitions share one eventType from different sourceSystems
 - When an event arrives with one of those sourceSystems
 - Then only the definition whose feed lists that pair moves
+
+#### AC-ENGINE-24
+
+- Maps to: `REQ-ENGINE-011`
+- Given EMEA holidays 25 and 28 December and AMRS holidays 26 November and 25 December
+- When one business day is added to 24 December in EMEA and in AMRS, and to 25 November in AMRS
+- Then the dates are 29 December, 28 December and 27 November
+
+#### AC-ENGINE-25
+
+- Maps to: `REQ-ENGINE-011`
+- Given a cutoff of 18:00 with day-offset 1 on COB Friday 6 November 2026
+- When the deadline is computed for EMEA and for APAC
+- Then it is 18:00Z and 10:00Z on Monday 9 November
+
+#### AC-ENGINE-26
+
+- Maps to: `REQ-ENGINE-011`
+- Given MONTH_END_CLOSE for EMEA with cutoff 18:00 and day-offset 3 on COB 23 December 2026
+- When the engine opens the instance
+- Then its deadline is 30 December 2026 18:00 London
+
+#### AC-ENGINE-27
+
+- Maps to: `REQ-ENGINE-012`
+- Given the shipped application.yml
+- When onefinux is bound
+- Then MONTH_END_CLOSE is present for EMEA with cutoff 18:00, day-offset 3, four dependencies and a configured action target
+
+#### AC-ENGINE-28
+
+- Maps to: `REQ-ENGINE-012`
+- Given POST /sim/scenarios/monthend?failure=true on COB Friday 6 November 2026
+- When the scenario finishes
+- Then MONTH_END_CLOSE went BLOCKED on IC-UK-US, then COMPLETED with stage AVAILABLE, a close pack report, and deadline 2026-11-11T18:00:00Z
 
 ### 12.4 Actions and executors (ACTION)
 
@@ -1344,7 +1410,7 @@ These 23 criteria lock REPORTS behaviour. Each Maps-to line names one REQ-ID.
 - When the operator clicks Open report
 - Then the document route opens for that outcome key
 
-### 12.7 Onboarding and configuration (GOVERN)
+### 12.7 Onboarding, configuration and close evidence (GOVERN)
 
 These 23 criteria lock GOVERN behaviour. Each Maps-to line names one REQ-ID.
 
@@ -1508,6 +1574,83 @@ These 23 criteria lock GOVERN behaviour. Each Maps-to line names one REQ-ID.
 - Given id is empty
 - When the maker submits Onboarding
 - Then the submit is rejected
+
+#### AC-GOVERN-24
+
+- Maps to: `REQ-GOVERN-011`
+- Given the auditor can see REV-ACC and holds EVIDENCE_EXPORT
+- When the auditor requests the pack for a REV-ACC instance
+- Then the pack lists subject, readiness, facts, decisions, commands, escalations and notifications, and carries a 64-hex SHA-256 digest
+
+#### AC-GOVERN-25
+
+- Maps to: `REQ-GOVERN-011`
+- Given facts on one COB and region belong to two outcomes
+- When the pack for one engine outcome is built
+- Then it holds that outcome's dependency facts, its own workflow events and its own completion run only
+
+#### AC-GOVERN-26
+
+- Maps to: `REQ-GOVERN-012`
+- Given a downloaded pack
+- When the untouched JSON is posted to /api/evidence/verify
+- Then the answer is valid true
+
+#### AC-GOVERN-27
+
+- Maps to: `REQ-GOVERN-012`
+- Given a downloaded pack whose amount was edited
+- When it is posted to /api/evidence/verify
+- Then the answer is valid false
+
+#### AC-GOVERN-28
+
+- Maps to: `REQ-GOVERN-013`
+- Given bob.markets is entitled to MARKETS only
+- When bob.markets requests the pack for a REV-ACC instance
+- Then the hub answers 404 and writes no export
+
+#### AC-GOVERN-29
+
+- Maps to: `REQ-GOVERN-013`
+- Given a user whose roles lack EVIDENCE_EXPORT
+- When the user requests a pack
+- Then the hub answers 403 and the audit log holds an EVIDENCE_EXPORT DENY row
+
+#### AC-GOVERN-30
+
+- Maps to: `REQ-GOVERN-013`
+- Given a successful export
+- When the audit log is read
+- Then an EVIDENCE_EXPORT OK row on the subject holds the digest of the pack
+
+#### AC-GOVERN-31
+
+- Maps to: `REQ-GOVERN-014`
+- Given a fact value containing markup
+- When the printable pack is rendered
+- Then the markup is escaped and the page links /theme/onefinux-tokens.css with no colour literal
+
+#### AC-GOVERN-32
+
+- Maps to: `REQ-GOVERN-014`
+- Given a controller on instance detail
+- When the controller presses Evidence pack
+- Then the printable pack opens in a new tab with the session's token used for the request
+
+#### AC-GOVERN-33
+
+- Maps to: `REQ-GOVERN-015`
+- Given a caller whose role grants PLATFORM_VIEW and a ServiceNow channel configured with a password
+- When the caller requests GET /api/platform/settings
+- Then the response carries one row per role and verb, one row per calendar region with its zone, MONTH_END_CLOSE with deadline '18:00 on COB + 3 business days' in Europe/London, and the ServiceNow channel row, and the password text is absent from the response body
+
+#### AC-GOVERN-34
+
+- Maps to: `REQ-GOVERN-015`
+- Given a caller whose role does not grant PLATFORM_VIEW
+- When the caller requests GET /api/platform/settings
+- Then the hub answers 403 and writes an audit row with action PLATFORM_VIEW and outcome DENY for that caller
 
 ### 12.8 Drive, operations, monitoring, notifications (OPERATE)
 
@@ -1673,6 +1816,69 @@ These 23 criteria lock OPERATE behaviour. Each Maps-to line names one REQ-ID.
 - Given an advisory comment is stored off the fold
 - When notification inbox is fetched
 - Then no notification is created for that advisory comment
+
+#### AC-OPERATE-24
+
+- Maps to: `REQ-OPERATE-013`
+- Given email is enabled with REV-ACC mapped to rev-acc@bank.example and min-severity WARN
+- When a CRITICAL REV-ACC, an INFO REV-ACC and a CRITICAL MARKETS notification are delivered
+- Then exactly one mail goes to rev-acc@bank.example with subject [One Finance · CRITICAL] and the title
+
+#### AC-OPERATE-25
+
+- Maps to: `REQ-OPERATE-013`
+- Given email is not enabled, or no SMTP host is configured
+- When the channel list is built
+- Then the email channel reports disabled
+
+#### AC-OPERATE-26
+
+- Maps to: `REQ-OPERATE-014`
+- Given ServiceNow is enabled with an integration user and REV-ACC mapped to Revenue Accounting Controllers
+- When the same BLOCKED notification is delivered twice and a READY once
+- Then one incident is posted with basic auth, urgency 1, that assignment group and correlation_id ending |BLOCKED
+
+#### AC-OPERATE-27
+
+- Maps to: `REQ-OPERATE-015`
+- Given an enabled channel, a disabled channel and the browser channel
+- When a stitch notification is dispatched
+- Then only the enabled external channel receives it
+
+#### AC-OPERATE-28
+
+- Maps to: `REQ-OPERATE-014`
+- Given the shipped application.yml
+- When onefinux.channels is bound
+- Then email and ServiceNow are off, and audience keys with dots and spaces bind
+
+#### AC-OPERATE-29
+
+- Maps to: `REQ-OPERATE-016`
+- Given an empty database in H2 Oracle compatibility mode and spring.flyway.locations set to classpath:db/oracle
+- When the hub starts
+- Then Flyway applies versions 1 to 10 from db/oracle and the application context starts
+
+#### AC-OPERATE-30
+
+- Maps to: `REQ-OPERATE-016`
+- Given the hub started on the Oracle migration set
+- When an event is ingested twice, a readiness key and an escalation are upserted twice, an audit row is written, a user is suspended for inactivity and restored, a preference is saved and usage is read
+- Then the second ingest is DUPLICATE, each upsert leaves one row with the latest values, the audit row reads back with its resource, the suspension reads back true then false, and the preference JSON reads back unchanged
+
+#### AC-OPERATE-31
+
+- Maps to: `REQ-OPERATE-016`
+- Given the Java sources under onefinux-hub/src/main/java
+- When they are scanned for MERGE ... KEY, LIMIT n, CAST AS VARCHAR, TRUE or FALSE literals, DATEADD and the unquoted audit_log resource column
+- Then no match is found
+
+#### AC-OPERATE-32
+
+- Maps to: `REQ-OPERATE-016`
+- Given the migrations in db/migration
+- When each file name is looked up in db/oracle
+- Then every file has an Oracle file with the same version and name
 
 ### 12.9 One UX platform: search, assistant, telemetry, personalisation, write-back, access (ONEUX)
 
@@ -1919,6 +2125,8 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-FOLD-008` | `AC-FOLD-09`, `AC-FOLD-19` |
 | `REQ-FOLD-009` | `AC-FOLD-10`, `AC-FOLD-18` |
 | `REQ-FOLD-010` | `AC-FOLD-11`, `AC-FOLD-12`, `AC-FOLD-21` |
+| `REQ-FOLD-011` | `AC-FOLD-24` |
+| `REQ-FOLD-012` | `AC-FOLD-25` |
 | `REQ-ENGINE-001` | `AC-ENGINE-01`, `AC-ENGINE-16`, `AC-ENGINE-23` |
 | `REQ-ENGINE-002` | `AC-ENGINE-02`, `AC-ENGINE-03`, `AC-ENGINE-04`, `AC-ENGINE-14`, `AC-ENGINE-15` |
 | `REQ-ENGINE-003` | `AC-ENGINE-05`, `AC-ENGINE-21` |
@@ -1929,6 +2137,8 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ENGINE-008` | `AC-ENGINE-11`, `AC-ENGINE-18` |
 | `REQ-ENGINE-009` | `AC-ENGINE-12` |
 | `REQ-ENGINE-010` | `AC-ENGINE-13`, `AC-ENGINE-19` |
+| `REQ-ENGINE-011` | `AC-ENGINE-24`, `AC-ENGINE-25`, `AC-ENGINE-26` |
+| `REQ-ENGINE-012` | `AC-ENGINE-27`, `AC-ENGINE-28` |
 | `REQ-ACTION-001` | `AC-ACTION-01` |
 | `REQ-ACTION-002` | `AC-ACTION-02`, `AC-ACTION-03` |
 | `REQ-ACTION-003` | `AC-ACTION-04` |
@@ -1979,6 +2189,11 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-GOVERN-008` | `AC-GOVERN-10`, `AC-GOVERN-11` |
 | `REQ-GOVERN-009` | `AC-GOVERN-12` |
 | `REQ-GOVERN-010` | `AC-GOVERN-13`, `AC-GOVERN-22` |
+| `REQ-GOVERN-011` | `AC-GOVERN-24`, `AC-GOVERN-25` |
+| `REQ-GOVERN-012` | `AC-GOVERN-26`, `AC-GOVERN-27` |
+| `REQ-GOVERN-013` | `AC-GOVERN-28`, `AC-GOVERN-29`, `AC-GOVERN-30` |
+| `REQ-GOVERN-014` | `AC-GOVERN-31`, `AC-GOVERN-32` |
+| `REQ-GOVERN-015` | `AC-GOVERN-33`, `AC-GOVERN-34` |
 | `REQ-OPERATE-001` | `AC-OPERATE-01`, `AC-OPERATE-06`, `AC-OPERATE-22` |
 | `REQ-OPERATE-002` | `AC-OPERATE-02` |
 | `REQ-OPERATE-003` | `AC-OPERATE-03` |
@@ -1991,6 +2206,10 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-OPERATE-010` | `AC-OPERATE-14`, `AC-OPERATE-23` |
 | `REQ-OPERATE-011` | `AC-OPERATE-15`, `AC-OPERATE-16`, `AC-OPERATE-17` |
 | `REQ-OPERATE-012` | `AC-OPERATE-18` |
+| `REQ-OPERATE-013` | `AC-OPERATE-24`, `AC-OPERATE-25` |
+| `REQ-OPERATE-014` | `AC-OPERATE-26`, `AC-OPERATE-28` |
+| `REQ-OPERATE-015` | `AC-OPERATE-27` |
+| `REQ-OPERATE-016` | `AC-OPERATE-29`, `AC-OPERATE-30`, `AC-OPERATE-31`, `AC-OPERATE-32` |
 | `REQ-ONEUX-001` | `AC-ONEUX-01`, `AC-ONEUX-02` |
 | `REQ-ONEUX-002` | `AC-ONEUX-03` |
 | `REQ-ONEUX-003` | `AC-ONEUX-04` |
@@ -2028,19 +2247,23 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-NFR-004` | Browser network panel shows HTTP and SSE only |
 | `REQ-NFR-005` | `theme-files.test.js` (no literal weights; one font stack) and review against the `barclays-ib-console` skill |
 | `REQ-NFR-006` | Partner skill `embed-partner-screen` |
+| `REQ-NFR-007` | `python3 scripts/load_ingest.py` (throughput_eps, errors) |
+| `REQ-NFR-008` | `python3 scripts/load_ingest.py` (p95_ms) |
+| `REQ-NFR-009` | `python3 scripts/load_ingest.py` (fold_ms on MONTH_END_CLOSE) |
+| `REQ-NFR-010` | `python3 scripts/load_ingest.py` (duplicates_pct = 100) |
 
 ### 13.3 Completeness counts
 
 | Subsystem | REQ count | AC count |
 | --- | --- | --- |
 | INGEST | 11 | 23 |
-| FOLD | 10 | 23 |
-| ENGINE | 10 | 23 |
+| FOLD | 12 | 25 |
+| ENGINE | 12 | 28 |
 | ACTION | 13 | 24 |
 | CONSOLE | 17 | 23 |
 | REPORTS | 10 | 23 |
-| GOVERN | 10 | 23 |
-| OPERATE | 12 | 23 |
+| GOVERN | 15 | 34 |
+| OPERATE | 16 | 32 |
 | ONEUX | 26 | 30 |
 
 ## 14. Data contracts

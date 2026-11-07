@@ -24,6 +24,9 @@ Ops watch **delays and escalations**. They do not sign off recs. Surface: **Oper
 - Replay is dual-control.
 - Stale completions (wrong `runId`) are info — fold already ignored them.
 - Do not publish kits or CEES groups here.
+- DELAYED is the calendar's call: a stitch instance still waiting past its kit `sla_cutoff` (region zone, `onefinux.calendar`) turns DELAYED, notifies WARN and opens a DELAY escalation (`ESC-D…`). The sweep runs every 30 s under ShedLock.
+- External incidents come from `ServiceNowChannel` (`onefinux.channels.servicenow`): one per subject and transition, de-duplicated on `correlation_id`. Do not raise tickets from the console.
+- Platform settings (`/platform`, verb `PLATFORM_VIEW`) shows the calendar, deadline rules and which channels are on, read-only.
 
 ## Do not
 

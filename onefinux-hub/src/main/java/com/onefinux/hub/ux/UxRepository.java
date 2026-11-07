@@ -36,7 +36,7 @@ public class UxRepository {
     public List<Map<String, Object>> appUsage(Instant since, String team) {
         return jdbc.queryForList("""
                 SELECT app AS "app", COUNT(*) AS "opens", COUNT(DISTINCT actor) AS "users",
-                       CAST(MAX(at) AS VARCHAR) AS "lastUsed"
+                       TO_CHAR(MAX(at), 'YYYY-MM-DD HH24:MI:SS') AS "lastUsed"
                   FROM ux_event
                  WHERE type IN ('APP_OPEN', 'VIEW_OPEN') AND at >= :since AND (:team IS NULL OR team = :team)
                  GROUP BY app ORDER BY COUNT(*) DESC""", p().addValue("since", Timestamp.from(since)).addValue("team", team));
@@ -46,7 +46,7 @@ public class UxRepository {
     public List<Map<String, Object>> componentUsage(Instant since, String team) {
         return jdbc.queryForList("""
                 SELECT app AS "app", component AS "component", COUNT(*) AS "uses", COUNT(DISTINCT actor) AS "users",
-                       CAST(MAX(at) AS VARCHAR) AS "lastUsed"
+                       TO_CHAR(MAX(at), 'YYYY-MM-DD HH24:MI:SS') AS "lastUsed"
                   FROM ux_event
                  WHERE type IN ('COMPONENT_USE', 'SEARCH', 'ASSIST') AND at >= :since AND (:team IS NULL OR team = :team)
                  GROUP BY app, component ORDER BY COUNT(*) DESC""",
@@ -56,16 +56,16 @@ public class UxRepository {
     /** Application access log: who opened what, newest first. */
     public List<Map<String, Object>> accessLog(Instant since, int limit) {
         return jdbc.queryForList("""
-                SELECT CAST(at AS VARCHAR) AS "at", actor AS "actor", team AS "team", type AS "type", app AS "app"
+                SELECT TO_CHAR(at, 'YYYY-MM-DD HH24:MI:SS') AS "at", actor AS "actor", team AS "team", type AS "type", app AS "app"
                   FROM ux_event WHERE type IN ('APP_OPEN', 'VIEW_OPEN') AND at >= :since
-                 ORDER BY at DESC LIMIT :limit""", p().addValue("since", Timestamp.from(since)).addValue("limit", limit));
+                 ORDER BY at DESC FETCH FIRST :limit ROWS ONLY""", p().addValue("since", Timestamp.from(since)).addValue("limit", limit));
     }
 
     public List<Map<String, Object>> feedback(int limit) {
         return jdbc.queryForList("""
-                SELECT id AS "id", CAST(at AS VARCHAR) AS "at", actor AS "actor", team AS "team", app AS "app",
+                SELECT id AS "id", TO_CHAR(at, 'YYYY-MM-DD HH24:MI:SS') AS "at", actor AS "actor", team AS "team", app AS "app",
                        component AS "category", variant AS "rating", detail_json AS "detail"
-                  FROM ux_event WHERE type = 'FEEDBACK' ORDER BY at DESC LIMIT :limit""", p().addValue("limit", limit));
+                  FROM ux_event WHERE type = 'FEEDBACK' ORDER BY at DESC FETCH FIRST :limit ROWS ONLY""", p().addValue("limit", limit));
     }
 
     /** Distinct users exposed to, and converting on, each variant of one experiment. */
@@ -89,7 +89,7 @@ public class UxRepository {
                  WHERE type IN ('APP_OPEN', 'VIEW_OPEN') AND team = :team AND actor <> :me AND at >= :since
                    AND app NOT IN (SELECT app FROM ux_event WHERE actor = :me AND at >= :own
                                      AND type IN ('APP_OPEN', 'VIEW_OPEN') AND app IS NOT NULL)
-                 GROUP BY app ORDER BY COUNT(DISTINCT actor) DESC, COUNT(*) DESC LIMIT :limit""",
+                 GROUP BY app ORDER BY COUNT(DISTINCT actor) DESC, COUNT(*) DESC FETCH FIRST :limit ROWS ONLY""",
                 p().addValue("team", team).addValue("me", subject).addValue("since", Timestamp.from(since))
                         .addValue("own", Timestamp.from(ownSince)).addValue("limit", limit));
     }
@@ -102,7 +102,7 @@ public class UxRepository {
 
     public Optional<Map<String, Object>> pref(String subject, String key) {
         List<Map<String, Object>> rows = jdbc.queryForList("""
-                SELECT CAST(json AS VARCHAR(1000000)) AS "json", CAST(updated_at AS VARCHAR) AS "updatedAt" FROM user_pref
+                SELECT json AS "json", TO_CHAR(updated_at, 'YYYY-MM-DD HH24:MI:SS') AS "updatedAt" FROM user_pref
                  WHERE subject = :s AND pref_key = :k""", p().addValue("s", subject).addValue("k", key));
         return rows.isEmpty() ? Optional.empty() : Optional.of(rows.get(0));
     }
@@ -120,8 +120,8 @@ public class UxRepository {
 
     public List<Map<String, Object>> templates(String team, String kind) {
         return jdbc.queryForList("""
-                SELECT id AS "id", team AS "team", kind AS "kind", name AS "name", CAST(json AS VARCHAR(1000000)) AS "json",
-                       created_by AS "createdBy", CAST(created_at AS VARCHAR) AS "createdAt"
+                SELECT id AS "id", team AS "team", kind AS "kind", name AS "name", json AS "json",
+                       created_by AS "createdBy", TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS "createdAt"
                   FROM team_template WHERE team = :team AND (:kind IS NULL OR kind = :kind)
                  ORDER BY created_at DESC""", p().addValue("team", team).addValue("kind", kind));
     }

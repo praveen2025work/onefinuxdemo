@@ -25,6 +25,10 @@ Mapper output is always `onefinux.fact.v1` (`eventType`, `sourceSystem`, `source
 
 `CATS` + `MOTIF` + `MBR` facts → fold → command Helix → breaks locator → optional FAS post → notify P&L Agent.
 
+## Notify destinations
+
+Email and ServiceNow are channels, not destinations: `onefinux.channels.email` (SMTP, recipients per audience) and `onefinux.channels.servicenow` (table API, assignment group per audience, transitions list). Both are off unless enabled; credentials come from the environment, never YAML. A new channel is a `NotificationChannel` bean.
+
 ## Do not
 
 - Ask the source team to build a One Finance webhook if a topic exists

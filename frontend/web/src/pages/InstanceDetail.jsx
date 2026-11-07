@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, Fragment } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { api, outcomesApi } from '../api';
+import { api, outcomesApi, evidenceApi } from '../api';
 import { useApp } from '../store.jsx';
 import { StatusPill, Loading, PageHeader, formatAmount } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
@@ -146,6 +146,16 @@ export default function InstanceDetail() {
     } finally { setBusy(false); }
   }
 
+  async function evidence(mode) {
+    setBanner(null);
+    try {
+      if (mode === 'print') await evidenceApi.print({ instanceId });
+      else setBanner({ cls: 'ok', text: `Saved ${await evidenceApi.download({ instanceId })} — the export is in the audit log.` });
+    } catch (e) {
+      setBanner({ cls: 'fail', text: `Evidence pack: ${e.message}` });
+    }
+  }
+
   if (error) return <div className="panel"><div className="panel-bd"><div className="banner fail"><div><b>404 — not found</b><span className="mono-sm">{instanceId}</span></div></div><p className="muted">Entitlement is fail-closed: an unentitled or unknown instance returns 404, never 403. <Link to="/">Back to home</Link>.</p></div></div>;
   if (!detail) return <Loading what="Loading instance…" />;
 
@@ -208,6 +218,8 @@ export default function InstanceDetail() {
             <button key={a} className="btn ghost" disabled={busy} onClick={() => act('generic:' + a)}>{labelOf(a)}</button>
           ))}
           <button className="btn ghost" disabled={busy} onClick={() => act('escalate')}><Icon name="alert" size={15} /> Escalate</button>
+          <button className="btn ghost" onClick={() => evidence('print')} title="Printable close evidence: facts, readiness, decisions, commands, notifications, with a SHA-256 digest"><Icon name="shield" size={15} /> Evidence pack</button>
+          <button className="btn ghost" onClick={() => evidence('download')} aria-label="Download the evidence pack as JSON"><Icon name="download" size={15} /> JSON</button>
         </div>
         {why && <p className="act-why"><Icon name="info" size={13} /> {why}</p>}
         </div>

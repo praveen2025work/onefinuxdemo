@@ -16,6 +16,9 @@ Worked examples:
 
 - Good path: 15C3 (or a newly onboarded outcome) — every feed arrives → READY → PROCESSING → AVAILABLE.
 - Bad path: FOBO **R-2031 BLOCKED** — MOTIF rejects a named ledger; escalate to RTB.
+- Month-end: Drive **Month-end close** (EMEA, 18:00 London on COB + 3 business days) for the good path, **Month-end with break** for a blocked close. Run each on a fresh COB; a re-run on the same COB revokes rather than blocks.
+- Seeded FOBO instances sit on COB 2026-09-12, already past their 19:00 cutoff, so a re-driven instance shows **DELAYED** (with a DELAY escalation) before READY. Start the hub with `ONEFINUX_STITCH_DELAYS=false` to show NOT_YET instead.
+- ServiceNow: the local run raises incidents in the simulator's mock instance on BLOCKED, DELAYED, SLA_BREACHED, ACTION_FAILED and ESCALATED. Show them at `http://localhost:7081/sim/servicenow/incidents`.
 
 ---
 
@@ -40,7 +43,7 @@ Voice: male, warm, spoken to a CIO / MD. Peer explanation, not slang and not a s
 
 ## Track B — CIO deep-dive (10 minutes)
 
-Use the same story, then stay on Monitoring (ingest → outbox → audit), Configuration (feeds as the dependency mechanism), and Instance detail (lineage + kit-declared actions). Point at `architecture.md` for the diagrams.
+Use the same story, then stay on Monitoring (ingest → outbox → audit), Configuration (feeds as the dependency mechanism), and Instance detail (lineage + kit-declared actions). On the instance or report, click **Evidence pack**: the printable close evidence with its SHA-256 digest (auditors re-check it with `POST /api/evidence/verify`). Open **Platform settings** for the role structure, the close calendar per region and each outcome's deadline rule. Point at `architecture.md` for the diagrams.
 
 ---
 

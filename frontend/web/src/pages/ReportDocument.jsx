@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { outcomesApi } from '../api';
+import { outcomesApi, evidenceApi } from '../api';
 import { useApp } from '../store.jsx';
 import { Loading, Meter, PageHeader, StatusPill } from '../components/bits.jsx';
 import Icon from '../components/Icon.jsx';
@@ -19,6 +19,7 @@ export default function ReportDocument() {
   const [err, setErr] = useState(null);
   const [defs, setDefs] = useState([]);
   const [gridOpen, setGridOpen] = useState(false);
+  const [note, setNote] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -61,6 +62,16 @@ export default function ReportDocument() {
   const ready = outcome.stage === 'AVAILABLE' || outcome.stage === 'GENERATED';
   const outcomeDef = outcomeForSurface(defs, { outcomeId: outcome.outcomeId || outcomeId });
   const hasGrids = Array.isArray(outcomeDef?.grids) && outcomeDef.grids.length > 0;
+  const subject = { outcomeId: outcome.outcomeId, cobDate: outcome.cobDate, region: outcome.region };
+  const evidence = async (mode) => {
+    setNote(null);
+    try {
+      if (mode === 'print') await evidenceApi.print(subject);
+      else setNote({ cls: 'ok', text: `Saved ${await evidenceApi.download(subject)} — the export is in the audit log.` });
+    } catch (e) {
+      setNote({ cls: 'fail', text: `Evidence pack: ${e.message}` });
+    }
+  };
   const gridContext = {
     cobDate: outcome.cobDate,
     region: outcome.region,
@@ -90,7 +101,15 @@ export default function ReportDocument() {
             <Icon name="open" size={15} /> Open source report
           </a>
         )}
+        <button type="button" className="btn ghost" onClick={() => evidence('print')} title="Printable close evidence: inputs, facts, decisions, the report and notifications, with a SHA-256 digest">
+          <Icon name="shield" size={15} /> Evidence pack
+        </button>
+        <button type="button" className="btn ghost" onClick={() => evidence('download')} aria-label="Download the evidence pack as JSON">
+          <Icon name="download" size={15} /> JSON
+        </button>
       </PageHeader>
+
+      {note && <div className={'banner ' + note.cls}><div><b>{note.text}</b></div></div>}
 
       {!ready && (
         <div className="banner warn">
