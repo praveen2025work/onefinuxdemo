@@ -42,7 +42,7 @@ public class CloseCalendar {
 
     /** Every region in one zone, Saturday and Sunday off, no holidays. */
     public static CloseCalendar uniform(ZoneId zone) {
-        return new CloseCalendar(new CalendarProperties(null, null), zone);
+        return new CloseCalendar(new CalendarProperties(null, null, null), zone);
     }
 
     /** Whether the stitch fold marks instances DELAYED past their kit's cutoff. */

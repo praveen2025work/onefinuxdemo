@@ -25,7 +25,7 @@ class CloseCalendarTest {
     final CloseCalendar calendar = new CloseCalendar(new CalendarProperties(null, Map.of(
             "AMRS", new Region("America/New_York", List.of(LocalDate.of(2026, 11, 26), LocalDate.of(2026, 12, 25))),
             "EMEA", new Region("Europe/London", List.of(LocalDate.of(2026, 12, 25), LocalDate.of(2026, 12, 28))),
-            "APAC", new Region("Asia/Singapore", List.of()))), ZoneId.of("America/New_York"));
+            "APAC", new Region("Asia/Singapore", List.of())), null), ZoneId.of("America/New_York"));
 
     @Test
     @DisplayName("AC-ENGINE-24 day-offset counts business days in the region, skipping weekends and its holidays")

@@ -15,10 +15,6 @@ import java.util.Map;
 @ConfigurationProperties(prefix = "onefinux.calendar")
 public record CalendarProperties(List<DayOfWeek> weekend, Map<String, Region> regions, Boolean stitchDelays) {
 
-    public CalendarProperties(List<DayOfWeek> weekend, Map<String, Region> regions) {
-        this(weekend, regions, true);
-    }
-
     public CalendarProperties {
         stitchDelays = stitchDelays == null || stitchDelays;
         weekend = weekend == null ? List.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY) : List.copyOf(weekend);
