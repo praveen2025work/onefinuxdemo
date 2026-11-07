@@ -83,7 +83,7 @@ public class StitchFold {
         if (sla == null || sla.get("slaCutoff") == null || sla.get("cobDate") == null) {
             return false;
         }
-        LocalDate cob = sla.get("cobDate") instanceof java.sql.Date d ? d.toLocalDate() : LocalDate.parse(sla.get("cobDate").toString());
+        LocalDate cob = LocalDate.parse(String.valueOf(sla.get("cobDate")));
         Instant deadline = calendar.deadline(String.valueOf(sla.get("region")), cob, 0, String.valueOf(sla.get("slaCutoff")));
         return deadline != null && clock.instant().isAfter(deadline);
     }

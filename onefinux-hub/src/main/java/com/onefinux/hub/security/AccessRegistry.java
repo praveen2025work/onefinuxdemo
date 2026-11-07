@@ -2,6 +2,7 @@ package com.onefinux.hub.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.onefinux.hub.db.PortableSql;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -84,11 +85,11 @@ public class AccessRegistry {
         List<Map<String, Object>> rows = jdbc.queryForList(
                 "SELECT last_seen, suspended FROM access_seen WHERE subject = :s", p().addValue("s", subject));
         if (rows.isEmpty()) {
-            jdbc.update("INSERT INTO access_seen (subject, last_seen, suspended) VALUES (:s, :t, FALSE)",
-                    p().addValue("s", subject).addValue("t", Timestamp.from(now)));
+            jdbc.update("INSERT INTO access_seen (subject, last_seen, suspended) VALUES (:s, :t, :no)",
+                    p().addValue("s", subject).addValue("t", Timestamp.from(now)).addValue("no", false));
             return;
         }
-        boolean suspended = Boolean.TRUE.equals(rows.get(0).get("SUSPENDED"));
+        boolean suspended = PortableSql.truthy(rows.get(0).get("SUSPENDED"));
         Instant seen = ((Timestamp) rows.get(0).get("LAST_SEEN")).toInstant();
         if (!suspended && idleTooLong(seen, now)) {
             suspend(subject, now, "idle since " + seen);
@@ -110,7 +111,7 @@ public class AccessRegistry {
         Instant now = clock.instant();
         int n = 0;
         for (Map<String, Object> row : jdbc.queryForList(
-                "SELECT subject, last_seen FROM access_seen WHERE suspended = FALSE", p())) {
+                "SELECT subject, last_seen FROM access_seen WHERE suspended = :no", p().addValue("no", false))) {
             if (idleTooLong(((Timestamp) row.get("LAST_SEEN")).toInstant(), now)) {
                 suspend(String.valueOf(row.get("SUBJECT")), now, "inactivity sweep");
                 n++;
@@ -120,16 +121,16 @@ public class AccessRegistry {
     }
 
     private void suspend(String subject, Instant now, String why) {
-        jdbc.update("UPDATE access_seen SET suspended = TRUE, suspended_at = :t WHERE subject = :s",
-                p().addValue("s", subject).addValue("t", Timestamp.from(now)));
+        jdbc.update("UPDATE access_seen SET suspended = :yes, suspended_at = :t WHERE subject = :s",
+                p().addValue("s", subject).addValue("t", Timestamp.from(now)).addValue("yes", true));
         audit("system", "ACCESS_SUSPENDED", subject, "DENY", Map.of("reason", why, "inactivityDays", props.inactivityDays()));
         cache.remove(subject);
     }
 
     /** Restore a suspended user (an approver re-grants access). */
     public void restore(String subject, String by) {
-        jdbc.update("UPDATE access_seen SET suspended = FALSE, suspended_at = NULL, last_seen = :t WHERE subject = :s",
-                p().addValue("s", subject).addValue("t", Timestamp.from(clock.instant())));
+        jdbc.update("UPDATE access_seen SET suspended = :no, suspended_at = NULL, last_seen = :t WHERE subject = :s",
+                p().addValue("s", subject).addValue("t", Timestamp.from(clock.instant())).addValue("no", false));
         audit(by, "ACCESS_RESTORED", subject, "ALLOW", Map.of());
         cache.remove(subject);
         touched.remove(subject);
@@ -152,7 +153,7 @@ public class AccessRegistry {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("subject", subject);
             m.put("lastSeen", String.valueOf(row.get("LAST_SEEN")));
-            m.put("suspended", Boolean.TRUE.equals(row.get("SUSPENDED")));
+            m.put("suspended", PortableSql.truthy(row.get("SUSPENDED")));
             m.put("granted", String.join(", ", grants.getOrDefault(subject, List.of())));
             out.add(m);
         }
@@ -186,8 +187,8 @@ public class AccessRegistry {
         String where = status == null || status.isBlank() ? "" : " WHERE status = :st";
         return jdbc.queryForList("""
                 SELECT id AS "id", subject AS "subject", target AS "target", items_json AS "items", reason AS "reason",
-                       status AS "status", CAST(requested_at AS VARCHAR) AS "requestedAt", decided_by AS "decidedBy",
-                       CAST(decided_at AS VARCHAR) AS "decidedAt"
+                       status AS "status", TO_CHAR(requested_at, 'YYYY-MM-DD HH24:MI:SS') AS "requestedAt", decided_by AS "decidedBy",
+                       TO_CHAR(decided_at, 'YYYY-MM-DD HH24:MI:SS') AS "decidedAt"
                   FROM access_request""" + where + " ORDER BY requested_at DESC",
                 p().addValue("st", status == null ? null : status.toUpperCase()));
     }
@@ -213,8 +214,8 @@ public class AccessRegistry {
                         p().addValue("s", subject).addValue("k", it.get("kind")).addValue("v", it.get("value"))
                                 .addValue("src", id).addValue("b", approver).addValue("t", Timestamp.from(now)));
             }
-            jdbc.update("UPDATE access_seen SET suspended = FALSE, suspended_at = NULL, last_seen = :t WHERE subject = :s",
-                    p().addValue("s", subject).addValue("t", Timestamp.from(now)));
+            jdbc.update("UPDATE access_seen SET suspended = :no, suspended_at = NULL, last_seen = :t WHERE subject = :s",
+                    p().addValue("s", subject).addValue("t", Timestamp.from(now)).addValue("no", false));
             touched.remove(subject);
         }
         audit(approver, approve ? "ACCESS_APPROVED" : "ACCESS_REJECTED", id, approve ? "ALLOW" : "DENY", Map.of("subject", subject));
@@ -228,8 +229,8 @@ public class AccessRegistry {
     public List<Map<String, Object>> reviewQueue(Set<String> knownRoles) {
         List<Map<String, Object>> out = new ArrayList<>();
         for (Map<String, Object> g : jdbc.queryForList("""
-                SELECT g.id, g.subject, g.kind, g.grant_value, g.granted_by, CAST(g.granted_at AS VARCHAR) AS granted_at,
-                       g.reviewed_by, CAST(g.reviewed_at AS VARCHAR) AS reviewed_at, CAST(s.last_seen AS VARCHAR) AS last_seen,
+                SELECT g.id, g.subject, g.kind, g.grant_value, g.granted_by, TO_CHAR(g.granted_at, 'YYYY-MM-DD HH24:MI:SS') AS granted_at,
+                       g.reviewed_by, TO_CHAR(g.reviewed_at, 'YYYY-MM-DD HH24:MI:SS') AS reviewed_at, TO_CHAR(s.last_seen, 'YYYY-MM-DD HH24:MI:SS') AS last_seen,
                        s.suspended
                   FROM access_grant g LEFT JOIN access_seen s ON s.subject = g.subject
                  WHERE g.status = 'ACTIVE' ORDER BY g.subject, g.id""", p())) {
@@ -240,7 +241,7 @@ public class AccessRegistry {
             m.put("grantedBy", g.get("GRANTED_BY"));
             m.put("grantedAt", g.get("GRANTED_AT"));
             m.put("lastSeen", g.get("LAST_SEEN"));
-            m.put("suspended", Boolean.TRUE.equals(g.get("SUSPENDED")));
+            m.put("suspended", PortableSql.truthy(g.get("SUSPENDED")));
             boolean fits = !"ROLE".equals(g.get("KIND")) || knownRoles.isEmpty() || knownRoles.contains(String.valueOf(g.get("GRANT_VALUE")));
             m.put("inStructure", fits);
             m.put("reviewedBy", g.get("REVIEWED_BY"));
@@ -269,7 +270,7 @@ public class AccessRegistry {
 
     private void audit(String actor, String action, String resource, String decision, Map<String, Object> detail) {
         jdbc.update("""
-                INSERT INTO audit_log (at, actor, action, resource, decision, detail_json)
+                INSERT INTO audit_log (at, actor, action, "RESOURCE", decision, detail_json)
                 VALUES (:at, :a, :act, :res, :d, :j)""",
                 p().addValue("at", Timestamp.from(clock.instant())).addValue("a", actor).addValue("act", action)
                         .addValue("res", resource).addValue("d", decision).addValue("j", json(detail)));

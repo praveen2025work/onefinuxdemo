@@ -108,4 +108,24 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Production persistence: mvn -Poracle package, then run with spring.profiles.active=oracle
+             (application-oracle.yml, migrations in db/oracle). -->
+        <profile>
+            <id>oracle</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.oracle.database.jdbc</groupId>
+                    <artifactId>ojdbc11</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-database-oracle</artifactId>
+                    <scope>runtime</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

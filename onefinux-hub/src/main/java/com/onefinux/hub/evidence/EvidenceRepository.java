@@ -23,7 +23,7 @@ class EvidenceRepository {
         return jdbc.queryForList("""
                 SELECT TO_CHAR(at, %s) AS "at", actor AS "actor", action AS "action", decision AS "decision",
                        detail_json AS "detail"
-                FROM audit_log WHERE resource = :r ORDER BY at, id""".formatted(TS), new MapSqlParameterSource("r", resource));
+                FROM audit_log WHERE "RESOURCE" = :r ORDER BY at, id""".formatted(TS), new MapSqlParameterSource("r", resource));
     }
 
     List<Map<String, Object>> commandRuns(String instanceId) {

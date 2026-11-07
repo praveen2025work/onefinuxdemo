@@ -145,11 +145,11 @@ public class WritebackService {
         List<Map<String, Object>> out = new ArrayList<>();
         for (Map<String, Object> r : jdbc.queryForList("""
                 SELECT id, grid_id, grid_title, status, maker, checker, approval, context_json,
-                       CAST(changes_json AS VARCHAR(1000000)) AS changes_json, reason,
-                       CAST(created_at AS VARCHAR) AS created_at, CAST(decided_at AS VARCHAR) AS decided_at
+                       changes_json, reason,
+                       TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at, TO_CHAR(decided_at, 'YYYY-MM-DD HH24:MI:SS') AS decided_at
                   FROM writeback_change_set
                  WHERE (:g IS NULL OR grid_id = :g) AND (:s IS NULL OR status = :s)
-                 ORDER BY created_at DESC LIMIT 200""",
+                 ORDER BY created_at DESC FETCH FIRST 200 ROWS ONLY""",
                 p().addValue("g", gridId).addValue("s", status == null ? null : status.toUpperCase()))) {
             out.add(row(r));
         }
@@ -160,7 +160,7 @@ public class WritebackService {
     public Map<String, Map<String, Object>> overlay(String gridId) {
         Map<String, Map<String, Object>> out = new LinkedHashMap<>();
         for (Map<String, Object> r : jdbc.queryForList("""
-                SELECT CAST(changes_json AS VARCHAR(1000000)) AS changes_json FROM writeback_change_set
+                SELECT changes_json FROM writeback_change_set
                  WHERE grid_id = :g AND status = 'APPLIED' ORDER BY decided_at""", p().addValue("g", gridId))) {
             for (Change c : changes(String.valueOf(r.get("CHANGES_JSON")))) {
                 out.computeIfAbsent(c.key(), k -> new LinkedHashMap<>()).put(c.column(), c.after());
@@ -172,8 +172,8 @@ public class WritebackService {
     private Map<String, Object> load(String setId) {
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT id, grid_id, grid_title, status, maker, checker, approval, context_json,
-                       CAST(changes_json AS VARCHAR(1000000)) AS changes_json, reason,
-                       CAST(created_at AS VARCHAR) AS created_at, CAST(decided_at AS VARCHAR) AS decided_at
+                       changes_json, reason,
+                       TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS created_at, TO_CHAR(decided_at, 'YYYY-MM-DD HH24:MI:SS') AS decided_at
                   FROM writeback_change_set WHERE id = :id""", p().addValue("id", setId));
         if (rows.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no change set " + setId);
         return row(rows.get(0));
@@ -204,7 +204,7 @@ public class WritebackService {
 
     private void audit(String actor, String action, String resource, Map<String, Object> detail) {
         jdbc.update("""
-                INSERT INTO audit_log (at, actor, action, resource, decision, detail_json)
+                INSERT INTO audit_log (at, actor, action, "RESOURCE", decision, detail_json)
                 VALUES (:at, :a, :act, :res, 'OK', :j)""",
                 p().addValue("at", Timestamp.from(clock.instant())).addValue("a", actor).addValue("act", action)
                         .addValue("res", resource).addValue("j", cut(json(detail), 2000)));
