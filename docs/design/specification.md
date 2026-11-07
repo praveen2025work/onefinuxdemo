@@ -354,6 +354,10 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-NFR-004` | The console uses REST plus the hub live link (WebSocket, with SSE as the fallback) only; it never connects to a message bus. |
 | `REQ-NFR-005` | Colours, type and weights are defined only in frontend/theme/onefinux-tokens.css; frontend/web/src/styles.css only aliases those tokens. |
 | `REQ-NFR-006` | Partner embeds import --ofx-* tokens and omit their own masthead. |
+| `REQ-NFR-007` | The single-node hub on the demo store accepts at least 100 completion events per second on POST /api/events from 8 concurrent producers, with zero errors. |
+| `REQ-NFR-008` | The single-node hub answers POST /api/events within 250 ms at the 95th percentile under the REQ-NFR-007 load. |
+| `REQ-NFR-009` | An outcome instance leaves IN_PROGRESS within 2000 ms after its last expected input is accepted. |
+| `REQ-NFR-010` | Every event re-sent with an eventId already accepted is answered DUPLICATE and changes no state. |
 
 ## 12. Acceptance criteria
 
@@ -2213,6 +2217,10 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-NFR-004` | Browser network panel shows HTTP and SSE only |
 | `REQ-NFR-005` | `theme-files.test.js` (no literal weights; one font stack) and review against the `barclays-ib-console` skill |
 | `REQ-NFR-006` | Partner skill `embed-partner-screen` |
+| `REQ-NFR-007` | `python3 scripts/load_ingest.py` (throughput_eps, errors) |
+| `REQ-NFR-008` | `python3 scripts/load_ingest.py` (p95_ms) |
+| `REQ-NFR-009` | `python3 scripts/load_ingest.py` (fold_ms on MONTH_END_CLOSE) |
+| `REQ-NFR-010` | `python3 scripts/load_ingest.py` (duplicates_pct = 100) |
 
 ### 13.3 Completeness counts
 
