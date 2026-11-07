@@ -70,6 +70,23 @@ public class DownstreamMocks {
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("runId", command.runId(), "status", "ACCEPTED"));
     }
 
+    @PostMapping("/axiom/reports/close-pack")
+    public ResponseEntity<Map<String, String>> closePack(@RequestBody ActionCommand command) {
+        log.info("Axiom close pack received {} for {}", command.runId(), command.correlationId());
+        String reportId = "MEC-" + UUID.randomUUID().toString().substring(0, 6).toUpperCase();
+        int rowCount = 600 + command.inputs() * 85 + random.nextInt(200);
+        String catalogId = "AXM-MEC-" + command.cobDate().toString().replace("-", "");
+        String reportUri = "onefinux://reports/month-end/" + command.cobDate() + "/" + command.region() + "/" + reportId;
+        reply(command, "AXIOM", Map.of(
+                "reportId", reportId,
+                "catalogId", catalogId,
+                "reportUri", reportUri,
+                "rowCount", rowCount,
+                "summary", "Month-end close pack " + reportId + " (trial balance, accruals, intercompany, FX) built from "
+                        + command.inputs() + " inputs and is available to view."));
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of("runId", command.runId(), "status", "ACCEPTED"));
+    }
+
     @PostMapping("/fas/adjust")
     public ResponseEntity<Map<String, String>> fasAdjust(@RequestBody Map<String, Object> command) {
         String runId = String.valueOf(command.getOrDefault("runId", "RUN-ADJ"));

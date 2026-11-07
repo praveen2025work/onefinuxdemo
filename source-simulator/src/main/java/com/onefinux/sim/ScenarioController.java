@@ -27,6 +27,7 @@ public class ScenarioController {
                 "POST /sim/scenarios/15c3?failure=false", "15C3 report example",
                 "POST /sim/scenarios/pnl", "PnL reporting with a tight SLA",
                 "POST /sim/scenarios/restate", "SAP trial balance restatement",
+                "POST /sim/scenarios/monthend?failure=false", "EMEA month-end close",
                 "POST /sim/scenarios/accounting", "Material blocked item with account / journal / amount",
                 "POST /sim/scenarios/all", "Helix + 15C3 + PnL together",
                 "POST /sim/scenarios/cancel", "Cancel anything still scheduled");
@@ -51,6 +52,11 @@ public class ScenarioController {
     @PostMapping("/pnl")
     public ScenarioService.ScenarioRun pnl() {
         return scenarios.pnl();
+    }
+
+    @PostMapping("/monthend")
+    public ScenarioService.ScenarioRun monthEnd(@RequestParam(defaultValue = "false") boolean failure) {
+        return scenarios.monthEnd(failure);
     }
 
     @PostMapping("/restate")

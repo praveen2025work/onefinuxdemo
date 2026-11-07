@@ -164,6 +164,7 @@ onefinux:
       FINSTORE: FEED
       AXIOM: REPORT_SCHEDULE
       HELIX: ANALYSIS_RUN
+      RECFACTORY: REC_PAIR
       ONEFINUX: WORKFLOW
     # Sample reference data. Production: effective-dated hierarchy tables owned by reference data.
     cross-references:
@@ -180,6 +181,8 @@ onefinux:
       url: http://localhost:7081/helix/analysis
     axiom:
       url: http://localhost:7081/axiom/reports/15c3
+    closepack:
+      url: http://localhost:7081/axiom/reports/close-pack
 
   # ---------------------------------------------------------------- Component 5: notifications
   notifications:
@@ -285,6 +288,38 @@ onefinux:
         target: axiom
         completion-event: REG_REPORT_GENERATED
         action-label: 15C3 report generation
+
+    # Month-end close: a real cutoff, three EMEA business days after the COB at 18:00 London (close calendar).
+    - id: MONTH_END_CLOSE
+      name: Month-end close
+      question: Can I close the month for EMEA?
+      regions: [EMEA]
+      owner-group: Financial Control
+      sla:
+        cutoff: "18:00"
+        day-offset: 3
+      dependencies:
+        - event-type: SUBLEDGER_CLOSED
+          source-system: SAP
+          expected-count: 4
+          label: Sub-ledgers closed
+        - event-type: ACCRUALS_POSTED
+          source-system: MOTIF
+          expected-count: 3
+          label: Accruals posted
+        - event-type: INTERCO_MATCHED
+          source-system: RECFACTORY
+          expected-count: 2
+          label: Intercompany matched
+        - event-type: FX_REVALUED
+          source-system: SAP
+          expected-count: 1
+          label: FX revaluation
+      on-ready:
+        action: HTTP_COMMAND
+        target: closepack
+        completion-event: CLOSE_PACK_GENERATED
+        action-label: Month-end close pack
 
     - id: PNL_REPORTING
       name: PnL reporting

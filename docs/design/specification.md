@@ -216,6 +216,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-ENGINE-009` | Seeded definitions include FOBO_HELIX, REPORT_15C3, and PNL_REPORTING in application.yml. |
 | `REQ-ENGINE-010` | POST /api/outcomes/definitions creates a live OutcomeDefinition without a new Java product type. |
 | `REQ-ENGINE-011` | An outcome SLA with cutoff and day-offset sets its deadline from the close calendar (onefinux.calendar): day-offset counts business days in the outcome's region, skipping the weekend and that region's holidays, and the cutoff is that region's wall clock; a region not listed uses onefinux.zone with weekends only. |
+| `REQ-ENGINE-012` | MONTH_END_CLOSE ships as an OutcomeDefinition in application.yml (EMEA; sub-ledgers, accruals, intercompany and FX revaluation; cutoff 18:00 three business days after the COB; HTTP_COMMAND closepack) with no new Java type; the simulator scenario POST /sim/scenarios/monthend drives it and Drive offers it with and without an intercompany break. |
 
 ### 11.4 Actions and executors (ACTION)
 
@@ -883,6 +884,20 @@ These 23 criteria lock ENGINE behaviour. Each Maps-to line names one REQ-ID.
 - Given MONTH_END_CLOSE for EMEA with cutoff 18:00 and day-offset 3 on COB 23 December 2026
 - When the engine opens the instance
 - Then its deadline is 30 December 2026 18:00 London
+
+#### AC-ENGINE-27
+
+- Maps to: `REQ-ENGINE-012`
+- Given the shipped application.yml
+- When onefinux is bound
+- Then MONTH_END_CLOSE is present for EMEA with cutoff 18:00, day-offset 3, four dependencies and a configured action target
+
+#### AC-ENGINE-28
+
+- Maps to: `REQ-ENGINE-012`
+- Given POST /sim/scenarios/monthend?failure=true on COB Friday 6 November 2026
+- When the scenario finishes
+- Then MONTH_END_CLOSE went BLOCKED on IC-UK-US, then COMPLETED with stage AVAILABLE, a close pack report, and deadline 2026-11-11T18:00:00Z
 
 ### 12.4 Actions and executors (ACTION)
 
@@ -2037,6 +2052,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ENGINE-009` | `AC-ENGINE-12` |
 | `REQ-ENGINE-010` | `AC-ENGINE-13`, `AC-ENGINE-19` |
 | `REQ-ENGINE-011` | `AC-ENGINE-24`, `AC-ENGINE-25`, `AC-ENGINE-26` |
+| `REQ-ENGINE-012` | `AC-ENGINE-27`, `AC-ENGINE-28` |
 | `REQ-ACTION-001` | `AC-ACTION-01` |
 | `REQ-ACTION-002` | `AC-ACTION-02`, `AC-ACTION-03` |
 | `REQ-ACTION-003` | `AC-ACTION-04` |
@@ -2147,7 +2163,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | --- | --- | --- |
 | INGEST | 11 | 23 |
 | FOLD | 12 | 25 |
-| ENGINE | 11 | 26 |
+| ENGINE | 12 | 28 |
 | ACTION | 13 | 24 |
 | CONSOLE | 17 | 23 |
 | REPORTS | 10 | 23 |
