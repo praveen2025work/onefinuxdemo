@@ -823,7 +823,7 @@ button.oc { width: 100%; text-align: left; font: inherit; color: inherit; }
   line-height: 1.55;
   max-width: 72ch;
 }
-.story-lead a { color: var(--accent); font-weight: var(--ofx-fw-medium); }
+.story-lead a { color: var(--accent); font-weight: var(--ofx-fw-medium); text-decoration: underline; text-underline-offset: 2px; }
 .story-rows { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
 .story-row {
   display: flex;
