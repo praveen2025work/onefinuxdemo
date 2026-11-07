@@ -27,6 +27,7 @@ const WidgetPage = lazy(() => import('./pages/WidgetPage.jsx'));
 const GridLibrary = lazy(() => import('./pages/GridLibrary.jsx'));
 const OutcomeReport = lazy(() => import('./pages/OutcomeReport.jsx'));
 const Usage = lazy(() => import('./pages/Usage.jsx'));
+const Platform = lazy(() => import('./pages/Platform.jsx'));
 const Access = lazy(() => import('./pages/Access.jsx'));
 
 /** Lets window.fdc3 open a route for a built-in intent (ViewInstance, ViewReport) in this document. */
@@ -72,6 +73,7 @@ export default function App() {
           <Route path="/monitoring" element={<Monitoring />} />
           <Route path="/drive" element={<Drive />} />
           <Route path="/usage" element={<Usage />} />
+          <Route path="/platform" element={<Platform />} />
           <Route path="/access" element={<Access />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

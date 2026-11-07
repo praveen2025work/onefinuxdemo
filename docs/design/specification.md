@@ -291,6 +291,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-GOVERN-012` | Every evidence pack carries a SHA-256 digest over the canonical JSON of every other field; POST /api/evidence/verify recomputes it and answers valid true or false. |
 | `REQ-GOVERN-013` | Exporting a pack needs the EVIDENCE_EXPORT verb from the role structure and the group-unit fence of the instance (404 outside it, 403 without the verb); every export and every refusal is written to the audit log with the digest. |
 | `REQ-GOVERN-014` | format=html returns the printable pack painted only from the shared partner classes in /theme/onefinux-tokens.css; instance detail and the report document offer Evidence pack (printable) and JSON (download). |
+| `REQ-GOVERN-015` | The hub shall return its running configuration at GET /api/platform/settings as rows — verbs per role, the close calendar per region, each outcome's deadline rule and zone, notification channels, action and write-back targets, search providers and experiments — to a caller whose role grants PLATFORM_VIEW, with no password, key or token in the response; the console shall show those rows read-only on /platform through GridSpecs. |
 
 ### 11.8 Drive, operations, monitoring, notifications (OPERATE)
 
@@ -1632,6 +1633,20 @@ These 23 criteria lock GOVERN behaviour. Each Maps-to line names one REQ-ID.
 - When the controller presses Evidence pack
 - Then the printable pack opens in a new tab with the session's token used for the request
 
+#### AC-GOVERN-33
+
+- Maps to: `REQ-GOVERN-015`
+- Given a caller whose role grants PLATFORM_VIEW and a ServiceNow channel configured with a password
+- When the caller requests GET /api/platform/settings
+- Then the response carries one row per role and verb, one row per calendar region with its zone, MONTH_END_CLOSE with deadline '18:00 on COB + 3 business days' in Europe/London, and the ServiceNow channel row, and the password text is absent from the response body
+
+#### AC-GOVERN-34
+
+- Maps to: `REQ-GOVERN-015`
+- Given a caller whose role does not grant PLATFORM_VIEW
+- When the caller requests GET /api/platform/settings
+- Then the hub answers 403 and writes an audit row with action PLATFORM_VIEW and outcome DENY for that caller
+
 ### 12.8 Drive, operations, monitoring, notifications (OPERATE)
 
 These 23 criteria lock OPERATE behaviour. Each Maps-to line names one REQ-ID.
@@ -2145,6 +2160,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-GOVERN-012` | `AC-GOVERN-26`, `AC-GOVERN-27` |
 | `REQ-GOVERN-013` | `AC-GOVERN-28`, `AC-GOVERN-29`, `AC-GOVERN-30` |
 | `REQ-GOVERN-014` | `AC-GOVERN-31`, `AC-GOVERN-32` |
+| `REQ-GOVERN-015` | `AC-GOVERN-33`, `AC-GOVERN-34` |
 | `REQ-OPERATE-001` | `AC-OPERATE-01`, `AC-OPERATE-06`, `AC-OPERATE-22` |
 | `REQ-OPERATE-002` | `AC-OPERATE-02` |
 | `REQ-OPERATE-003` | `AC-OPERATE-03` |
@@ -2208,7 +2224,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | ACTION | 13 | 24 |
 | CONSOLE | 17 | 23 |
 | REPORTS | 10 | 23 |
-| GOVERN | 14 | 32 |
+| GOVERN | 15 | 34 |
 | OPERATE | 15 | 28 |
 | ONEUX | 26 | 30 |
 

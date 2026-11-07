@@ -18,6 +18,7 @@ export const NAV = [
   { grp: 'Observe', items: [
     { to: '/monitoring', label: 'Monitoring', short: 'Monitor', icon: 'activity' },
     { to: '/usage', label: 'Usage & feedback', short: 'Usage', icon: 'trend' },
+    { to: '/platform', label: 'Platform settings', short: 'Platform', icon: 'wrench' },
   ] },
   { grp: 'Access', items: [
     { to: '/access', label: 'My access', short: 'Access', icon: 'shield' },
