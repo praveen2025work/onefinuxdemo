@@ -339,6 +339,53 @@ export const accessApi = {
   sweep: () => hubJson('/api/access/sweep', { method: 'POST' }),
 };
 
+// Close evidence packs. Fetched with the session's token (a plain link would drop it), then shown or saved.
+async function evidenceFetch(path, format) {
+  const res = await fetch(`${path}${path.includes('?') ? '&' : '?'}format=${format}`, { headers: authHeaders() });
+  if (!res.ok) {
+    let detail = `${res.status} on ${path}`;
+    try { const j = await res.json(); detail = j.detail || j.message || detail; } catch { /* ignore */ }
+    throw new Error(detail);
+  }
+  return res;
+}
+
+function evidencePath({ instanceId, outcomeId, cobDate, region }) {
+  return instanceId
+    ? `/api/evidence/instance?id=${encodeURIComponent(instanceId)}`
+    : `/api/evidence/outcome/${encodeURIComponent(outcomeId)}/${cobDate}/${encodeURIComponent(region)}`;
+}
+
+export const evidenceApi = {
+  /** The printable pack in a new tab; the window opens first so the click is not treated as a pop-up. */
+  print: async (subject) => {
+    const win = window.open('', '_blank');
+    try {
+      const html = await (await evidenceFetch(evidencePath(subject), 'html')).text();
+      const doc = html.replace('<head>', `<head><base href="${window.location.origin}/">`);
+      const url = URL.createObjectURL(new Blob([doc], { type: 'text/html' }));
+      if (win) win.location.href = url; else window.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (e) {
+      win?.close();
+      throw e;
+    }
+  },
+  /** The JSON pack (with its SHA-256 digest) as a file. */
+  download: async (subject) => {
+    const res = await evidenceFetch(evidencePath(subject), 'json');
+    const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || 'evidence.json';
+    const url = URL.createObjectURL(await res.blob());
+    const a = Object.assign(document.createElement('a'), { href: url, download: name });
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    return name;
+  },
+  verify: (pack) => hubJson('/api/evidence/verify', { method: 'POST', body: pack }),
+};
+
 /** Store an access token from sign-in (SSO) as the session's identity. */
 export function setSessionToken(token, subject) {
   if (token) sessionStorage.setItem(TOKEN_KEY, token); else sessionStorage.removeItem(TOKEN_KEY);

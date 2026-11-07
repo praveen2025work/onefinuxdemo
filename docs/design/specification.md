@@ -158,11 +158,11 @@ Motif, SAP, Helix, Axiom, CATS, MBR, FAS, and Kafka remain origins or destinatio
 | ACTION | Actions and executors | ActionExecutor, kit verbs, runId |
 | CONSOLE | Console chrome | Brand, theme, rail, views, ribbon |
 | REPORTS | Reports | Layouts, document route, stage flow |
-| GOVERN | Onboarding and configuration | Create vs govern |
+| GOVERN | Onboarding, configuration and close evidence | Create vs govern, evidence packs, platform settings view |
 | OPERATE | Drive, RTB, monitor, notify | Scenarios, replay, SSE, inbox |
 | ONEUX | One UX platform | Search across apps, assistant, usage and feedback, experiments, saved desks and team templates, grid write-back, access register, sign-in |
 
-Each subsystem has numbered REQ-IDs and exactly 23 AC-IDs.
+Each subsystem has numbered REQ-IDs and at least 23 AC-IDs, numbered without gaps.
 
 ## 11. Functional requirements
 
@@ -269,7 +269,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-REPORTS-009` | Reports does not render Drive or scenario buttons. |
 | `REQ-REPORTS-010` | The five-stage flow uses Feeds in, Ready, Processing, Generated, and Available. |
 
-### 11.7 Onboarding and configuration (GOVERN)
+### 11.7 Onboarding, configuration and close evidence (GOVERN)
 
 | REQ-ID | Requirement |
 | --- | --- |
@@ -283,6 +283,10 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-GOVERN-008` | A created definition appears on Board, Reports, and Configuration for the given COB once instances exist. |
 | `REQ-GOVERN-009` | Kit create remains available on POST /api/stitch/kits; the console does not add a second kit-create screen in this phase. |
 | `REQ-GOVERN-010` | Configuration links makers to /onboarding when they need to create an outcome. |
+| `REQ-GOVERN-011` | GET /api/evidence/instance?id= and GET /api/evidence/outcome/{outcomeId}/{cobDate}/{region} return a close evidence pack (format onefinux-evidence/1): subject, readiness, facts, decisions (audit log), downstream commands, escalations, notifications, and for an engine outcome its report artifact. |
+| `REQ-GOVERN-012` | Every evidence pack carries a SHA-256 digest over the canonical JSON of every other field; POST /api/evidence/verify recomputes it and answers valid true or false. |
+| `REQ-GOVERN-013` | Exporting a pack needs the EVIDENCE_EXPORT verb from the role structure and the group-unit fence of the instance (404 outside it, 403 without the verb); every export and every refusal is written to the audit log with the digest. |
+| `REQ-GOVERN-014` | format=html returns the printable pack painted only from the shared partner classes in /theme/onefinux-tokens.css; instance detail and the report document offer Evidence pack (printable) and JSON (download). |
 
 ### 11.8 Drive, operations, monitoring, notifications (OPERATE)
 
@@ -1344,7 +1348,7 @@ These 23 criteria lock REPORTS behaviour. Each Maps-to line names one REQ-ID.
 - When the operator clicks Open report
 - Then the document route opens for that outcome key
 
-### 12.7 Onboarding and configuration (GOVERN)
+### 12.7 Onboarding, configuration and close evidence (GOVERN)
 
 These 23 criteria lock GOVERN behaviour. Each Maps-to line names one REQ-ID.
 
@@ -1508,6 +1512,69 @@ These 23 criteria lock GOVERN behaviour. Each Maps-to line names one REQ-ID.
 - Given id is empty
 - When the maker submits Onboarding
 - Then the submit is rejected
+
+#### AC-GOVERN-24
+
+- Maps to: `REQ-GOVERN-011`
+- Given the auditor can see REV-ACC and holds EVIDENCE_EXPORT
+- When the auditor requests the pack for a REV-ACC instance
+- Then the pack lists subject, readiness, facts, decisions, commands, escalations and notifications, and carries a 64-hex SHA-256 digest
+
+#### AC-GOVERN-25
+
+- Maps to: `REQ-GOVERN-011`
+- Given facts on one COB and region belong to two outcomes
+- When the pack for one engine outcome is built
+- Then it holds that outcome's dependency facts, its own workflow events and its own completion run only
+
+#### AC-GOVERN-26
+
+- Maps to: `REQ-GOVERN-012`
+- Given a downloaded pack
+- When the untouched JSON is posted to /api/evidence/verify
+- Then the answer is valid true
+
+#### AC-GOVERN-27
+
+- Maps to: `REQ-GOVERN-012`
+- Given a downloaded pack whose amount was edited
+- When it is posted to /api/evidence/verify
+- Then the answer is valid false
+
+#### AC-GOVERN-28
+
+- Maps to: `REQ-GOVERN-013`
+- Given bob.markets is entitled to MARKETS only
+- When bob.markets requests the pack for a REV-ACC instance
+- Then the hub answers 404 and writes no export
+
+#### AC-GOVERN-29
+
+- Maps to: `REQ-GOVERN-013`
+- Given a user whose roles lack EVIDENCE_EXPORT
+- When the user requests a pack
+- Then the hub answers 403 and the audit log holds an EVIDENCE_EXPORT DENY row
+
+#### AC-GOVERN-30
+
+- Maps to: `REQ-GOVERN-013`
+- Given a successful export
+- When the audit log is read
+- Then an EVIDENCE_EXPORT OK row on the subject holds the digest of the pack
+
+#### AC-GOVERN-31
+
+- Maps to: `REQ-GOVERN-014`
+- Given a fact value containing markup
+- When the printable pack is rendered
+- Then the markup is escaped and the page links /theme/onefinux-tokens.css with no colour literal
+
+#### AC-GOVERN-32
+
+- Maps to: `REQ-GOVERN-014`
+- Given a controller on instance detail
+- When the controller presses Evidence pack
+- Then the printable pack opens in a new tab with the session's token used for the request
 
 ### 12.8 Drive, operations, monitoring, notifications (OPERATE)
 
@@ -1979,6 +2046,10 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-GOVERN-008` | `AC-GOVERN-10`, `AC-GOVERN-11` |
 | `REQ-GOVERN-009` | `AC-GOVERN-12` |
 | `REQ-GOVERN-010` | `AC-GOVERN-13`, `AC-GOVERN-22` |
+| `REQ-GOVERN-011` | `AC-GOVERN-24`, `AC-GOVERN-25` |
+| `REQ-GOVERN-012` | `AC-GOVERN-26`, `AC-GOVERN-27` |
+| `REQ-GOVERN-013` | `AC-GOVERN-28`, `AC-GOVERN-29`, `AC-GOVERN-30` |
+| `REQ-GOVERN-014` | `AC-GOVERN-31`, `AC-GOVERN-32` |
 | `REQ-OPERATE-001` | `AC-OPERATE-01`, `AC-OPERATE-06`, `AC-OPERATE-22` |
 | `REQ-OPERATE-002` | `AC-OPERATE-02` |
 | `REQ-OPERATE-003` | `AC-OPERATE-03` |
@@ -2039,7 +2110,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | ACTION | 13 | 24 |
 | CONSOLE | 17 | 23 |
 | REPORTS | 10 | 23 |
-| GOVERN | 10 | 23 |
+| GOVERN | 14 | 32 |
 | OPERATE | 12 | 23 |
 | ONEUX | 26 | 30 |
 
