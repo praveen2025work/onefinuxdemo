@@ -187,6 +187,22 @@ onefinux:
     log-channel-enabled: true
     webhook-url: ""        # e.g. a Teams Workflows webhook; empty = disabled
 
+  # ---------------------------------------------------------------- close calendar
+  # Each region's business zone and holidays. An outcome SLA "day-offset" counts business days in the outcome's
+  # region and its "cutoff" is that region's wall clock; a kit's SLA cutoff applies on the COB date the same way.
+  # A region not listed runs in onefinux.zone with weekends only. The holidays are a 2026 demo set: load the
+  # bank's holiday calendar here.
+  calendar:
+    weekend: [SATURDAY, SUNDAY]
+    # Stitch instances still waiting after their kit's cutoff turn DELAYED. The seeded demo COB (2026-09-12) is
+    # past its cutoff, so a re-driven seeded instance shows DELAYED before READY; false narrates NOT_YET instead.
+    stitch-delays: ${ONEFINUX_STITCH_DELAYS:true}
+    regions:
+      AMRS:   { zone: America/New_York, holidays: [2026-01-01, 2026-01-19, 2026-02-16, 2026-04-03, 2026-05-25, 2026-06-19, 2026-07-03, 2026-09-07, 2026-11-26, 2026-12-25] }
+      EMEA:   { zone: Europe/London,    holidays: [2026-01-01, 2026-04-03, 2026-04-06, 2026-05-04, 2026-05-25, 2026-08-31, 2026-12-25, 2026-12-28] }
+      APAC:   { zone: Asia/Singapore,   holidays: [2026-01-01, 2026-02-17, 2026-02-18, 2026-04-03, 2026-05-01, 2026-08-10, 2026-12-25] }
+      GLOBAL: { zone: America/New_York }
+
   # ---------------------------------------------------------------- Component 3: business outcomes
   # SLA: use "cutoff" + "day-offset" for real cut-offs (e.g. 07:30 on COB+1),
   # or "within-minutes" (from the first event) so the demo can show at-risk and breach alerts.

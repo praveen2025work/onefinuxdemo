@@ -202,6 +202,20 @@ public class StitchRepository {
         return r.isEmpty() ? null : r.get(0);
     }
 
+    /** What the deadline is computed from: the instance's COB and region, and its kit's SLA cutoff. */
+    public Map<String, Object> slaOf(String instanceId) {
+        List<Map<String, Object>> r = jdbc.queryForList("""
+                SELECT i.cob_date AS "cobDate", i.region AS "region", k.sla_cutoff AS "slaCutoff"
+                FROM outcome_instance i JOIN product_kit k ON k.kit_id = i.kit_id
+                WHERE i.instance_id = :id""", p().addValue("id", instanceId));
+        return r.isEmpty() ? null : r.get(0);
+    }
+
+    public List<String> instanceIdsWithStatus(String status) {
+        return jdbc.queryForList("SELECT instance_id FROM outcome_instance WHERE status = :st",
+                p().addValue("st", status), String.class);
+    }
+
     public List<String> requiredSources(String kitId) {
         return jdbc.queryForList(
                 "SELECT source_id FROM kit_source WHERE kit_id = :kit AND required = 'Y'",

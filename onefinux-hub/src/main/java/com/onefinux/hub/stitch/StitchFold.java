@@ -1,14 +1,19 @@
 package com.onefinux.hub.stitch;
 
+import com.onefinux.hub.calendar.CloseCalendar;
 import com.onefinux.hub.event.BusinessEvent;
 import com.onefinux.hub.event.EventIngested;
 import com.onefinux.hub.event.EventStatus;
 import com.onefinux.hub.stream.StreamHub;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,8 +24,9 @@ import java.util.Objects;
  *
  * <ul>
  *   <li>any required key FAILED  → BLOCKED (named blocker), open an escalation</li>
- *   <li>any key still WAITING    → NOT_YET</li>
  *   <li>all required sources COMPLETED → READY</li>
+ *   <li>otherwise → NOT_YET, or DELAYED once the kit's SLA cutoff on the COB has passed in the region's zone
+ *       (the close calendar); {@link #sweepDelayed()} moves instances that went late with no new fact</li>
  * </ul>
  *
  * A HELIX completion echoes the run id (the downstream "echo_ok" rule). On a notifiable transition we
@@ -34,10 +40,44 @@ public class StitchFold {
 
     private final StitchRepository repo;
     private final StreamHub stream;
+    private final CloseCalendar calendar;
+    private final Clock clock;
 
     public StitchFold(StitchRepository repo, StreamHub stream) {
+        this(repo, stream, null, null);
+    }
+
+    @Autowired
+    public StitchFold(StitchRepository repo, StreamHub stream, CloseCalendar calendar, Clock clock) {
         this.repo = repo;
         this.stream = stream;
+        this.calendar = calendar;
+        this.clock = clock;
+    }
+
+    /** NOT_YET instances whose deadline has passed become DELAYED; returns how many moved. */
+    public synchronized int sweepDelayed() {
+        int moved = 0;
+        for (String instanceId : repo.instanceIdsWithStatus("NOT_YET")) {
+            if (pastDeadline(instanceId)) {
+                recompute(instanceId, null);
+                moved++;
+            }
+        }
+        return moved;
+    }
+
+    private boolean pastDeadline(String instanceId) {
+        if (calendar == null || clock == null || !calendar.stitchDelays()) {
+            return false;
+        }
+        Map<String, Object> sla = repo.slaOf(instanceId);
+        if (sla == null || sla.get("slaCutoff") == null || sla.get("cobDate") == null) {
+            return false;
+        }
+        LocalDate cob = sla.get("cobDate") instanceof java.sql.Date d ? d.toLocalDate() : LocalDate.parse(sla.get("cobDate").toString());
+        Instant deadline = calendar.deadline(String.valueOf(sla.get("region")), cob, 0, String.valueOf(sla.get("slaCutoff")));
+        return deadline != null && clock.instant().isAfter(deadline);
     }
 
     @EventListener
@@ -109,7 +149,7 @@ public class StitchFold {
         } else if (allRequiredCovered && !anyWaiting) {
             next = "READY";
         } else {
-            next = "NOT_YET";
+            next = pastDeadline(instanceId) ? "DELAYED" : "NOT_YET";
         }
 
         boolean changed = !Objects.equals(previous, next);
@@ -120,6 +160,8 @@ public class StitchFold {
             log.info("stitch {} {} -> {}{}", instanceId, previous, next, blocker == null ? "" : " (" + blocker + ")");
             if ("BLOCKED".equals(next)) {
                 repo.insertEscalation(escalationId(instanceId), instanceId, "SLA");
+            } else if ("DELAYED".equals(next)) {
+                repo.insertEscalation("ESC-D" + Math.abs(instanceId.hashCode() % 100000), instanceId, "DELAY");
             }
             notifyTransition(instanceId, next, blocker);
             broadcastOutcome(instanceId);
@@ -149,6 +191,11 @@ public class StitchFold {
                 severity = "CRITICAL";
                 title = kitId + " " + slice + " blocked — " + blocker;
                 message = "Named key " + blocker + " on instance " + instanceId + ".";
+            }
+            case "DELAYED" -> {
+                severity = "WARN";
+                title = kitId + " " + slice + " delayed — SLA cutoff passed";
+                message = "Instance " + instanceId + " is still waiting on a required key after its SLA cutoff.";
             }
             case "CLEARED" -> {
                 severity = "SUCCESS";

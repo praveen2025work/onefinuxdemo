@@ -198,6 +198,8 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-FOLD-008` | There is no product-specific branch on kitId FOBO or any other kit id; FOBO is kit data. |
 | `REQ-FOLD-009` | GET /api/stitch/instances returns tenant-scoped instances for the selected group unit, COB, and region filters. |
 | `REQ-FOLD-010` | An unknown or unentitled instance id on stitch instance reads and actions returns HTTP 404. |
+| `REQ-FOLD-011` | The stitch deadline is the kit's SLA cutoff on the COB date in the instance region's zone (the close calendar); a sweep every 30 seconds moves NOT_YET instances past that deadline to DELAYED, raises a DELAY escalation, and notifies WARN. |
+| `REQ-FOLD-012` | onefinux.calendar.stitch-delays false (ONEFINUX_STITCH_DELAYS) keeps stitch instances NOT_YET past their cutoff, for a demo on a past COB. |
 
 ### 11.3 Outcome Engine (ENGINE)
 
@@ -213,6 +215,7 @@ This section states every functional REQ-ID by subsystem. Quality-attribute REQ-
 | `REQ-ENGINE-008` | Predicted-ready clocks are advisory and are not inputs to the readiness fold. |
 | `REQ-ENGINE-009` | Seeded definitions include FOBO_HELIX, REPORT_15C3, and PNL_REPORTING in application.yml. |
 | `REQ-ENGINE-010` | POST /api/outcomes/definitions creates a live OutcomeDefinition without a new Java product type. |
+| `REQ-ENGINE-011` | An outcome SLA with cutoff and day-offset sets its deadline from the close calendar (onefinux.calendar): day-offset counts business days in the outcome's region, skipping the weekend and that region's holidays, and the cutoff is that region's wall clock; a region not listed uses onefinux.zone with weekends only. |
 
 ### 11.4 Actions and executors (ACTION)
 
@@ -681,6 +684,20 @@ These 23 criteria lock FOLD behaviour. Each Maps-to line names one REQ-ID.
 - When the user opens either surface
 - Then both show READY for that instance id
 
+#### AC-FOLD-24
+
+- Maps to: `REQ-FOLD-011`
+- Given instance R-2031 is NOT_YET with Motif WAITING and its 19:00 London cutoff has passed
+- When the sweep runs with no new fact
+- Then the instance is DELAYED
+
+#### AC-FOLD-25
+
+- Maps to: `REQ-FOLD-012`
+- Given stitch-delays is false and the cutoff of a NOT_YET instance has passed
+- When the sweep runs
+- Then the instance stays NOT_YET
+
 ### 12.3 Outcome Engine (ENGINE)
 
 These 23 criteria lock ENGINE behaviour. Each Maps-to line names one REQ-ID.
@@ -845,6 +862,27 @@ These 23 criteria lock ENGINE behaviour. Each Maps-to line names one REQ-ID.
 - Given two definitions share one eventType from different sourceSystems
 - When an event arrives with one of those sourceSystems
 - Then only the definition whose feed lists that pair moves
+
+#### AC-ENGINE-24
+
+- Maps to: `REQ-ENGINE-011`
+- Given EMEA holidays 25 and 28 December and AMRS holidays 26 November and 25 December
+- When one business day is added to 24 December in EMEA and in AMRS, and to 25 November in AMRS
+- Then the dates are 29 December, 28 December and 27 November
+
+#### AC-ENGINE-25
+
+- Maps to: `REQ-ENGINE-011`
+- Given a cutoff of 18:00 with day-offset 1 on COB Friday 6 November 2026
+- When the deadline is computed for EMEA and for APAC
+- Then it is 18:00Z and 10:00Z on Monday 9 November
+
+#### AC-ENGINE-26
+
+- Maps to: `REQ-ENGINE-011`
+- Given MONTH_END_CLOSE for EMEA with cutoff 18:00 and day-offset 3 on COB 23 December 2026
+- When the engine opens the instance
+- Then its deadline is 30 December 2026 18:00 London
 
 ### 12.4 Actions and executors (ACTION)
 
@@ -1986,6 +2024,8 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-FOLD-008` | `AC-FOLD-09`, `AC-FOLD-19` |
 | `REQ-FOLD-009` | `AC-FOLD-10`, `AC-FOLD-18` |
 | `REQ-FOLD-010` | `AC-FOLD-11`, `AC-FOLD-12`, `AC-FOLD-21` |
+| `REQ-FOLD-011` | `AC-FOLD-24` |
+| `REQ-FOLD-012` | `AC-FOLD-25` |
 | `REQ-ENGINE-001` | `AC-ENGINE-01`, `AC-ENGINE-16`, `AC-ENGINE-23` |
 | `REQ-ENGINE-002` | `AC-ENGINE-02`, `AC-ENGINE-03`, `AC-ENGINE-04`, `AC-ENGINE-14`, `AC-ENGINE-15` |
 | `REQ-ENGINE-003` | `AC-ENGINE-05`, `AC-ENGINE-21` |
@@ -1996,6 +2036,7 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | `REQ-ENGINE-008` | `AC-ENGINE-11`, `AC-ENGINE-18` |
 | `REQ-ENGINE-009` | `AC-ENGINE-12` |
 | `REQ-ENGINE-010` | `AC-ENGINE-13`, `AC-ENGINE-19` |
+| `REQ-ENGINE-011` | `AC-ENGINE-24`, `AC-ENGINE-25`, `AC-ENGINE-26` |
 | `REQ-ACTION-001` | `AC-ACTION-01` |
 | `REQ-ACTION-002` | `AC-ACTION-02`, `AC-ACTION-03` |
 | `REQ-ACTION-003` | `AC-ACTION-04` |
@@ -2105,8 +2146,8 @@ Every subsystem REQ-ID appears in at least one AC Maps-to line. The pairs are:
 | Subsystem | REQ count | AC count |
 | --- | --- | --- |
 | INGEST | 11 | 23 |
-| FOLD | 10 | 23 |
-| ENGINE | 10 | 23 |
+| FOLD | 12 | 25 |
+| ENGINE | 11 | 26 |
 | ACTION | 13 | 24 |
 | CONSOLE | 17 | 23 |
 | REPORTS | 10 | 23 |
